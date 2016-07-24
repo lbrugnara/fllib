@@ -259,6 +259,9 @@ fl_regex_tests()
 	flm_test(!fl_regex_match_test(".", "\n"));
 	flm_test(fl_regex_match_test(".+", "abcdefg"));
 	flm_test(!fl_regex_match_test("*", "*")); // Regex compilation error
+	flm_test(!fl_regex_match_test("\\h", "h")); // Regex compilation error
+	flm_test(fl_regex_match_test("[()]", "()"));	// Operators inside charclass without escape should be automatically escaped
+	flm_test(fl_regex_match_test("[\\(\\)]", "()")); // Escaped operators inside charclass should work like operators without escape seq
 
 	printf("\nfl_regex -> Ok\n");
 	printf("Max used mem: %.2f kbytes\n", fl_memtrack_get()/1024.0);

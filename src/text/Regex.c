@@ -1,3 +1,17 @@
+/* =============================================================
+ * {module: Regex}
+ * =============================================================
+ * This module compiles patterns into regular expressions through
+ * the creation of an NFA.
+ * The steps involved in the process are:
+ *	- Analysis of the pattern
+ *	- Parsing. It includes tokenization of the pattern and its transformation into a postifx notation
+ *	- Compilation. The process that creates the NFA
+ * This module currently support matching functions.
+ *-------------------------------------------------------------
+ * {todo: Capturing groups}
+ * -------------------------------------------------------------
+ */
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -17,13 +31,13 @@
  *	Bit 1 - End: 1 if pattern ends with $
  * -------------------------------------------------------------
  */
+typedef unsigned char RegexFlags;
 #define FLAG_START 			FLBIT(0)
 #define FLAG_END 			FLBIT(1)
 #define SET_FLAG_START(s)	FLBIT_ON(s,FLAG_START)
 #define SET_FLAG_END(s)		FLBIT_ON(s,FLAG_END)
 #define HAS_FLAG_START(s)	FLBIT_IS_ON(s,FLAG_START)
 #define HAS_FLAG_END(s)		FLBIT_IS_ON(s,FLAG_END)
-typedef unsigned char RegexFlags;
 
 /* -------------------------------------------------------------
  * {datatype: enum NfaStateType}
@@ -48,6 +62,7 @@ typedef enum
  *	Bit 1 - Final: 1 when state is a final state of the NFA
  * -------------------------------------------------------------
  */
+typedef unsigned char StateFlags;
 #define STATE_INITIAL 			FLBIT(0)
 #define STATE_FINAL 			FLBIT(1)
 #define STATE_SET_INITIAL(s)	FLBIT_ON(s->flags,STATE_INITIAL)
@@ -56,7 +71,6 @@ typedef enum
 #define STATE_UNSET_FINAL(s)	FLBIT_OFF(s->flags,STATE_FINAL)
 #define STATE_IS_INITIAL(s)		FLBIT_IS_ON(s->flags,STATE_INITIAL)
 #define STATE_IS_FINAL(s)		FLBIT_IS_ON(s->flags,STATE_FINAL)
-typedef unsigned char StateFlags;
 
 /* -------------------------------------------------------------
  * {datatype: struct NfaState}
@@ -85,8 +99,7 @@ typedef struct
 /* -------------------------------------------------------------
  * {datatype: struct NfaStateCharClass}
  * -------------------------------------------------------------
- * {member: int map} Represents 256 ASCII characters. Valid characters are set to 1. 
- * 	State matches with all the values that are 1 in map (or 0 based on {negated})
+ * {member: int map} Represents 256 ASCII characters. Valid characters are set to 1. State matches with all the values that are 1 in map (or 0 based on {negated})
  * {member: bool negated} True when the char class state is a negated set
  * -------------------------------------------------------------
  */
@@ -171,6 +184,23 @@ typedef struct
 	int id;
 	bool e;
 } CurrentState;
+
+/* -------------------------------------------------------------
+ * {datatype: struct RegexAnalysis}
+ * -------------------------------------------------------------
+ * Intended to track information about a pattern. Used by {analyze_regexx}
+ * -------------------------------------------------------------
+ * {member: size_t patternStart} Position to start at tokenization
+ * {member: size_t patternEnd} Position to end at tokenization
+ * {member: size_t numTokens} Number of tokens the tokenization process will produce
+ * -------------------------------------------------------------
+ */
+typedef struct
+{
+	size_t patternStart;
+	size_t patternEnd;
+	size_t numTokens;
+} RegexAnalysis;
 
 /* -------------------------------------------------------------
  * {variable: char[] OperatorsChars}
@@ -360,15 +390,22 @@ NfaStepResult nfa_step (NfaState *state, CurrentState nextstates[], unsigned cha
 bool regex_match (FlRegex *regex, FlCstr text);
 
 int compare_states(const void* v1, const void* v2);
-/*
-typedef struct
-{
-	size_t patternStart;
-	size_t patternEnd;
-	size_t numTokens;
-} RegexAnalysis;
 
-void analyze_regex(FlCstr regex, RegexFlags *flags, RegexAnalysis *analysis)
+/* -------------------------------------------------------------
+ * {function: analyze_regex}
+ * -------------------------------------------------------------
+ * Make an analysis of the pattern to determine flags like anchors.
+ * (Intended to be used in the future when more features will be added)
+ * -------------------------------------------------------------
+ * {param: FlCstr regex} Pattern to analyze
+ * {param: RegexFlags* flags} The function will change this when find certain flags like anchors
+ * {param: RegexAnalysis* analysis} Will keep metainformation of the pattern
+ * {param: FlError** error} If the analysis produces an error it will be set in this parameter
+ * -------------------------------------------------------------
+ * {return: void}
+ * -------------------------------------------------------------
+ */
+void analyze_regex(FlCstr regex, RegexFlags *flags, RegexAnalysis *analysis, FlError **error)
 {
 	flm_assert(analysis != NULL, "RegexAnalysis cannot be NULL");
 	size_t reglength = strlen(regex);
@@ -386,9 +423,7 @@ void analyze_regex(FlCstr regex, RegexFlags *flags, RegexAnalysis *analysis)
 		SET_FLAG_END(*flags);
 		analysis->patternEnd--; // End before $
 	}
-
-
-}*/
+}
 
 /* -------------------------------------------------------------
  * {function: parse_regex}
@@ -403,27 +438,15 @@ void analyze_regex(FlCstr regex, RegexFlags *flags, RegexAnalysis *analysis)
  */
 FlVector* parse_regex(FlCstr regex, RegexFlags *flags, FlError **error)
 {
-	// {todo: Fix error handling}]>
-	//error = NULL;
+	RegexAnalysis analysis;
+	analyze_regex(regex, flags, &analysis, error);
+
+	if (fl_has_error(error))
+		return NULL;
+
 	char *tokens = fl_cstr_split_a(regex);
-	int start = 0, end = fl_array_length(tokens) - 1;
-
-	// Check for ^ and $ at the beginning and at the end of the string
-	if (regex[0] == '^')
-	{
-		SET_FLAG_START(*flags);
-		start++; // Start from 1, 0 is the ^
-	}
-
-	// end is 0-based
-	if (regex[end] == '$' && regex[end-1] != '\\')
-	{
-		SET_FLAG_END(*flags);
-		end--; // End before $
-	}
-
 	// Function output (tokens)
-	FlVector *output = fl_vector_new(sizeof(FlCstr), end+1);
+	FlVector *output = fl_vector_new(sizeof(FlCstr), analysis.patternEnd+1);
 	
 	// Contains the backslash for escaped characters
 	bool bslash = false;
@@ -436,37 +459,31 @@ FlVector* parse_regex(FlCstr regex, RegexFlags *flags, FlError **error)
 	char cur = FL_EOS;
 	char nex = FL_EOS;
 	char prev = FL_EOS;
-	for (int i=start; i <= end; i++)
+	for (int i=analysis.patternStart; i <= analysis.patternEnd; i++)
 	{
 		bslash = false;
 		cur = tokens[i];
-		nex = i==end ? FL_EOS : tokens[i+1];
+		nex = i==analysis.patternEnd ? FL_EOS : tokens[i+1];
 
 		// Determine {cur} token and if it is escaped. Activate/deactivate char class, validate ranges inside char class, etc
 		if (cur == '\\') 
 		{
 			if (nex == FL_EOS)
 			{
-				const FlCstr tmpl = "Incomplete escaped value";
-				FlCstr errmsg = fl_cstr_new(strlen(tmpl));
-				sprintf(errmsg, tmpl, cur, nex);
-				fl_error_set(error, -1, errmsg);
+				fl_error_set(error, -1, "Incomplete escaped value");
 				break;
 			}
 
 			if (!is_escape_seq(nex))
 			{
-				const FlCstr tmpl = "Unknown escaped value %c%c";
-				FlCstr errmsg = fl_cstr_new(strlen(tmpl));
-				sprintf(errmsg, tmpl, cur, nex);
-				fl_error_set(error, -1, errmsg);
+				fl_error_set(error, -1, "Unknown escaped value %c%c", cur, nex);
 				break;
 			}
 			// Set bslash to \ and update cur and nex to i+1 (and i+2)
 			bslash = true;
 			cur = nex;
 			i++;
-			nex = i == end ? FL_EOS : tokens[i+1]; 
+			nex = i == analysis.patternEnd ? FL_EOS : tokens[i+1]; 
 		} 
 		else if (cur == '[') 
 		{
@@ -552,13 +569,14 @@ FlVector* parse_regex(FlCstr regex, RegexFlags *flags, FlError **error)
 		}
 		else if (cur == '&')
 		{
+			// Escape this when it is a user input. We'll use this char as a concat. operator
 			bslash = true;
 		}
 
 		// If we are inside a character class, we need to escape the operators not used inside a character class
-		bool isOperator = is_operator(cur);
+		bool curIsOperator = !bslash && is_operator(cur);
 		bool isCharClassOperator = is_charclass_operator(cur);
-		if (isCharClass && !isCharClassOperator && isOperator)
+		if (isCharClass && !isCharClassOperator && curIsOperator)
 		{
 			bslash = true;
 		}
@@ -587,12 +605,11 @@ FlVector* parse_regex(FlCstr regex, RegexFlags *flags, FlError **error)
 			continue;
 
 		// Check if we need to add a & operator between two literals, or an expression and a literal
-		bool curIsOp = !bslash && is_operator(cur);
-		bool curAllowConcatRight = curIsOp && allow_concat(CONCAT_RIGHT, cur);
+		bool curAllowConcatRight = curIsOperator && allow_concat(CONCAT_RIGHT, cur);
 
 		bool nexIsOp = !bslash && is_operator(nex);
 		bool nexAllowConcatLeft = nexIsOp && allow_concat(CONCAT_LEFT, nex);
-		if ((!curIsOp || curAllowConcatRight) && (!nexIsOp || nexAllowConcatLeft))
+		if ((!curIsOperator || curAllowConcatRight) && (!nexIsOp || nexAllowConcatLeft))
 		{
 			fl_vector_add_cstr(output, "&");
 		}
@@ -606,7 +623,6 @@ FlVector* parse_regex(FlCstr regex, RegexFlags *flags, FlError **error)
 		fl_vector_delete_ptrs(output);
 		return NULL;
 	}
-	//flm_assert(fl_vector_length(output) == end+1, "Output size is misscalculated");
 	return output;
 }
 

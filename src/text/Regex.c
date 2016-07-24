@@ -601,7 +601,7 @@ FlVector* parse_regex(FlCstr regex, RegexFlags *flags, FlError **error)
 	if (tokens)
 		fl_array_delete(tokens);
 	
-	if (error && *error)
+	if (fl_has_error(error))
 	{
 		fl_vector_delete_ptrs(output);
 		return NULL;
@@ -768,26 +768,28 @@ FlVector* parse_regex_postfix (FlCstr regex, RegexFlags *flags, FlError **error)
 				// Literal chars are sended directly to the output
 				fl_vector_add(output, &token);
 		}
-		if (error && *error)
+		if (fl_has_error(error))
 			break;
 	}
 
-	// Finally, remove all the pending operators from the stack, and send it to the output
-	while ((!error || (error && !*error)) && fl_vector_length(stack))
+	if (!fl_has_error(error))
 	{
-		FlCstr sc;
-		fl_vector_pop(stack, &sc);
-		fl_vector_add(output, &sc);
-	}
+		// Finally, remove all the pending operators from the stack, and send it to the output
+		while (fl_vector_length(stack))
+		{
+			FlCstr sc;
+			fl_vector_pop(stack, &sc);
+			fl_vector_add(output, &sc);
+		}
 
-	if ((!error || (error && !*error)) && inCharClass)
-	{
-		fl_error_set(error, -1, "Invalid regular expression: missing closing ']'");
-	}
-
-	if ((!error || (error && !*error)) && currentGroup != 0)
-	{
-		fl_error_set(error, -1, "Invalid regular expression: missing closing ')'");
+		if (inCharClass)
+		{
+			fl_error_set(error, -1, "Invalid regular expression: missing closing ']'");
+		}
+		else if (currentGroup != 0)
+		{
+			fl_error_set(error, -1, "Invalid regular expression: missing closing ')'");
+		}
 	}
 
 	#if DEBUG
@@ -814,7 +816,7 @@ FlRegex* fl_regex_compile (FlCstr pattern, FlError **error)
 	RegexFlags flags = 0;
 	// parse_regex pattern and convert it to postifx notation
 	FlVector *tokens = parse_regex_postfix(pattern, &flags, error);
-	if (error != NULL && *error != NULL)
+	if (fl_has_error(error))
 		return NULL;
 	size_t nstates = fl_vector_length(tokens) + 1;
 
@@ -1052,6 +1054,9 @@ FlRegex* fl_regex_compile (FlCstr pattern, FlError **error)
 		}
 		// Delete consumed token
 		fl_cstr_delete(token);
+
+		if (fl_has_error(error))
+			break;
 	}
 	// Sort the regex to retrieve States by its ID like array indexes
 	// regex->states[n] is the State->id == n
@@ -1060,6 +1065,12 @@ FlRegex* fl_regex_compile (FlCstr pattern, FlError **error)
 	print_nfa(regex->states);
 	#endif
 	
+	if (fl_has_error(error))
+	{
+		fl_regex_delete(regex);
+		fl_vector_delete_ptrs(tokens);
+		return NULL;
+	}
 			
 	fl_vector_delete(tokens);
 	return regex;

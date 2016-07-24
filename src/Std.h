@@ -71,4 +71,9 @@ FlCstr fl_error_get_message(FlError *error);
  */
 void fl_error_delete(FlError *error);
 
+static inline bool fl_has_error(FlError **error)
+{
+	return error != NULL && *error != NULL;
+}
+
 #endif /* FL_STD_H */

@@ -1,0 +1,267 @@
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+
+#include "Vector.h"
+#include "../Mem.h"
+#include "../Cstr.h"
+
+/**
+ * {@type} Container type
+ * {@dtisze} Data type size of each element to be almacenated
+ * {@capacity} Max number of elements to be almacenated
+ * {@length} Number of current saved elements
+ * {@data} Memory used by {FlVector} to save elements
+ */
+struct FlVector {
+    FlContainerType type;
+    size_t dtsize;
+    size_t capacity;
+    size_t length;
+    FlByte* data;
+};
+
+FlVector* 
+fl_vector_new(size_t dtsize, size_t nelem) 
+{
+    FlVector* vector = fl_calloc(1, sizeof(FlVector));
+    if (nelem == 0)
+        nelem = 1;
+    vector->data = fl_calloc(nelem, dtsize);
+    vector->dtsize = dtsize;
+    vector->length = 0;
+    vector->capacity = nelem;
+    vector->type = FL_CONTAINER_TYPE_VECTOR;
+	return vector;
+}
+
+FlPointer
+fl_vector_add(FlVector* vector, const FlPointer elem) 
+{
+    if (vector->length >= vector->capacity) {
+        fl_vector_resize(vector, vector->capacity);
+    }
+    size_t sizet = (vector->length * vector->dtsize);
+    memcpy(vector->data + sizet, elem, vector->dtsize);
+    vector->length++;
+    return vector->data + sizet;
+}
+
+size_t
+fl_vector_length(FlVector *vector)
+{
+    return vector->length;
+}
+
+size_t
+fl_vector_dtsize(FlVector *vector)
+{
+    return vector->dtsize;
+}
+
+size_t
+fl_vector_capacity(FlVector *vector)
+{
+    return vector->capacity;
+}
+
+FlPointer
+fl_vector_insert(FlVector* vector, const FlPointer elem, size_t pos)
+{
+    if (elem == NULL)
+    {
+        flm_exit(ERR_FATAL, "elem is NULL");
+    }
+
+    if (vector->length >= vector->capacity) {
+        fl_vector_resize(vector, vector->capacity);
+    }
+    else if (pos >= vector->capacity) {
+        fl_vector_resize(vector, pos);
+    }
+
+    if (vector->length < pos)
+    {
+        memset(vector->data + (vector->length*vector->dtsize), 0, (pos - vector->length) * vector->dtsize);
+    }
+
+    size_t destpos = (pos * vector->dtsize);
+    if (pos < vector->length)
+    {
+        size_t bytestomove = (vector->length - pos) * vector->dtsize;
+        memmove((vector->data + destpos + vector->dtsize), (vector->data + destpos), bytestomove);
+        vector->length++;
+    } 
+    else 
+    {
+        vector->length = pos+1 ;
+    }
+    memcpy(vector->data + destpos, elem, vector->dtsize);
+    return vector->data+destpos;
+}
+
+FlPointer 
+fl_vector_unshift(FlVector* vector, const FlPointer elem)
+{
+    return fl_vector_insert(vector, elem, 0);
+}
+
+void
+fl_vector_resize(FlVector* vector, size_t nelem) {
+    vector->capacity += nelem;
+    size_t new_size = vector->dtsize * vector->capacity;
+    vector->data = fl_realloc(vector->data, new_size);
+}
+
+/* Returns a pointer to the element in the index {index} in {vector->data} */
+FlPointer
+fl_vector_get(FlVector* vector, size_t index) 
+{
+    if (index >= vector->length)
+        return NULL;
+    size_t sizet = (index * vector->dtsize);
+    return (vector->data + sizet);
+}
+
+bool
+fl_vector_shift(FlVector* vector, FlPointer dest)
+{
+    if (vector->length == 0)
+        return false;
+    if (dest != NULL)
+        memcpy(dest, vector->data, vector->dtsize);
+    vector->length--;
+    size_t o1 = vector->dtsize; // First element
+    memmove(&vector->data[0], &vector->data[o1], vector->dtsize * vector->length); // Move the items one position to the left
+    size_t offset = vector->dtsize * vector->length; // Old last element index
+    memset(vector->data+offset, 0, vector->dtsize); // Clear old last element
+    return true;
+}
+
+bool
+fl_vector_pop(FlVector* vector, FlPointer dest)
+{
+    if (vector->length == 0)
+        return false;
+    vector->length--;
+    size_t offset = vector->dtsize * vector->length;
+    if (dest != NULL)
+        memcpy(dest, vector->data+offset, vector->dtsize);
+    memset(vector->data+offset, 0, vector->dtsize);
+    return true;
+}
+
+bool 
+fl_vector_contains(FlVector* vector, const FlPointer needle)
+{
+    size_t offset = vector->dtsize * vector->length;
+    for (int i=0; i < vector->length; i++)
+    {
+        if (memcmp(vector->data+offset, needle, vector->dtsize) == 0)
+            return true;
+    }
+    return false;
+}
+
+void
+fl_vector_concat(FlVector* v, FlVector* v2)
+{
+    size_t sizev = v->dtsize*v->length;
+    size_t sizev2 = v2->dtsize*v2->length;
+    if (v->length + v2->length >= v->capacity) {
+        fl_vector_resize(v, v2->length);
+    }
+    memcpy(v->data+sizev, v2->data, sizev2);
+    v->length += v2->length;
+}
+
+FlVector* 
+fl_vector_merge(FlVector* v, FlVector* v2)
+{
+    size_t totallength = v->length + v2->length;
+    FlVector *newone = fl_vector_new(v->dtsize, totallength);
+    size_t sizev = v->dtsize*v->length;
+    size_t sizev2 = v2->dtsize*v2->length;
+    memcpy(newone->data, v->data, sizev);
+    memcpy(newone->data+sizev, v2->data, sizev2);
+    newone->length = totallength;
+    return newone;
+}
+
+bool
+fl_vector_remove(FlVector* vector, size_t pos, FlPointer dest)
+{
+    if (vector->length == 0 || pos >= vector->length)
+        return false;
+
+    size_t targetindex = vector->dtsize * pos;
+    if (dest != NULL)
+        memcpy(dest, vector->data+targetindex, vector->dtsize);
+    size_t targetnextindex = targetindex + vector->dtsize;
+    vector->length--;
+    memmove(&vector->data[targetindex], &vector->data[targetnextindex], vector->dtsize * vector->length);
+    return true;
+}
+
+void
+fl_vector_clear(FlVector* vector)
+{
+    if (vector->length == 0)
+        return;
+    size_t nbytes = vector->dtsize * vector->length;
+    memset(vector->data, 0, nbytes);
+    vector->length = 0;
+}
+
+/* Free the memory reserved for ar */
+void 
+fl_vector_delete(FlVector* vector) 
+{
+    fl_free(vector->data);
+    fl_free(vector);
+}
+
+void 
+fl_vector_delete_ptrs(FlVector* vector)
+{
+    FlByte** data = (FlByte**)vector->data;
+    size_t offset;
+    for (size_t i=0; i < vector->length; i++)
+    {
+        if (data[i])
+            fl_free(data[i]);
+    }
+    fl_free(vector->data);
+    fl_free(vector);
+}
+
+// TODO: data[i] is not valid when typeof is not a pointer
+void 
+fl_vector_delete_h(FlVector* vector, void (*delete_handler)(FlByte*))
+{
+    FlByte** data = (FlByte**)vector->data;
+    size_t offset;
+    for (size_t i=0; i < vector->length; i++)
+    {
+        if (data[i])
+        {
+            delete_handler(data[i]);
+        }
+    }
+    fl_free(vector->data);
+    fl_free(vector);
+}
+
+void
+fl_vector_add_cstr(FlVector* vector, const FlCstr src)
+{
+    FlCstr copy = fl_cstr_dup(src);
+    fl_vector_add(vector, &copy);
+}
+
+void 
+fl_vector_unshift_cstr(FlVector* vector, const FlCstr src)
+{
+    FlCstr copy = fl_cstr_dup(src);
+    fl_vector_unshift(vector, &copy);    
+}

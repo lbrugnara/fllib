@@ -14,7 +14,6 @@
  * {@data} Memory used by {FlVector} to save elements
  */
 struct FlVector {
-    FlContainerType type;
     size_t dtsize;
     size_t capacity;
     size_t length;
@@ -31,7 +30,6 @@ fl_vector_new(size_t dtsize, size_t nelem)
     vector->dtsize = dtsize;
     vector->length = 0;
     vector->capacity = nelem;
-    vector->type = FL_CONTAINER_TYPE_VECTOR;
 	return vector;
 }
 
@@ -264,4 +262,76 @@ fl_vector_unshift_cstr(FlVector* vector, const FlCstr src)
 {
     FlCstr copy = fl_cstr_dup(src);
     fl_vector_unshift(vector, &copy);    
+}
+
+/* -------------------------------------------------------------
+ * FlIterator support
+ * -------------------------------------------------------------
+ */
+typedef struct {
+    FlByte* base;
+    unsigned int current;
+    size_t dtsize;  
+} FlVectorIterator;
+
+static void it_next(FlPointer it)
+{
+    FlVectorIterator *vit = (FlVectorIterator*)it;
+    vit->current += vit->dtsize;
+}
+
+static void it_prev(FlPointer it)
+{
+    FlVectorIterator *vit = (FlVectorIterator*)it;
+    vit->current -= vit->dtsize;
+}
+
+static FlPointer it_value(FlPointer it)
+{
+    FlVectorIterator *vit = (FlVectorIterator*)it;
+    return vit->base + vit->current;
+}
+
+static bool it_equals(FlPointer it1, FlPointer it2)
+{
+    FlVectorIterator *vi1 = (FlVectorIterator*)it1;
+    FlVectorIterator *vi2 = (FlVectorIterator*)it2;
+    return vi1->base+vi1->current == vi2->base + vi2->current;
+}
+
+static bool it_start(FlPointer it, FlPointer container)
+{
+    FlVectorIterator *vit = it;
+    FlVector *vector = container;
+    return vit->base + vit->current == vector->data;
+}
+
+static bool it_end(FlPointer it, FlPointer container)
+{
+    FlVectorIterator *vit = it;
+    FlVector *vector = container;
+    return vit->base + vit->current == vector->data + (vector->dtsize * vector->length);
+}
+
+static void it_delete(FlPointer it)
+{
+    fl_free(it);
+}
+
+FlIterator* fl_vector_start(const FlVector *vector)
+{
+    FlVectorIterator *vector_it = fl_calloc(1, sizeof(FlVectorIterator));
+    vector_it->base = (FlByte*)vector->data;
+    vector_it->current = 0;
+    vector_it->dtsize = vector->dtsize;
+    return fl_iterator_new(IT_VECTOR, vector_it, &it_next, &it_prev, &it_value, &it_equals, &it_start, &it_end, &it_delete);
+}
+
+FlIterator* fl_vector_end(const FlVector *vector)
+{
+    FlVectorIterator *vector_it = fl_calloc(1, sizeof(FlVectorIterator));
+    vector_it->base = (FlByte*)vector->data + (vector->dtsize * vector->length);
+    vector_it->current = 0;
+    vector_it->dtsize = vector->dtsize;
+    return fl_iterator_new(IT_VECTOR, vector_it, &it_next, &it_prev, &it_value, &it_equals, &it_start, &it_end, &it_delete);
 }

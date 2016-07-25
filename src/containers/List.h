@@ -2,7 +2,6 @@
 #define FL_LIST_H
 
 #include "../Types.h"
-#include "Container.h"
 #include "Iterator.h"
 
 typedef struct FlListNode FlListNode;
@@ -141,5 +140,30 @@ FlListNode* fl_list_node_prev(FlListNode* node);
  * Returns a pointer to data saved in {node}
  */
 FlByte* fl_list_node_data(FlListNode* node);
+
+/* -------------------------------------------------------------
+ * {function: fl_list_start}
+ * -------------------------------------------------------------
+ * Returns an {FlIterator} that points to the first element in {param: list}
+ * -------------------------------------------------------------
+ * {param: const FlList* list} Target list to be pointed by the iterator
+ * -------------------------------------------------------------
+ * {return: FlIterator*} Iterator pointing to the first element in {param: list}
+ * -------------------------------------------------------------
+ */
+FlIterator* fl_list_start(const FlList *list);
+
+/* -------------------------------------------------------------
+ * {function: fl_list_end}
+ * -------------------------------------------------------------
+ * Returns an {FlIterator} that points to the past-last-nth element in {param: list}
+ * The FlIterator returned by this function MUST NOT be dereferenced by fl_iterator_value.
+ * -------------------------------------------------------------
+ * {param: const FlList* list} Target list to be pointed by the iterator
+ * -------------------------------------------------------------
+ * {return: FlIterator*} Iterator pointing beyond the last element in {param: list}
+ * -------------------------------------------------------------
+ */
+FlIterator* fl_list_end(const FlList *list);
 
 #endif /* FL_LIST_H */

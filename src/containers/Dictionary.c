@@ -4,7 +4,6 @@
 
 struct FlDictionary 
 {
-	FlContainerType type;
 	FlList *list;
 	size_t kdtsize;
 	size_t vdtsize;
@@ -34,7 +33,6 @@ FlDictionary*
 fl_dictionary_new(size_t keydtsize, size_t valdtsize)
 {
 	FlDictionary *dict = fl_calloc(1, sizeof(FlDictionary));
-	dict->type = FL_CONTAINER_TYPE_DICTIONARY;
 	dict->list = fl_list_new(sizeof(FlKeyValuePair*));
 	dict->kdtsize = keydtsize;
 	dict->vdtsize = valdtsize;
@@ -130,6 +128,32 @@ fl_dictionary_get_key(const FlDictionary *dict, const FlPointer val)
 	return fl_kvp_get_key(*kvp);
 }
 
+FlGenericArray fl_dictionary_keys(const FlDictionary *dictionary)
+{
+	FlList *kvplist = dictionary->list;
+	size_t nelem = fl_list_length(kvplist);
+	FlGenericArray *arr = fl_array_new(dictionary->kdtsize, nelem);
+	for (size_t i=0, k=0; i < nelem; (i++, k += dictionary->kdtsize))
+	{
+		FlKeyValuePair **kvp = fl_list_get(kvplist, i);
+		memcpy(((FlByte*)arr)+k, fl_kvp_get_key(*kvp), dictionary->kdtsize);
+	}
+	return arr;
+}
+
+FlGenericArray fl_dictionary_values(const FlDictionary *dictionary)
+{
+	FlList *kvplist = dictionary->list;
+	size_t nelem = fl_list_length(kvplist);
+	FlGenericArray *arr = fl_array_new(dictionary->vdtsize, nelem);
+	for (size_t i=0, k=0; i < nelem; (i++, k += dictionary->vdtsize))
+	{
+		FlKeyValuePair **kvp = fl_list_get(kvplist, i);
+		memcpy(((FlByte*)arr)+k, fl_kvp_get_val(*kvp), dictionary->vdtsize);
+	}
+	return arr;
+}
+
 FlList*
 fl_dictionary_to_list(const FlDictionary *dict)
 {
@@ -205,7 +229,6 @@ fl_dictionary_merge(const FlDictionary *dict1, const FlDictionary* dict2)
 	flm_assert(dict2 != NULL, "Dictionary2 cannot be NULL");
 
 	FlDictionary *newdict = fl_calloc(1, sizeof(FlDictionary));
-	newdict->type = FL_CONTAINER_TYPE_DICTIONARY;
 	newdict->list = fl_list_new(sizeof(FlKeyValuePair*));
 	newdict->kdtsize = dict1->kdtsize;
 	newdict->vdtsize = dict1->vdtsize;
@@ -292,4 +315,87 @@ fl_dictionary_delete_h(FlDictionary *dict, void (*delete_handler)(FlByte*))
 	flm_assert(delete_handler != NULL, "Handler cannot be NULL");
 
 	fl_list_delete_h(dict->list, delete_handler);
+}
+
+/* -------------------------------------------------------------
+ * FlIterator support
+ * -------------------------------------------------------------
+ */
+/* -------------------------------------------------------------
+ * FlIterator support
+ * -------------------------------------------------------------
+ */
+typedef struct {
+    FlIteratorType type;
+    struct FlListNode *current;
+    struct FlListNode *next;
+    struct FlListNode *prev;
+} FlDictionaryIterator;
+
+static void it_next(FlPointer it)
+{
+    FlDictionaryIterator *lit = (FlDictionaryIterator*)it;
+    lit->prev = lit->current;
+    lit->current = lit->next;
+    lit->next = fl_list_node_next(lit->current);
+}
+
+static void it_prev(FlPointer it)
+{
+    FlDictionaryIterator *lit = (FlDictionaryIterator*)it;
+    lit->next = lit->current;
+    lit->current = lit->prev;
+    lit->next = fl_list_node_prev(lit->current);
+}
+
+static FlPointer it_value(FlPointer it)
+{
+    FlDictionaryIterator *lit = (FlDictionaryIterator*)it;
+    return fl_list_node_data(lit->current);
+}
+
+static bool it_equals(FlPointer it1, FlPointer it2)
+{
+    FlDictionaryIterator *lit1 = (FlDictionaryIterator*)it1;
+    FlDictionaryIterator *lit2 = (FlDictionaryIterator*)it2;
+    return lit1->current == lit2->current;
+}
+
+static bool it_start(FlPointer it, FlPointer container)
+{
+    FlDictionaryIterator *lit = it;
+    FlDictionary *dict = container;
+    FlListNode *head = fl_list_get_node(dict->list, 0);
+    return  head != NULL && lit->current == head;
+}
+
+static bool it_end(FlPointer it, FlPointer container)
+{
+    FlDictionaryIterator *lit = it;
+    FlDictionary *dict = container;
+    FlListNode *tail = fl_list_get_node(dict->list, fl_list_length(dict->list)-1);
+    return  tail != NULL && lit->prev == tail;
+}
+
+static void it_delete(FlPointer it)
+{
+    fl_free(it);
+}
+
+FlIterator* fl_dictionary_start(const FlDictionary *dict)
+{
+    FlDictionaryIterator *dict_it = fl_calloc(1, sizeof(FlDictionaryIterator));
+    dict_it->prev = NULL;
+    dict_it->current = fl_list_get_node(dict->list, 0);
+    dict_it->next = fl_list_node_next(dict_it->current);
+    return fl_iterator_new(IT_DICTIONARY, dict_it, &it_next, &it_prev, &it_value, &it_equals, &it_start, &it_end, &it_delete);
+}
+
+FlIterator* fl_dictionary_end(const FlDictionary *dict)
+{
+    FlDictionaryIterator *dict_it = fl_calloc(1, sizeof(FlDictionaryIterator));
+    dict_it->prev = fl_list_get_node(dict->list, fl_list_length(dict->list)-1);
+    dict_it->current = NULL;
+    dict_it->next = NULL;
+    return fl_iterator_new(IT_DICTIONARY, dict_it, &it_next, &it_prev, &it_value, &it_equals, &it_start, &it_end, &it_delete);
 }

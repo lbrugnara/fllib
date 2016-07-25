@@ -2,7 +2,6 @@
 #define FL_VECTOR_H
 
 #include "../Types.h"
-#include "Container.h"
 #include "Iterator.h"
 
 /**
@@ -147,5 +146,30 @@ void fl_vector_add_cstr(FlVector *vector, const FlCstr src);
  * Creates a copy of {src} and insert it in the first position of {vector}
  */
 void fl_vector_unshift_cstr(FlVector *vector, const FlCstr src);
+
+/* -------------------------------------------------------------
+ * {function: fl_vector_start}
+ * -------------------------------------------------------------
+ * Returns an {FlIterator} that points to the first element in {param: vector}
+ * -------------------------------------------------------------
+ * {param: const FlVector* vector} Target vector to be pointed by the iterator
+ * -------------------------------------------------------------
+ * {return: FlIterator*} Iterator pointing to the first element in {param: vector}
+ * -------------------------------------------------------------
+ */
+FlIterator* fl_vector_start(const FlVector *vector);
+
+/* -------------------------------------------------------------
+ * {function: fl_vector_end}
+ * -------------------------------------------------------------
+ * Returns an {FlIterator} that points to the past-last-nth element in {param: vector}
+ * The FlIterator returned by this function MUST NOT be dereferenced by fl_iterator_value.
+ * -------------------------------------------------------------
+ * {param: const FlVector* vector} Target vector to be pointed by the iterator
+ * -------------------------------------------------------------
+ * {return: FlIterator*} Iterator pointing beyond the last element in {param: vector}
+ * -------------------------------------------------------------
+ */
+FlIterator* fl_vector_end(const FlVector *vector);
 
 #endif /* FL_VECTOR_H */

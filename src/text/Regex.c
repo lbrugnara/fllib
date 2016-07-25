@@ -1348,19 +1348,15 @@ void print_nfa_state(NfaState *state)
 	if (fl_vector_length(state->to) > 0)
 	{
 		printf(" => {");
-		FlIterator *it = fl_iterator_end(state->to);
-		fl_iterator_prev(it);
-		NfaState* end = flm_iterator_value(it, NfaState*);
 		size_t l = fl_vector_length(state->to);
 		for (size_t i = 0; i < l; i++)
 		{
 			NfaState *dest = flm_vector_get(state->to, NfaState*, i);
 			printf("%s->%d", dest->value, dest->id);
-			if (dest != end)
+			if (i < l-1)
 				printf(", ");
 		}
 		printf("}");
-		fl_free(it);
 	}
 }
 

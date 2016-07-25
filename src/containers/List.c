@@ -22,7 +22,6 @@ struct FlListNode
  */
 struct FlList
 {
-    FlContainerType type;
     size_t dtsize;
     size_t length;
     struct FlListNode *head;
@@ -106,7 +105,6 @@ fl_list_new(size_t dtsize)
     list->tail = NULL;
     list->dtsize = dtsize;
     list->length = 0;
-    list->type = FL_CONTAINER_TYPE_LIST;
 	return list;
 }
 
@@ -543,4 +541,81 @@ fl_list_delete_h(FlList *list, void (*delete_handler)(FlByte*))
 		node = tmp;
 	}
 	fl_free(list);
+}
+
+/* -------------------------------------------------------------
+ * FlIterator support
+ * -------------------------------------------------------------
+ */
+typedef struct {
+    FlIteratorType type;
+    struct FlListNode *current;
+    struct FlListNode *next;
+    struct FlListNode *prev;
+} FlListIterator;
+
+static void it_next(FlPointer it)
+{
+    FlListIterator *lit = (FlListIterator*)it;
+    lit->prev = lit->current;
+    lit->current = lit->next;
+    lit->next = lit->current != NULL ? lit->current->next : NULL;
+}
+
+static void it_prev(FlPointer it)
+{
+    FlListIterator *lit = (FlListIterator*)it;
+    lit->next = lit->current;
+    lit->current = lit->prev;
+    lit->prev = lit->current != NULL ? lit->current->prev : NULL;
+}
+
+static FlPointer it_value(FlPointer it)
+{
+    FlListIterator *lit = (FlListIterator*)it;
+    return lit->current->data;
+}
+
+static bool it_equals(FlPointer it1, FlPointer it2)
+{
+    FlListIterator *lit1 = (FlListIterator*)it1;
+    FlListIterator *lit2 = (FlListIterator*)it2;
+    return lit1->current == lit2->current;
+}
+
+static bool it_start(FlPointer it, FlPointer container)
+{
+    FlListIterator *lit = it;
+    FlList *list = container;
+    return list->head != NULL && lit->current == list->head;
+}
+
+static bool it_end(FlPointer it, FlPointer container)
+{
+    FlListIterator *lit = it;
+    FlList *list = container;
+    return list->tail != NULL && lit->prev == list->tail;
+}
+
+static void it_delete(FlPointer it)
+{
+    fl_free(it);
+}
+
+FlIterator* fl_list_start(const FlList *list)
+{
+    FlListIterator *list_it = fl_calloc(1, sizeof(FlListIterator));
+    list_it->prev = NULL;
+    list_it->current = list->head;
+    list_it->next = list->head != NULL ? list->head->next : NULL;
+    return fl_iterator_new(IT_LIST, list_it, &it_next, &it_prev, &it_value, &it_equals, &it_start, &it_end, &it_delete);
+}
+
+FlIterator* fl_list_end(const FlList *list)
+{
+    FlListIterator *list_it = fl_calloc(1, sizeof(FlListIterator));
+    list_it->prev = list->tail;
+    list_it->current = NULL;
+    list_it->next = NULL;
+    return fl_iterator_new(IT_LIST, list_it, &it_next, &it_prev, &it_value, &it_equals, &it_start, &it_end, &it_delete);
 }

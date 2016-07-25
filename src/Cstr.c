@@ -398,14 +398,11 @@ fl_cstr_join(FlVector *vector, FlCstr glue)
 {
     size_t glue_length = strlen(glue);
     FlCstr str = fl_cstr_new(0);
-    FlIterator *sit = fl_iterator_start(vector);
-    FlIterator *eit = fl_iterator_end(vector);
-    size_t end = fl_vector_length(vector);
-    while (!fl_iterator_equals(fl_iterator_next(sit), eit))
+    size_t i=0, end = fl_vector_length(vector);
+    while (i < end)
     {
-    	end--;
     	// Current element and its length
-    	FlCstr el = flm_iterator_value(sit, FlCstr);
+    	FlCstr el = flm_vector_get(vector, FlCstr, i);
     	size_t el_length = strlen(el);
     	// Str current length
     	size_t str_length = strlen(str);
@@ -418,11 +415,10 @@ fl_cstr_join(FlVector *vector, FlCstr glue)
     	fl_cstr_resize(&str, newSize);
     	fl_cstr_append(&str, el);
     	// If is not the end, append the glue
-    	if (end > 0)
+    	if (i < end-1)
     		fl_cstr_append(&str, glue);
+        i++;
     }
-    fl_free(sit);
-    fl_free(eit);
     return str;
 }
 
@@ -431,14 +427,11 @@ fl_char_join(FlVector *vector, FlCstr glue)
 {
     size_t glue_length = strlen(glue);
     FlCstr str = fl_cstr_new(0);
-    FlIterator *sit = fl_iterator_start(vector);
-    FlIterator *eit = fl_iterator_end(vector);
-    size_t end = fl_vector_length(vector);
-    while (!fl_iterator_equals(fl_iterator_next(sit), eit))
+    size_t i=0, end = fl_vector_length(vector);
+    while (i < end)
     {
-        end--;
         // Current element and its length
-        char el = flm_iterator_value(sit, char);
+        char el = flm_vector_get(vector, char, i);
         // Str current length
         size_t str_length = strlen(str);
         // Glue length depends on end variable, when el is the final element, glue won't be appended
@@ -450,10 +443,9 @@ fl_char_join(FlVector *vector, FlCstr glue)
         fl_cstr_resize(&str, newSize);
         fl_cstr_append_char(&str, el);
         // If is not the end, append the glue
-        if (end > 0)
+        if (i < end-1)
             fl_cstr_append(&str, glue);
+        i++;
     }
-    fl_free(sit);
-    fl_free(eit);
     return str;
 }

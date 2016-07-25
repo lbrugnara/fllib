@@ -3,6 +3,7 @@
 
 #include "KeyValuePair.h"
 #include "List.h"
+#include "../Array.h"
 
 typedef struct FlDictionary FlDictionary;
 
@@ -62,6 +63,9 @@ FlPointer fl_dictionary_get_val(const FlDictionary *dictionary, const FlPointer 
  */
 FlPointer fl_dictionary_get_key(const FlDictionary *dictionary, const FlPointer val);
 
+FlGenericArray fl_dictionary_keys(const FlDictionary *dictionary);
+FlGenericArray fl_dictionary_values(const FlDictionary *dictionary);
+
 /**
  * Returns a pointer to a list element (the internal representation of FlDictionary is an FlList of FlKeyValuePair elements)
  */
@@ -116,5 +120,32 @@ void fl_dictionary_delete(FlDictionary *dictionary);
  * The handler MUST free the memory used by each element
  */
 void fl_dictionary_delete_h(FlDictionary *dictionary, void (*delete_handler)(FlByte*));
+
+/* -------------------------------------------------------------
+ * {function: fl_dictionary_start}
+ * -------------------------------------------------------------
+ * Returns an {FlIterator} that points to the first element in {param: dict}
+ * The element pointed by the {FlIterator} is an {FlKeyValuePair}
+ * -------------------------------------------------------------
+ * {param: const FlList* dict} Target dictionary to be pointed by the iterator
+ * -------------------------------------------------------------
+ * {return: FlIterator*} Iterator pointing to the first element in {param: dict}
+ * -------------------------------------------------------------
+ */
+FlIterator* fl_dictionary_start(const FlDictionary *dict);
+
+/* -------------------------------------------------------------
+ * {function: fl_dictionary_end}
+ * -------------------------------------------------------------
+ * Returns an {FlIterator} that points to the past-last-nth element in {param: dict}
+ * The FlIterator returned by this function MUST NOT be dereferenced by fl_iterator_value.
+ * The element pointed by the {FlIterator} is an {FlKeyValuePair}
+ * -------------------------------------------------------------
+ * {param: const FlList* dict} Target dictionary to be pointed by the iterator
+ * -------------------------------------------------------------
+ * {return: FlIterator*} Iterator pointing beyond the last element in {param: dict}
+ * -------------------------------------------------------------
+ */
+FlIterator* fl_dictionary_end(const FlDictionary *dict);
 
 #endif /* FL_DICTIONARY_H */

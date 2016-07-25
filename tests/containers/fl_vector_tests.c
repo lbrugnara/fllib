@@ -63,9 +63,9 @@ fl_vector_tests()
 	    flm_vector_addl(fv, int, 3456);
 	    flm_vector_addl(fv, int, 999);
 
-	    FOREACH (int, i IN fv)
+	    for (int i=0; i < fl_vector_length(fv); i++)
 	    {
-	    	printf("i in foreach = %d\n", i);
+	    	printf("i in foreach = %d\n", flm_vector_get(fv, int, i));
 	    }
 
 		int myInt;
@@ -79,6 +79,14 @@ fl_vector_tests()
 	    flm_vector_addl(fv, int, 321);
 	    myInt = 10;
 	    fl_vector_insert(fv, &myInt, 10);
+
+	    FlIterator 	*it = fl_vector_start(fv);
+	    for (; !fl_iterator_is_end(it, fv); fl_iterator_next(it))
+	    {
+	    	printf("FlVectorIterator value=%d\n", flm_iterator_value(it, int));
+	    }
+	    fl_iterator_delete(it);
+
 	    do {
 			fl_vector_pop(fv, &myInt);
 			printf("pop=%d\n", myInt);
@@ -128,7 +136,7 @@ fl_vector_tests()
 		flm_test(fl_vector_capacity(fv) == 10);
 		flm_test(fl_vector_length(fv) == 7);
 		
-		FlIterator *sit = fl_iterator_start(fv);
+		/*FlIterator *sit = fl_iterator_start(fv);
 		FlIterator *eit = fl_iterator_end(fv);
 		while(!fl_iterator_equals(fl_iterator_next(sit), eit))
 		{
@@ -136,6 +144,7 @@ fl_vector_tests()
 		}
 		fl_free(sit);
 		fl_free(eit);
+		*/
 		int myInt = 5;
 		do {
 			fl_vector_shift(fv, &myInt);
@@ -204,9 +213,9 @@ fl_vector_tests()
 	    const FlCstr str3 = " to chars.";
 
 	    FlVector *strv = fl_cstr_split(str1);
-	    FOREACH(char, c IN strv)
+	    for (int i=0; i < fl_vector_length(strv); i++)
 	    {
-	    	printf("Char c = %c\n", c);
+	    	printf("Char c = %c\n", flm_vector_get(strv, char, i));
 	    }
 	    fl_vector_delete(strv);
 
@@ -280,9 +289,9 @@ fl_vector_tests()
 	    flm_test(fl_vector_length(fv) == 5);
 	    flm_test(fl_vector_capacity(fv) == 5);
 
-	    FOREACH (int, i IN fv)
+	    for (int i=0; i < fl_vector_length(fv); i++)
 	    {
-	    	printf("i in foreach = %d\n", i);
+	    	printf("i in foreach = %d\n", flm_vector_get(fv, int, i));
 	    	// fl_vector_remove(fv, 3, NULL); // Uncomment to receive an ERR_FATAL
 	    }
 
@@ -309,9 +318,9 @@ fl_vector_tests()
 		int* fourptr = fl_list_get(list, 4);
 		flm_test(*fourptr == 4);
 
-		FOREACH(int, i IN list)
+		for (int i=0; i < fl_list_length(list); i++)
 		{
-			printf("i in FlList foreach = %d\n", i);
+			printf("i in FlList foreach = %d\n", *(int*)fl_list_get(list, i));
 		}
 		//int* error = fl_list_get(list, 100);
 		//int* error = fl_list_get(list, -1);
@@ -339,6 +348,13 @@ fl_vector_tests()
 		flm_test(num == 5 && !fl_list_contains(list, &num));
 		num = 123;
 		flm_test(num == 123 && !fl_list_contains(list, &num));
+
+		FlIterator 	*it = fl_list_start(list);
+	    for (; !fl_iterator_is_end(it, list); fl_iterator_next(it))
+	    {
+	    	printf("FlListIterator value=%d\n", flm_iterator_value(it, int));
+	    }
+	    fl_iterator_delete(it);
 
 		int *numptr = fl_malloc(sizeof(int));
 		while(fl_list_length(list))
@@ -368,9 +384,9 @@ fl_vector_tests()
 		flm_test(fl_list_length(list1) == 4);
 		flm_test(fl_list_length(list2) == 2);
 
-		FOREACH(int, i IN list2)
+		for (int i=0; i < fl_list_length(list2); i++)
 		{
-			printf("i in FlList2 foreach = %d\n", i);
+			printf("i in FlList2 foreach = %d\n", *(int*)fl_list_get(list2, i));
 		}
 
 		fl_list_pop(list2, NULL);
@@ -378,9 +394,9 @@ fl_vector_tests()
 
 		flm_test(fl_list_length(list2) == 0);
 
-		FOREACH(int, i IN list1)
+		for (int i=0; i < fl_list_length(list1); i++)
 		{
-			printf("i in FlList1 foreach = %d\n", i);
+			printf("i in FlList1 foreach = %d\n", *(int*)fl_list_get(list1, i));
 		}
 
 
@@ -406,27 +422,27 @@ fl_vector_tests()
 		flm_test(fl_list_length(list2) == 2);
 		flm_test(fl_list_length(mergedlist) == 4);
 
-		FOREACH(int, i IN list2)
+		for (int i=0; i < fl_list_length(list2); i++)
 		{
-			printf("i in FlList2 foreach = %d\n", i);
+			printf("i in FlList2 foreach = %d\n", *(int*)fl_list_get(list2, i));
 		}
 
 		fl_list_pop(list2, NULL);
 		fl_list_pop(list2, NULL);
 		flm_test(fl_list_length(list2) == 0);
 
-		FOREACH(int, i IN list1)
+		for (int i=0; i < fl_list_length(list1); i++)
 		{
-			printf("i in FlList1 foreach = %d\n", i);
+			printf("i in FlList1 foreach = %d\n", *(int*)fl_list_get(list1, i));
 		}
 
 		fl_list_pop(list1, NULL);
 		fl_list_pop(list1, NULL);
 		flm_test(fl_list_length(list1) == 0);
 
-		FOREACH(int, i IN mergedlist)
+		for (int i=0; i < fl_list_length(mergedlist); i++)
 		{
-			printf("i in mergedlist foreach = %d\n", i);
+			printf("i in mergedlist foreach = %d\n", *(int*)fl_list_get(mergedlist, i));
 		}
 
 		int num;
@@ -480,10 +496,12 @@ fl_vector_tests()
 		flm_test(flm_cstr_equals(*(FlCstr*)fl_kvp_get_key(kvp), "four"));
 		flm_test(*(int*)fl_kvp_get_val(kvp) == 4);
 
-		FOREACH(FlKeyValuePair*, kvp IN dict)
+		FlCstr *keys = fl_dictionary_keys(dict);
+		for (int i=0; i < fl_array_length(keys); i++)
 		{
-			printf("Dictionary[%s] => %d\n", *(FlCstr*)fl_kvp_get_key(kvp), *(int*)fl_kvp_get_val(kvp));
+			printf("Dictionary[%s] => %d\n", keys[i], *(int*)fl_dictionary_get_val(dict, keys+i));
 		}
+		fl_array_delete(keys);
 
 		k = "five";
 		n = 5;
@@ -500,6 +518,21 @@ fl_vector_tests()
 
 		fl_dictionary_concat(dict, dict2);
 		flm_test(fl_dictionary_length(dict) == 6);
+
+		FlIterator 	*it = fl_dictionary_start(dict);
+	    for (; !fl_iterator_is_end(it, dict); fl_iterator_next(it))
+	    {
+	    	FlKeyValuePair *kvp = flm_iterator_value(it, FlKeyValuePair*);
+	    	printf("Dictionary Iterator key=%s|value=%d\n", *(FlCstr*)fl_kvp_get_key(kvp), *(int*)fl_kvp_get_val(kvp));
+	    }
+	    fl_iterator_delete(it);
+
+		int *values = fl_dictionary_values(dict);
+		for (int i=0; i < fl_array_length(values); i++)
+		{
+			printf("Dictionary[%s] => %d\n", *(FlCstr*)fl_dictionary_get_key(dict, values+i), values[i]);
+		}
+		fl_array_delete(values);
 
 		fl_dictionary_clear(dict2);
 		flm_test(fl_dictionary_length(dict2) == 0);

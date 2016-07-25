@@ -9,7 +9,6 @@ FL_OBJECTS=\
 	obj/$(target)/src/Mem.o 					\
 	obj/$(target)/src/Cstr.o 					\
 	obj/$(target)/src/Array.o 					\
-	obj/$(target)/src/containers/Container.o 		\
 	obj/$(target)/src/containers/Iterator.o 		\
 	obj/$(target)/src/containers/Vector.o 			\
 	obj/$(target)/src/containers/List.o 			\

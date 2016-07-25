@@ -1,286 +1,123 @@
+/* =============================================================
+ * {module: Iterator}
+ * =============================================================
+ * {FlIterator} is merely a group of functions and a data type
+ * that only the container module knows how they work together
+ * to return elements of the collection.
+ * The container module has to create an own iterator implementation
+ * referenced by {FlIterator} as the "target"
+ * -------------------------------------------------------------
+ */
+
 #include "../Std.h"
 #include "../Mem.h"
 #include "Iterator.h"
-#include "Container.h"
 #include "Vector.h"
 #include "Dictionary.h"
 
+/* -------------------------------------------------------------
+ * {datatype: struct FlIterator}
+ * -------------------------------------------------------------
+ * Represents an Iterator that contains the data and functions
+ * necessaries to traverse a container. All the information
+ * MUST be provided by the particular implementation made by
+ * a container module.
+ * -------------------------------------------------------------
+ * {member: FlIteratorType type} The type of iterator.
+ * {member: FlPointer itdata} The container needs to implement a data structure to keep track of the state of the iterator
+ * {member: FlIteratorMove next} Moves the iterator to the next element in the collection
+ * {member: FlIteratorMove prev} Moves the iterator to the previous element in the collection
+ * {member: FlIteratorValue value} Retrieves the value of the current elment
+ * {member: FlIteratorEquals equals} Comparision function to check if two iterators point to the same element in the collection
+ * {member: FlIteratorPosition isstart} Checks if an iterator is pointing to the first element in the collection
+ * {member: FlIteratorPosition isend} Checks if an iterator is pointing to the past-the-last-nth element in the collection
+ * {member: FlIteratorDelete delete} Frees the memory used by {itdata}
+ * -------------------------------------------------------------
+ */
 struct FlIterator {
-    FlContainerType type;
+    FlIteratorType type;
+    FlPointer target;
+    FlIteratorMove next;
+    FlIteratorMove prev;
+    FlIteratorValue value;
+    FlIteratorPosition isstart;
+    FlIteratorEquals equals;
+    FlIteratorPosition isend;
+    FlIteratorDelete delete;
 };
 
-struct FlVectorIterator {
-    FlContainerType type;
-    FlByte* base;
-    unsigned int current;
-    size_t dtsize;  
-};
-
-struct FlListIterator {
-    FlContainerType type;
-    struct FlListNode *current;
-    struct FlListNode *next;
-    struct FlListNode *prev;
-};
-
-/* Iteration functions */
-FlIterator*
-fl_iterator_start(void *c)
+FlIterator* fl_iterator_new(
+    FlIteratorType type, 
+    FlPointer itdata, 
+    FlIteratorMove next, 
+    FlIteratorMove prev, 
+    FlIteratorValue value, 
+    FlIteratorEquals equals, 
+    FlIteratorPosition isstart, 
+    FlIteratorPosition isend, 
+    FlIteratorDelete delete_handler
+)
 {
-    FlIterator *it = NULL;
-	FlContainer *container = c;
-    FlContainerType type = fl_container_get_type(container);
-    switch(type)
-    {
-        case FL_CONTAINER_TYPE_VECTOR:
-        {
-            FlVector *vector = (FlVector*)c;
-            size_t dtsize = fl_vector_dtsize(vector);
-            FlVectorIterator *vit = fl_malloc(sizeof(FlVectorIterator));
-            vit->type = type;
-            vit->base = (FlByte*)fl_vector_get(vector, 0) - dtsize;
-            vit->current = 0;
-            vit->dtsize = dtsize;
-            it = (FlIterator*)vit;
-            break;
-        }
-        case FL_CONTAINER_TYPE_LIST:
-        case FL_CONTAINER_TYPE_DICTIONARY:
-        {
-            FlList *list = NULL;
-            if (type == FL_CONTAINER_TYPE_LIST)
-                list = (FlList*)c;
-            else
-                list = fl_dictionary_to_list(c);
-            FlListIterator *lit = fl_malloc(sizeof(FlListIterator));
-            lit->type = type;
-            lit->prev = NULL;
-            lit->current = NULL;
-            lit->next = fl_list_get_node(list, 0);
-            it = (FlIterator*)lit;
-            break;
-        }
-        default:
-            flm_exit(ERR_FATAL, "Invalid FlContainer type");
-    }
+    FlIterator *it = fl_calloc(1, sizeof(FlIterator));
+    it->type = type;
+    it->target = itdata;
+    it->next = next;
+    it->prev = prev;
+    it->value = value;
+    it->equals = equals;
+    it->isstart = isstart;
+    it->isend = isend;
+    it->delete = delete_handler;
     return it;
 }
 
-FlIterator*
-fl_iterator_end(void *c)
+/* -------------------------------------------------------------
+ * {function: fl_iterator_delete}
+ * -------------------------------------------------------------
+ * Releases the memory used by {FlIterator} and calls the
+ * {FlIteratorDelete} function to request to the container
+ * module implementing the iterator to release the memory
+ * allocated in the process.
+ * -------------------------------------------------------------
+ * {param: FlIterator* it} Target iterator to clean up
+ * -------------------------------------------------------------
+ * {return: void}
+ * -------------------------------------------------------------
+ */
+void fl_iterator_delete(FlIterator *it)
 {
-    FlIterator *it = NULL;
-    FlContainer *container = c;
-    FlContainerType type = fl_container_get_type(container);
-    switch(type)
-    {
-        case FL_CONTAINER_TYPE_VECTOR:
-        {
-            FlVector *vector = (FlVector*)c;
-            size_t dtsize = fl_vector_dtsize(vector);
-            FlVectorIterator *vit = fl_malloc(sizeof(FlVectorIterator));
-            vit->type = type;
-            vit->base = (FlByte*)fl_vector_get(vector, 0) + (dtsize * fl_vector_length(vector));
-            vit->current = 0;
-            vit->dtsize = dtsize;
-            it = (FlIterator*)vit;
-            break;
-        }
-        case FL_CONTAINER_TYPE_LIST:
-        case FL_CONTAINER_TYPE_DICTIONARY:
-        {
-            FlList *list = NULL;
-            if (type == FL_CONTAINER_TYPE_LIST)
-                list = (FlList*)c;
-            else
-                list = fl_dictionary_to_list(c);
-            FlListIterator *lit = fl_malloc(sizeof(FlListIterator));
-            lit->type = type;
-            lit->prev = fl_list_get_node(list, fl_list_length(list)-1);
-            lit->current = NULL;
-            lit->next = NULL;
-            it = (FlIterator*)lit;
-            break;
-        }
-        default:
-            flm_exit(ERR_FATAL, "Invalid FlContainer type");
-    }
+    it->delete(it->target);
+    fl_free(it);    
+}
+
+FlIterator* fl_iterator_next(FlIterator *it)
+{
+    it->next(it->target);
     return it;
 }
 
-bool 
-fl_iterator_is_end(FlIterator *it, void* container)
+FlIterator* fl_iterator_prev(FlIterator *it)
 {
-    switch(it->type)
-    {
-        case FL_CONTAINER_TYPE_VECTOR:
-        {
-        	FlIterator *end = fl_iterator_end(container);
-        	bool res = fl_iterator_equals(it, end);
-            fl_free(end);
-            return res;
-        }
-        case FL_CONTAINER_TYPE_LIST:
-        case FL_CONTAINER_TYPE_DICTIONARY:
-        {
-            FlListIterator *lit = (FlListIterator*)it;
-            return lit->current == NULL;
-        }
-        default:
-            flm_exit(ERR_FATAL, "Invalid FlIterator type");
-    }
-    return true;
-}
-
-FlPointer
-fl_iterator_next(FlIterator *it)
-{
-    switch(it->type)
-    {
-        case FL_CONTAINER_TYPE_VECTOR:
-        {
-            FlVectorIterator *vit = (FlVectorIterator*)it;
-            vit->current += vit->dtsize;
-            break;
-        }
-        case FL_CONTAINER_TYPE_LIST:
-        case FL_CONTAINER_TYPE_DICTIONARY:
-        {
-            FlListIterator *lit = (FlListIterator*)it;
-            lit->prev = lit->current;
-            lit->current = lit->next;
-            if (lit->current != NULL )
-                lit->next = fl_list_node_next(lit->current);
-            else
-                lit->next = NULL;
-            break;
-        }
-        default:
-            flm_exit(ERR_FATAL, "Invalid FlIterator type");
-    }
+    it->prev(it->target);
     return it;
 }
 
-FlPointer
-fl_iterator_prev(FlIterator *it)
+FlPointer fl_iterator_value(FlIterator *it)
 {
-    switch(it->type)
-    {
-        case FL_CONTAINER_TYPE_VECTOR:
-        {
-            FlVectorIterator *vit = (FlVectorIterator*)it;
-            vit->current -= vit->dtsize;
-            break;
-        }
-        case FL_CONTAINER_TYPE_LIST:
-        case FL_CONTAINER_TYPE_DICTIONARY:
-        {
-            FlListIterator *lit = (FlListIterator*)it;
-            lit->next = lit->current;
-            lit->current = lit->prev;
-            if (lit->current != NULL )
-                lit->prev = fl_list_node_prev(lit->current);
-            else
-                lit->prev = NULL;
-            break;
-        }
-        default:
-            flm_exit(ERR_FATAL, "Invalid FlIterator type");
-    }
-    return it;
+    return it->value(it->target);
 }
 
-FlPointer 
-fl_iterator_value(FlIterator *it)
+bool fl_iterator_equals(FlIterator *it1, FlIterator *it2)
 {
-    switch(it->type)
-    {
-        case FL_CONTAINER_TYPE_VECTOR:
-        {
-            FlVectorIterator *vit = (FlVectorIterator*)it;
-            return vit->base + vit->current;
-        }
-        case FL_CONTAINER_TYPE_LIST:
-        case FL_CONTAINER_TYPE_DICTIONARY:
-        {
-            FlListIterator *lit = (FlListIterator*)it;
-            return fl_list_node_data(lit->current);
-        }
-        default:
-            flm_exit(ERR_FATAL, "Invalid FlIterator type");
-    }
-    return NULL;
+    return it1->type == it2->type && it1->equals(it1->target, it2->target);
 }
 
-bool
-fl_iterator_equals(FlIterator *i1, FlIterator *i2)
+bool fl_iterator_is_start(FlIterator *it, FlPointer container)
 {
-    if (i1->type != i2->type)
-        return false;
-
-    switch(i1->type)
-    {
-        case FL_CONTAINER_TYPE_VECTOR:
-        {
-            FlVectorIterator *vi1 = (FlVectorIterator*)i1;
-            FlVectorIterator *vi2 = (FlVectorIterator*)i2;
-            return vi1->base+vi1->current == vi2->base + vi2->current;
-        }
-        case FL_CONTAINER_TYPE_LIST:
-        case FL_CONTAINER_TYPE_DICTIONARY:
-        {
-            FlListIterator *lit1 = (FlListIterator*)i1;
-            FlListIterator *lit2 = (FlListIterator*)i2;
-            return lit1->current == lit2->current;
-        }
-        default:
-            flm_exit(ERR_FATAL, "Invalid FlIterator type");
-    }
-    return false;
+    return it->isstart(it->target, container);
 }
 
-bool
-fl_iterator_has_value(FlIterator *it)
+bool fl_iterator_is_end(FlIterator *it, FlPointer container)
 {
-    switch(it->type)
-    {
-        case FL_CONTAINER_TYPE_VECTOR:
-        {
-            FlVectorIterator *vit = (FlVectorIterator*)it;
-            return (vit->base + vit->current) != NULL;
-        }
-        case FL_CONTAINER_TYPE_LIST:
-        case FL_CONTAINER_TYPE_DICTIONARY:
-        {
-            FlListIterator *lit = (FlListIterator*)it;
-            return fl_list_node_data(lit->current) != NULL;
-        }
-        default:
-            flm_exit(ERR_FATAL, "Invalid FlIterator type");
-    }
-    return false;
-}
-
-size_t
-fl_iterator_current_index(FlIterator *it)
-{
-    switch(it->type)
-    {
-        case FL_CONTAINER_TYPE_VECTOR:
-        {
-            FlVectorIterator *vit = (FlVectorIterator*)it;
-            if (vit->dtsize == 0)
-                return -1;
-            return vit->current / vit->dtsize;
-        }
-        case FL_CONTAINER_TYPE_LIST:
-        case FL_CONTAINER_TYPE_DICTIONARY:
-        {
-            flm_exit(ERR_UNIMPLEMENTED, "current_index is not implemented for container of type FlList");
-            return 0;
-        }
-        default:
-            flm_exit(ERR_FATAL, "Invalid FlIterator type");
-    }
-    return 0;
+    return it->isend(it->target, container);
 }

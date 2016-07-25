@@ -55,11 +55,9 @@ fl_cstr_tests()
 	    fl_vector_add(str_vector, &str1);
 	    fl_vector_add(str_vector, &str2);
 	    fl_vector_add(str_vector, &str3);
-		
-	    //FlCstr* data = (FlCstr*)str_vector->data;
-	    //for (int i=0; i < str_vector->length; i++)
-	    FOREACH(FlCstr, str IN str_vector)
-	    	printf("%s\n", str);
+
+	    for (int i=0; i < fl_vector_length(str_vector); i++)
+	    	printf("%s\n", flm_vector_get(str_vector, FlCstr, i));
 
 	    FlCstr str4 = flm_vector_get(str_vector, FlCstr, 1);
 	    printf("str4 = %s\n", str4);

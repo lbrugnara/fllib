@@ -3,18 +3,20 @@
 #include "Std.h"
 #include "Cstr.h"
 
-/**
- * {id} could be used by any module to map its particular
- * errors
- * {desc} is a brief message that contains information about
- * the error
- * If a module needs a more robust description, it can use
- * FlError.id to create a table with error messages.
+/* -------------------------------------------------------------
+ * {datatype: struct FlError}
+ * -------------------------------------------------------------
+ * Represents an error. There is no implementation restrictions,
+ * each module or library can use {id} and {message} as it wish.
+ * -------------------------------------------------------------
+ * {member: int id} Error id or code. Module/library implementation defined
+ * {member: FlCstr message} Is a brief message that contains information about the error
+ * -------------------------------------------------------------
  */
 struct FlError
 {
 	int id;
-	FlCstr desc;
+	FlCstr message;
 };
 
 void
@@ -26,7 +28,7 @@ fl_error_set(FlError **error, int id, const FlCstr format, ...)
 	err->id = id;
 	va_list args;
     va_start(args, format);
-    err->desc = fl_cstr_vadup(format, args);
+    err->message = fl_cstr_vadup(format, args);
     va_end(args);
     *error = err;
 }
@@ -42,17 +44,17 @@ FlCstr
 fl_error_get_message(FlError *error)
 {
 	flm_assert(error != NULL, "Error must not be NULL");
-	if (error->desc == NULL)
+	if (error->message == NULL)
 		return NULL;
-	return error->desc;
+	return error->message;
 }
 
 void
 fl_error_delete(FlError *error)
 {
 	flm_assert(error != NULL, "Error must not be NULL");
-	if (error->desc)
-		fl_free(error->desc);
+	if (error->message)
+		fl_free(error->message);
 	fl_free(error);
 }
 

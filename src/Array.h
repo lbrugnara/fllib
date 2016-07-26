@@ -8,7 +8,7 @@
  * track of its size and implements some manipulation and 
  * searching functions.
  * All the module's functions ASSUME the array they are manipulating
- * was allocated using this module, Unless the function docs tells
+ * was allocated using this module, unless the function docs tells
  * otherwise.
  * -------------------------------------------------------------
  */
@@ -45,46 +45,101 @@ typedef void* FlGenericArray;
  */
 #define flm_array_cmp memcmp
 
-/**
- * Creates a new array of {n} elements of {size} bytes each.
- * Returns a pointer to the allocated memory
+/* -------------------------------------------------------------
+ * {function: fl_array_new}
+ * -------------------------------------------------------------
+ * Allocate space for {n} elements of {size} bytes each
+ * -------------------------------------------------------------
+ * {param: size_t size} Size of the type of the array
+ * {param: size_t n} Number of elements of {size} bytes to allocate
+ * -------------------------------------------------------------
+ * {return: FlGenericArray} Pointer to the allocated memory
+ * -------------------------------------------------------------
  */
 FlGenericArray fl_array_new(size_t size, size_t n);
 
-/**
- * Release the memory allocated by {fl_array_new}
+/* -------------------------------------------------------------
+ * {function: fl_array_delete}
+ * -------------------------------------------------------------
+ * Releases the memory allocated with {fl_array_new}
+ * -------------------------------------------------------------
+ * {param: FlGenericArray array} A pointer to the memory to be released
+ * -------------------------------------------------------------
+ * {return: void}
+ * -------------------------------------------------------------
  */
 void fl_array_delete(FlGenericArray array);
 
-/**
- * Free the memory reserved for {array} using {delete_handler} for each element.
- * The handler MUST free the memory used by each element
+/* -------------------------------------------------------------
+ * {function: fl_array_delete_h}
+ * -------------------------------------------------------------
+ * Releases the memory allocated for {array} using {delete_handler}
+ * to release the memory used by each element.
+ * The handler function MUST free all the memory used by each
+ * element.
+ * -------------------------------------------------------------
+ * {param: FlGenericArray array} A pointer to the memory to be realeased
+ * {param: void (*)(FlByte*) delete_handler} Handler function to release the memory for each element of array
+ * -------------------------------------------------------------
+ * {return: void}
+ * -------------------------------------------------------------
  */
 void fl_array_delete_h(FlGenericArray array, void (*delete_handler)(FlByte*));
 
-/**
- * Realloc the memory allocated with {fl_array_new} to {n} elements (the size is the one specified in the new function)
+/* -------------------------------------------------------------
+ * {function: fl_array_resize}
+ * -------------------------------------------------------------
+ * Reallocate memory (previously allocated with {fl_array_new})
+ * in {array}. The new size will be {n} * sizeof(type) where
+ * type is the data type used to allocate the {array}
+ * -------------------------------------------------------------
+ * {param: FlGenericArray array} A pointer to the memory to be reallocated
+ * {param: size_t n} Number of elements to allocate in {array}
+ * -------------------------------------------------------------
+ * {return: FlGenericArray} A pointer to the new allocated memory
+ * -------------------------------------------------------------
  */
 FlGenericArray fl_array_resize(FlGenericArray array, size_t n);
 
-/**
- * Returns the length of {array}
+/* -------------------------------------------------------------
+ * {function: fl_array_length}
+ * -------------------------------------------------------------
+ * Returns the number of elements allocated in array
+ * -------------------------------------------------------------
+ * {param: FlGenericArray array} Target array
+ * -------------------------------------------------------------
+ * {return: size_t} Number of elements array can contain
+ * -------------------------------------------------------------
  */
 size_t fl_array_length(const FlGenericArray array);
 
-/**
- * Search for {needle} in {array}.
- * This function SHOULD be used only with arrays allocated using {fl_array_new} (this function
- * takes the number of elements and the size of each element from the FlArrayHeader struct
- * that is created on {fl_array_new})
+/* -------------------------------------------------------------
+ * {function: fl_array_contains}
+ * -------------------------------------------------------------
+ * Search for {needle} in {array}. This function MUST be used
+ * only with arrays allocated with {fl_array_new}.
+ * -------------------------------------------------------------
+ * {param: const FlGenericArray array} Target array to look for {needle}
+ * {param: const FlPointer needle} Pointer to the memory to search in {array}
+ * -------------------------------------------------------------
+ * {return: bool} True if needle is in array
+ * -------------------------------------------------------------
  */
 bool fl_array_contains(const FlGenericArray array, const FlPointer needle);
 
-/**
- * Search for {needle} in {array}. 
- * {nelems} is the number of elements of {array}
- * {needlesize} is the number of bytes to use in compare.
- * This could be use with stack allocated arrays and heap allocated arrays.
+/* -------------------------------------------------------------
+ * {function: fl_array_contains_n}
+ * -------------------------------------------------------------
+ * Search for {needle} (of {needlesize} bytes) in the {nelems}
+ * elements of {array}.
+ * -------------------------------------------------------------
+ * {param: const FlGenericArray array} Target array to look for {needle}
+ * {param: size_t nelems} Number of elements of {array}
+ * {param: const FlPointer needle} Pointer to the memory to search in {array}
+ * {param: size_t needlesize} Size of {needle}
+ * -------------------------------------------------------------
+ * {return: bool} True if needle is in array
+ * -------------------------------------------------------------
  */
 bool fl_array_contains_n(const FlGenericArray array, size_t nelems, const FlPointer needle, size_t needlesize);
 

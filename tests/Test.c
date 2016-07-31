@@ -1,55 +1,77 @@
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "Test.h"
 
-#define TEST_NAME_MAX_LENGTH 50
-
-struct FlTest
-{
-	char name[TEST_NAME_MAX_LENGTH];
-	FlTestHandler test;
-};
-
 struct FlTestSuite
 {
-	char name[TEST_NAME_MAX_LENGTH];
-	FlTest **tests;
+    const char *name;
+    size_t ntests;
+    const FlTest *tests;
 };
 
-FlTest* fl_test_new(const char *name, FlTestHandler test)
+FlTestSuite* _fl_test_suite_new(const char *name, const FlTest tests[], size_t ntests)
 {
-	FlTest *t = calloc(1, sizeof(FlTest));
-	memcpy(t->name, name, TEST_NAME_MAX_LENGTH);
-	t->test = test;
-	return t;
-}
-
-void fl_test_delete(FlTest* test)
-{
-	free(test);
-}
-
-FlTestSuite* fl_test_suite_new(const char *name, FlTest *tests[])
-{
-	FlTestSuite *t = calloc(1, sizeof(FlTestSuite));
-	memcpy(t->name, name, TEST_NAME_MAX_LENGTH);
-	t->tests = tests;
-	return t;
+    FlTestSuite *t = calloc(1, sizeof(FlTestSuite));
+    t->name = name;
+    t->ntests = ntests;
+    t->tests = tests;
+    return t;
 }
 
 void fl_test_suite_delete(FlTestSuite* suite)
 {
-	for (int i=0; ;i++)
-	{
-		if (suite->tests[i] == NULL)
-			break;
-		fl_test_delete(suite->tests[i]);
-	}
-	free(suite);
+    free(suite);
 }
 
-void fl_test_run_suite(FlTestSuite *suite)
-{
+/* -------------------------------------------------------------
+ * Running tests
+ * -------------------------------------------------------------
+ */
+#define TEST_FAILURE 1
+#define TEST_EXCEPTION 2
 
+static FlTryContext testctx;
+
+LONG WINAPI exception_filter(EXCEPTION_POINTERS * ExceptionInfo)
+{
+    if (ExceptionInfo->ExceptionRecord->ExceptionCode == EXCEPTION_NONCONTINUABLE_EXCEPTION)
+        return EXCEPTION_CONTINUE_SEARCH; // Let Win32 resolve
+    fl_exception_message_get(ExceptionInfo->ExceptionRecord->ExceptionCode, testctx.message);
+    Throw(&testctx, TEST_EXCEPTION);
+    return EXCEPTION_CONTINUE_EXECUTION;
+}
+
+bool fl_expect(const char* name, bool condition)
+{
+    printf("    |-- %s: %s\n", name, (condition ? "Pass" : "Fail"));
+    if (!condition)
+        Throw(&testctx, TEST_FAILURE);
+    return true;
+}
+
+void fl_test_suite_run(FlTestSuite *suite)
+{
+    fl_exception_global_handler_set(exception_filter);
+    printf("============================\n");
+    printf("Test Suite: %s\n", suite->name);
+    printf("----------------------------\n");
+    for (int i=0; i < suite->ntests; i++)
+    {
+        printf(" - Test Case: %s\n", suite->tests[i].name);
+        Try (&testctx)
+            suite->tests[i].run();  
+        Catch (TEST_FAILURE)
+            printf("Test failure: %s\n", testctx.message);
+        Catch (TEST_EXCEPTION)
+            printf("Test exception: %s\n", testctx.message);
+        EndTry;
+    }
+    printf("----------------------------\n");
+    printf("Summary\n");
+    printf("----------------------------\n");
+    printf(" - Succesful Tests: %d\n", 6);
+    printf(" - Failed Tests: %d\n", 1);
+    printf("    |-- %s\n", "Fail Misserably");
 }

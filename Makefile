@@ -1,17 +1,19 @@
 CC=gcc
 AR=ar
-DEBUG=-ggdb -DFL_DEBUG
-override CFLAGS += -O0 -Wall -Wno-unused-variable -Wno-unused-function -std=c99 -pedantic -fstrict-aliasing 
+override DEBUG += -ggdb -DFL_DEBUG
+override CFLAGS += -O0 -Wall -Wno-unused-variable -Wno-unused-function -std=c99 -pedantic -fstrict-aliasing
+# Macros for target tests
+TESTS=
 
 ifneq ($(OS),Windows_NT)
-override CFLAGS += -fPIC
+	override CFLAGS += -fPIC
 endif
 
 # Default TARGET is debug (debut|release)
 TARGET=debug
 
 ifeq ($(TARGET),debug)
-	override CLFAGS += $(DEBUG)
+	override CFLAGS += $(DEBUG)
 endif
 
 # Linkage
@@ -25,7 +27,7 @@ ifeq ($(OS),Windows_NT)
 endif
 
 ifeq ($(filter $(LINKAGE), $(VALID_LINKAGES)),)
-$(error $(LINKAGE) is not a valid linkage parameter. Please specify a valid one.)
+	$(error $(LINKAGE) is not a valid linkage parameter. Please specify a valid one.)
 endif
 
 # Core modules
@@ -39,12 +41,15 @@ FL_OBJECTS=\
 	obj/$(TARGET)/src/containers/List.o 			\
 	obj/$(TARGET)/src/containers/KeyValuePair.o		\
 	obj/$(TARGET)/src/containers/Dictionary.o 		\
-	obj/$(TARGET)/src/text/Regex.o
+	obj/$(TARGET)/src/text/Regex.o 					\
+	obj/$(TARGET)/src/os/Signal.o 					\
+	obj/$(TARGET)/src/os/Windows.o
 
 # Test modules
 FL_TEST_OBJECTS=\
 	obj/$(TARGET)/tests/Main.o \
-	obj/$(TARGET)/tests/Test.o 
+	obj/$(TARGET)/tests/Test.o \
+	obj/$(TARGET)/tests/Std.o 
 
 ifeq ($(LINKAGE),static)
 	# Creates the .a file
@@ -78,7 +83,7 @@ obj/$(TARGET)/src/%.o: src/%.c
 
 obj/$(TARGET)/tests/%.o: tests/%.c
 	@mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) $(TESTS) -c $< -o $@
 
 .PHONY: clean folders
 clean:	

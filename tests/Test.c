@@ -34,6 +34,11 @@ void fl_test_suite_delete(FlTestSuite* suite)
 
 static FlTryContext testctx;
 
+void sighandler(int sign)
+{
+    Throw(&testctx, TEST_FAILURE);
+}
+
 #ifdef _WIN32
 LONG WINAPI exception_filter(EXCEPTION_POINTERS * ExceptionInfo)
 {
@@ -59,6 +64,8 @@ void fl_test_suite_run(FlTestSuite *suite)
 {
     #ifdef _WIN32
     FlWinExceptionHandler prevh = fl_winex_global_handler_set(exception_filter);
+    #else
+    fl_signal_global_handler_set(sighandler);
     #endif
     printf("============================\n");
     printf("Test Suite: %s\n", suite->name);

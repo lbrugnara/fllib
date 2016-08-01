@@ -42,8 +42,11 @@ FL_OBJECTS=\
 	obj/$(TARGET)/src/containers/KeyValuePair.o		\
 	obj/$(TARGET)/src/containers/Dictionary.o 		\
 	obj/$(TARGET)/src/text/Regex.o 					\
-	obj/$(TARGET)/src/os/Signal.o 					\
-	obj/$(TARGET)/src/os/Windows.o
+	obj/$(TARGET)/src/os/Signal.o
+
+ifeq ($(OS),Windows_NT)
+	override FL_OBJECTS= obj/$(TARGET)/src/os/Windows.o
+endif
 
 # Test modules
 FL_TEST_OBJECTS=\

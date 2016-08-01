@@ -34,14 +34,18 @@ void fl_test_suite_delete(FlTestSuite* suite)
 
 static FlTryContext testctx;
 
+#ifdef _WIN32
 LONG WINAPI exception_filter(EXCEPTION_POINTERS * ExceptionInfo)
 {
     if (ExceptionInfo->ExceptionRecord->ExceptionCode == EXCEPTION_NONCONTINUABLE_EXCEPTION)
         return EXCEPTION_CONTINUE_SEARCH; // Let Win32 resolve
-    fl_exception_message_get(ExceptionInfo->ExceptionRecord->ExceptionCode, testctx.message);
+    // An error condition occured, so take the brief description and Throw the exception
+    // to the Try()
+    fl_winex_message_get(ExceptionInfo->ExceptionRecord->ExceptionCode, testctx.message);
     Throw(&testctx, TEST_EXCEPTION);
     return EXCEPTION_CONTINUE_EXECUTION;
 }
+#endif
 
 bool fl_expect(const char* name, bool condition)
 {
@@ -53,7 +57,9 @@ bool fl_expect(const char* name, bool condition)
 
 void fl_test_suite_run(FlTestSuite *suite)
 {
-    fl_exception_global_handler_set(exception_filter);
+    #ifdef _WIN32
+    FlWinExceptionHandler prevh = fl_winex_global_handler_set(exception_filter);
+    #endif
     printf("============================\n");
     printf("Test Suite: %s\n", suite->name);
     printf("----------------------------\n");
@@ -74,4 +80,7 @@ void fl_test_suite_run(FlTestSuite *suite)
     printf(" - Succesful Tests: %d\n", 6);
     printf(" - Failed Tests: %d\n", 1);
     printf("    |-- %s\n", "Fail Misserably");
+    #ifdef _WIN32
+    fl_winex_global_handler_set(prevh);
+    #endif
 }

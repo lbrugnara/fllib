@@ -36,10 +36,10 @@
  *  STATUS_NO_MEMORY
  *  STATUS_CONTROL_C_EXIT
  */
-typedef LONG WINAPI(*FlSignalHandler)(EXCEPTION_POINTERS * ExceptionInfo);
-void fl_exception_handler_set(unsigned long sig, FlSignalHandler handler);
-void fl_exception_global_handler_set(FlSignalHandler handler);
-void fl_exception_message_get(DWORD exceptionCode, char *destmsg);
+typedef LONG WINAPI(*FlWinExceptionHandler)(EXCEPTION_POINTERS * ExceptionInfo);
+FlWinExceptionHandler fl_winex_handler_set(DWORD exceptionCode, FlWinExceptionHandler handler);
+FlWinExceptionHandler fl_winex_global_handler_set(FlWinExceptionHandler handler);
+void fl_winex_message_get(DWORD exceptionCode, char *destmsg);
 
 /* -------------------------------------------------------------
  * WIN32 Console Control
@@ -50,7 +50,7 @@ void fl_exception_message_get(DWORD exceptionCode, char *destmsg);
  *  CTRL_LOGOFF_EVENT
  *  CTRL_SHUTDOWN_EVENT
  */
-typedef BOOL (*FlConsoleControlHandler)( DWORD ctrlType );
-void fl_consolecontrol_handler(unsigned long ctrl, FlConsoleControlHandler handler);
+typedef BOOL (*FlWinCmdControlHandler)( DWORD ctrlType );
+void fl_wincmd_control_handler_set(DWORD ctrl, FlWinCmdControlHandler handler);
 
 #endif

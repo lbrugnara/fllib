@@ -1,6 +1,5 @@
 #include "Test.h"
 #include "../src/Cstr.h"
-#include "../src/os/Signal.h"
 
 void test_cstr_new()
 {

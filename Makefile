@@ -49,7 +49,8 @@ FL_OBJECTS=\
 FL_TEST_OBJECTS=\
 	obj/$(TARGET)/tests/Main.o \
 	obj/$(TARGET)/tests/Test.o \
-	obj/$(TARGET)/tests/Std.o 
+	obj/$(TARGET)/tests/Std.o \
+	obj/$(TARGET)/tests/Cstr.o 
 
 ifeq ($(LINKAGE),static)
 	# Creates the .a file

@@ -258,6 +258,19 @@ FlPointer fl_copy(const FlPointer var, size_t nbytes);
 #define FLBIT_IS_OFF(t,b)   (!((t) & (b)))
 
 /* -------------------------------------------------------------
+ * {datatype: struct FlContext}
+ * -------------------------------------------------------------
+ * Has a jmp_buf member to save and restore the state of the
+ * program using setjmp and longjmp
+ * -------------------------------------------------------------
+ * {member: jmp_buf env} State of the program
+ * -------------------------------------------------------------
+ */
+typedef struct {
+  jmp_buf env;
+} FlContext;
+
+/* -------------------------------------------------------------
  * Error handling with setjmp/longjmp
  * -------------------------------------------------------------
  * Provides a mechanism to handle error conditions using the 
@@ -267,58 +280,55 @@ FlPointer fl_copy(const FlPointer var, size_t nbytes);
 /* -------------------------------------------------------------
  * {datatype: struct FlTryContext}
  * -------------------------------------------------------------
- * Contains information about the context (using jmp_buf) and
- * information about the "exception". It is not opaque because
+ * Contains information about the context (using jmp_buf through FlContext)
+ * and information about the "exception". It is not opaque because
  * we need to access jmp_buf directly
  * -------------------------------------------------------------
- * {member: jmp_buf env} Saves the info to restore the program state 
+ * {member: FlContext ctx} Saves the info to restore the program state 
  * {member: int exception} Value to be passed to longjmp. Represents an exception (General purpouse usage)
  * {member: char[] message} Contains a brief description about the exception
  * -------------------------------------------------------------
  */
-#define EX_MSG_LENGTH 256
+#define FL_TRYCONTEXT_EX_MSG_LENGTH 256
 typedef struct
 {
-    jmp_buf env;
+    FlContext ctx;
     int exception;
-    char message[EX_MSG_LENGTH];
+    char message[FL_TRYCONTEXT_EX_MSG_LENGTH];
 } FlTryContext;
 
 /* -------------------------------------------------------------
  * {macro: fl_context_save}
  * -------------------------------------------------------------
- * Receives an FlTryContext, saves the state of the program in
- * jmp_buff and resets the values for its members exception
- * and message.
+ * Saves the state of the program into an FlContext
  * -------------------------------------------------------------
- * {param: FlTryContext ctx} Context to use in this try. It can
- * be passed through calls to return directly to where this call
- * was made
+ * {param: FlContext ctx} Context to save the state of the program
  * -------------------------------------------------------------
  */
-#define fl_context_save(ctx)    ((ctx)->exception=0, memset((ctx)->message, 0, EX_MSG_LENGTH), setjmp((ctx)->env))
+#define fl_context_save(ctx)    (setjmp((ctx)->env))
 
 /* -------------------------------------------------------------
  * {macro: fl_context_restore}
  * -------------------------------------------------------------
- * Calls longjmp to return the program to the state saved in
- * jmp_buf, passing a parameter indicating an error situation
+ * Restores the state of the program using the provided FlContext
  * -------------------------------------------------------------
- * {param: FlTryContext ctx} Contains the state of the program
+ * {param: FlContext ctx} Contains the state of the program
  * to be restored after this call
  * -------------------------------------------------------------
  */
-#define fl_context_restore(ctx) (longjmp((ctx)->env, (int)(ctx)->exception))
+#define fl_context_restore(ctx, v) (longjmp((ctx)->env, v))
 
 /* -------------------------------------------------------------
  * Try...Catch...Rest...Finally...EndTry. Do not run away!
  * -------------------------------------------------------------
  * Remove all the defines and you will understand this ;)
  */
-#define Try(ctx)                                                \
+#define Try(tryctx)                                             \
 do                                                              \
 {                                                               \
-    int res = fl_context_save(ctx);                             \
+    (tryctx)->exception=0;                                      \
+    memset((tryctx)->message, 0, FL_TRYCONTEXT_EX_MSG_LENGTH);  \
+    int res = fl_context_save(&(tryctx)->ctx);                  \
     switch(res)                                                 \
     {                                                           \
         case 0:
@@ -342,12 +352,12 @@ do                                                              \
     }                                                           \
     {
 //      {
-//          Notice the two braces in finally, intended
-//          to close the switch, and opening a new brace
-//          to match the  old "}" in EndTry.
-//          Closing the switch makes this pice of code to
-//          run always after the normal execution or 
-//          exception handling process through Catch and Rest
+//          Notice the two braces in Finally, intended
+//          to close the switch, and the opening  brace
+//          to match the "}" in EndTry.
+//          Closing the switch makes this piece of code 
+//          to run always, either after the normal execution
+//          or after the exception handling process
 //      }
 #define EndTry                                                  \
     }                                                           \
@@ -363,12 +373,12 @@ do                                                              \
  * {param: int ex} Represents an error condition. Is the value that setjmp will return
  * -------------------------------------------------------------
  */
-#define Throw(ctx, ex)                                                               \
+#define Throw(tryctx, ex)                                                            \
 do                                                                                   \
 {                                                                                    \
     flm_assert(ex != 0, "setjmp will return 1 after longjmp because int val == 0");  \
-    (ctx)->exception = ex;                                                           \
-    fl_context_restore(ctx);                                                         \
+    (tryctx)->exception = ex;                                                        \
+    fl_context_restore(&(tryctx)->ctx, ex);                                          \
 } while (0)
 
 #endif /* FL_STD_H */

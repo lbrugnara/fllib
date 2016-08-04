@@ -49,9 +49,11 @@ LONG WINAPI exception_filter(EXCEPTION_POINTERS * ExceptionInfo)
 
 bool fl_expect(const char* name, bool condition)
 {
-    printf("    |-- %s: %s\n", name, (condition ? "Pass" : "Fail"));
     if (!condition)
+    {
+        strncpy(testctx.message, name, FL_TRYCONTEXT_EX_MSG_LENGTH);
         Throw(&testctx, TEST_FAILURE);
+    }
     return true;
 }
 
@@ -65,21 +67,22 @@ void fl_test_suite_run(FlTestSuite *suite)
     printf("----------------------------\n");
     for (int i=0; i < suite->ntests; i++)
     {
-        printf(" - Test Case: %s\n", suite->tests[i].name);
+        printf(" - Test Case: %s", suite->tests[i].name);
         Try (&testctx)
+        {
             suite->tests[i].run();  
-        Catch (TEST_FAILURE)
-            printf("Test failure: %s\n", testctx.message);
-        Catch (TEST_EXCEPTION)
-            printf("Test exception: %s\n", testctx.message);
+            printf(" | Pass\n");
+        }
+        Catch(TEST_EXCEPTION)
+        {
+            printf(" | Fail\n\t%s: %s\n", suite->tests[i].name, testctx.message);
+        }
+        Rest
+        {
+            printf(" | Fail\n\t%s\n", testctx.message);
+        }
         EndTry;
     }
-    printf("----------------------------\n");
-    printf("Summary\n");
-    printf("----------------------------\n");
-    printf(" - Succesful Tests: %d\n", 6);
-    printf(" - Failed Tests: %d\n", 1);
-    printf("    |-- %s\n", "Fail Misserably");
     #ifdef _WIN32
     fl_winex_global_handler_set(prevh);
     #endif

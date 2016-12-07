@@ -1,8 +1,5 @@
 #ifndef FL_STD_H
 #define FL_STD_H
-
-#include <setjmp.h>
-
 /* =============================================================
  * {module: Std}
  * =============================================================
@@ -15,6 +12,7 @@
  * -------------------------------------------------------------
  */
 
+#include <setjmp.h>
 #include "Types.h"
 
 /* -------------------------------------------------------------
@@ -46,7 +44,7 @@ typedef struct FlError FlError;
  * -------------------------------------------------------------
  * {param: FlError** error} A pointer to a memory location where this function will allocate the memory for the error object
  * {param: int id} ID of the error. This is generic, each module can create its own mapping for error codes
- * {param: const FlCstr format} Error message. Accepts format 3 specifiers: %d, %c and %s
+ * {param: const FlCstr format} Error message. Accepts 3 format specifiers: %d, %c and %s
  * {param: ... arguments} Additional arguments used to replace format specifiers in {format}
  * -------------------------------------------------------------
  * {return: void}
@@ -185,6 +183,7 @@ FlPointer fl_copy(const FlPointer var, size_t nbytes);
       */
     #define flm_vassert(condition, error, ...) if (!(condition)) (flm_vexit(ERR_FATAL, error, __VA_ARGS__));
 #else
+    /* Mute the assertions */
     #define flm_assert(condition, error)
     #define flm_vassert(condition, error, ...)
 #endif

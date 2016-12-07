@@ -5,27 +5,12 @@
 #include "Std.h"
 #include "Mem.h"
 
-static size_t max_allocated_mem = 0;
-
-void
-fl_memtrack_add(size_t bytes)
-{	
-	max_allocated_mem += bytes;
-}
-
-size_t
-fl_memtrack_get()
-{
-	return max_allocated_mem;
-}
-
 FlPointer 
 fl_malloc(size_t size)
 {
-	FlPointer dst = malloc(size);
+	FlPointer dst = calloc(1, size);
 	if (dst == NULL)
 		flm_exit(ERR_FATAL, "Out of memory");
-	fl_memtrack_add(size);
 	return dst;
 }
 
@@ -42,7 +27,6 @@ fl_calloc(size_t nmemb, size_t size)
 	FlPointer dst = calloc(nmemb, size);
 	if (dst == NULL)
 		flm_exit(ERR_FATAL, "Out of memory");
-	fl_memtrack_add(nmemb * size);
 	return dst;
 }
 
@@ -54,6 +38,5 @@ fl_realloc(FlPointer ptr, size_t size)
 	if (tmp == NULL)
 		flm_exit(ERR_FATAL, "Out of memory");
 	ptr = tmp;
-	fl_memtrack_add(size);
 	return ptr;
 }

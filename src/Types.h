@@ -12,10 +12,6 @@ typedef unsigned int    FlUint;
     #define NULL (void*)0
 #endif
 
-#ifndef null
-    #define null NULL
-#endif
-
 #define FL_EOS '\0'
 
 #ifdef HAVE_STDBOOL_H

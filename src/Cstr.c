@@ -291,7 +291,7 @@ fl_cstr_replace(const FlCstr src, const FlCstr needle, const FlCstr rplc)
         if (strptr[i] != needle[needle_size-1] || (needle_size > 1 && !cstr_match_backw(strptr+k, needle, needle_size-1)))
         {
             int *pi = (int*)fl_dictionary_get_val(table, strptr+i);
-            if (pi != null)
+            if (pi != NULL)
                 d = *pi;
         }
         else

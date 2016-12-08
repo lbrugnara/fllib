@@ -45,7 +45,7 @@ FL_OBJECTS=\
 	obj/$(TARGET)/src/os/Signal.o
 
 ifeq ($(OS),Windows_NT)
-	override FL_OBJECTS += obj/$(TARGET)/src/os/Windows.o
+	override FL_OBJECTS += obj/$(TARGET)/src/os/WinEx.o
 endif
 
 # Test modules

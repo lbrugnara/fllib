@@ -93,6 +93,7 @@ void sighandler(int sign)
 }
 
 #ifdef _WIN32
+#include "../src/os/WinEx.h"
 /* -------------------------------------------------------------
  * {function: exception_filter}
  * -------------------------------------------------------------

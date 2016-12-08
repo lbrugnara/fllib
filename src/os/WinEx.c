@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "Windows.h"
+#include "WinEx.h"
 
 #define MAX_HANDLERS 30
 

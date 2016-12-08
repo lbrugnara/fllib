@@ -1,8 +1,7 @@
 /* =============================================================
  * {module: Regex}
  * =============================================================
- * This module compiles patterns into regular expressions through
- * the creation of an NFA.
+ * This module compiles a regular expression patterns into an NFA
  * The steps involved in the process are:
  *	- Analysis of the pattern
  *	- Parsing. It includes tokenization of the pattern and its transformation into a postifx notation
@@ -99,7 +98,8 @@ typedef struct
 /* -------------------------------------------------------------
  * {datatype: struct NfaStateCharClass}
  * -------------------------------------------------------------
- * {member: int map} Represents 256 ASCII characters. Valid characters are set to 1. State matches with all the values that are 1 in map (or 0 based on {negated})
+ * {member: int map} Represents 256 ASCII characters. Valid characters are set to 1. State matches with all 
+ * 	the values that are 1 in map (or 0 based on {negated})
  * {member: bool negated} True when the char class state is a negated set
  * -------------------------------------------------------------
  */
@@ -188,7 +188,7 @@ typedef struct
 /* -------------------------------------------------------------
  * {datatype: struct RegexAnalysis}
  * -------------------------------------------------------------
- * Intended to track information about a pattern. Used by {analyze_regexx}
+ * Intended to track information about a pattern. Used by {analyze_regex}
  * -------------------------------------------------------------
  * {member: size_t patternStart} Position to start at tokenization
  * {member: size_t patternEnd} Position to end at tokenization
@@ -304,8 +304,10 @@ static inline bool is_escape_seq(char c)
 	return fl_array_contains_n(EscapedChars, flm_array_length(EscapedChars), &c, sizeof(char)); 
 }
 
-#define CONCAT_LEFT 0
-#define CONCAT_RIGHT 1
+enum {	 
+	CONCAT_LEFT, 
+	CONCAT_RIGHT
+};
 static inline bool allow_concat(short t, char c) 
 {
 	if (t == CONCAT_LEFT) 
@@ -365,7 +367,7 @@ static inline char regex_operator_get_arity(char op)
  */
 FlVector *parse_regex (FlCstr regex, RegexFlags *flags, FlError **error);
 
-FlVector *parse_regex_postfix (FlCstr regex, RegexFlags *flags, FlError **error);
+FlVector *regex_to_postfix (FlCstr regex, RegexFlags *flags, FlError **error);
 
 void print_nfa (NfaState **states);
 
@@ -627,7 +629,7 @@ FlVector* parse_regex(FlCstr regex, RegexFlags *flags, FlError **error)
 }
 
 /* -------------------------------------------------------------
- * {function: parse_regex_postfix}
+ * {function: regex_to_postfix}
  * -------------------------------------------------------------
  * Parses the pattern in {regex} and populates {flags}
  * with parsing information. If an error occurs, the 
@@ -638,7 +640,7 @@ FlVector* parse_regex(FlCstr regex, RegexFlags *flags, FlError **error)
  * 	of the parsed regex. The tokens are in a postfix notation
  * -------------------------------------------------------------
  */
-FlVector* parse_regex_postfix (FlCstr regex, RegexFlags *flags, FlError **error) 
+FlVector* regex_to_postfix (FlCstr regex, RegexFlags *flags, FlError **error) 
 {
 	//error = NULL;
 	if (!regex && !regex[0])
@@ -653,7 +655,7 @@ FlVector* parse_regex_postfix (FlCstr regex, RegexFlags *flags, FlError **error)
 
 	/* Parse, sanitize and get an array with the regex tokens */
 	FlVector *tokens = parse_regex(regex, flags, error);
-	if (tokens == NULL)
+	if (tokens == NULL || fl_has_error(error))
 		return NULL;
 
 	int length = strlen(regex);
@@ -830,8 +832,7 @@ FlVector* parse_regex_postfix (FlCstr regex, RegexFlags *flags, FlError **error)
 FlRegex* fl_regex_compile (FlCstr pattern, FlError **error)
 {
 	RegexFlags flags = 0;
-	// parse_regex pattern and convert it to postifx notation
-	FlVector *tokens = parse_regex_postfix(pattern, &flags, error);
+	FlVector *tokens = regex_to_postfix(pattern, &flags, error);
 	if (fl_has_error(error))
 		return NULL;
 	size_t nstates = fl_vector_length(tokens) + 1;
@@ -850,7 +851,7 @@ FlRegex* fl_regex_compile (FlCstr pattern, FlError **error)
 	}
 	#endif
 
-	FlRegex *regex = fl_calloc(sizeof(FlRegex), 1);
+	FlRegex *regex = fl_malloc(sizeof(FlRegex));
 	regex->pattern = fl_cstr_dup(pattern);
 	regex->flags = flags;
 	regex->states = fl_array_new(sizeof(NfaState*), nstates);
@@ -879,12 +880,12 @@ FlRegex* fl_regex_compile (FlCstr pattern, FlError **error)
 
 		if (tokenval == '(')
 		{
-			// {todo: Implement capturing groups}]>
+			// {todo: Implement capturing groups}
 			nextcapgroup++;
 		}
 		else if (tokenval == ')')
 		{
-			// {todo: Implement capturing groups}]>
+			// {todo: Implement capturing groups}
 		} 
 		// If tokenval is not an operator, add a new state with {token} value
 		else if (!fl_array_contains_n(CompileOperators, flm_array_length(CompileOperators), token, strlen(token)))
@@ -988,20 +989,17 @@ FlRegex* fl_regex_compile (FlCstr pattern, FlError **error)
 					if (flm_cstr_equals(nexttok, "^")) 
 					{
 						fl_vector_add_cstr(display, "^");
-						s = create_charclass_nfa_state(stateId++, NULL, true);
+						s = create_charclass_nfa_state(stateId++, NULL, true); // negated capturing group = true
 					} 
 					else 
 					{
 						if (!flm_cstr_equals(nexttok, "]"))
 							fl_vector_add_cstr(tmptokens, nexttok);
-						s = create_charclass_nfa_state(stateId++, NULL, false);
+						s = create_charclass_nfa_state(stateId++, NULL, false); // negated capturing group = false
 					}
 
 					STATE_SET_INITIAL(s);
 					STATE_SET_FINAL(s);
-					//foreach ($cgroups as $cgroup) {
-					//	$s->cgroups[] = new RECapGroup($cgroup, false);
-					//}
 
 					if (!flm_cstr_equals(nexttok, "]")) 
 					{
@@ -1020,7 +1018,8 @@ FlRegex* fl_regex_compile (FlCstr pattern, FlError **error)
 					for (size_t i = 0; i < l; i++)
 					{
 						FlCstr tmptoken = flm_vector_get(tmptokens, FlCstr, i);
-						if (flm_cstr_equals(tmptoken, "-")) {
+						if (flm_cstr_equals(tmptoken, "-"))
+						{
 							int endindex;
 							int startindex;
 							fl_vector_pop(ascii_codes, &endindex);
@@ -1032,7 +1031,9 @@ FlRegex* fl_regex_compile (FlCstr pattern, FlError **error)
 							fl_vector_pop(display, &endchar);
 							fl_vector_add_cstr(display, "-");
 							fl_vector_add(display, &endchar);
-						} else {
+						}
+						else 
+						{
 							if (tmptoken[0] == '\\')
 							{
 								ord = tmptoken[1];
@@ -1369,7 +1370,7 @@ void print_nfa_state(NfaState *state)
  * {param: NfaState* state} Current state
  * {param: CurrentState[] nextstates} Reached states from {state}
  * {param: unsigned char value} Input value for the current step
- * {param: const CurrentState[] currentstates} Already reached states
+ * {param: const CurrentState[] currentstates} Already reached states in this step
  * -------------------------------------------------------------
  * {return: NfaStepResult} Contains info of the step result.
  * 	If at least one state was reached, result.anyMatch will be true.
@@ -1455,7 +1456,7 @@ bool can_reach_state (NfaState *state, unsigned char value)
 /* -------------------------------------------------------------
  * {function: regex_match}
  * -------------------------------------------------------------
- * Check the input text agains the regex and returns true if
+ * Check the input text against the regex and returns true if
  * the input matches the pattern
  * -------------------------------------------------------------
  * {param: FlRegex* regex} Regular expression
@@ -1471,8 +1472,9 @@ bool regex_match (FlRegex *regex, FlCstr text)
 	memset(currents, -1, sizeof(CurrentState) * currentsl);
 	CurrentState nexts[currentsl];
 	memset(nexts, -1, sizeof(CurrentState) * currentsl);
+
 	// Previous to run the nfa we've only one state, the initial state
-	NfaState *s0 = regex->states[0];//*(NfaState**)fl_vector_get(regex->states, 0);
+	NfaState *s0 = regex->states[0];//
 	currents[s0->id] = (CurrentState){ s0->id, false };
 
 	FlVector *input = fl_cstr_split(text);
@@ -1491,12 +1493,6 @@ bool regex_match (FlRegex *regex, FlCstr text)
 
 	// Related to '^' operator
 	bool firstinput = true;
-
-	// if (DEBUG_NFA_RUN) {
-	// 	echo "= Run NFA", "\r\n", " - Pattern: /{$nfa->pattern}/", "\r\n", " - Input: '{$text}'", "\r\n";
-	// 	print_nfa([$currents], false, "= Start", "  |--");
-	// }
-
 	char in;
 	while(fl_vector_length(input))
 	{
@@ -1511,7 +1507,7 @@ bool regex_match (FlRegex *regex, FlCstr text)
 	 	{
 	 		if (currents[i].id == -1)
 	 			continue;
-	 		NfaState *state = regex->states[i]; //*(NfaState**)fl_vector_get(regex->states, i);
+	 		NfaState *state = regex->states[i];
 	 		stepresult = nfa_step(state, nexts, in, currents);
 	 		// If we reached any new state, set result.anyMatch to true
 	 		if (!result.anyMatch && stepresult.anyMatch)
@@ -1532,12 +1528,6 @@ bool regex_match (FlRegex *regex, FlCstr text)
 	 		memset(nexts, -1, sizeof(CurrentState)*currentsl);
 	 	}
 
-	// 	if (DEBUG_NFA_RUN) {
-	// 		if (!stepresult.anyMatch)
-	// 			$nexts = $currents;
-	// 		print_nfa([$nexts], false, "= After input {$in}", "  |--");
-	// 	}
-
 		// When full match is not necessary, short-circuit the execution when match is successful
 	 	if (result.anyFinal && !HAS_FLAG_END(regex->flags))
 	 		break;
@@ -1554,15 +1544,6 @@ bool regex_match (FlRegex *regex, FlCstr text)
 	if (result.anyFinal && !result.anyMatch && HAS_FLAG_END(regex->flags))
 	 	result.anyFinal = false;
 
-	// if (DEBUG_NFA_RUN)
-	// {
-	// 	if (result.anyFinal)
-	// 		echo "Result: Accepted", "\r\n";
-	// 	else
-	// 		echo "Result: Not accepted", "\r\n";
-	// 	echo "-----------------", "\r\n";
-	// }
-	// return result.anyFinal;
 	fl_vector_delete(input);
 	return result.anyFinal;
 }

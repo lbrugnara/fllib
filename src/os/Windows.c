@@ -7,7 +7,7 @@
  * {datatype: struct FlWinRegisteredExceptionHandler}
  * -------------------------------------------------------------
  * Internal usage struct to keep track of handlers functions
- * to be called when an exception (SEH) with code {exception}
+ * to be called when an exception with code {exception}
  * is raised by Windows
  * -------------------------------------------------------------
  * {member: DWORD exception} Exception code of the registered handler
@@ -23,7 +23,7 @@ typedef struct
 /* -------------------------------------------------------------
  * {variable: FlWinRegisteredExceptionHandler[] RegisteredExHandlers}
  * -------------------------------------------------------------
- * Keep track of registered handlers for each type of SEH
+ * Keep track of registered handlers for each type of exception
  * -------------------------------------------------------------
  */
 static FlWinRegisteredExceptionHandler RegisteredExHandlers[MAX_HANDLERS] = {{0}};
@@ -44,7 +44,7 @@ static FlWinExceptionHandler PrevHandler = NULL;
  * Overrides the previous UnhandledExceptionFilter (if exists)
  * to support fl_winex_handler_set, using specific exceptions
  * codes.
- * This function will be called each time Windows throws an SEH
+ * This function will be called each time Windows throws an exception
  * but will call the user registered FlWinExceptionHandler only when
  * the exception code is registered by the user.
  * -------------------------------------------------------------
@@ -75,7 +75,24 @@ LONG WINAPI winex_filter(EXCEPTION_POINTERS * ExceptionInfo)
 /* -------------------------------------------------------------
  * {function: fl_winex_handler_set}
  * -------------------------------------------------------------
- * Sets an exception handler for an specific exception code
+ * Sets an exception handler for an specific exception code. It saves
+ * the user's exception handler in the {RegisteredExHandlers} array
+ * and registers the {winex_filter} function as the Unhandled Exception
+ * Filter. Every time Windows raises an exception, the {winex_filter}
+ * will check the exception code and will call the user's exception
+ * handler. Windows supports only one UnhandledExceptionFilter, this way
+ * we can provide support for specific exceptions abstracting this limitation
+ * to the user.
+ * 
+ * TODO: This is a simple implementation of an exception handling
+ * mechanism. Windows uses threads, and the current implementation allows
+ * only 1 thread. We can make usage of GetCurrentThreadId to save the
+ * exception filter for specifics threads. The user has to call
+ * {fl_winex_handler_set} on each thread, and before the thread
+ * finishes, we should have to remove the filter, this way
+ * we release the memory used by this module
+ *
+ * Known bug: https://support.microsoft.com/en-us/kb/173652
  * -------------------------------------------------------------
  * {param: DWORD exceptionCode}
  * {param: FlWinExceptionHandler handler} Handler function to call when an exception with code {exceptionCode} occurs
@@ -103,7 +120,11 @@ FlWinExceptionHandler fl_winex_handler_set(DWORD exceptionCode, FlWinExceptionHa
 /* -------------------------------------------------------------
  * {function: fl_winex_global_handler_set}
  * -------------------------------------------------------------
- * Sets a global exception handler
+ * Sets a global exception handler. It suffers the same problem
+ * as fl_winex_handler_set, The usage of PrevHandler makes the
+ * module incompatible to use in threaded applications. The usage
+ * of GetCurrentThreadId could help to keep track of the registered
+ * exception filters for each thread. 
  * -------------------------------------------------------------
  * {param: FlWinExceptionHandler handler}
  * -------------------------------------------------------------

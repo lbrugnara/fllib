@@ -12,8 +12,6 @@
 #include "../Std.h"
 #include "../Mem.h"
 #include "Iterator.h"
-#include "Vector.h"
-#include "Dictionary.h"
 
 /* -------------------------------------------------------------
  * {datatype: struct FlIterator}
@@ -46,7 +44,7 @@ struct FlIterator {
     FlIteratorDelete delete;
 };
 
-FlIterator* fl_iterator_new(
+FlIterator fl_iterator_new(
     FlIteratorType type, 
     FlPointer itdata, 
     FlIteratorMove next, 
@@ -58,7 +56,7 @@ FlIterator* fl_iterator_new(
     FlIteratorDelete delete_handler
 )
 {
-    FlIterator *it = fl_calloc(1, sizeof(FlIterator));
+    FlIterator it = fl_calloc(1, sizeof(FlIterator));
     it->type = type;
     it->target = itdata;
     it->next = next;
@@ -79,45 +77,45 @@ FlIterator* fl_iterator_new(
  * module implementing the iterator to release the memory
  * allocated in the process.
  * -------------------------------------------------------------
- * {param: FlIterator* it} Target iterator to clean up
+ * {param: FlIterator it} Target iterator to clean up
  * -------------------------------------------------------------
  * {return: void}
  * -------------------------------------------------------------
  */
-void fl_iterator_delete(FlIterator *it)
+void fl_iterator_delete(FlIterator it)
 {
     it->delete(it->target);
     fl_free(it);    
 }
 
-FlIterator* fl_iterator_next(FlIterator *it)
+FlIterator fl_iterator_next(FlIterator it)
 {
     it->next(it->target);
     return it;
 }
 
-FlIterator* fl_iterator_prev(FlIterator *it)
+FlIterator fl_iterator_prev(FlIterator it)
 {
     it->prev(it->target);
     return it;
 }
 
-FlPointer fl_iterator_value(FlIterator *it)
+FlPointer fl_iterator_value(FlIterator it)
 {
     return it->value(it->target);
 }
 
-bool fl_iterator_equals(FlIterator *it1, FlIterator *it2)
+bool fl_iterator_equals(FlIterator it1, FlIterator it2)
 {
     return it1->type == it2->type && it1->equals(it1->target, it2->target);
 }
 
-bool fl_iterator_is_start(FlIterator *it, FlPointer container)
+bool fl_iterator_is_start(FlIterator it, FlPointer container)
 {
     return it->isstart(it->target, container);
 }
 
-bool fl_iterator_is_end(FlIterator *it, FlPointer container)
+bool fl_iterator_is_end(FlIterator it, FlPointer container)
 {
     return it->isend(it->target, container);
 }

@@ -35,7 +35,7 @@ typedef enum
  * to give information about errors
  * -------------------------------------------------------------
  */
-typedef struct FlError FlError;
+typedef struct FlError* FlError;
 
 /* -------------------------------------------------------------
  * {function: fl_error_set}
@@ -50,7 +50,7 @@ typedef struct FlError FlError;
  * {return: void}
  * -------------------------------------------------------------
  */
-void fl_error_set(FlError **error, int id, const FlCstr format, ...);
+void fl_error_set(FlError error, int id, const FlCstr format, ...);
 
 /* -------------------------------------------------------------
  * {function: fl_error_get_id}
@@ -62,7 +62,7 @@ void fl_error_set(FlError **error, int id, const FlCstr format, ...);
  * {return: int} ID of the error object
  * -------------------------------------------------------------
  */
-int fl_error_get_id(FlError *error);
+int fl_error_get_id(FlError error);
 
 /* -------------------------------------------------------------
  * {function: fl_error_get_message}
@@ -74,7 +74,7 @@ int fl_error_get_id(FlError *error);
  * {return: FlCstr} Message of the error object
  * -------------------------------------------------------------
  */
-FlCstr fl_error_get_message(FlError *error);
+FlCstr fl_error_get_message(FlError error);
 
 /* -------------------------------------------------------------
  * {function: fl_error_delete}
@@ -86,23 +86,8 @@ FlCstr fl_error_get_message(FlError *error);
  * {return: void}
  * -------------------------------------------------------------
  */
-void fl_error_delete(FlError *error);
+void fl_error_delete(FlError error);
 
-
-/* -------------------------------------------------------------
- * {function: fl_has_error}
- * -------------------------------------------------------------
- * Check if the memory pointed by {error} is allocated by an error
- * -------------------------------------------------------------
- * {param: FlError** error} A pointer that points to a location where could exist an {FlError} object allocated
- * -------------------------------------------------------------
- * {return: bool} True if the memory is allocated
- * -------------------------------------------------------------
- */
-static inline bool fl_has_error(FlError **error)
-{
-    return error != NULL && *error != NULL;
-}
 
 /* -------------------------------------------------------------
  * {function: fl_exit}

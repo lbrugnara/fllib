@@ -20,6 +20,7 @@
 #include "../Cstr.h"
 #include "../Array.h"
 #include "../Mem.h"
+#include "../containers/Vector.h"
 
 /* -------------------------------------------------------------
  * {datatype: unsigned char RegexFlags}
@@ -86,7 +87,7 @@ typedef unsigned char StateFlags;
 #define STATE_BASE_DEF() 	\
 int id;						\
 FlCstr value;				\
-FlVector *to;				\
+FlVector to;				\
 StateFlags flags;			\
 NfaStateType type;
 
@@ -365,9 +366,9 @@ static inline char regex_operator_get_arity(char op)
  * Private API used by Regex module
  * -------------------------------------------------------------
  */
-FlVector *parse_regex (FlCstr regex, RegexFlags *flags, FlError **error);
+FlVector parse_regex (FlCstr regex, RegexFlags *flags, FlError error);
 
-FlVector *regex_to_postfix (FlCstr regex, RegexFlags *flags, FlError **error);
+FlVector regex_to_postfix (FlCstr regex, RegexFlags *flags, FlError error);
 
 void print_nfa (NfaState **states);
 
@@ -389,7 +390,7 @@ bool can_reach_state (NfaState *state, unsigned char value);
 
 NfaStepResult nfa_step (NfaState *state, CurrentState nextstates[], unsigned char value, const CurrentState currentstates[]);
 
-bool regex_match (FlRegex *regex, FlCstr text);
+bool regex_match (FlRegex regex, FlCstr text);
 
 int compare_states(const void* v1, const void* v2);
 
@@ -402,12 +403,12 @@ int compare_states(const void* v1, const void* v2);
  * {param: FlCstr regex} Pattern to analyze
  * {param: RegexFlags* flags} The function will change this when find certain flags like anchors
  * {param: RegexAnalysis* analysis} Will keep metainformation of the pattern
- * {param: FlError** error} If the analysis produces an error it will be set in this parameter
+ * {param: FlError error} If the analysis produces an error it will be set in this parameter
  * -------------------------------------------------------------
  * {return: void}
  * -------------------------------------------------------------
  */
-void analyze_regex(FlCstr regex, RegexFlags *flags, RegexAnalysis *analysis, FlError **error)
+void analyze_regex(FlCstr regex, RegexFlags *flags, RegexAnalysis *analysis, FlError error)
 {
 	flm_assert(analysis != NULL, "RegexAnalysis cannot be NULL");
 	size_t reglength = strlen(regex);
@@ -435,20 +436,20 @@ void analyze_regex(FlCstr regex, RegexFlags *flags, RegexAnalysis *analysis, FlE
  * {error} struct is populated with useful information
  * about the failure
  * -------------------------------------------------------------
- * {return: FlVector*} Vector of FlCstr that contains the tokens of the parsed regex
+ * {return: FlVector} Vector of FlCstr that contains the tokens of the parsed regex
  * -------------------------------------------------------------
  */
-FlVector* parse_regex(FlCstr regex, RegexFlags *flags, FlError **error)
+FlVector parse_regex(FlCstr regex, RegexFlags *flags, FlError error)
 {
 	RegexAnalysis analysis;
 	analyze_regex(regex, flags, &analysis, error);
 
-	if (fl_has_error(error))
+	if (error != NULL)
 		return NULL;
 
 	char *tokens = fl_cstr_split_a(regex);
 	// Function output (tokens)
-	FlVector *output = fl_vector_new(sizeof(FlCstr), analysis.patternEnd+1);
+	FlVector output = fl_vector_new(sizeof(FlCstr), analysis.patternEnd+1);
 	
 	// Contains the backslash for escaped characters
 	bool bslash = false;
@@ -620,7 +621,7 @@ FlVector* parse_regex(FlCstr regex, RegexFlags *flags, FlError **error)
 	if (tokens)
 		fl_array_delete(tokens);
 	
-	if (fl_has_error(error))
+	if (error != NULL)
 	{
 		fl_vector_delete_ptrs(output);
 		return NULL;
@@ -636,11 +637,11 @@ FlVector* parse_regex(FlCstr regex, RegexFlags *flags, FlError **error)
  * {error} struct is populated with useful information
  * about the failure.
  * -------------------------------------------------------------
- * {return: FlVector*} Vector of FlCstr that contains the tokens 
+ * {return: FlVector} Vector of FlCstr that contains the tokens 
  * 	of the parsed regex. The tokens are in a postfix notation
  * -------------------------------------------------------------
  */
-FlVector* regex_to_postfix (FlCstr regex, RegexFlags *flags, FlError **error) 
+FlVector regex_to_postfix (FlCstr regex, RegexFlags *flags, FlError error) 
 {
 	//error = NULL;
 	if (!regex && !regex[0])
@@ -654,13 +655,13 @@ FlVector* regex_to_postfix (FlCstr regex, RegexFlags *flags, FlError **error)
 	#endif
 
 	/* Parse, sanitize and get an array with the regex tokens */
-	FlVector *tokens = parse_regex(regex, flags, error);
-	if (tokens == NULL || fl_has_error(error))
+	FlVector tokens = parse_regex(regex, flags, error);
+	if (tokens == NULL || error != NULL)
 		return NULL;
 
 	int length = strlen(regex);
-	FlVector *stack = flm_vector_new(FlCstr, fl_vector_length(tokens));
-	FlVector *output = flm_vector_new(FlCstr, fl_vector_length(tokens));
+	FlVector stack = flm_vector_new(FlCstr, fl_vector_length(tokens));
+	FlVector output = flm_vector_new(FlCstr, fl_vector_length(tokens));
 
 	bool inCharClass = false;
 	int currentGroup = 0;
@@ -786,11 +787,11 @@ FlVector* regex_to_postfix (FlCstr regex, RegexFlags *flags, FlError **error)
 				// Literal chars are sended directly to the output
 				fl_vector_add(output, &token);
 		}
-		if (fl_has_error(error))
+		if (error != NULL)
 			break;
 	}
 
-	if (!fl_has_error(error))
+	if (error == NULL)
 	{
 		// Finally, remove all the pending operators from the stack, and send it to the output
 		while (fl_vector_length(stack))
@@ -826,14 +827,14 @@ FlVector* regex_to_postfix (FlCstr regex, RegexFlags *flags, FlError **error)
  * into an FlRegex struct that contains a set of NfaStates that
  * represents the NFA for the given regular expression
  * -------------------------------------------------------------
- * {return: FlRegex*} NFA for the given pattern
+ * {return: FlRegex} NFA for the given pattern
  * -------------------------------------------------------------
  */
-FlRegex* fl_regex_compile (FlCstr pattern, FlError **error)
+FlRegex fl_regex_compile (FlCstr pattern, FlError error)
 {
 	RegexFlags flags = 0;
-	FlVector *tokens = regex_to_postfix(pattern, &flags, error);
-	if (fl_has_error(error))
+	FlVector tokens = regex_to_postfix(pattern, &flags, error);
+	if (error != NULL)
 		return NULL;
 	size_t nstates = fl_vector_length(tokens) + 1;
 
@@ -851,7 +852,7 @@ FlRegex* fl_regex_compile (FlCstr pattern, FlError **error)
 	}
 	#endif
 
-	FlRegex *regex = fl_malloc(sizeof(FlRegex));
+	FlRegex regex = fl_malloc(sizeof(FlRegex));
 	regex->pattern = fl_cstr_dup(pattern);
 	regex->flags = flags;
 	regex->states = fl_array_new(sizeof(NfaState*), nstates);
@@ -976,9 +977,9 @@ FlRegex* fl_regex_compile (FlCstr pattern, FlError **error)
 				}
 				case '[':
 				{
-					FlVector *tmptokens = fl_vector_new(sizeof(FlCstr), 0);
-					FlVector *ascii_codes = fl_vector_new(sizeof(int), 0);
-					FlVector *display = fl_vector_new(sizeof(FlCstr), 0);
+					FlVector tmptokens = fl_vector_new(sizeof(FlCstr), 0);
+					FlVector ascii_codes = fl_vector_new(sizeof(int), 0);
+					FlVector display = fl_vector_new(sizeof(FlCstr), 0);
 					// Temporary variable to look ahead the next token
 					FlCstr nexttok;
 					// ASCII codes
@@ -1072,7 +1073,7 @@ FlRegex* fl_regex_compile (FlCstr pattern, FlError **error)
 		// Delete consumed token
 		fl_cstr_delete(token);
 
-		if (fl_has_error(error))
+		if (error != NULL)
 			break;
 	}
 	// Sort the regex to retrieve States by its ID like array indexes
@@ -1082,7 +1083,7 @@ FlRegex* fl_regex_compile (FlCstr pattern, FlError **error)
 	print_nfa(regex->states);
 	#endif
 	
-	if (fl_has_error(error))
+	if (error != NULL)
 	{
 		fl_regex_delete(regex);
 		fl_vector_delete_ptrs(tokens);
@@ -1459,13 +1460,13 @@ bool can_reach_state (NfaState *state, unsigned char value)
  * Check the input text against the regex and returns true if
  * the input matches the pattern
  * -------------------------------------------------------------
- * {param: FlRegex* regex} Regular expression
+ * {param: FlRegex regex} Regular expression
  * {param: FlCstr text} Input string to check against pattern
  * -------------------------------------------------------------
  * {return: bool} True if text matches the pattern
  * -------------------------------------------------------------
  */
-bool regex_match (FlRegex *regex, FlCstr text)
+bool regex_match (FlRegex regex, FlCstr text)
 {
 	size_t currentsl = fl_array_length(regex->states);
 	CurrentState currents[currentsl];
@@ -1477,7 +1478,7 @@ bool regex_match (FlRegex *regex, FlCstr text)
 	NfaState *s0 = regex->states[0];//
 	currents[s0->id] = (CurrentState){ s0->id, false };
 
-	FlVector *input = fl_cstr_split(text);
+	FlVector input = fl_cstr_split(text);
 
 	// Run the first step without input to reach all possible states we can reach with e-transitions
 	// nfa_step returns an array as result with
@@ -1552,7 +1553,7 @@ bool regex_match (FlRegex *regex, FlCstr text)
  * Public API functions
  * -------------------------------------------------------------
  */
-bool fl_regex_match(FlRegex *regex, FlCstr text)
+bool fl_regex_match(FlRegex regex, FlCstr text)
 {
 	return regex_match(regex, text);
 }
@@ -1563,14 +1564,14 @@ bool fl_regex_match(FlRegex *regex, FlCstr text)
  * Free the memory used by an FlRegex struct. To free the memory
  * used by member states, this function uses the handler {delete_nfa}
  * -------------------------------------------------------------
- * {param: FlRegex* regex} target FlRegex struct to cleanup
+ * {param: FlRegex regex} target FlRegex struct to cleanup
  * -------------------------------------------------------------
  * {return: void}
  * -------------------------------------------------------------
  */
-void fl_regex_delete (FlRegex *regex)
+void fl_regex_delete (FlRegex regex)
 {
-	// Delete FlVector *states with delete_nfa handler
+	// Delete FlVector states with delete_nfa handler
 	fl_array_delete_h(regex->states, delete_nfa);
 	fl_free(regex->pattern);
 	fl_free(regex);

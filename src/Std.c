@@ -20,28 +20,25 @@ struct FlError
 };
 
 void
-fl_error_set(FlError **error, int id, const FlCstr format, ...)
+fl_error_set(FlError error, int id, const FlCstr format, ...)
 {
-	if (error == NULL)
-		return;
-	FlError *err = fl_calloc(1, sizeof(FlError));
-	err->id = id;
+	error = fl_calloc(1, sizeof(FlError));
+	error->id = id;
 	va_list args;
     va_start(args, format);
-    err->message = fl_cstr_vadup(format, args);
+    error->message = fl_cstr_vadup(format, args);
     va_end(args);
-    *error = err;
 }
 
 int
-fl_error_get_id(FlError *error)
+fl_error_get_id(FlError error)
 {
 	flm_assert(error != NULL, "Error must not be NULL");
 	return error->id;
 }
 
 FlCstr
-fl_error_get_message(FlError *error)
+fl_error_get_message(FlError error)
 {
 	flm_assert(error != NULL, "Error must not be NULL");
 	if (error->message == NULL)
@@ -50,7 +47,7 @@ fl_error_get_message(FlError *error)
 }
 
 void
-fl_error_delete(FlError *error)
+fl_error_delete(FlError error)
 {
 	flm_assert(error != NULL, "Error must not be NULL");
 	if (error->message)

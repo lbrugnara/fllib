@@ -9,10 +9,10 @@ struct FlKeyValuePair
 	size_t vdtsize;
 };
 
-FlKeyValuePair*
+FlKeyValuePair
 fl_kvp_new(size_t kdtsize, size_t vdtsize)
 {
-	FlKeyValuePair *kvp = fl_malloc(sizeof(FlKeyValuePair));
+	FlKeyValuePair kvp = fl_malloc(sizeof(FlKeyValuePair));
 	kvp->kdtsize = kdtsize;
 	kvp->vdtsize = vdtsize;
 	kvp->key = fl_malloc(kdtsize);
@@ -21,46 +21,46 @@ fl_kvp_new(size_t kdtsize, size_t vdtsize)
 }
 
 void
-fl_kvp_set(FlKeyValuePair *kvp, const FlByte *key, const FlByte *val)
+fl_kvp_set(FlKeyValuePair kvp, const FlByte *key, const FlByte *val)
 {
 	memcpy(kvp->key, key, kvp->kdtsize);
 	memcpy(kvp->val, val, kvp->vdtsize);
 }
 
-FlKeyValuePair*
+FlKeyValuePair
 fl_kvp_new_set(const FlByte *key, size_t kdtsize, const FlByte *val, size_t vdtsize)
 {
-	FlKeyValuePair *kvp = fl_kvp_new(kdtsize, vdtsize);
+	FlKeyValuePair kvp = fl_kvp_new(kdtsize, vdtsize);
 	fl_kvp_set(kvp, key, val);
 	return kvp;
 }
 
 size_t
-fl_kvp_key_dtsize(FlKeyValuePair *kvp)
+fl_kvp_key_dtsize(FlKeyValuePair kvp)
 {
 	return kvp->kdtsize;
 }
 
 size_t
-fl_kvp_val_dtsize(FlKeyValuePair *kvp)
+fl_kvp_val_dtsize(FlKeyValuePair kvp)
 {
 	return kvp->vdtsize;
 }
 
 FlPointer
-fl_kvp_get_key(FlKeyValuePair *kvp)
+fl_kvp_get_key(FlKeyValuePair kvp)
 {
 	return kvp->key;
 }
 
 FlPointer
-fl_kvp_get_val(FlKeyValuePair *kvp)
+fl_kvp_get_val(FlKeyValuePair kvp)
 {
 	return kvp->val;
 }
 
 void
-fl_kvp_delete(FlKeyValuePair *kvp)
+fl_kvp_delete(FlKeyValuePair kvp)
 {
 	fl_free(kvp->key);
 	fl_free(kvp->val);

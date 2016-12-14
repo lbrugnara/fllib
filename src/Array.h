@@ -150,10 +150,10 @@ bool fl_array_contains_n(const FlGenericArray array, size_t nelems, const FlPoin
  * -------------------------------------------------------------
  * {param: const FlGenericArray array} Array of elements
  * -------------------------------------------------------------
- * {return: FlVector*} Pointer to a new vector with the array 
+ * {return: FlVector`} Pointer to a new vector with the array 
  * elements on it
  * -------------------------------------------------------------
  */
-FlVector* fl_array_to_vector(const FlGenericArray array);
+FlVector fl_array_to_vector(const FlGenericArray array);
 
 #endif /* FL_ARRAY_H */

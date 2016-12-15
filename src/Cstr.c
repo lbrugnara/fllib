@@ -27,13 +27,13 @@ fl_cstr_resize (FlCstr *dst, size_t length)
 	*dst = fl_realloc(*dst, length + 1);
 }
 
-FlVector* 
+FlVector 
 fl_cstr_split (const FlCstr str) 
 {
 	flm_assert(str != NULL, "FlCstr argument to split cannot be NULL");
 
 	size_t l = strlen(str);
-	FlVector* ovector = fl_vector_new(sizeof(char), l);
+	FlVector ovector = fl_vector_new(sizeof(char), l);
 	if (l == 0)
 		return ovector;
 
@@ -109,7 +109,7 @@ fl_cstr_vadup (const FlCstr s, va_list args)
     flm_assert(s != NULL, "FlCstr argument to duplicate cannot be NULL");
     FlCstr sc = s;
     size_t length = strlen(sc);
-    FlVector *parts = fl_vector_new(sizeof(char), length);
+    FlVector parts = fl_vector_new(sizeof(char), length);
     while(*sc)
     {
         if (*sc != '%')
@@ -221,9 +221,15 @@ fl_cstr_replace_char(const FlCstr src, const char chr, const FlCstr rplc)
 		}
 
 		if (rplc_size > 1)
+        {
 			fl_cstr_resize(&dst, (dst_size += rplc_size-1));
+	        memcpy(dst+j, rplc, rplc_size);
+        }
+        else
+        {
+            fl_cstr_resize(&dst, (dst_size -= 1));
+        }
 
-		memcpy(dst+j, rplc, rplc_size);
 		j+=rplc_size;
 	}
 	dst[dst_size] = FL_EOS;
@@ -270,7 +276,7 @@ fl_cstr_replace(const FlCstr src, const FlCstr needle, const FlCstr rplc)
         return dst;
     }
 
-    FlDictionary *table = fl_dictionary_new(sizeof(char), sizeof(size_t));
+    FlDictionary table = fl_dictionary_new(sizeof(char), sizeof(size_t));
     for (int i=0; i < needle_size-1; i++)
         flm_dictionary_set(table, char, needle[i], size_t, needle_size - i - 1);
     if (!fl_dictionary_contains_key(table, needle + (needle_size-1)))
@@ -348,7 +354,7 @@ fl_cstr_find(const FlCstr str, const FlCstr needle)
     if (needle_size == 0)
         return str;
 
-    FlDictionary *table = fl_dictionary_new(sizeof(char), sizeof(size_t));
+    FlDictionary table = fl_dictionary_new(sizeof(char), sizeof(size_t));
     for (int i=0; i < needle_size; i++)
         flm_dictionary_set(table, char, needle[i], size_t, needle_size - i - 1);
     if (!fl_dictionary_contains_key(table, needle + (needle_size-1)))
@@ -394,7 +400,7 @@ fl_cstr_append_char(FlCstr *dst, char c)
 }
 
 FlCstr
-fl_cstr_join(FlVector *vector, FlCstr glue)
+fl_cstr_join(FlVector vector, FlCstr glue)
 {
     size_t glue_length = strlen(glue);
     FlCstr str = fl_cstr_new(0);
@@ -423,7 +429,7 @@ fl_cstr_join(FlVector *vector, FlCstr glue)
 }
 
 FlCstr
-fl_char_join(FlVector *vector, FlCstr glue)
+fl_char_join(FlVector vector, FlCstr glue)
 {
     size_t glue_length = strlen(glue);
     FlCstr str = fl_cstr_new(0);

@@ -29,7 +29,7 @@
  * Typedef of the opaque struct FlIterator
  * -------------------------------------------------------------
  */
-typedef struct FlIterator FlIterator;
+typedef struct FlIterator* FlIterator;
 
 /* -------------------------------------------------------------
  * {datatype: enum FlIteratorType}
@@ -108,10 +108,10 @@ typedef bool (*FlIteratorPosition)(FlPointer it, FlPointer container);
  * {param: FlIteratorPosition isend} Checks if an iterator is pointing to the past-the-last-nth element in the collection
  * {param: FlIteratorDelete delete} Frees the memory used by {itdata}
  * -------------------------------------------------------------
- * {return: FlIterator*} Iterator to traverse a collection of the type {FlIteratorType}
+ * {return: FlIterator} Iterator to traverse a collection of the type {FlIteratorType}
  * -------------------------------------------------------------
  */
-FlIterator* fl_iterator_new(
+FlIterator fl_iterator_new(
 	FlIteratorType type, 
 	FlPointer itdata, 
 	FlIteratorMove next, 
@@ -128,48 +128,48 @@ FlIterator* fl_iterator_new(
  * -------------------------------------------------------------
  * Releases the memory used by {FlIterator}.
  * -------------------------------------------------------------
- * {param: FlIterator* it} Target iterator to clean up
+ * {param: FlIterator it} Target iterator to clean up
  * -------------------------------------------------------------
  * {return: void}
  * -------------------------------------------------------------
  */
-void fl_iterator_delete(FlIterator *it);
+void fl_iterator_delete(FlIterator it);
 
 /* -------------------------------------------------------------
  * {function: fl_iterator_next}
  * -------------------------------------------------------------
  * Moves the iterator to the next element in the collection
  * -------------------------------------------------------------
- * {param: FlIterator* it} Target iterator
+ * {param: FlIterator it} Target iterator
  * -------------------------------------------------------------
- * {return: FlIterator*} Reference to the target iterator
+ * {return: FlIterator} Reference to the target iterator
  * -------------------------------------------------------------
  */
-FlIterator* fl_iterator_next(FlIterator *it);
+FlIterator fl_iterator_next(FlIterator it);
 
 /* -------------------------------------------------------------
  * {function: fl_iterator_prev}
  * -------------------------------------------------------------
  * Moves the iterator to the previous element in the collection
  * -------------------------------------------------------------
- * {param: FlIterator* it} Target iterator
+ * {param: FlIterator it} Target iterator
  * -------------------------------------------------------------
- * {return: FlIterator*} Reference to the target iterator
+ * {return: FlIterator} Reference to the target iterator
  * -------------------------------------------------------------
  */
-FlIterator* fl_iterator_prev(FlIterator *it);
+FlIterator fl_iterator_prev(FlIterator it);
 
 /* -------------------------------------------------------------
  * {function: fl_iterator_value}
  * -------------------------------------------------------------
  * Returns the value of the current pointed element
  * -------------------------------------------------------------
- * {param: FlIterator* it} Target iterator
+ * {param: FlIterator it} Target iterator
  * -------------------------------------------------------------
  * {return: FlPointer} Pointer to the element data
  * -------------------------------------------------------------
  */
-FlPointer fl_iterator_value(FlIterator *it);
+FlPointer fl_iterator_value(FlIterator it);
 
 /* -------------------------------------------------------------
  * {macro: flm_iterator_value}
@@ -179,7 +179,7 @@ FlPointer fl_iterator_value(FlIterator *it);
  * this more friendly by taking a data type and doing the
  * casting.
  * -------------------------------------------------------------
- * {param: FlIterator* it} Pointer to an interator
+ * {param: FlIterator it} Pointer to an interator
  * {param: DataType Keyword type} C data type
  * -------------------------------------------------------------
  */
@@ -191,13 +191,13 @@ FlPointer fl_iterator_value(FlIterator *it);
  * Check if the iterator is pointing 1 element beyond the last
  * element (actually, not an element)
  * -------------------------------------------------------------
- * {param: FlIterator* it} Target iterator
+ * {param: FlIterator it} Target iterator
  * {param: FlPointer container} Collection of elements
  * -------------------------------------------------------------
  * {return: bool}
  * -------------------------------------------------------------
  */
-bool fl_iterator_is_end(FlIterator *it, FlPointer container);
+bool fl_iterator_is_end(FlIterator it, FlPointer container);
 
 /* -------------------------------------------------------------
  * {function: fl_iterator_equals}
@@ -205,12 +205,12 @@ bool fl_iterator_is_end(FlIterator *it, FlPointer container);
  * Check if both iterators are pointing to the same element
  * in the container
  * -------------------------------------------------------------
- * {param: FlIterator* i1} Target iterator
- * {param: FlIterator* i2} Target iterator
+ * {param: FlIterator i1} Target iterator
+ * {param: FlIterator i2} Target iterator
  * -------------------------------------------------------------
  * {return: bool}
  * -------------------------------------------------------------
  */
-bool fl_iterator_equals(FlIterator *i1, FlIterator *i2);
+bool fl_iterator_equals(FlIterator i1, FlIterator i2);
 
 #endif /* FL_ITERATOR_H */

@@ -87,7 +87,7 @@ obj/$(TARGET)/src/%.o: src/%.c
 
 obj/$(TARGET)/tests/%.o: tests/%.c
 	@mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) $(TESTS) -c $< -o $@
+	$(CC) $(CFLAGS) $(TESTS) -c $< -o $@ -I./include -I./src
 
 .PHONY: clean folders
 clean:	

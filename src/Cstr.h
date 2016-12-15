@@ -60,7 +60,7 @@ FlCstr fl_cstr_vadup (const FlCstr s, va_list args);
  * {input} Source string
  * Returns a {FlVector} containing all the chars of the input at each index
  */
-FlVector* fl_cstr_split(const FlCstr input);
+FlVector fl_cstr_split(const FlCstr input);
 
 /**
  * {input} Source string
@@ -123,7 +123,7 @@ FlCstr* fl_cstr_append_char(FlCstr *dst, char c);
  * Joins all the FlCstr elements of {vector} with FlCstr {glue}
  * Alloc the memory to return a new FlCstr
  */
-FlCstr fl_cstr_join(FlVector* vector, FlCstr glue);
+FlCstr fl_cstr_join(FlVector vector, FlCstr glue);
 
 /**
  * {vector} Source vector of chars
@@ -131,7 +131,7 @@ FlCstr fl_cstr_join(FlVector* vector, FlCstr glue);
  * Joins all the char elements of {vector} with FlCstr {glue}
  * Alloc the memory to return a new FlCstr
  */
-FlCstr fl_char_join(FlVector *vector, FlCstr glue);
+FlCstr fl_char_join(FlVector vector, FlCstr glue);
 
 #define flm_cstr_equals(cstr1, cstr2) (strcmp((cstr1), (cstr2)) == 0)
 

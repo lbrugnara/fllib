@@ -88,10 +88,10 @@ bool fl_array_contains(const FlGenericArray array, const FlPointer needle)
 	return false;
 }
 
-FlVector* fl_array_to_vector(const FlGenericArray array)
+FlVector fl_array_to_vector(const FlGenericArray array)
 {
 	FlArrayHeader *h = GetHeader(array);
-	FlVector *v = fl_vector_new(h->s, h->n);
+	FlVector v = fl_vector_new(h->s, h->n);
 
 	FlByte *data = array;
 	size_t l = h->n * h->s;

@@ -3,5 +3,8 @@
 
 void test_cstr_new();
 void test_cstr_dup();
+void test_cstr_split();
+void test_cstr_replace_char();
+void test_cstr_append();
 
 #endif

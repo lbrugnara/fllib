@@ -1,4 +1,4 @@
-#include "../src/Cstr.h"
+#include <fllib.h>
 
 #include "Cstr.h"
 #include "Test.h"
@@ -23,4 +23,72 @@ void test_cstr_dup()
     fl_expect("str not null", str != NULL);
     fl_expect("str == \"Hello\"", flm_cstr_equals(str, "Hello"));
     fl_cstr_delete(str);
+}
+
+void test_cstr_split()
+{
+    FlVector v = fl_cstr_split("Hello");
+    size_t length = fl_vector_length(v);
+    fl_expect("Split resulted in a vector with length 5", length == 5);
+    for(int i=0; i < length; i++)
+    {
+        char c = flm_vector_get(v, char, i);
+        switch(i)
+        {
+            case 0:
+                fl_expect("Char in position 0 must be 'H'", c == 'H');
+                break;
+            case 1:
+                fl_expect("Char in position 1 must be 'e'", c == 'e');
+                break;
+            case 2:
+                fl_expect("Char in position 2 must be 'l'", c == 'l');
+                break;
+            case 3:
+                fl_expect("Char in position 3 must be 'l'", c == 'l');
+                break;
+            case 4:
+                fl_expect("Char in position 4 must be 'o'", c == 'o');
+                break;
+        }
+    }
+    fl_vector_delete(v);
+}
+
+void test_cstr_replace_char()
+{
+    FlCstr world = "World";
+    FlCstr worl = fl_cstr_replace_char(world, 'd', "");
+    fl_expect("Replace char 'd' with empty string in 'World' results in 'Worl'", flm_cstr_equals(worl, "Worl"));
+    FlCstr word = fl_cstr_replace_char(worl, 'l', "d");
+    fl_expect("Replace char 'l' with 'd' in 'Worl' results in 'Word'", flm_cstr_equals(word, "Word"));
+    fl_cstr_delete(word);
+    fl_cstr_delete(worl);
+
+    FlCstr dot = "object.property";
+    FlCstr noDot = fl_cstr_replace_char(dot, '.', "");
+    fl_expect("Replace char '.' with empty string in 'object.property' results in 'objectproperty'", flm_cstr_equals(noDot, "objectproperty"));
+    fl_cstr_delete(noDot);
+
+    FlCstr multipleA = "abcabcabca";
+    FlCstr noA = fl_cstr_replace_char(multipleA, 'a', "");
+    fl_expect("Replace char 'a' with empty string in 'abcabcabca' results in 'bcbcbc'", flm_cstr_equals(noA, "bcbcbc"));
+    fl_cstr_delete(noA);
+
+    FlCstr withZz = fl_cstr_replace_char(multipleA, 'a', "zz");
+    fl_expect("Replace char 'a' with string 'zz' in 'abcabcabca' results in 'zzbczzbczzbczz'", flm_cstr_equals(withZz, "zzbczzbczzbczz"));
+    fl_cstr_delete(withZz);
+}
+
+void test_cstr_append()
+{
+    FlCstr helloWorld = fl_cstr_dup("Hello ");
+    fl_cstr_append(&helloWorld, "world!");
+    fl_expect("Append 'world!' to string 'Hello ' results in 'Hello world!'", flm_cstr_equals(helloWorld, "Hello world!"));
+    fl_expect("Combined string  'Hello world!' has 12 characters", strlen(helloWorld) == 12);
+
+    fl_cstr_append(fl_cstr_append(fl_cstr_append(fl_cstr_append(&helloWorld, "\n"), "Bye"), "."), "\n");
+    fl_expect("4 calls to append with '\\n', 'Bye', '.' and '\\n' results in string 'Hello world!\\nBye.\\n'", flm_cstr_equals(helloWorld, "Hello world!\nBye.\n"));
+
+    fl_cstr_delete(helloWorld);
 }

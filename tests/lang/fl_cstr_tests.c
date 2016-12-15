@@ -3,6 +3,7 @@
 #include <string.h>
 #include <locale.h>
 
+#include <fllib.h>
 #include "../fl_test_utils.h"
 #include "../../src/Cstr.h"
 

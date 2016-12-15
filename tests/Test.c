@@ -31,12 +31,12 @@ struct FlTestSuite
  * {param: const FlTest[] tests} Array of tests that compose the suite
  * {param: size_t ntests} Number of tests that compose the suite
  * -------------------------------------------------------------
- * {return: FlTestSuite*} Suite pointer
+ * {return: FlTestSuite} Suite pointer
  * -------------------------------------------------------------
  */
-FlTestSuite* _fl_test_suite_new(const char *name, const FlTest tests[], size_t ntests)
+FlTestSuite _fl_test_suite_new(const char *name, const FlTest tests[], size_t ntests)
 {
-    FlTestSuite *t = calloc(1, sizeof(FlTestSuite));
+    FlTestSuite t = calloc(1, sizeof(struct FlTestSuite));
     t->name = name;
     t->ntests = ntests;
     t->tests = tests;
@@ -48,12 +48,12 @@ FlTestSuite* _fl_test_suite_new(const char *name, const FlTest tests[], size_t n
  * -------------------------------------------------------------
  * Delete a suite freeing its memory
  * -------------------------------------------------------------
- * {param: FlTestSuite* suite} Target suite to be removed
+ * {param: FlTestSuite suite} Target suite to be removed
  * -------------------------------------------------------------
  * {return: void}
  * -------------------------------------------------------------
  */
-void fl_test_suite_delete(FlTestSuite* suite)
+void fl_test_suite_delete(FlTestSuite suite)
 {
     free(suite);
 }
@@ -63,7 +63,7 @@ void fl_test_suite_delete(FlTestSuite* suite)
  * -------------------------------------------------------------
  */
 enum {
-    TEST_FAILURE,
+    TEST_FAILURE = 1,
     TEST_EXCEPTION
 };
 
@@ -138,6 +138,7 @@ bool fl_expect(const char* descr, bool conditionResult)
         strncpy(testctx.message, descr, FL_TRYCONTEXT_EX_MSG_LENGTH);
         Throw(&testctx, TEST_FAILURE);
     }
+    printf(" |-- %s\n", descr);
     return true;
 }
 
@@ -146,12 +147,12 @@ bool fl_expect(const char* descr, bool conditionResult)
  * -------------------------------------------------------------
  * Run a suite of tests
  * -------------------------------------------------------------
- * {param: FlTestSuite* suite} Target suite to be ran
+ * {param: FlTestSuite suite} Target suite to be ran
  * -------------------------------------------------------------
  * {return: void}
  * -------------------------------------------------------------
  */
-void fl_test_suite_run(FlTestSuite *suite)
+void fl_test_suite_run(FlTestSuite suite)
 {
     #ifdef _WIN32
     FlWinExceptionHandler prevh = fl_winex_global_handler_set(exception_filter);
@@ -163,19 +164,19 @@ void fl_test_suite_run(FlTestSuite *suite)
     printf("----------------------------\n");
     for (int i=0; i < suite->ntests; i++)
     {
-        printf(" - Test Case: %s", suite->tests[i].name);
+        printf(" # Test Case: %s\n", suite->tests[i].name);
         Try (&testctx)
         {
             suite->tests[i].run();  
-            printf(" | Pass\n");
+            printf(" [Result] success\n\n");
         }
         Catch(TEST_EXCEPTION)
         {
-            printf(" | Fail\n\t%s: %s\n", suite->tests[i].name, testctx.message);
+            printf(" [Result] fail: %s\n\n", testctx.message);
         }
         Rest
         {
-            printf(" | Fail\n\t%s\n", testctx.message);
+            printf(" [Result] fail: %s\n\n", testctx.message);
         }
         EndTry;
     }

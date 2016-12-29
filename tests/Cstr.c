@@ -86,9 +86,28 @@ void test_cstr_append()
     fl_cstr_append(&helloWorld, "world!");
     fl_expect("Append 'world!' to string 'Hello ' results in 'Hello world!'", flm_cstr_equals(helloWorld, "Hello world!"));
     fl_expect("Combined string  'Hello world!' has 12 characters", strlen(helloWorld) == 12);
+    fl_cstr_append(fl_cstr_append(fl_cstr_append(fl_cstr_append(&helloWorld, "\n"), "Bye"), "."), ".");
+    fl_expect("4 calls to append with '\\n', 'Bye', '.' and '.' results in string 'Hello world!\\nBye..'", flm_cstr_equals(helloWorld, "Hello world!\nBye.."));
 
-    fl_cstr_append(fl_cstr_append(fl_cstr_append(fl_cstr_append(&helloWorld, "\n"), "Bye"), "."), "\n");
-    fl_expect("4 calls to append with '\\n', 'Bye', '.' and '\\n' results in string 'Hello world!\\nBye.\\n'", flm_cstr_equals(helloWorld, "Hello world!\nBye.\n"));
-
+    fl_cstr_append_char(&helloWorld, '.');
+    fl_cstr_append_char(&helloWorld, '\n');
+    fl_expect("2 calls to append_char with '.' and '\\n' results in 'Hello world!\\nBye...\\n'", flm_cstr_equals(helloWorld, "Hello world!\nBye...\n"));
     fl_cstr_delete(helloWorld);
+}
+
+void test_cstr_join()
+{
+    FlVector str_vector = flm_vector_new(FlCstr, 3);
+    FlCstr str1 = fl_cstr_dup("one");
+    FlCstr str2 = fl_cstr_dup("two");
+    FlCstr str3 = fl_cstr_dup("three");
+
+    fl_vector_add(str_vector, &str1);
+    fl_vector_add(str_vector, &str2);
+    fl_vector_add(str_vector, &str3);
+    FlCstr str = fl_cstr_join(str_vector, ", ");
+    fl_expect("Join vector with three items 'one', 'two' and 'three' using ', ' as glue, results in 'one, two, three'", flm_cstr_equals(str, "one, two, three"));
+    fl_expect("Length of previous joined string is 15 characters", strlen(str) == 15);
+    fl_cstr_delete(str);
+    fl_vector_delete_ptrs(str_vector);
 }

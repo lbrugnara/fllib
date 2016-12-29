@@ -10,7 +10,7 @@ typedef struct FlRegex* FlRegex;
  * is not null, it will contain any information regarding to regex
  * compilation errors
  */
-FlRegex fl_regex_compile(FlCstr pattern, FlError error);
+FlRegex fl_regex_compile(FlCstr pattern, FlError *error);
 
 /**
  * Using {regex} check if {text} matches the pattern

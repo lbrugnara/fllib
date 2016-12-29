@@ -67,7 +67,7 @@ FlVector fl_cstr_split(const FlCstr input);
  * Returns an array of chars containing all the chars of the input at each index.
  * The array is allocated by an fl_array_new call
  */
-char* fl_cstr_split_a (const FlCstr input);
+char* fl_cstr_to_array (const FlCstr input);
 
 /**
  * {src} Source string
@@ -134,5 +134,6 @@ FlCstr fl_cstr_join(FlVector vector, FlCstr glue);
 FlCstr fl_char_join(FlVector vector, FlCstr glue);
 
 #define flm_cstr_equals(cstr1, cstr2) (strcmp((cstr1), (cstr2)) == 0)
+#define flm_cstr_ncmp(cstr1, cstr2, n) (strncmp((cstr1), (cstr2), (n)) == 0)
 
 #endif /* FL_C_STR_H */

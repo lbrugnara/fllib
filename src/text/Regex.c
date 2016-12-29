@@ -366,9 +366,9 @@ static inline char regex_operator_get_arity(char op)
  * Private API used by Regex module
  * -------------------------------------------------------------
  */
-FlVector parse_regex (FlCstr regex, RegexFlags *flags, FlError error);
+FlVector parse_regex (FlCstr regex, RegexFlags *flags, FlError *error);
 
-FlVector regex_to_postfix (FlCstr regex, RegexFlags *flags, FlError error);
+FlVector regex_to_postfix (FlCstr regex, RegexFlags *flags, FlError *error);
 
 void print_nfa (NfaState **states);
 
@@ -403,12 +403,12 @@ int compare_states(const void* v1, const void* v2);
  * {param: FlCstr regex} Pattern to analyze
  * {param: RegexFlags* flags} The function will change this when find certain flags like anchors
  * {param: RegexAnalysis* analysis} Will keep metainformation of the pattern
- * {param: FlError error} If the analysis produces an error it will be set in this parameter
+ * {param: FlError *error} If the analysis produces an error it will be set in this parameter
  * -------------------------------------------------------------
  * {return: void}
  * -------------------------------------------------------------
  */
-void analyze_regex(FlCstr regex, RegexFlags *flags, RegexAnalysis *analysis, FlError error)
+void analyze_regex(FlCstr regex, RegexFlags *flags, RegexAnalysis *analysis, FlError *error)
 {
 	flm_assert(analysis != NULL, "RegexAnalysis cannot be NULL");
 	size_t reglength = strlen(regex);
@@ -439,15 +439,15 @@ void analyze_regex(FlCstr regex, RegexFlags *flags, RegexAnalysis *analysis, FlE
  * {return: FlVector} Vector of FlCstr that contains the tokens of the parsed regex
  * -------------------------------------------------------------
  */
-FlVector parse_regex(FlCstr regex, RegexFlags *flags, FlError error)
+FlVector parse_regex(FlCstr regex, RegexFlags *flags, FlError *error)
 {
 	RegexAnalysis analysis;
 	analyze_regex(regex, flags, &analysis, error);
 
-	if (error != NULL)
+	if (error && *error)
 		return NULL;
 
-	char *tokens = fl_cstr_split_a(regex);
+	char *tokens = fl_cstr_to_array(regex);
 	// Function output (tokens)
 	FlVector output = fl_vector_new(sizeof(FlCstr), analysis.patternEnd+1);
 	
@@ -621,7 +621,7 @@ FlVector parse_regex(FlCstr regex, RegexFlags *flags, FlError error)
 	if (tokens)
 		fl_array_delete(tokens);
 	
-	if (error != NULL)
+	if (error && *error)
 	{
 		fl_vector_delete_ptrs(output);
 		return NULL;
@@ -641,7 +641,7 @@ FlVector parse_regex(FlCstr regex, RegexFlags *flags, FlError error)
  * 	of the parsed regex. The tokens are in a postfix notation
  * -------------------------------------------------------------
  */
-FlVector regex_to_postfix (FlCstr regex, RegexFlags *flags, FlError error) 
+FlVector regex_to_postfix (FlCstr regex, RegexFlags *flags, FlError *error) 
 {
 	//error = NULL;
 	if (!regex && !regex[0])
@@ -656,7 +656,7 @@ FlVector regex_to_postfix (FlCstr regex, RegexFlags *flags, FlError error)
 
 	/* Parse, sanitize and get an array with the regex tokens */
 	FlVector tokens = parse_regex(regex, flags, error);
-	if (tokens == NULL || error != NULL)
+	if (tokens == NULL || (error && *error))
 		return NULL;
 
 	int length = strlen(regex);
@@ -787,11 +787,11 @@ FlVector regex_to_postfix (FlCstr regex, RegexFlags *flags, FlError error)
 				// Literal chars are sended directly to the output
 				fl_vector_add(output, &token);
 		}
-		if (error != NULL)
+		if (error && *error)
 			break;
 	}
 
-	if (error == NULL)
+	if (!error)
 	{
 		// Finally, remove all the pending operators from the stack, and send it to the output
 		while (fl_vector_length(stack))
@@ -830,11 +830,11 @@ FlVector regex_to_postfix (FlCstr regex, RegexFlags *flags, FlError error)
  * {return: FlRegex} NFA for the given pattern
  * -------------------------------------------------------------
  */
-FlRegex fl_regex_compile (FlCstr pattern, FlError error)
+FlRegex fl_regex_compile (FlCstr pattern, FlError *error)
 {
 	RegexFlags flags = 0;
 	FlVector tokens = regex_to_postfix(pattern, &flags, error);
-	if (error != NULL)
+	if (error && *error)
 		return NULL;
 	size_t nstates = fl_vector_length(tokens) + 1;
 
@@ -1073,7 +1073,7 @@ FlRegex fl_regex_compile (FlCstr pattern, FlError error)
 		// Delete consumed token
 		fl_cstr_delete(token);
 
-		if (error != NULL)
+		if (error && *error)
 			break;
 	}
 	// Sort the regex to retrieve States by its ID like array indexes
@@ -1083,7 +1083,7 @@ FlRegex fl_regex_compile (FlCstr pattern, FlError error)
 	print_nfa(regex->states);
 	#endif
 	
-	if (error != NULL)
+	if (error && *error)
 	{
 		fl_regex_delete(regex);
 		fl_vector_delete_ptrs(tokens);

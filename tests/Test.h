@@ -7,7 +7,7 @@ typedef void(*FlTestHandler)();
 
 typedef struct FlTest
 {
-    char name[50];
+    char name[100];
     FlTestHandler run;
 } FlTest;
 

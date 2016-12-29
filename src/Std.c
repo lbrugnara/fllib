@@ -19,14 +19,28 @@ struct FlError
 	FlCstr message;
 };
 
-void
-fl_error_set(FlError error, int id, const FlCstr format, ...)
+FlError
+fl_error_new(int id, const FlCstr format, ...)
 {
-	error = fl_calloc(1, sizeof(struct FlError));
+	struct FlError *error = fl_calloc(1, sizeof(struct FlError));
 	error->id = id;
 	va_list args;
     va_start(args, format);
     error->message = fl_cstr_vadup(format, args);
+    va_end(args);
+    return error;
+}
+
+void
+fl_error_set(FlError *error, int id, const FlCstr format, ...)
+{
+    if (error == NULL)
+        return;
+	*error = fl_calloc(1, sizeof(struct FlError));
+	(*error)->id = id;
+	va_list args;
+    va_start(args, format);
+    (*error)->message = fl_cstr_vadup(format, args);
     va_end(args);
 }
 
@@ -47,12 +61,11 @@ fl_error_get_message(FlError error)
 }
 
 void
-fl_error_delete(FlError error)
+fl_error_delete(FlError *error)
 {
-	flm_assert(error != NULL, "Error must not be NULL");
-	if (error->message)
-		fl_free(error->message);
-	fl_free(error);
+	flm_assert(error != NULL && *error != NULL, "Error must not be NULL");
+	fl_free((*error)->message);
+	fl_free(*error);
 }
 
 FlPointer
@@ -72,13 +85,13 @@ fl_exit(FlErrorType errtype, const FlCstr format, ...)
 	switch(errtype)
 	{
 		case ERR_FATAL:
-			errtypemsg = fl_cstr_dup("FATAL ERROR");
+			errtypemsg = fl_cstr_dup("FATAL ERROR: ");
 			break;
 		case ERR_UNIMPLEMENTED:
-			errtypemsg = fl_cstr_dup("UNIMPLEMENTED ERROR");
+			errtypemsg = fl_cstr_dup("UNIMPLEMENTED ERROR: ");
 			break;
 		default:
-			errtypemsg = fl_cstr_dup("UNKNOWN ERROR");
+			errtypemsg = fl_cstr_dup("UNKNOWN ERROR: ");
 	}
 
 	va_list args;

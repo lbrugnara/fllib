@@ -43,7 +43,7 @@ fl_cstr_split (const FlCstr str)
 }
 
 char* 
-fl_cstr_split_a (const FlCstr str) 
+fl_cstr_to_array (const FlCstr str) 
 {
     flm_assert(str != NULL, "FlCstr argument to split cannot be NULL");
 

@@ -37,6 +37,23 @@ typedef enum
  */
 typedef struct FlError* FlError;
 
+void fl_error_push(int id, const FlCstr format, ...);
+FlError fl_error_last();
+
+/* -------------------------------------------------------------
+ * {function: fl_error_new}
+ * -------------------------------------------------------------
+ * Creates an {FlError} with the specified {id} and message
+ * -------------------------------------------------------------
+ * {param: int id} ID of the error. This is generic, each module can create its own mapping for error codes
+ * {param: const FlCstr format} Error message. Accepts 3 format specifiers: %d, %c and %s
+ * {param: ... arguments} Additional arguments used to replace format specifiers in {format}
+ * -------------------------------------------------------------
+ * {return: FlError} Created error
+ * -------------------------------------------------------------
+ */
+FlError fl_error_new(int id, const FlCstr format, ...);
+
 /* -------------------------------------------------------------
  * {function: fl_error_set}
  * -------------------------------------------------------------
@@ -50,7 +67,7 @@ typedef struct FlError* FlError;
  * {return: void}
  * -------------------------------------------------------------
  */
-void fl_error_set(FlError error, int id, const FlCstr format, ...);
+void fl_error_set(FlError *error, int id, const FlCstr format, ...);
 
 /* -------------------------------------------------------------
  * {function: fl_error_get_id}
@@ -86,7 +103,7 @@ FlCstr fl_error_get_message(FlError error);
  * {return: void}
  * -------------------------------------------------------------
  */
-void fl_error_delete(FlError error);
+void fl_error_delete(FlError *error);
 
 
 /* -------------------------------------------------------------

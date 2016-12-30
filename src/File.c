@@ -9,7 +9,7 @@
     #include <io.h>
     #define access _access
     #include <direct.h>
-    #define mkdir _mkdir
+    #define mkdir(path, mode) _mkdir((path))
 #elif defined(__linux__)
     #include <unistd.h>
     #include <sys/stat.h>

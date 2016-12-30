@@ -69,11 +69,11 @@ bool fl_thread_join_all(FlThread *threads, size_t nthreads)
 
 void fl_mutex_init(FlMutex *mutex)
 {
-    #ifdef FL_WIN_THREADS_CRITICAL_SECTION
+    #ifdef FL_WIN_MUTEX
+        *mutex = CreateMutex(NULL, FALSE, NULL);
+    #elif defined(FL_WIN_THREADS)
         *mutex = fl_malloc(sizeof(CRITICAL_SECTION));
         InitializeCriticalSection(*mutex);
-    #elif defined(FL_WIN_THREADS)
-        *mutex = CreateMutex(NULL, FALSE, NULL);
     #elif defined(FL_PTHREADS)
         pthread_mutex_init(mutex, NULL);
     #endif
@@ -81,7 +81,15 @@ void fl_mutex_init(FlMutex *mutex)
 
 void fl_mutex_lock(FlMutex *mutex)
 {
-    #ifdef FL_WIN_THREADS_CRITICAL_SECTION
+    #ifdef FL_WIN_MUTEX
+        if (*mutex == NULL)
+        {
+            HANDLE p = CreateMutex(NULL, FALSE, NULL);
+            if (InterlockedCompareExchangePointer((PVOID*)mutex, (PVOID)p, NULL) != NULL)
+                CloseHandle(p);
+        }
+        WaitForSingleObject(*mutex, INFINITE);
+    #elif defined(FL_WIN_THREADS)
         if (*mutex == NULL)
         { 
             CRITICAL_SECTION *s = fl_malloc(sizeof(CRITICAL_SECTION));
@@ -93,14 +101,6 @@ void fl_mutex_lock(FlMutex *mutex)
             }
         }
         EnterCriticalSection(*mutex);
-    #elif defined(FL_WIN_THREADS)
-        if (*mutex == NULL)
-        {
-            HANDLE p = CreateMutex(NULL, FALSE, NULL);
-            if (InterlockedCompareExchangePointer((PVOID*)mutex, (PVOID)p, NULL) != NULL)
-                CloseHandle(p);
-        }
-        WaitForSingleObject(*mutex, INFINITE);
     #elif defined(FL_PTHREADS)
         pthread_mutex_lock(mutex);
     #endif   
@@ -108,10 +108,10 @@ void fl_mutex_lock(FlMutex *mutex)
 
 void fl_mutex_unlock(FlMutex *mutex)
 {
-    #ifdef FL_WIN_THREADS_CRITICAL_SECTION
-        LeaveCriticalSection(*mutex);
-    #elif defined(FL_WIN_THREADS)
+    #ifdef FL_WIN_MUTEX
         ReleaseMutex(*mutex);
+    #elif defined(FL_WIN_THREADS)
+        LeaveCriticalSection(*mutex);
     #elif defined(FL_PTHREADS)
         pthread_mutex_unlock(mutex);
     #endif   
@@ -119,11 +119,11 @@ void fl_mutex_unlock(FlMutex *mutex)
 
 void fl_mutex_destroy(FlMutex *mutex)
 {
-    #ifdef FL_WIN_THREADS_CRITICAL_SECTION
+    #ifdef FL_WIN_MUTEX
+        CloseHandle(*mutex);
+    #elif defined(FL_WIN_THREADS)
         DeleteCriticalSection(*mutex);
         fl_free(*mutex);
-    #elif defined(FL_WIN_THREADS)
-        CloseHandle(*mutex);
     #elif defined(FL_PTHREADS)
         pthread_mutex_destroy(mutex);
     #endif

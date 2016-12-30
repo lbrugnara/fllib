@@ -16,7 +16,10 @@
 
     typedef HANDLE FlThread;
     typedef DWORD FlThreadId;
-    #ifdef FL_WIN_THREADS_CRITICAL_SECTION
+    #ifdef FL_WIN_MUTEX
+        typedef HANDLE FlMutex;
+        #define FL_MUTEX_INIT_STATIC NULL
+    #else
         // Add an indirection to allow "copying" ciritcal sections.
         // This way, FlMutex is not limited by windows implementation 
         // in other platforms. This allows code like:
@@ -39,9 +42,6 @@
         //      }
         //
         typedef CRITICAL_SECTION* FlMutex;
-        #define FL_MUTEX_INIT_STATIC NULL
-    #else
-        typedef HANDLE FlMutex;
         #define FL_MUTEX_INIT_STATIC NULL
     #endif
 

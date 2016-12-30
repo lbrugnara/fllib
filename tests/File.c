@@ -7,7 +7,7 @@ void test_file_rw_all_bytes()
 {
     #ifdef __linux__
     FlCstr path = "/tmp";
-    #elif define(_WIN32)
+    #elif defined(_WIN32)
     FlCstr path = "c:\\tmp";
     #endif
 
@@ -21,7 +21,7 @@ void test_file_rw_all_bytes()
     fl_file_write_all_bytes("test_file.txt", arr);
     #ifdef __linux__
     fl_expect("File /tmp/test_file.txt exists", fl_file_exists("/tmp/test_file.txt"));
-    #elif define(_WIN32)
+    #elif defined(_WIN32)
     fl_expect("File C:\\tmp\\test_file.txt exists", fl_file_exists("C:\\tmp\\test_file.txt"));
     #endif
     FlByteArray bytes = fl_file_read_all_bytes("test_file.txt");

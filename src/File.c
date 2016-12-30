@@ -10,8 +10,10 @@
     #define access _access
     #include <direct.h>
     #define mkdir _mkdir
-#elif __linux__
+#elif defined(__linux__)
     #include <unistd.h>
+    #include <sys/stat.h>
+    #include <sys/types.h>
 #endif
 
 bool fl_file_exists(FlCstr filename)
@@ -21,7 +23,7 @@ bool fl_file_exists(FlCstr filename)
 
 bool fl_file_create_dir(FlCstr pathname)
 {
-    int res = mkdir(pathname);
+    int res = mkdir(pathname, 0775);
     if (res == 0)
         return true;
     fl_error_push(errno, strerror(errno));

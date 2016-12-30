@@ -14,15 +14,15 @@ int counter;
 
 void routine(FlThreadArgs args)
 {
-    FlMutex mutex = *(FlMutex*)args;    
-    fl_mutex_lock(&mutex);
+    FlMutex *mutex = (FlMutex*)args;
+    fl_mutex_lock(mutex);
     unsigned long i = 0;
     counter += 1;
     printf("\n Job %d started\n", counter);
 
     for(i=0; i<(100);i++);
     printf("\n Job %d finished\n", counter);
-    fl_mutex_unlock(&mutex);
+    fl_mutex_unlock(mutex);
 }
 
 int main(void)

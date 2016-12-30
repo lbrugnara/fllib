@@ -7,7 +7,7 @@ FlThread fl_thread_create(FlThreadFunc routine, FlThreadArgs args)
     FlThread thread;
     #ifdef FL_WIN_THREADS
         thread = (FlThread)_beginthreadex(NULL, 0, (unsigned(__stdcall*)(void*))routine, args, 0, NULL);
-    #elif FL_PTHREADS
+    #elif defined(FL_PTHREADS)
         pthread_create(&thread, NULL, (void*(*)(void*))routine, args);
     #endif
     return thread;
@@ -20,8 +20,8 @@ FlThreadId fl_thread_current_id()
         // If platform is _WIN32 and compilation flag is (or not) FL_PTHREADS
         // use GetCurrentThreadId(), because gettid is not available
         threadId = GetCurrentThreadId();
-    #elif FL_PTHREADS && !defined(_WIN32)
-        threadId = gettid();
+    #elif defined(FL_PTHREADS) && !defined(_WIN32)
+        threadId = pthread_self();
     #endif
     return threadId;
 }
@@ -30,7 +30,7 @@ void fl_thread_exit(FlPointer retval)
 {
     #ifdef FL_WIN_THREADS
         _endthreadex(retval ? *(unsigned int*)retval : 0);
-    #elif FL_PTHREADS
+    #elif defined(FL_PTHREADS)
         pthread_exit(retval);
     #endif
 }
@@ -39,7 +39,7 @@ void fl_thread_join(FlThread thread)
 {
     #ifdef FL_WIN_THREADS
         WaitForSingleObject(thread, INFINITE);
-    #elif FL_PTHREADS
+    #elif defined(FL_PTHREADS)
         pthread_join(thread, NULL);
     #endif
 }
@@ -57,7 +57,7 @@ bool fl_thread_join_all(FlThread *threads, size_t nthreads)
         {
             WaitForSingleObject(threads[i], INFINITE);            
         }
-    #elif FL_PTHREADS
+    #elif defined(FL_PTHREADS)
         for (size_t i=0; i < nthreads; i++)
         {
             pthread_join(threads[i], NULL);

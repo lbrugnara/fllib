@@ -6,6 +6,8 @@
 // we will use Windows threads
 #if _WIN32 && !defined(FL_PTHREADS)
     #define FL_WIN_THREADS
+#elif defined(__linux__)
+    #define FL_PTHREADS
 #endif
 
 #ifdef FL_WIN_THREADS
@@ -37,13 +39,13 @@
         //      }
         //
         typedef CRITICAL_SECTION* FlMutex;
-        #define FL_MUTEX_STATIC_INIT NULL
+        #define FL_MUTEX_INIT_STATIC NULL
     #else
         typedef HANDLE FlMutex;
-        #define FL_MUTEX_STATIC_INIT NULL
+        #define FL_MUTEX_INIT_STATIC NULL
     #endif
 
-#elif __linux__ || FL_PTHREADS
+#elif defined(FL_PTHREADS)
     #ifdef _WIN32
         #include <windows.h>
         #define HAVE_STRUCT_TIMESPEC // pthreads-w32 tries to redeclare struct timespec
@@ -56,7 +58,7 @@
     typedef pthread_t FlThread;
     typedef pid_t FlThreadId;
     typedef pthread_mutex_t FlMutex;
-    #define FL_MUTEX_STATIC_INIT PTHREAD_MUTEX_INITIALIZER
+    #define FL_MUTEX_INIT_STATIC PTHREAD_MUTEX_INITIALIZER
 #endif
 
 typedef void(*FlThreadFunc)(void*);

@@ -15,31 +15,31 @@ void thread_error()
     fl_error_push(1, "ID=%d | Testing error 1", id);
     error = fl_error_last();
     str = fl_cstr_vdup("ID=%d | Testing error 1", id);
-    fl_expect("Error ID=1", error.id == 1 && flm_cstr_equals(error.message, str));
+    fl_expect(str, error.id == 1 && flm_cstr_equals(error.message, str));
     fl_cstr_delete(str);
     
     fl_error_push(2, "ID=%d | Testing error 2", id);
     error = fl_error_last();
     str = fl_cstr_vdup("ID=%d | Testing error 2", id);
-    fl_expect("Error ID=2", error.id == 2 && flm_cstr_equals(error.message, str));
+    fl_expect(str, error.id == 2 && flm_cstr_equals(error.message, str));
     fl_cstr_delete(str);
     
     fl_error_push(3, "ID=%d | Testing error 3", id);
     error = fl_error_last();
     str = fl_cstr_vdup("ID=%d | Testing error 3", id);
-    fl_expect("Error ID=3", error.id == 3 && flm_cstr_equals(error.message, str));
+    fl_expect(str, error.id == 3 && flm_cstr_equals(error.message, str));
     fl_cstr_delete(str);
     
     fl_error_push(4, "ID=%d | Testing error 4", id);
     error = fl_error_last();
     str = fl_cstr_vdup("ID=%d | Testing error 4", id);
-    fl_expect("Error ID=4", error.id == 4 && flm_cstr_equals(error.message, str));
+    fl_expect(str, error.id == 4 && flm_cstr_equals(error.message, str));
     fl_cstr_delete(str);
     
     fl_error_push(5, "ID=%d | Testing error 5", id);
     error = fl_error_last();
     str = fl_cstr_vdup("ID=%d | Testing error 5", id);
-    fl_expect("Error ID=5", error.id == 5 && flm_cstr_equals(error.message, str));
+    fl_expect(str, error.id == 5 && flm_cstr_equals(error.message, str));
     fl_cstr_delete(str);
 }
 

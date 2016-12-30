@@ -315,6 +315,7 @@ fl_dictionary_delete_h(FlDictionary dict, void (*delete_handler)(FlByte*))
 	flm_assert(delete_handler != NULL, "Handler cannot be NULL");
 
 	fl_list_delete_h(dict->list, delete_handler);
+	fl_free(dict);
 }
 
 /* -------------------------------------------------------------

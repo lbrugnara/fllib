@@ -27,7 +27,7 @@ typedef struct FlErrQueue {
 } FlErrQueue;
 
 FlDictionary Errors/*<FlThreadId, FlErrQueue>*/;
-FlMutex ErrMutex = FL_MUTEX_STATIC_INIT;
+FlMutex ErrMutex = FL_MUTEX_INIT_STATIC;
 
 void push_error(FlErrQueue *queue, struct FlError error)
 {

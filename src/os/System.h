@@ -4,7 +4,7 @@
 #include "../Types.h"
 #include "../Std.h"
 
-bool fl_system_set_working_dir(FlCstr path, FlError *error);
+bool fl_system_set_working_dir(FlCstr path);
 FlCstr fl_system_get_working_dir();
 
 #endif /* FL_SYSTEM_H */

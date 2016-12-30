@@ -366,9 +366,9 @@ static inline char regex_operator_get_arity(char op)
  * Private API used by Regex module
  * -------------------------------------------------------------
  */
-FlVector parse_regex (FlCstr regex, RegexFlags *flags, FlError *error);
+FlVector parse_regex (FlCstr regex, RegexFlags *flags);
 
-FlVector regex_to_postfix (FlCstr regex, RegexFlags *flags, FlError *error);
+FlVector regex_to_postfix (FlCstr regex, RegexFlags *flags);
 
 void print_nfa (NfaState **states);
 
@@ -403,12 +403,11 @@ int compare_states(const void* v1, const void* v2);
  * {param: FlCstr regex} Pattern to analyze
  * {param: RegexFlags* flags} The function will change this when find certain flags like anchors
  * {param: RegexAnalysis* analysis} Will keep metainformation of the pattern
- * {param: FlError *error} If the analysis produces an error it will be set in this parameter
  * -------------------------------------------------------------
  * {return: void}
  * -------------------------------------------------------------
  */
-void analyze_regex(FlCstr regex, RegexFlags *flags, RegexAnalysis *analysis, FlError *error)
+void analyze_regex(FlCstr regex, RegexFlags *flags, RegexAnalysis *analysis)
 {
 	flm_assert(analysis != NULL, "RegexAnalysis cannot be NULL");
 	size_t reglength = strlen(regex);
@@ -439,13 +438,10 @@ void analyze_regex(FlCstr regex, RegexFlags *flags, RegexAnalysis *analysis, FlE
  * {return: FlVector} Vector of FlCstr that contains the tokens of the parsed regex
  * -------------------------------------------------------------
  */
-FlVector parse_regex(FlCstr regex, RegexFlags *flags, FlError *error)
+FlVector parse_regex(FlCstr regex, RegexFlags *flags)
 {
 	RegexAnalysis analysis;
-	analyze_regex(regex, flags, &analysis, error);
-
-	if (error && *error)
-		return NULL;
+	analyze_regex(regex, flags, &analysis);
 
 	char *tokens = fl_cstr_to_array(regex);
 	// Function output (tokens)
@@ -473,13 +469,13 @@ FlVector parse_regex(FlCstr regex, RegexFlags *flags, FlError *error)
 		{
 			if (nex == FL_EOS)
 			{
-				fl_error_set(error, -1, "Incomplete escaped value");
+				fl_error_push(-1, "Incomplete escaped value");
 				break;
 			}
 
 			if (!is_escape_seq(nex))
 			{
-				fl_error_set(error, -1, "Unknown escaped value %c%c", cur, nex);
+				fl_error_push(-1, "Unknown escaped value %c%c", cur, nex);
 				break;
 			}
 			// Set bslash to \ and update cur and nex to i+1 (and i+2)
@@ -546,7 +542,7 @@ FlVector parse_regex(FlCstr regex, RegexFlags *flags, FlError *error)
 					lower = !isupper(prev) && !isupper(nex) && (int)prev < (int)nex;
 					if (!lower && !upper)
 					{
-						fl_error_set(error, -1, "Invalid range %c%c%c", (prev == FL_EOS ? '-' : prev), cur, (nex == FL_EOS ? '-' : nex));
+						fl_error_push(-1, "Invalid range %c%c%c", (prev == FL_EOS ? '-' : prev), cur, (nex == FL_EOS ? '-' : nex));
 						break;
 					}
 				} 
@@ -554,7 +550,7 @@ FlVector parse_regex(FlCstr regex, RegexFlags *flags, FlError *error)
 				{
 					if ((int)prev >= (int)nex)
 					{
-						fl_error_set(error, -1, "Invalid range %c%c%c", (prev == FL_EOS ? '-' : prev), cur, (nex == FL_EOS ? '-' : nex));
+						fl_error_push(-1, "Invalid range %c%c%c", (prev == FL_EOS ? '-' : prev), cur, (nex == FL_EOS ? '-' : nex));
 						break;
 					}
 				} 
@@ -620,12 +616,6 @@ FlVector parse_regex(FlCstr regex, RegexFlags *flags, FlError *error)
 
 	if (tokens)
 		fl_array_delete(tokens);
-	
-	if (error && *error)
-	{
-		fl_vector_delete_ptrs(output);
-		return NULL;
-	}
 	return output;
 }
 
@@ -633,20 +623,18 @@ FlVector parse_regex(FlCstr regex, RegexFlags *flags, FlError *error)
  * {function: regex_to_postfix}
  * -------------------------------------------------------------
  * Parses the pattern in {regex} and populates {flags}
- * with parsing information. If an error occurs, the 
- * {error} struct is populated with useful information
- * about the failure.
+ * with parsing information. 
  * -------------------------------------------------------------
  * {return: FlVector} Vector of FlCstr that contains the tokens 
  * 	of the parsed regex. The tokens are in a postfix notation
  * -------------------------------------------------------------
  */
-FlVector regex_to_postfix (FlCstr regex, RegexFlags *flags, FlError *error) 
+FlVector regex_to_postfix (FlCstr regex, RegexFlags *flags) 
 {
 	//error = NULL;
 	if (!regex && !regex[0])
 	{
-		fl_error_set(error, -1, "Empty pattern");
+		fl_error_push(-1, "Empty pattern");
 		return NULL;
 	}
 
@@ -655,8 +643,8 @@ FlVector regex_to_postfix (FlCstr regex, RegexFlags *flags, FlError *error)
 	#endif
 
 	/* Parse, sanitize and get an array with the regex tokens */
-	FlVector tokens = parse_regex(regex, flags, error);
-	if (tokens == NULL || (error && *error))
+	FlVector tokens = parse_regex(regex, flags);
+	if (tokens == NULL)
 		return NULL;
 
 	int length = strlen(regex);
@@ -694,7 +682,7 @@ FlVector regex_to_postfix (FlCstr regex, RegexFlags *flags, FlError *error)
 				if ((fl_vector_length(output) == 1 && *flm_vector_get(output, FlCstr, 0) == '[')
 					|| (fl_vector_length(output) == 2 && *flm_vector_get(output, FlCstr, 0) == '[' && *flm_vector_get(output, FlCstr, 1) == '^'))
 				{
-					fl_error_set(error, -1, "Empty character class is not allowed");
+					fl_error_push(-1, "Empty character class is not allowed");
 					break;
 				}
 				// parse_regex escapes ] when no [ is found, so this does not need validation like capturing groups
@@ -727,7 +715,7 @@ FlVector regex_to_postfix (FlCstr regex, RegexFlags *flags, FlError *error)
 				}
 				if (stackedtoken[0] != '(')
 				{
-					fl_error_set(error, -1, "Invalid regular expression: Found character ')' but starting '(' was not found");
+					fl_error_push(-1, "Invalid regular expression: Found character ')' but starting '(' was not found");
 					break;
 				}
 				currentGroup--;
@@ -787,28 +775,23 @@ FlVector regex_to_postfix (FlCstr regex, RegexFlags *flags, FlError *error)
 				// Literal chars are sended directly to the output
 				fl_vector_add(output, &token);
 		}
-		if (error && *error)
-			break;
 	}
 
-	if (!error)
+	// Finally, remove all the pending operators from the stack, and send it to the output
+	while (fl_vector_length(stack))
 	{
-		// Finally, remove all the pending operators from the stack, and send it to the output
-		while (fl_vector_length(stack))
-		{
-			FlCstr sc;
-			fl_vector_pop(stack, &sc);
-			fl_vector_add(output, &sc);
-		}
+		FlCstr sc;
+		fl_vector_pop(stack, &sc);
+		fl_vector_add(output, &sc);
+	}
 
-		if (inCharClass)
-		{
-			fl_error_set(error, -1, "Invalid regular expression: missing closing ']'");
-		}
-		else if (currentGroup != 0)
-		{
-			fl_error_set(error, -1, "Invalid regular expression: missing closing ')'");
-		}
+	if (inCharClass)
+	{
+		fl_error_push(-1, "Invalid regular expression: missing closing ']'");
+	}
+	else if (currentGroup != 0)
+	{
+		fl_error_push(-1, "Invalid regular expression: missing closing ')'");
 	}
 
 	#if DEBUG
@@ -830,11 +813,11 @@ FlVector regex_to_postfix (FlCstr regex, RegexFlags *flags, FlError *error)
  * {return: FlRegex} NFA for the given pattern
  * -------------------------------------------------------------
  */
-FlRegex fl_regex_compile (FlCstr pattern, FlError *error)
+FlRegex fl_regex_compile (FlCstr pattern)
 {
 	RegexFlags flags = 0;
-	FlVector tokens = regex_to_postfix(pattern, &flags, error);
-	if (error && *error)
+	FlVector tokens = regex_to_postfix(pattern, &flags);
+	if (tokens == NULL)
 		return NULL;
 	size_t nstates = fl_vector_length(tokens) + 1;
 
@@ -919,7 +902,7 @@ FlRegex fl_regex_compile (FlCstr pattern, FlError *error)
 					leftset = PopOperandIndex();
 					if (leftset == 0) // S0 is an invalid regexp
 					{
-						fl_error_set(error, -1, "Invalid regular expression: There is no operand for '%c'", tokenval);
+						fl_error_push(-1, "Invalid regular expression: There is no operand for '%c'", tokenval);
 						break;
 					}
 					#if DEBUG
@@ -934,7 +917,7 @@ FlRegex fl_regex_compile (FlCstr pattern, FlError *error)
 					leftset = PopOperandIndex();
 					if (leftset == 0) // S0 is an invalid regexp
 					{
-						fl_error_set(error, -1, "Invalid regular expression: There is no operand for '%c'", tokenval);
+						fl_error_push(-1, "Invalid regular expression: There is no operand for '%c'", tokenval);
 						break;
 					}
 					#if DEBUG
@@ -1072,9 +1055,6 @@ FlRegex fl_regex_compile (FlCstr pattern, FlError *error)
 		}
 		// Delete consumed token
 		fl_cstr_delete(token);
-
-		if (error && *error)
-			break;
 	}
 	// Sort the regex to retrieve States by its ID like array indexes
 	// regex->states[n] is the State->id == n
@@ -1082,13 +1062,6 @@ FlRegex fl_regex_compile (FlCstr pattern, FlError *error)
 	#if DEBUG
 	print_nfa(regex->states);
 	#endif
-	
-	if (error && *error)
-	{
-		fl_regex_delete(regex);
-		fl_vector_delete_ptrs(tokens);
-		return NULL;
-	}
 			
 	fl_vector_delete(tokens);
 	return regex;

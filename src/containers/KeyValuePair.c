@@ -12,7 +12,7 @@ struct FlKeyValuePair
 FlKeyValuePair
 fl_kvp_new(size_t kdtsize, size_t vdtsize)
 {
-	FlKeyValuePair kvp = fl_malloc(sizeof(FlKeyValuePair));
+	FlKeyValuePair kvp = fl_malloc(sizeof(struct FlKeyValuePair));
 	kvp->kdtsize = kdtsize;
 	kvp->vdtsize = vdtsize;
 	kvp->key = fl_malloc(kdtsize);

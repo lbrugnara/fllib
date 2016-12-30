@@ -22,9 +22,9 @@
         //      void routine(FlThreadArgs args)
         //      {
         //          FlMutex mutex = *(FlMutex*)args
-        //          fl_thread_mutex_lock(&mutex);
+        //          fl_mutex_lock(&mutex);
         //          // critical section ...
-        //          fl_thread_mutex_unlock(&mutex);
+        //          fl_mutex_unlock(&mutex);
         //          // Cleanup ...
         //      }
         //
@@ -37,8 +37,10 @@
         //      }
         //
         typedef CRITICAL_SECTION* FlMutex;
+        #define FL_MUTEX_STATIC_INIT NULL
     #else
         typedef HANDLE FlMutex;
+        #define FL_MUTEX_STATIC_INIT NULL
     #endif
 
 #elif __linux__ || FL_PTHREADS
@@ -54,6 +56,7 @@
     typedef pthread_t FlThread;
     typedef pid_t FlThreadId;
     typedef pthread_mutex_t FlMutex;
+    #define FL_MUTEX_STATIC_INIT PTHREAD_MUTEX_INITIALIZER
 #endif
 
 typedef void(*FlThreadFunc)(void*);
@@ -65,9 +68,9 @@ void fl_thread_exit(FlPointer retval);
 void fl_thread_join(FlThread thread);
 bool fl_thread_join_all(FlThread *threads, size_t nthreads);
 
-void fl_thread_mutex_init(FlMutex *mutex);
-void fl_thread_mutex_lock(FlMutex *mutex);
-void fl_thread_mutex_unlock(FlMutex *mutex);
-void fl_thread_mutex_destroy(FlMutex *mutex);
+void fl_mutex_init(FlMutex *mutex);
+void fl_mutex_lock(FlMutex *mutex);
+void fl_mutex_unlock(FlMutex *mutex);
+void fl_mutex_destroy(FlMutex *mutex);
 
 #endif /* FL_THREADS_H */

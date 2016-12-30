@@ -6,8 +6,8 @@
 void test_file_rw_all_bytes()
 {
     FlCstr wdir = fl_system_get_working_dir();
-    fl_file_create_dir("c:\\tmp", NULL);
-    fl_system_set_working_dir("c:\\tmp", NULL);
+    fl_file_create_dir("c:\\tmp");
+    fl_system_set_working_dir("c:\\tmp");
 
     FlCstr str = "Hello world.\nBye.\n";
     FlByteArray arr = (FlByteArray)fl_cstr_to_array(str);
@@ -20,6 +20,6 @@ void test_file_rw_all_bytes()
     fl_array_delete(arr);
     fl_array_delete(bytes);
 
-    fl_system_set_working_dir(wdir, NULL);
+    fl_system_set_working_dir(wdir);
     fl_cstr_delete(wdir);
 }

@@ -19,12 +19,12 @@ bool fl_file_exists(FlCstr filename)
     return access(filename, 0) != -1;
 }
 
-bool fl_file_create_dir(FlCstr pathname, FlError *error)
+bool fl_file_create_dir(FlCstr pathname)
 {
     int res = mkdir(pathname);
     if (res == 0)
         return true;
-    fl_error_set(error, errno, strerror(errno));
+    fl_error_push(errno, strerror(errno));
     return false;
 }
 

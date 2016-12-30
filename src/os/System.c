@@ -13,12 +13,12 @@
     #include <unistd.h>
 #endif
 
-bool fl_system_set_working_dir(FlCstr path, FlError *error)
+bool fl_system_set_working_dir(FlCstr path)
 {
     flm_assert(path != NULL, "New working directory path is not NULL");
     if (chdir(path) == 0)
         return true;
-    fl_error_set(error, errno, strerror(errno));
+    fl_error_push(errno, strerror(errno));
     return false;
 }
 

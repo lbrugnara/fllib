@@ -67,7 +67,7 @@ bool fl_thread_join_all(FlThread *threads, size_t nthreads)
     return true; 
 }
 
-void fl_thread_mutex_init(FlMutex *mutex)
+void fl_mutex_init(FlMutex *mutex)
 {
     #ifdef FL_WIN_THREADS_CRITICAL_SECTION
         *mutex = fl_malloc(sizeof(CRITICAL_SECTION));
@@ -75,23 +75,38 @@ void fl_thread_mutex_init(FlMutex *mutex)
     #elif defined(FL_WIN_THREADS)
         *mutex = CreateMutex(NULL, FALSE, NULL);
     #elif defined(FL_PTHREADS)
-        // FlMutex is a pthread_mutex_t*
         pthread_mutex_init(mutex, NULL);
     #endif
 }
 
-void fl_thread_mutex_lock(FlMutex *mutex)
+void fl_mutex_lock(FlMutex *mutex)
 {
     #ifdef FL_WIN_THREADS_CRITICAL_SECTION
+        if (*mutex == NULL)
+        { 
+            CRITICAL_SECTION *s = fl_malloc(sizeof(CRITICAL_SECTION));
+            InitializeCriticalSection(s);
+            if (InterlockedCompareExchangePointer((PVOID*)mutex, (PVOID)s, NULL) != NULL)
+            {
+                DeleteCriticalSection(s);
+                free(s);
+            }
+        }
         EnterCriticalSection(*mutex);
     #elif defined(FL_WIN_THREADS)
+        if (*mutex == NULL)
+        {
+            HANDLE p = CreateMutex(NULL, FALSE, NULL);
+            if (InterlockedCompareExchangePointer((PVOID*)mutex, (PVOID)p, NULL) != NULL)
+                CloseHandle(p);
+        }
         WaitForSingleObject(*mutex, INFINITE);
     #elif defined(FL_PTHREADS)
         pthread_mutex_lock(mutex);
     #endif   
 }
 
-void fl_thread_mutex_unlock(FlMutex *mutex)
+void fl_mutex_unlock(FlMutex *mutex)
 {
     #ifdef FL_WIN_THREADS_CRITICAL_SECTION
         LeaveCriticalSection(*mutex);
@@ -102,7 +117,7 @@ void fl_thread_mutex_unlock(FlMutex *mutex)
     #endif   
 }
 
-void fl_thread_mutex_destroy(FlMutex *mutex)
+void fl_mutex_destroy(FlMutex *mutex)
 {
     #ifdef FL_WIN_THREADS_CRITICAL_SECTION
         DeleteCriticalSection(*mutex);

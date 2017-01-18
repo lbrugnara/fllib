@@ -177,13 +177,13 @@ fl_cstr_copy (FlCstr dest, const FlCstr source)
 }
 
 FlCstr 
-fl_cstr_copy_n (FlCstr dest, const FlCstr source, size_t n)
+fl_cstr_copy_n (FlCstr dest, const char *source, size_t n)
 {
     flm_assert(dest != NULL, "Destination cannot be NULL");
     flm_assert(source != NULL, "Source cannot be NULL");
 
     FlCstr d = dest;
-    FlCstr ss = source;
+    FlCstr ss = (FlCstr)source;
     while(n--)
     {
     	*d = *ss;
@@ -303,7 +303,7 @@ fl_cstr_replace(const FlCstr src, const FlCstr needle, const FlCstr rplc)
         else
         {
             map[k] = 1;
-            newlength += abs(rplc_size - needle_size);           
+            newlength += abs((int)rplc_size - (int)needle_size);           
         }
         i += d;
     }

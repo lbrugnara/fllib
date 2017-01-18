@@ -36,7 +36,7 @@ FlCstr fl_cstr_copy(FlCstr dest, const FlCstr source);
  * Copy {n} bytes of {source} into {dest}. {dest} should has enough
  * size to save {source}
  */
-FlCstr fl_cstr_copy_n(FlCstr dest, const FlCstr source, size_t n);
+FlCstr fl_cstr_copy_n(FlCstr dest, const char* source, size_t n);
 
 /**
  * {s} Source string

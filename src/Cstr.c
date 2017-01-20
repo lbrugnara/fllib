@@ -60,16 +60,10 @@ FlCstr
 fl_cstr_dup (const FlCstr s) 
 {
     flm_assert(s != NULL, "FlCstr argument to duplicate cannot be NULL");
-	FlCstr ss = s;
-    size_t l = strlen(ss);
-    FlCstr sd = fl_cstr_new(l);
-    FlCstr sdc = sd;
-    while(*ss)
-    {
-    	*sdc = *ss;
-    	ss++;
-    	sdc++;
-    }
+    size_t l = strlen(s);
+    FlCstr sd = fl_cstr_new(l+1);
+    memcpy(sd, s, l);
+    sd[l] = '\0';
     return sd;
 }
 
@@ -107,19 +101,20 @@ FlCstr
 fl_cstr_vadup (const FlCstr s, va_list args)
 {
     flm_assert(s != NULL, "FlCstr argument to duplicate cannot be NULL");
-    FlCstr sc = s;
-    size_t length = strlen(sc);
+    size_t length = strlen(s);
     FlVector parts = fl_vector_new(sizeof(char), length);
-    while(*sc)
+    char sc;
+    for (size_t i=0; i < length; i++)
     {
-        if (*sc != '%')
+        sc = s[i];
+        if (sc != '%')
         {
-            char c = *sc;
-            fl_vector_add(parts, &c);
+            fl_vector_add(parts, &sc);
         } 
         else
         {
-            switch(*++sc)
+            sc = s[++i];
+            switch(sc)
             {
                 case 'c':
                 {
@@ -147,12 +142,11 @@ fl_cstr_vadup (const FlCstr s, va_list args)
                 }
                 case '%':
                 {
-                    fl_vector_add(parts, sc);
+                    fl_vector_add(parts, &sc);
                     break;
                 }
             }
         }
-        sc++;
     }
     FlCstr sd = fl_char_join(parts, "");
     fl_vector_delete(parts);

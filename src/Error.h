@@ -55,6 +55,8 @@ typedef struct FlError
  */
 void fl_error_push(int id, const FlCstr format, ...);
 
+char* fl_errno_str(int errnum, char* buf, size_t len);
+
 FlError fl_error_last();
 
 /* -------------------------------------------------------------

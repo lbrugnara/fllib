@@ -2,6 +2,7 @@
 #include <errno.h>
 
 #include "System.h"
+#include "../Error.h"
 #include "../Cstr.h"
 
 #ifdef _WIN32
@@ -18,7 +19,8 @@ bool fl_system_set_working_dir(FlCstr path)
     flm_assert(path != NULL, "New working directory path is not NULL");
     if (chdir(path) == 0)
         return true;
-    fl_error_push(errno, strerror(errno));
+    char errmsg[64];
+    fl_error_push(errno, fl_errno_str(errno, errmsg, 64));
     return false;
 }
 

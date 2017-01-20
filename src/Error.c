@@ -1,4 +1,8 @@
 #include <stdarg.h>
+#include <string.h>
+#include <errno.h>
+
+#include "Error.h"
 #include "Mem.h"
 #include "Std.h"
 #include "threading/Thread.h"
@@ -97,6 +101,29 @@ fl_error_last()
     }
     FlErrQueue *queue = *(FlErrQueue**)fl_dictionary_get_val(Errors, &currentid);    
     return last_error(queue);
+}
+
+char* fl_errno_str(int errnum, char* buf, size_t len) 
+{
+    #if _WIN32
+    {
+        #if __STDC_WANT_SECURE_LIB__
+        {
+            _strerror_s(buf, len, errnum);  
+        }
+        #else
+        {
+            char* msg = strerror(errnum);
+            strncpy(buf, msg, len);
+        }
+        #endif
+    }
+    #elif defined(__linux__)
+    {
+        strerror_r(errnum), buf, len);
+    }
+    #endif
+    return buf;
 }
 
 void

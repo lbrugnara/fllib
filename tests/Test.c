@@ -2,8 +2,8 @@
 #include <string.h>
 #include <stdio.h>
 
+#include <fllib.h>
 #include "Test.h"
-#include "../src/os/Signal.h"
 
 /* -------------------------------------------------------------
  * {datatype: struct FlTestSuite}
@@ -135,7 +135,7 @@ bool fl_expect(const char* descr, bool conditionResult)
 {
     if (!conditionResult)
     {
-        strncpy(testctx.message, descr, FL_TRYCONTEXT_EX_MSG_LENGTH);
+        fl_cstr_copy_n(testctx.message, descr, FL_TRYCONTEXT_EX_MSG_LENGTH);
         Throw(&testctx, TEST_FAILURE);
     }
     printf(" |-- %s\n", descr);

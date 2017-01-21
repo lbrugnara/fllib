@@ -14,5 +14,7 @@
 #include <containers/List.h>
 #include <containers/Vector.h>
 #include <os/System.h>
+#include <os/Signal.h>
+
 
 #endif /* FL_LIB */

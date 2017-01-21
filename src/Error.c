@@ -1,6 +1,5 @@
 #include <stdarg.h>
 #include <string.h>
-#include <errno.h>
 
 #include "Error.h"
 #include "Mem.h"
@@ -105,22 +104,20 @@ fl_error_last()
 
 char* fl_errno_str(int errnum, char* buf, size_t len) 
 {
-    #if _WIN32
+    // If we have the secure version of strrerror use it, if not use strerror with its known 
+    // issues in MT
+    #if defined(_WIN32) && defined(__STDC_WANT_SECURE_LIB__)
     {
-        #if __STDC_WANT_SECURE_LIB__
-        {
-            _strerror_s(buf, len, errnum);  
-        }
-        #else
-        {
-            char* msg = strerror(errnum);
-            strncpy(buf, msg, len);
-        }
-        #endif
+        _strerror_s(buf, len, errnum);
     }
-    #elif defined(__linux__)
+    #elif defined(__linux__) && (_XOPEN_SOURCE == 600 || _POSIX_C_SOURCE == 200112L && !defined(_GNU_SOURCE))
     {
-        strerror_r(errnum), buf, len);
+        strerror_r(errnum, buf, len);
+    }
+    #else
+    {
+        char* msg = strerror(errnum);
+        strncpy(buf, msg, len);
     }
     #endif
     return buf;

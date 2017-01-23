@@ -1,7 +1,7 @@
 CC=gcc
 AR=ar
 override DEBUG += -ggdb -DFL_DEBUG
-override CFLAGS += -O0 -Wall -Wno-unused-variable -Wno-unused-function -std=c99 -pedantic -fstrict-aliasing
+override CFLAGS += -Wall -Wno-unused-variable -Wno-unused-function -std=c99 -pedantic -fstrict-aliasing
 # Macros for target tests
 TESTS=
 

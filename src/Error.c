@@ -54,7 +54,7 @@ void delete_errors_h(FlByte* ptr)
     free(ptr);
 }
 
-void delete_errors()
+void delete_errors(void)
 {
     fl_dictionary_delete_h(Errors, delete_errors_h);
 }
@@ -108,7 +108,7 @@ char* fl_errno_str(int errnum, char* buf, size_t len)
     // issues in MT
     #if defined(_WIN32) && defined(__STDC_WANT_SECURE_LIB__)
     {
-        _strerror_s(buf, len, errnum);
+        strerror_s(buf, len, errnum);
     }
     #elif defined(__linux__) && (_XOPEN_SOURCE == 600 || _POSIX_C_SOURCE == 200112L && !defined(_GNU_SOURCE))
     {

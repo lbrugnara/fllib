@@ -1,5 +1,5 @@
-#ifndef FL_WINEX
-#define FL_WINEX
+#ifndef FL_WINEX_H
+#define FL_WINEX_H
 
 /* -------------------------------------------------------------
  * Win32 SEH ({see: os/Windows.h})
@@ -105,4 +105,4 @@ void fl_winex_message_get(DWORD exceptionCode, char *destmsg);
  */
 void fl_wincmd_control_handler_set(DWORD ctrl, FlWinCmdControlHandler handler);
 
-#endif /* FL_WINEX */
+#endif /* FL_WINEX_H */

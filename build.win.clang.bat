@@ -8,6 +8,8 @@ clang -O3 -c .\src\threading\Thread.c  -o obj\debug\threading\Thread.o
 clang -O3 -c .\src\Std.c  -o obj\debug\Std.o
 clang -O3 -c .\src\Error.c  -o obj\debug\Error.o
 clang -O3 -c .\src\Mem.c  -o obj\debug\Mem.o
+clang -O3 -c .\src\text\Unicode.c  -o obj\debug\text\Unicode.o
+clang -O3 -c .\src\text\String.c  -o obj\debug\text\String.o
 clang -O3 -c .\src\Cstr.c  -o obj\debug\Cstr.o
 clang -O3 -c .\src\Array.c  -o obj\debug\Array.o
 clang -O3 -c .\src\File.c  -o obj\debug\File.o
@@ -28,6 +30,8 @@ lib -NOLOGO -VERBOSE                        ^
     obj\debug\Std.o                         ^
     obj\debug\Error.o                       ^
     obj\debug\Mem.o                         ^
+    obj\debug\text\Unicode.o                ^
+    obj\debug\text\String.o                 ^
     obj\debug\Cstr.o                        ^
     obj\debug\Array.o                       ^
     obj\debug\File.o                        ^
@@ -45,12 +49,16 @@ lib -NOLOGO -VERBOSE                        ^
 :: Tests
 
 md .\tests\obj\debug
+md .\tests\obj\debug\threading
+md .\tests\obj\debug\text
 
 clang -O3 -I.\include -I.\src -c tests\Main.c -o tests\obj\debug\Main.o
 clang -O3 -I.\include -I.\src -c tests\Test.c -o tests\obj\debug\Test.o
 clang -O3 -I.\include -I.\src -c tests\Std.c -o tests\obj\debug\Std.o
 clang -O3 -I.\include -I.\src -c tests\File.c -o tests\obj\debug\File.o
 clang -O3 -I.\include -I.\src -c tests\Cstr.c -o tests\obj\debug\Cstr.o
+clang -O3 -I.\include -I.\src -c tests\text\Test_Unicode.c -o tests\obj\debug\text\Test_Unicode.o
+clang -O3 -I.\include -I.\src -c tests\text\String.c -o tests\obj\debug\text\String.o
 
 md .\tests\build\debug
 
@@ -60,4 +68,6 @@ clang -O3 -I.\include -I.\src -o tests\build\debug\tests.exe ^
     tests\obj\debug\Test.o  ^
     tests\obj\debug\Std.o   ^
     tests\obj\debug\File.o  ^
+    tests\obj\debug\text\Test_Unicode.o  ^
+    tests\obj\debug\text\String.o  ^
     tests\obj\debug\Cstr.o

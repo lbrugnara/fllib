@@ -41,6 +41,8 @@ FL_OBJECTS=\
 	obj/$(TARGET)/src/Std.o 						\
 	obj/$(TARGET)/src/Error.o 						\
 	obj/$(TARGET)/src/Mem.o 						\
+	obj/$(TARGET)/src/text/Unicode.o 				\
+	obj/$(TARGET)/src/text/String.o 				\
 	obj/$(TARGET)/src/Cstr.o 						\
 	obj/$(TARGET)/src/Array.o 						\
 	obj/$(TARGET)/src/File.o 						\
@@ -63,7 +65,9 @@ FL_TEST_OBJECTS=\
 	obj/$(TARGET)/tests/Test.o \
 	obj/$(TARGET)/tests/Std.o \
 	obj/$(TARGET)/tests/File.o \
-	obj/$(TARGET)/tests/Cstr.o 
+	obj/$(TARGET)/tests/Cstr.o \
+	obj/$(TARGET)/tests/text/Test_Unicode.o \
+	obj/$(TARGET)/tests/text/String.o 
 
 ifeq ($(LINKAGE),static)
 	# Creates the .a file

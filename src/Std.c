@@ -1,3 +1,4 @@
+#include <string.h>
 #include <stdarg.h>
 #include "Mem.h"
 #include "Std.h"

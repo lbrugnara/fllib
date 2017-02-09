@@ -4,6 +4,9 @@
 #include <Types.h>
 #include <threading/Thread.h>
 #include <Std.h>
+#include <text/Unicode.h>
+#include <text/String.h>
+#include <text/Regex.h>
 #include <Mem.h>
 #include <Cstr.h>
 #include <Array.h>

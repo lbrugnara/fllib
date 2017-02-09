@@ -12,6 +12,7 @@
  * -------------------------------------------------------------
  */
 
+#include <stddef.h>
 #include <setjmp.h>
 #include "Types.h"
 
@@ -82,7 +83,7 @@ void fl_exit(FlErrorType errtype, const FlCstr format, ...);
  * {param: const FlCstr message} Error message
  * -------------------------------------------------------------
  */
-#define flm_exit(errtype, message) fl_exit(errtype, " in ["__FILE__ ":" FL_LINE "|%s] " message, __func__)
+#define flm_exit(errtype, message) fl_exit(errtype, "in ["__FILE__ ":" FL_LINE "|%s] " message, __func__)
 
 /* -------------------------------------------------------------
  * {macro: flm_vexit}
@@ -94,7 +95,7 @@ void fl_exit(FlErrorType errtype, const FlCstr format, ...);
  * {param: ... arguments} Additional arguments used to replace format specifiers in {format}
  * -------------------------------------------------------------
  */
-#define flm_vexit(errtype, format,...) fl_exit(errtype, " in ["__FILE__ ":" FL_LINE "|%s] " format, __func__, __VA_ARGS__)
+#define flm_vexit(errtype, format,...) fl_exit(errtype, "in ["__FILE__ ":" FL_LINE "|%s] " format, __func__, __VA_ARGS__)
 
 #ifdef FL_DEBUG
      /* -------------------------------------------------------------
@@ -107,7 +108,7 @@ void fl_exit(FlErrorType errtype, const FlCstr format, ...);
      * {param: const FlCstr error} Error message
      * -------------------------------------------------------------
      */
-    #define flm_assert(condition, error) if (!(condition)) (flm_exit(ERR_FATAL, error));
+    #define flm_assert(condition, error) if (!(condition)) (flm_exit(ERR_FATAL, "Condition '" #condition "' failed. " error));
 
      /* -------------------------------------------------------------
       * {macro: flm_vassert}
@@ -120,7 +121,7 @@ void fl_exit(FlErrorType errtype, const FlCstr format, ...);
       * {param: ... arguments} Additional arguments used to replace format specifiers in {error}
       * -------------------------------------------------------------
       */
-    #define flm_vassert(condition, error, ...) if (!(condition)) (flm_vexit(ERR_FATAL, error, __VA_ARGS__));
+    #define flm_vassert(condition, error, ...) if (!(condition)) (flm_vexit(ERR_FATAL, "Condition '" #condition "' failed. " error, __VA_ARGS__));
 #else
     /* Mute the assertions */
     #define flm_assert(condition, error)

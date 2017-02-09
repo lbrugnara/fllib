@@ -1,3 +1,4 @@
+#include <string.h>
 #include "List.h"
 #include "Dictionary.h"
 #include "KeyValuePair.h"

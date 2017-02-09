@@ -1,6 +1,7 @@
 #ifndef FL_MEM_H
 #define FL_MEM_H
 
+#include <stddef.h>
 #include "Types.h"
 
 /**

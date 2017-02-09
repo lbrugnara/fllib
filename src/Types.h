@@ -1,12 +1,40 @@
 #ifndef FL_TYPES_H
 #define FL_TYPES_H
 
-#include <string.h>
+//#include <string.h>
 
-typedef unsigned char   FlByte;
-typedef char*           FlCstr;
+/* -------------------------------------------------------------
+* {datatype: unsigned char FlByte}
+* -------------------------------------------------------------
+* Represents a single byte. Preferred over unsigned char for
+* readability
+* -------------------------------------------------------------
+*/
+typedef unsigned char FlByte;
+
+/* -------------------------------------------------------------
+* {datatype: char* FlCstr}
+* -------------------------------------------------------------
+* Represents an ANSI C-Like string
+* -------------------------------------------------------------
+*/
+typedef char* FlCstr;
+
+/* -------------------------------------------------------------
+* {datatype: char* FlString}
+* -------------------------------------------------------------
+* Represents an UTF8 string
+* -------------------------------------------------------------
+*/
+typedef char*           FlString;
+
+/* -------------------------------------------------------------
+* {datatype: void* FlPointer}
+* -------------------------------------------------------------
+* Used for readability purposes, but it is not mandatory
+* -------------------------------------------------------------
+*/
 typedef void*           FlPointer;
-typedef unsigned int    FlUint;
 
 #ifndef NULL
     #define NULL (void*)0

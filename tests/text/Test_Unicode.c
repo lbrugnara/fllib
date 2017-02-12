@@ -1,6 +1,6 @@
 #include <locale.h>
 #include <fllib.h>
-#include <String.h>
+#include <string.h>
 
 #include "../Test.h"
 

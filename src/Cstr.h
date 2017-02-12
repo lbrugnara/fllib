@@ -2,6 +2,7 @@
 #define FL_C_STR_H
 
 #include <stdarg.h>
+#include <string.h>
 
 #include "Types.h"
 #include "containers/Vector.h"

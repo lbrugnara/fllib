@@ -23,15 +23,15 @@
 #include "Encoding.h"
 
 /* -------------------------------------------------------------
-* {datatype: int32_t FlUnicodeChar}
+* {datatype: uint32_t FlUnicodeChar}
 * -------------------------------------------------------------
 * Represents a Unicode char. To make it easy to work with Unicode
-* characters, the type of FlUnicodeChar is an int32_t, to be able
+* characters, the type of FlUnicodeChar is an uint32_t, to be able
 * to represents all the unicode code points. It is up to library's
 * users to keep track of the encoding of each FlUnicodeChar
 * -------------------------------------------------------------
 */
-typedef int32_t FlUnicodeChar;
+typedef uint32_t FlUnicodeChar;
 
 /* -------------------------------------------------------------
 * {function: fl_unicode_char_from_str}

@@ -153,8 +153,9 @@ bool
 fl_vector_contains(FlVector vector, const FlPointer needle)
 {
     size_t offset = vector->dtsize * vector->length;
-    for (int i=0; i < vector->length; i++)
+    for (size_t i=0; i < vector->length; i++)
     {
+        // TODO
         if (memcmp(vector->data+offset, needle, vector->dtsize) == 0)
             return true;
     }

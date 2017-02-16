@@ -135,10 +135,11 @@ bool fl_expect(const char* descr, bool conditionResult)
 {
     if (!conditionResult)
     {
+        printf(" |-- Failed: %s\n", descr);
         fl_cstr_copy_n(testctx.message, descr, FL_TRYCONTEXT_EX_MSG_LENGTH);
         Throw(&testctx, TEST_FAILURE);
     }
-    printf(" |-- %s\n", descr);
+    printf(" |-- Passed: %s\n", descr);
     return true;
 }
 
@@ -162,12 +163,12 @@ void fl_test_suite_run(FlTestSuite suite)
     printf("============================\n");
     printf("Test Suite: %s\n", suite->name);
     printf("----------------------------\n");
-    for (int i=0; i < suite->ntests; i++)
+    for (size_t i=0; i < suite->ntests; i++)
     {
         printf(" # Test Case: %s\n", suite->tests[i].name);
         Try (&testctx)
         {
-            suite->tests[i].run();  
+            suite->tests[i].run();
             printf(" [Result] success\n\n");
         }
         Catch(TEST_EXCEPTION)

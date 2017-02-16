@@ -8,17 +8,19 @@
 
 FlString fl_string_new(const FlString str)
 {
+    //TODO
     return NULL;
 }
 
 FlString fl_string_new_from_bytes(const FlByte *bytes, size_t length, FlEncoding encoding)
 {
+    //TODO
     return NULL;
 }
 
 void fl_string_delete(FlString str)
 {
-
+    // TODO
 }
 
 

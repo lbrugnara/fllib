@@ -458,7 +458,7 @@ FlVector parse_regex(FlCstr regex, RegexFlags *flags)
 	char cur = FL_EOS;
 	char nex = FL_EOS;
 	char prev = FL_EOS;
-	for (int i=analysis.patternStart; i <= analysis.patternEnd; i++)
+	for (size_t i = analysis.patternStart; i <= analysis.patternEnd; i++)
 	{
 		bslash = false;
 		cur = tokens[i];
@@ -1477,7 +1477,7 @@ bool regex_match (FlRegex regex, FlCstr text)
 	 	result.anyMatch = false;
 
 		// nexts will contain all the reached states after a nfa_step
-	 	for (int i=0; i < currentsl; i++)
+	 	for (size_t i=0; i < currentsl; i++)
 	 	{
 	 		if (currents[i].id == -1)
 	 			continue;
@@ -1495,7 +1495,7 @@ bool regex_match (FlRegex regex, FlCstr text)
 		// If we matched something, update the current set of states
 	 	if (result.anyMatch)
 	 	{
-	 		for (int j=0; j < currentsl; j++)
+	 		for (size_t j=0; j < currentsl; j++)
 	 		{
 	 			currents[j] = nexts[j];
 	 		}

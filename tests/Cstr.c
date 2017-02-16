@@ -30,7 +30,7 @@ void test_cstr_split()
     FlVector v = fl_cstr_split("Hello");
     size_t length = fl_vector_length(v);
     fl_expect("Split resulted in a vector with length 5", length == 5);
-    for(int i=0; i < length; i++)
+    for(size_t i=0; i < length; i++)
     {
         char c = flm_vector_get(v, char, i);
         switch(i)

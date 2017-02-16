@@ -33,6 +33,8 @@
 */
 typedef uint32_t FlUnicodeChar;
 
+#define FL_UNICODE_INVALID_CHAR UINT32_MAX
+
 /* -------------------------------------------------------------
 * {function: fl_unicode_char_from_str}
 * -------------------------------------------------------------

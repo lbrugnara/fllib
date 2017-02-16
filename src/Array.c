@@ -20,7 +20,6 @@ typedef struct FlArrayHeader
 
 FlGenericArray fl_array_new(size_t size, size_t n)
 {
-	flm_assert(size >= 0, "Element size cannot be negative");
 	FlGenericArray array = fl_calloc(1, sizeof(FlArrayHeader) + size * n);
 	FlArrayHeader *h = ((FlArrayHeader*)array)+0;
 	h->s = size;

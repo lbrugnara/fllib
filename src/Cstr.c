@@ -129,7 +129,7 @@ fl_cstr_vadup (const FlCstr s, va_list args)
                     size_t t = integer_length(i);
                     char dst[t];
                     sprintf(dst, "%d", i);
-                    for (int j=0; j < t; j++)
+                    for (size_t j=0; j < t; j++)
                         fl_vector_add(parts, dst+j);
                     break;
                 }
@@ -137,7 +137,7 @@ fl_cstr_vadup (const FlCstr s, va_list args)
                 {
                     FlCstr str = va_arg(args, FlCstr);
                     size_t strlength = strlen(str);
-                    for (int j=0; j < strlength; j++)
+                    for (size_t j=0; j < strlength; j++)
                         fl_vector_add(parts, str+j);
                     break;
                 }
@@ -272,7 +272,7 @@ fl_cstr_replace(const FlCstr src, const FlCstr needle, const FlCstr rplc)
     }
 
     FlDictionary table = fl_dictionary_new(sizeof(char), sizeof(size_t));
-    for (int i=0; i < needle_size-1; i++)
+    for (size_t i=0; i < needle_size-1; i++)
         flm_dictionary_set(table, char, needle[i], size_t, needle_size - i - 1);
     if (!fl_dictionary_contains_key(table, needle + (needle_size-1)))
         flm_dictionary_set(table, char, needle[needle_size-1], size_t, needle_size);
@@ -283,15 +283,15 @@ fl_cstr_replace(const FlCstr src, const FlCstr needle, const FlCstr rplc)
     short map[src_size];
     memset(map, 0, src_size * sizeof(short));
     size_t newlength = src_size;
-    int i = 0;
+    size_t i = 0;
     for(i = needle_size-1; i < src_size;)
     {
         // i delta
-        int d = needle_size;
-        int k = i - (needle_size-1);
+        size_t d = needle_size;
+        size_t k = i - (needle_size-1);
         if (strptr[i] != needle[needle_size-1] || (needle_size > 1 && !cstr_match_backw(strptr+k, needle, needle_size-1)))
         {
-            int *pi = (int*)fl_dictionary_get_val(table, strptr+i);
+            size_t *pi = (size_t*)fl_dictionary_get_val(table, strptr+i);
             if (pi != NULL)
                 d = *pi;
         }
@@ -308,11 +308,11 @@ fl_cstr_replace(const FlCstr src, const FlCstr needle, const FlCstr rplc)
     // spi = source pointer index
     // mpi = map pointer index
     // dpi = dest pointer index
-    for (int spi=0, mpi=0, dpi=0; mpi < src_size;)
+    for (size_t spi=0, mpi=0, dpi=0; mpi < src_size;)
     {
         if (map[mpi])
         {
-            for (int j=mpi; j < mpi+rplc_size; j++)
+            for (size_t j=mpi; j < mpi+rplc_size; j++)
                 dst[dpi++] = rplc[j-mpi];
             spi += needle_size;
             mpi += needle_size;
@@ -350,19 +350,19 @@ fl_cstr_find(const FlCstr str, const FlCstr needle)
         return str;
 
     FlDictionary table = fl_dictionary_new(sizeof(char), sizeof(size_t));
-    for (int i=0; i < needle_size; i++)
+    for (size_t i=0; i < needle_size; i++)
         flm_dictionary_set(table, char, needle[i], size_t, needle_size - i - 1);
     if (!fl_dictionary_contains_key(table, needle + (needle_size-1)))
         flm_dictionary_set(table, char, needle[needle_size-1], size_t, needle_size);
 
     FlCstr strptr = str;
     FlCstr result = NULL;
-    for(int i = needle_size-1; i < str_size;)
+    for(size_t i = needle_size-1; i < str_size;)
     {
-        int k = i - (needle_size-1);
+        size_t k = i - (needle_size-1);
         if (strptr[i] != needle[needle_size-1] || (needle_size > 1 && !cstr_match_backw(strptr+k, needle, needle_size-1)))
         {
-            int *pi = (int*)fl_dictionary_get_val(table, strptr+i);
+            size_t *pi = (size_t*)fl_dictionary_get_val(table, strptr+i);
             i += (pi == NULL ? needle_size : *pi);
             continue;
         }

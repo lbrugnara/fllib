@@ -19,7 +19,7 @@ void test_fl_unicode_char_at()
     size_t strs = fl_string_size(str, NULL);
     size_t chrl = 0;
     size_t chrs = 0;
-    for (int i=0; i < strl; i++)
+    for (size_t i=0; i < strl; i++)
     {
         FlUnicodeChar chr = fl_unicode_char_at((FlByte*)str, FL_ENCODING_UTF8, i);
         chrl++;
@@ -122,6 +122,10 @@ void test_fl_unicode_encode_char_to()
     fl_expect("UTF32 -> UTF8: U+FFFF equals to 0xf48fbfbf", fl_unicode_encode_char_to(u32, FL_ENCODING_UTF32, FL_ENCODING_UTF8) == u8);
     fl_expect("UTF8 -> UTF32: 0xf48fbfbf equals to U+FFFF", fl_unicode_encode_char_to(u8, FL_ENCODING_UTF8, FL_ENCODING_UTF32) == u32);
     
+    // Invalid
+    u32 = 0x110000;
+    fl_expect("UTF8 -> UTF32: 0xf48fbfc0 is an invalid Unicode char", fl_unicode_encode_char_to(u32, FL_ENCODING_UTF32, FL_ENCODING_UTF8) == FL_UNICODE_INVALID_CHAR);
+
     // From string
     u8 = fl_unicode_char_from_str((FlByte*)"Ɓ", FL_ENCODING_UTF8);
     u32 = 0x0181;

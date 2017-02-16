@@ -77,7 +77,7 @@ FlUnicodeChar fl_unicode_char_at(const FlByte* str, FlEncoding encoding, size_t 
 {
     FlUnicodeChar chr = 0;
     size_t offset = 0;
-    for (int i=0; i < at; i++)
+    for (size_t i=0; i < at; i++)
     {
         offset += fl_unicode_str_size(str+offset, encoding, str+offset+1);
     }
@@ -97,39 +97,54 @@ size_t fl_unicode_str_size(const FlByte* chr, FlEncoding encoding, const FlByte*
 {
     if (chr == 0x00)
         return 0;
-    size_t i=0;
-    size_t size = 0, tmp = 0;
-    do
+    
+    size_t size = 0;
+    if (encoding == FL_ENCODING_UTF32)
     {
-        tmp = 0;
-        if (chr[i] == 0x00)
+        size_t i = 0;
+        const FlUnicodeChar *src = (const FlUnicodeChar*)&chr;
+        do
         {
-            if (end != NULL)
+            size += 4;
+            i++;
+        } while ((end == NULL && src[i]) || (end != NULL && ((FlByte*)src)+i < end));
+    }
+    else if (encoding == FL_ENCODING_UTF8)
+    {
+        size_t i=0;
+        size_t tmp = 0;
+        do
+        {
+            tmp = 0;
+            if (chr[i] == 0x00)
+            {
+                if (end != NULL)
+                    tmp = 1;
+            }
+            else if (chr[i] <= UTF8_CP_MAXB_LOCK_1)
+            {
                 tmp = 1;
-        }
-        else if (chr[i] <= UTF8_CP_MAXB_LOCK_1)
-        {
-            tmp = 1;
-        }
-        else if ((chr[i] & UTF8_CP_LEADBYTE_2) && chr[i] <= UTF8_CP_LEADBYTE_2_MAX)
-        {
-            tmp = 2;
-        }
-        else if ((chr[i] & UTF8_CP_LEADBYTE_3) && chr[i] <= UTF8_CP_LEADBYTE_3_MAX)
-        {
-            tmp = 3;
-        }
-        else if ((chr[i] & UTF8_CP_LEADBYTE_4) && chr[i] <= UTF8_CP_LEADBYTE_4_MAX)
-        {
-            tmp = 4;
-        }
-        else
-        {
-            return -1; // Not uf8
-        }
-        size += tmp;
-        i += tmp;
-    } while ((end == NULL && chr[i]) || (end != NULL && chr+i < end));    
+            }
+            else if ((chr[i] & UTF8_CP_LEADBYTE_2) && chr[i] <= UTF8_CP_LEADBYTE_2_MAX)
+            {
+                tmp = 2;
+            }
+            else if ((chr[i] & UTF8_CP_LEADBYTE_3) && chr[i] <= UTF8_CP_LEADBYTE_3_MAX)
+            {
+                tmp = 3;
+            }
+            else if ((chr[i] & UTF8_CP_LEADBYTE_4) && chr[i] <= UTF8_CP_LEADBYTE_4_MAX)
+            {
+                tmp = 4;
+            }
+            else
+            {
+                return FL_UNICODE_INVALID_CHAR; // Not uf8
+            }
+            size += tmp;
+            i += tmp;
+        } while ((end == NULL && chr[i]) || (end != NULL && chr+i < end));
+    }
     return size;
 }
 
@@ -190,6 +205,10 @@ FlUnicodeChar fl_unicode_utf32_to_utf8(FlUnicodeChar src)
         // Lead 1110xxxx => Shift 18 bits used in three continuation bytes and get last three bits
         dst[mbUsesBigEndian ? 3 : 0] = UTF8_CP_LEADBYTE_4 | ((src >> 18) & 0x7);
     }
+    else
+    {
+        return FL_UNICODE_INVALID_CHAR;
+    }
     return chr;
 }
 
@@ -231,7 +250,7 @@ FlUnicodeChar fl_unicode_utf8_to_utf32(FlUnicodeChar src)
     }
     else
     {
-        return -1;
+        return FL_UNICODE_INVALID_CHAR;
     }
     return chr;
 }

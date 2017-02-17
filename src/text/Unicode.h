@@ -106,7 +106,7 @@ int32_t fl_unicode_char_size(const FlUnicodeChar chr, FlEncoding encoding);
 FlUnicodeChar fl_unicode_char_at(const FlByte* str, FlEncoding encoding, size_t at);
 
 /* -------------------------------------------------------------
-* {function: fl_unicode_str_size}
+* {function: fl_unicode_mbstring_size}
 * -------------------------------------------------------------
 * * Returns the size in bytes of the string represente1d by the
 * byte array arr, interpreted with the provided encoding. end
@@ -121,7 +121,7 @@ FlUnicodeChar fl_unicode_char_at(const FlByte* str, FlEncoding encoding, size_t 
 * {return: size_t} Size in bytes of the byte array arr
 * -------------------------------------------------------------
 */
-size_t fl_unicode_str_size(const FlByte* arr, FlEncoding encoding, const FlByte *end);
+size_t fl_unicode_mbstring_size(const FlByte* arr, FlEncoding encoding, const FlByte *end);
 
 /* -------------------------------------------------------------
 * {function: fl_unicode_encode_char_to}

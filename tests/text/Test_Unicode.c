@@ -159,10 +159,10 @@ void test_fl_unicode_char_from_bytes()
     fl_expect("Character Ɓ is compound of bytes {1,129}", u8fromStr == u8fromBytes && u32fromStr == u32fromBytes);
 }
 
-void test_fl_unicode_str_size()
+void test_fl_unicode_mbstring_size()
 {
-    fl_expect("abc123 has 6 bytes", fl_unicode_str_size((const FlByte*)"abc123", FL_ENCODING_UTF8, NULL) == 6);
-    fl_expect("aƁc123 has 7 bytes", fl_unicode_str_size((const FlByte*)"aƁc123", FL_ENCODING_UTF8, NULL) == 7);
-    fl_expect("a兔c123 has 9 bytes", fl_unicode_str_size((const FlByte*)"a兔c123", FL_ENCODING_UTF8, NULL) == 9);
-    fl_expect("兔 has 4 bytes", fl_unicode_str_size((const FlByte*)"兔", FL_ENCODING_UTF8, NULL) == 4);
+    fl_expect("abc123 has 6 bytes", fl_unicode_mbstring_size((const FlByte*)"abc123", FL_ENCODING_UTF8, NULL) == 6);
+    fl_expect("aƁc123 has 7 bytes", fl_unicode_mbstring_size((const FlByte*)"aƁc123", FL_ENCODING_UTF8, NULL) == 7);
+    fl_expect("a兔c123 has 9 bytes", fl_unicode_mbstring_size((const FlByte*)"a兔c123", FL_ENCODING_UTF8, NULL) == 9);
+    fl_expect("兔 has 4 bytes", fl_unicode_mbstring_size((const FlByte*)"兔", FL_ENCODING_UTF8, NULL) == 4);
 }

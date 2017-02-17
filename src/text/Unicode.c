@@ -105,9 +105,9 @@ FlUnicodeChar fl_unicode_char_at(const FlByte* str, FlEncoding encoding, size_t 
         size_t offset = 0;
         for (size_t i=0; i < at; i++)
         {
-            offset += fl_unicode_str_size(str+offset, encoding, str+offset+1);
+            offset += fl_unicode_mbstring_size(str+offset, encoding, str+offset+1);
         }
-        size_t bs = fl_unicode_str_size(str+offset, encoding, str+offset+1);
+        size_t bs = fl_unicode_mbstring_size(str+offset, encoding, str+offset+1);
         bool mbUsesBigEndian = utf8_mb_str_is_bigendian();
         for (size_t index=0, j=0; j < bs; j++)
         {
@@ -128,7 +128,7 @@ FlUnicodeChar fl_unicode_char_at(const FlByte* str, FlEncoding encoding, size_t 
 * Returns the size of a Unicode string
 * -------------------------------------------------------------
 */
-size_t fl_unicode_str_size(const FlByte* chr, FlEncoding encoding, const FlByte* end)
+size_t fl_unicode_mbstring_size(const FlByte* chr, FlEncoding encoding, const FlByte* end)
 {
     if (chr == 0x00)
         return 0;

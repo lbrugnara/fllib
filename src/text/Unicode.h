@@ -36,40 +36,42 @@ typedef uint32_t FlUnicodeChar;
 #define FL_UNICODE_INVALID_CHAR UINT32_MAX
 
 /* -------------------------------------------------------------
-* {function: fl_unicode_char_from_str}
+* {function: fl_unicode_char_from_bytes}
 * -------------------------------------------------------------
 * It receives an array of bytes that represents a multibyte (or single-byte)
-* character, and returns its FlUnicodeChar representation. If 'src'
-* is composed by more than one character (more than one code point)
+* character, and returns its FlUnicodeChar representation with the same encoding. 
+* If 'src' is composed by more than one character (more than one code point)
 * it will return the FlUnicodeChar representation of the first code 
 * point of src. src will be interpreted using the encoding provided
-* by the user. The encoding of the returned FlUnicodeChar is its UTF-8
-* representation, to change the encoding use the function fl_unicode_encode_char_to
+* by the user. The encoding of the returned FlUnicodeChar is the same as the used
+* to interpret the bytes array.
 * -------------------------------------------------------------
 * {param: const FlString src} The string to retrieve the first character
 * it is pointing to as an FlUnicodeChar
 * {param: FlEncoding encoding} src bytes encoding
 * -------------------------------------------------------------
-* {return: FlUnicodeChar} UTF-8 representation of the first
+* {return: FlUnicodeChar} FlUnicodeChar of the first
 * character of the string 'src'
 * -------------------------------------------------------------
 */
-FlUnicodeChar fl_unicode_char_from_str(const FlByte* src, FlEncoding encoding);
+FlUnicodeChar fl_unicode_char_from_bytes(const FlByte* src, FlEncoding encoding);
 
 /* -------------------------------------------------------------
-* {function: fl_unicode_char_from_hex}
+* {function: fl_unicode_char_from_bytes_to}
 * -------------------------------------------------------------
-* It receives the hexadecimal value (or the decimal one) of a
-* unicode character and returns its UTF-8 version as a FlUnicodeChar
+* Similar to fl_unicode_char_from_bytes, but it converts the input
+* bytes array ('srcencoding' encoded) to an FlUnicodeChar encoded
+* using 'dstencoding'.
 * -------------------------------------------------------------
-* {param: const unsigned long src} The hexadecimal or decimal value
-* of the unicode char to be represented as an FlUnicodeChar
+* {param: const FlByte* src} Source bytes
+* {param: FlEncoding srcencoding} Encoding of the bytes array
+* {param: FlEncoding dstencoding} Encoding used for the returned FlUnicodeChar
 * -------------------------------------------------------------
-* {return: FlUnicodeChar} UTF-8 character representation of the
-* unicode value provided in src
+* {return: FlUnicodeChar} Result of convert src (encoded as 'srcencoding') to an FlUnicodeChar 
+* with encoding 'dstencoding'
 * -------------------------------------------------------------
 */
-FlUnicodeChar fl_unicode_char_from_hex(const unsigned long src);
+FlUnicodeChar fl_unicode_char_from_bytes_to(const FlByte* src, FlEncoding srcencoding, FlEncoding dstencoding);
 
 /* -------------------------------------------------------------
 * {function: fl_unicode_char_size}

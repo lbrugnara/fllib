@@ -35,17 +35,15 @@ bool fl_mbstring_is_bigendian()
 }
 
 
-FlUnicodeChar fl_unicode_char_from_str(const FlByte* src, FlEncoding encoding)
+FlUnicodeChar fl_unicode_char_from_bytes(const FlByte* src, FlEncoding encoding)
 {
     return fl_unicode_char_at(src, encoding, 0);
 }
 
-FlUnicodeChar fl_unicode_char_from_hex(const unsigned long src)
+FlUnicodeChar fl_unicode_char_from_bytes_to(const FlByte* src, FlEncoding srcencoding, FlEncoding dstencoding)
 {
-    if (fl_unicode_char_size(src, FL_ENCODING_UTF8) > 0)
-        return (FlUnicodeChar)src;
-        
-    return fl_unicode_utf32_to_utf8((FlUnicodeChar)src);
+    FlUnicodeChar chr = fl_unicode_char_at(src, srcencoding, 0);
+    return fl_unicode_encode_char_to(chr, srcencoding, dstencoding);
 }
 
 size_t fl_unicode_char_size(const FlUnicodeChar chr, FlEncoding encoding)
@@ -76,18 +74,29 @@ size_t fl_unicode_char_size(const FlUnicodeChar chr, FlEncoding encoding)
 FlUnicodeChar fl_unicode_char_at(const FlByte* str, FlEncoding encoding, size_t at)
 {
     FlUnicodeChar chr = 0;
-    size_t offset = 0;
-    for (size_t i=0; i < at; i++)
+    if (encoding == FL_ENCODING_UTF32)
     {
-        offset += fl_unicode_str_size(str+offset, encoding, str+offset+1);
+        chr = ((FlUnicodeChar*)str)[at];
     }
-    size_t bs = fl_unicode_str_size(str+offset, encoding, str+offset+1);
-    bool mbUsesBigEndian = fl_mbstring_is_bigendian();
-    for (size_t index=0, j=0; j < bs; j++)
+    else if (encoding == FL_ENCODING_UTF8)
     {
-        if (mbUsesBigEndian)
-            index = bs-1-j;
-        ((FlByte*)&chr)[index] = (str+offset)[j];
+        size_t offset = 0;
+        for (size_t i=0; i < at; i++)
+        {
+            offset += fl_unicode_str_size(str+offset, encoding, str+offset+1);
+        }
+        size_t bs = fl_unicode_str_size(str+offset, encoding, str+offset+1);
+        bool mbUsesBigEndian = fl_mbstring_is_bigendian();
+        for (size_t index=0, j=0; j < bs; j++)
+        {
+            if (mbUsesBigEndian)
+                index = bs-1-j;
+            ((FlByte*)&chr)[index] = (str+offset)[j];
+        }
+    }
+    else
+    {
+        chr = FL_UNICODE_INVALID_CHAR;
     }
     return chr;
 }

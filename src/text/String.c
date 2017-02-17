@@ -44,7 +44,7 @@ size_t fl_string_size(const FlString str, const FlByte* end)
 
 FlUnicodeChar fl_char(const FlString str)
 {
-    return fl_unicode_char_from_str((const FlByte*)str, FL_ENCODING_UTF8);
+    return fl_unicode_char_from_bytes((const FlByte*)str, FL_ENCODING_UTF8);
 }
 
 FlUnicodeChar fl_string_char_at(const FlString str, size_t at)

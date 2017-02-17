@@ -5,7 +5,7 @@
 #include "Cstr.h"
 #include "File.h"
 #include "text/Test_Unicode.h"
-#include "text/String.h"
+#include "text/Test_String.h"
 
 #include <fllib.h>
 #include <stdio.h>
@@ -58,7 +58,8 @@ int main(void)
         { "fl_unicode_char_at", &test_fl_unicode_char_at },
         { "fl_unicode_char", &test_fl_unicode_char },
         { "fl_unicode_encode_char_to", &test_fl_unicode_encode_char_to },
-        { "fl_unicode_char_from_bytes", &test_fl_unicode_char_from_bytes }
+        { "fl_unicode_char_from_bytes", &test_fl_unicode_char_from_bytes },
+        { "fl_unicode_str_size", &test_fl_unicode_str_size}
     );
     fl_test_suite_run(suite_unicode);
     fl_test_suite_delete(suite_unicode);

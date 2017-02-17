@@ -81,10 +81,11 @@ FlUnicodeChar fl_unicode_char_from_bytes_to(const FlByte* src, FlEncoding srcenc
 * -------------------------------------------------------------
 * {param: FlUnicodeChar chr} target Unicode character to retrieve its bytes size
 * -------------------------------------------------------------
-* {return: size_t} Size in bytes of character 'chr'
+* {return: size_t} Size in bytes of character 'chr'. If chr is an invalid
+* unicode char it returns -1
 * -------------------------------------------------------------
 */
-size_t fl_unicode_char_size(const FlUnicodeChar chr, FlEncoding encoding);
+int32_t fl_unicode_char_size(const FlUnicodeChar chr, FlEncoding encoding);
 
 /* -------------------------------------------------------------
 * {function: fl_unicode_char_at}

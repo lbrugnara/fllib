@@ -58,7 +58,7 @@ clang -O3 -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-f
 clang -O3 -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -std=c99 -pedantic -fstrict-aliasing -I.\include -I.\src -c tests\File.c -o tests\obj\debug\File.o
 clang -O3 -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -std=c99 -pedantic -fstrict-aliasing -I.\include -I.\src -c tests\Cstr.c -o tests\obj\debug\Cstr.o
 clang -O3 -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -std=c99 -pedantic -fstrict-aliasing -I.\include -I.\src -c tests\text\Test_Unicode.c -o tests\obj\debug\text\Test_Unicode.o
-clang -O3 -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -std=c99 -pedantic -fstrict-aliasing -I.\include -I.\src -c tests\text\String.c -o tests\obj\debug\text\String.o
+clang -O3 -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -std=c99 -pedantic -fstrict-aliasing -I.\include -I.\src -c tests\text\Test_String.c -o tests\obj\debug\text\Test_String.o
 
 md .\tests\build\debug
 
@@ -69,5 +69,5 @@ clang -O3 -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-f
     tests\obj\debug\Std.o   ^
     tests\obj\debug\File.o  ^
     tests\obj\debug\text\Test_Unicode.o  ^
-    tests\obj\debug\text\String.o  ^
+    tests\obj\debug\text\Test_String.o  ^
     tests\obj\debug\Cstr.o

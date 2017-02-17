@@ -1,4 +1,5 @@
 #include "../Std.h"
+#include "../Mem.h"
 #include "Unicode.h"
 
 /* -------------------------------------------------------------
@@ -17,49 +18,62 @@
 #define UTF8_CP_LEADBYTE_4 0xF0
 #define UTF8_CP_LEADBYTE_4_MAX 0xF7
 
+// UTF32
+#define REPLACEMENT_CHARACTER 0xFFFD
+
 FlUnicodeChar fl_unicode_utf32_to_utf8(FlUnicodeChar src);
 FlUnicodeChar fl_unicode_utf8_to_utf32(FlUnicodeChar src);
-bool fl_mbstring_is_bigendian();
+
+// MultiByte string functions. ALl these functions assume UTF-8 for input and exec charset
+int32_t utf8_mb_char_size(const FlByte* src);
+bool utf8_unicode_to_mb_char(FlUnicodeChar chr, FlString *dst);
+FlUnicodeChar utf8_mb_to_unicode_char(const FlByte *src);
+bool utf8_mb_str_is_bigendian();
+
+// Public API
 
 /* -------------------------------------------------------------
-* Checks if a multibyte character is stored as big-endiann. It
-* is implementation dependant, maybe to make it compatible with
-* common chars.
+* Returns an FlUnicodeChar from a bytes array. The bytes array encoding
+* must match the 'encoding' parameter
 * -------------------------------------------------------------
 */
-bool fl_mbstring_is_bigendian()
-{
-    FlString oldac = "𐌀"; // Hex 0xF0908C80
-    int32_t oldah = 0xF0908C80;
-    return ((FlByte*)oldac)[0] != ((FlByte*)&oldah)[0];
-}
-
-
 FlUnicodeChar fl_unicode_char_from_bytes(const FlByte* src, FlEncoding encoding)
 {
     return fl_unicode_char_at(src, encoding, 0);
 }
 
+/* -------------------------------------------------------------
+* Returns an FlUnicodeChar from a bytes array with 'dstencoding' encoding. 
+* The bytes array encoding must match the 'encoding' parameter
+* -------------------------------------------------------------
+*/
 FlUnicodeChar fl_unicode_char_from_bytes_to(const FlByte* src, FlEncoding srcencoding, FlEncoding dstencoding)
 {
     FlUnicodeChar chr = fl_unicode_char_at(src, srcencoding, 0);
     return fl_unicode_encode_char_to(chr, srcencoding, dstencoding);
 }
 
-size_t fl_unicode_char_size(const FlUnicodeChar chr, FlEncoding encoding)
+/* -------------------------------------------------------------
+* Returns the size of the FlUnicodeChar 'chr' under provided encoding
+* -------------------------------------------------------------
+*/
+int32_t fl_unicode_char_size(const FlUnicodeChar chr, FlEncoding encoding)
 {
     if (encoding == FL_ENCODING_UTF8)
     {
         FlByte *chrb = (FlByte*)&chr;
-        if (chrb[3] > UTF8_CP_LEADBYTE_3_MAX && (chrb[3] & UTF8_CP_LEADBYTE_4) && chrb[3] <= UTF8_CP_LEADBYTE_4_MAX)
+        if (chrb[3] > UTF8_CP_LEADBYTE_3_MAX && (chrb[3] & UTF8_CP_LEADBYTE_4) && chrb[3] <= UTF8_CP_LEADBYTE_4_MAX && chrb[3] != 0xF5)
         {
             return 4;
         }
         else if (chrb[2] > UTF8_CP_LEADBYTE_2_MAX && (chrb[2] & UTF8_CP_LEADBYTE_3) && chrb[2] <= UTF8_CP_LEADBYTE_3_MAX)
         {
-            return 3;
+            // Surrogates
+            if (chr < 0xeda080 || chr > 0xedbfbf)
+                return 3;
+            return -1;
         }
-        else if (chrb[1] > UTF8_CP_MAXB_LOCK_1 && (chrb[1] & UTF8_CP_LEADBYTE_2) && chrb[1] <= UTF8_CP_LEADBYTE_2_MAX)
+        else if (chrb[1] > UTF8_CP_MAXB_LOCK_1 && (chrb[1] & UTF8_CP_LEADBYTE_2) && chrb[1] <= UTF8_CP_LEADBYTE_2_MAX && chrb[1] != 0xC0 && chrb[1] != 0xC1)
         {
             return 2;
         }
@@ -68,9 +82,17 @@ size_t fl_unicode_char_size(const FlUnicodeChar chr, FlEncoding encoding)
             return 1;
         }
     }
-    return 0; // Not uf8
+    else if (encoding == FL_ENCODING_UTF32 && chr <= 0x10FFFF)
+    {
+        return 4;
+    }
+    return -1; // Not unicode
 }
 
+/* -------------------------------------------------------------
+* Returns the 'at'-th character of a Unicode string encoded as 'encoding'
+* -------------------------------------------------------------
+*/
 FlUnicodeChar fl_unicode_char_at(const FlByte* str, FlEncoding encoding, size_t at)
 {
     FlUnicodeChar chr = 0;
@@ -86,7 +108,7 @@ FlUnicodeChar fl_unicode_char_at(const FlByte* str, FlEncoding encoding, size_t 
             offset += fl_unicode_str_size(str+offset, encoding, str+offset+1);
         }
         size_t bs = fl_unicode_str_size(str+offset, encoding, str+offset+1);
-        bool mbUsesBigEndian = fl_mbstring_is_bigendian();
+        bool mbUsesBigEndian = utf8_mb_str_is_bigendian();
         for (size_t index=0, j=0; j < bs; j++)
         {
             if (mbUsesBigEndian)
@@ -101,7 +123,11 @@ FlUnicodeChar fl_unicode_char_at(const FlByte* str, FlEncoding encoding, size_t 
     return chr;
 }
 
-// TODO: Fix for UTF32 and UTF16
+// TODO: Fix for UTF16
+/* -------------------------------------------------------------
+* Returns the size of a Unicode string
+* -------------------------------------------------------------
+*/
 size_t fl_unicode_str_size(const FlByte* chr, FlEncoding encoding, const FlByte* end)
 {
     if (chr == 0x00)
@@ -121,35 +147,14 @@ size_t fl_unicode_str_size(const FlByte* chr, FlEncoding encoding, const FlByte*
     else if (encoding == FL_ENCODING_UTF8)
     {
         size_t i=0;
-        size_t tmp = 0;
         do
         {
-            tmp = 0;
-            if (chr[i] == 0x00)
-            {
-                if (end != NULL)
-                    tmp = 1;
-            }
-            else if (chr[i] <= UTF8_CP_MAXB_LOCK_1)
-            {
-                tmp = 1;
-            }
-            else if ((chr[i] & UTF8_CP_LEADBYTE_2) && chr[i] <= UTF8_CP_LEADBYTE_2_MAX)
-            {
-                tmp = 2;
-            }
-            else if ((chr[i] & UTF8_CP_LEADBYTE_3) && chr[i] <= UTF8_CP_LEADBYTE_3_MAX)
-            {
-                tmp = 3;
-            }
-            else if ((chr[i] & UTF8_CP_LEADBYTE_4) && chr[i] <= UTF8_CP_LEADBYTE_4_MAX)
-            {
-                tmp = 4;
-            }
-            else
-            {
-                return FL_UNICODE_INVALID_CHAR; // Not uf8
-            }
+            int32_t tmp = utf8_mb_char_size(chr+i);
+            if (tmp == -1)
+                break; // truncated string
+            // If we are NOT taking in consideration the NULL character for the size (it is the end marker), set tmp to 0
+            if (tmp == 1 && chr[i] == 0x0 && end == NULL)
+                tmp = 0;
             size += tmp;
             i += tmp;
         } while ((end == NULL && chr[i]) || (end != NULL && chr+i < end));
@@ -157,6 +162,11 @@ size_t fl_unicode_str_size(const FlByte* chr, FlEncoding encoding, const FlByte*
     return size;
 }
 
+/* -------------------------------------------------------------
+* Takes a source character encoded under 'srcencoding' and Returns
+* a new character representing 'src' version under encoding 'dstencoding'
+* -------------------------------------------------------------
+*/
 FlUnicodeChar fl_unicode_encode_char_to(const FlUnicodeChar src, const FlEncoding srcencoding, const FlEncoding dstencoding)
 {
     if (srcencoding == FL_ENCODING_UTF32)
@@ -176,6 +186,10 @@ FlUnicodeChar fl_unicode_encode_char_to(const FlUnicodeChar src, const FlEncodin
     return 0;
 }
 
+/* -------------------------------------------------------------
+* Converts an UTF-32 FlUnicodeChar to its UTF-8 representation
+* -------------------------------------------------------------
+*/
 FlUnicodeChar fl_unicode_utf32_to_utf8(FlUnicodeChar src)
 {
     FlUnicodeChar chr = 0;
@@ -186,7 +200,7 @@ FlUnicodeChar fl_unicode_utf32_to_utf8(FlUnicodeChar src)
         return chr;
     }
     
-    bool mbUsesBigEndian = fl_mbstring_is_bigendian();
+    bool mbUsesBigEndian = utf8_mb_str_is_bigendian();
     if (src <= UTF8_CP_MAXB_LOCK_2)
     {
         // Control 10xxxxxx = 0x80 | 0x3f
@@ -221,10 +235,16 @@ FlUnicodeChar fl_unicode_utf32_to_utf8(FlUnicodeChar src)
     return chr;
 }
 
+/* -------------------------------------------------------------
+* Converts an UTF-8 FlUnicodeChar to its UTF-32 representation
+* -------------------------------------------------------------
+*/
 FlUnicodeChar fl_unicode_utf8_to_utf32(FlUnicodeChar src)
 {
     FlUnicodeChar chr = 0;
-    size_t l = fl_unicode_char_size(src, FL_ENCODING_UTF8);
+    int32_t l = fl_unicode_char_size(src, FL_ENCODING_UTF8);
+    if (l == -1)
+        return FL_UNICODE_INVALID_CHAR;
     if (l == 1) 
     {
         chr = (FlUnicodeChar)src;
@@ -233,7 +253,7 @@ FlUnicodeChar fl_unicode_utf8_to_utf32(FlUnicodeChar src)
     // TODO
     FlByte* dst = (FlByte*)&chr;
     FlByte* srcp = (FlByte*)&src;
-    bool mbUsesBigEndian = fl_mbstring_is_bigendian();
+    bool mbUsesBigEndian = utf8_mb_str_is_bigendian();
     if (l == 2)
     {
         // LB: 110xxxxx CB: 10xxxxxx => We take the last two bytes from LB (0x300, but we need to shift it to join with the other 6) and 6 bits from CB (0x3f) and
@@ -262,4 +282,114 @@ FlUnicodeChar fl_unicode_utf8_to_utf32(FlUnicodeChar src)
         return FL_UNICODE_INVALID_CHAR;
     }
     return chr;
+}
+
+/* -------------------------------------------------------------
+* MULTI-BYTE STRINGS
+* -------------------------------------------------------------
+* All these functions assume input-charset and exec-charset are UTF-8
+* -------------------------------------------------------------
+*/
+
+/* -------------------------------------------------------------
+* Checks if a multibyte character is stored as big-endiann. It
+* is implementation dependant, maybe to make it compatible with
+* common chars.
+* -------------------------------------------------------------
+*/
+bool utf8_mb_str_is_bigendian()
+{
+    FlString oldac = "𐌀"; // Hex 0xF0908C80
+    int32_t oldah = 0xF0908C80;
+    return ((FlByte*)oldac)[0] != ((FlByte*)&oldah)[0];
+}
+
+/* -------------------------------------------------------------
+* Converts a FlUnicodeChar into its multi-byte representation. The
+* result is assigned into 'dst'. Caller MUST free the memory used
+* by 'dst'
+* -------------------------------------------------------------
+*/
+bool utf8_unicode_to_mb_char(FlUnicodeChar chr, FlString *dst)
+{
+    int32_t size = fl_unicode_char_size(chr, FL_ENCODING_UTF8);
+    if (size == -1)
+        return false;
+    FlByte* src = (FlByte*)&chr;
+    dst = fl_malloc(size+1);
+    dst[size] = 0x0;
+    bool mbUsesBigEndian = utf8_mb_str_is_bigendian();
+    for (int32_t index=0, j=0; j < size; j++)
+    {
+        if (mbUsesBigEndian)
+            index = size-1-j;
+        ((FlByte*)&dst)[index] = src[j];
+    }
+    return true;
+}
+
+/* -------------------------------------------------------------
+* Converts a multi-byte char into its FlUnicodeChar representation
+* -------------------------------------------------------------
+*/
+FlUnicodeChar utf8_mb_to_unicode_char(const FlByte *src)
+{
+    FlUnicodeChar chr = 0;
+    int32_t bs = utf8_mb_char_size(src);
+
+    if (bs == -1)
+        return FL_UNICODE_INVALID_CHAR;
+
+    bool mbUsesBigEndian = utf8_mb_str_is_bigendian();
+    for (int32_t index=0, j=0; j < bs; j++)
+    {
+        if (mbUsesBigEndian)
+            index = bs-1-j;
+        ((FlByte*)&chr)[index] = src[j];
+    }
+    return chr;
+}
+
+/* -------------------------------------------------------------
+* Returns the size of a UTF-8 valida character represented by a
+* multi-byte character
+* -------------------------------------------------------------
+*/
+int32_t utf8_mb_char_size(const FlByte* src)
+{
+    if (src == 0x0)
+        return 0;
+    if (src[0] == 0x00)
+    {
+        return 1;
+    }
+    else if (src[0] <= UTF8_CP_MAXB_LOCK_1)
+    {
+        return 1;
+    }
+    else if ((src[0] & UTF8_CP_LEADBYTE_2) && src[0] <= UTF8_CP_LEADBYTE_2_MAX && (src[1] & 0x80) && src[0] != 0xC0 && src[0] != 0xC1)
+    {
+        return 2;
+    }
+    else if ((src[0] & UTF8_CP_LEADBYTE_3) && src[0] <= UTF8_CP_LEADBYTE_3_MAX && (src[1] & 0x80) && (src[2] & 0x80))
+    {
+        FlUnicodeChar chr = 0;
+        int bs = 3;
+        bool mbUsesBigEndian = utf8_mb_str_is_bigendian();
+        for (int index=0, j=0; j < bs; j++)
+        {
+            if (mbUsesBigEndian)
+                index = bs-1-j;
+            ((FlByte*)&chr)[index] = src[j];
+        }
+        // Surrogates
+        if (chr < 0xeda080 || chr > 0xedbfbf)
+            return 3;
+        return -1;
+    }
+    else if ((src[0] & UTF8_CP_LEADBYTE_4) && src[0] <= UTF8_CP_LEADBYTE_4_MAX && (src[1] & 0x80) && (src[2] & 0x80) && (src[3] & 0x80) && src[0] != 0xF5)
+    {
+        return 4;
+    }
+    return -1;
 }

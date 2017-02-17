@@ -1,7 +1,16 @@
 CC=gcc
 AR=ar
 override DEBUG += -ggdb -DFL_DEBUG
-override CFLAGS += -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -std=c99 -pedantic -fstrict-aliasing
+override CFLAGS += -Wall \
+					-Wextra \
+					-Wno-unused-parameter \
+					-Wno-unused-variable \
+					-Wno-unused-function \
+					-std=c99 \
+					-pedantic \
+					-fstrict-aliasing \
+					-finput-charset=UTF-8 \
+					-fexec-charset=UTF-8
 # Macros for target tests
 TESTS=
 
@@ -67,7 +76,7 @@ FL_TEST_OBJECTS=\
 	obj/$(TARGET)/tests/File.o \
 	obj/$(TARGET)/tests/Cstr.o \
 	obj/$(TARGET)/tests/text/Test_Unicode.o \
-	obj/$(TARGET)/tests/text/String.o 
+	obj/$(TARGET)/tests/text/Test_String.o 
 
 ifeq ($(LINKAGE),static)
 	# Creates the .a file

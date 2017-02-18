@@ -134,6 +134,8 @@ FlCstr fl_cstr_join(FlVector vector, FlCstr glue);
  */
 FlCstr fl_char_join(FlVector vector, FlCstr glue);
 
+FlCstr fl_cstr_concat(FlCstr *strings);
+
 #define flm_cstr_equals(cstr1, cstr2) (strcmp((cstr1), (cstr2)) == 0)
 #define flm_cstr_ncmp(cstr1, cstr2, n) (strncmp((cstr1), (cstr2), (n)) == 0)
 

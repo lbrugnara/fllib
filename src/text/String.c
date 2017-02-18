@@ -31,7 +31,7 @@ size_t fl_string_length(const FlString str, const FlByte* end)
     size_t l=0;
     size_t c=0;
     do {
-        c += fl_unicode_mbstring_size((FlByte*)str + c, FL_ENCODING_UTF8, (FlByte*)str + c +1);
+        c += fl_unicode_codeunit_sequence_size((FlByte*)str + c, FL_ENCODING_UTF8, (FlByte*)str + c +1);
         l++;
     } while((end ? (FlByte*)(str+c+1) < end : str[c]));
     return l;
@@ -39,12 +39,12 @@ size_t fl_string_length(const FlString str, const FlByte* end)
 
 size_t fl_string_size(const FlString str, const FlByte* end)
 {
-    return fl_unicode_mbstring_size((const FlByte*)str, FL_ENCODING_UTF8, end);
+    return fl_unicode_codeunit_sequence_size((const FlByte*)str, FL_ENCODING_UTF8, end);
 }
 
 FlUnicodeChar fl_char(const FlString str)
 {
-    return fl_unicode_char_from_bytes((const FlByte*)str, FL_ENCODING_UTF8);
+    return fl_unicode_codepoint_to_char((const FlByte*)str, FL_ENCODING_UTF8);
 }
 
 FlUnicodeChar fl_string_char_at(const FlString str, size_t at)

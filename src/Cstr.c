@@ -450,3 +450,15 @@ fl_char_join(FlVector vector, FlCstr glue)
     }
     return str;
 }
+
+FlCstr fl_cstr_concat(FlCstr *strings)
+{
+    FlCstr result = fl_cstr_new(0);
+    int i=0;
+    while (strings[i])
+    {
+        FlCstr string = strings[i++];
+        fl_cstr_append(&result, string);
+    }
+    return result;
+}

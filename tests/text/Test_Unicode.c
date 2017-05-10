@@ -55,8 +55,8 @@ void test_fl_unicode_char()
     FlUnicodeChar chr4b3 = fl_unicode_char_encode_to(0x2F80F, FL_ENCODING_UTF32, FL_ENCODING_UTF8); // UTF-32 -> UTF8
     fl_expect("Char '兔', Hexadecimal 0xF0AFA08F and U+2F80F result in the same FlUnicodeChar", chr4b1 == chr4b2 && chr4b2 == chr4b3);
 
-    fl_expect("0xeda080 is a surrogate, it must be an invalid UTF8 character", fl_unicode_char_size(0xeda080, FL_ENCODING_UTF8) == -1);
-    fl_expect("0xedbfbf is a surrogate, it must be an invalid UTF8 character", fl_unicode_char_size(0xedbfbf, FL_ENCODING_UTF8) == -1);
+    fl_expect("0xeda080 is a surrogate, it must be an invalid UTF8 character", fl_unicode_char_size(0xeda080, FL_ENCODING_UTF8) == FL_UNICODE_INVALID_SIZE);
+    fl_expect("0xedbfbf is a surrogate, it must be an invalid UTF8 character", fl_unicode_char_size(0xedbfbf, FL_ENCODING_UTF8) == FL_UNICODE_INVALID_SIZE);
 }
 
 void test_fl_unicode_char_encode_to()

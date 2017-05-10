@@ -26,7 +26,7 @@ typedef char* FlCstr;
 * Represents an UTF8 string
 * -------------------------------------------------------------
 */
-typedef char*           FlString;
+typedef char* FlString;
 
 /* -------------------------------------------------------------
 * {datatype: void* FlPointer}
@@ -34,7 +34,7 @@ typedef char*           FlString;
 * Used for readability purposes, but it is not mandatory
 * -------------------------------------------------------------
 */
-typedef void*           FlPointer;
+typedef void* FlPointer;
 
 #ifndef NULL
     #define NULL (void*)0

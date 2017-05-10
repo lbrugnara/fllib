@@ -21,13 +21,14 @@
 #define UTF8_CP_LEADBYTE_4_MAX 0xF7
 
 // UTF32
+#define UTF32_CHAR_NBYTES 4
 #define REPLACEMENT_CHARACTER 0xFFFD
 
 FlUnicodeChar fl_unicode_utf32_to_utf8(FlUnicodeChar src);
 FlUnicodeChar fl_unicode_utf8_to_utf32(FlUnicodeChar src);
 
 // MultiByte string functions. ALl these functions assume UTF-8 for input and exec charset
-int32_t utf8_bytes_count(const FlByte* src);
+size_t utf8_bytes_count(const FlByte* src);
 bool utf8_unicode_char_to_bytes(FlUnicodeChar chr, FlByte* dst);
 FlUnicodeChar utf8_bytes_to_unicode_char(const FlByte *src);
 bool utf8_mb_str_is_bigendian();
@@ -49,7 +50,7 @@ bool fl_unicode_char_to_codepoint(FlUnicodeChar chr, FlEncoding encoding, FlByte
     if (encoding == FL_ENCODING_UTF32)
     {
         dst[5] = 0x0;
-        memcpy(dst, &chr, 4);
+        memcpy(dst, &chr, UTF32_CHAR_NBYTES);
         return true;
     }
     else if (encoding == FL_ENCODING_UTF8)
@@ -80,7 +81,7 @@ bool fl_unicode_char_to_encoding_to_codepoint(FlUnicodeChar chr, FlEncoding srce
 * Returns the size of the FlUnicodeChar 'chr' under provided encoding
 * -------------------------------------------------------------
 */
-int32_t fl_unicode_char_size(const FlUnicodeChar chr, FlEncoding encoding)
+size_t fl_unicode_char_size(const FlUnicodeChar chr, FlEncoding encoding)
 {
     if (encoding == FL_ENCODING_UTF8)
     {
@@ -94,7 +95,7 @@ int32_t fl_unicode_char_size(const FlUnicodeChar chr, FlEncoding encoding)
             // Surrogates
             if (chr < 0xeda080 || chr > 0xedbfbf)
                 return 3;
-            return -1;
+            return FL_UNICODE_INVALID_SIZE;
         }
         else if (chrb[1] > UTF8_CP_MAXB_LOCK_1 && (chrb[1] & UTF8_CP_LEADBYTE_2) && chrb[1] <= UTF8_CP_LEADBYTE_2_MAX && chrb[1] != 0xC0 && chrb[1] != 0xC1)
         {
@@ -109,17 +110,17 @@ int32_t fl_unicode_char_size(const FlUnicodeChar chr, FlEncoding encoding)
     {
         return 4;
     }
-    return -1; // Not unicode
+    return FL_UNICODE_INVALID_SIZE; // Not unicode
 }
 
-int32_t fl_unicode_codepoint_size(const FlByte* src, FlEncoding encoding)
+size_t fl_unicode_codepoint_size(const FlByte* src, FlEncoding encoding)
 {
     if (encoding == FL_ENCODING_UTF32)
     {
         FlUnicodeChar srcchr = fl_unicode_codepoint_to_char(src, FL_ENCODING_UTF32);
         if (srcchr > UTF8_CP_MAXB_LOCK_4)
         {
-            return -1;
+            return FL_UNICODE_INVALID_SIZE;
         }
         return 4;
     }
@@ -127,7 +128,7 @@ int32_t fl_unicode_codepoint_size(const FlByte* src, FlEncoding encoding)
     {
         return utf8_bytes_count(src);
     }
-    return -1;
+    return FL_UNICODE_INVALID_SIZE;
 }
 
 size_t fl_unicode_char_array_size(const FlUnicodeChar *string, FlEncoding encoding, FlUnicodeChar *end)
@@ -139,8 +140,8 @@ size_t fl_unicode_char_array_size(const FlUnicodeChar *string, FlEncoding encodi
     size_t i = 0;
     do
     {
-        int32_t tmp = fl_unicode_char_size(string[i], encoding);
-        if (tmp == -1)
+        size_t tmp = fl_unicode_char_size(string[i], encoding);
+        if (tmp == FL_UNICODE_INVALID_SIZE)
         {
             // Invalid char
             break;
@@ -165,7 +166,7 @@ size_t fl_unicode_codeunit_sequence_size(const FlByte* sequence, FlEncoding enco
     if (encoding == FL_ENCODING_UTF32)
     {
         size_t i = 0;
-        const uint32_t *src = (const uint32_t*)&sequence;
+        const uint32_t *src = (const uint32_t*)sequence;
         do
         {
             size += 4;
@@ -177,8 +178,8 @@ size_t fl_unicode_codeunit_sequence_size(const FlByte* sequence, FlEncoding enco
         size_t i=0;
         do
         {
-            int32_t tmp = utf8_bytes_count(sequence+i);
-            if (tmp == -1)
+            size_t tmp = utf8_bytes_count(sequence+i);
+            if (tmp == FL_UNICODE_INVALID_SIZE)
                 break; // truncated string
             // If we are NOT taking in consideration the NULL character for the size (it is the end marker), set tmp to 0
             if (tmp == 1 && sequence[i] == 0x0 && end == NULL)
@@ -304,8 +305,8 @@ FlUnicodeChar fl_unicode_utf32_to_utf8(FlUnicodeChar src)
 FlUnicodeChar fl_unicode_utf8_to_utf32(FlUnicodeChar src)
 {
     FlUnicodeChar chr = 0;
-    int32_t l = fl_unicode_char_size(src, FL_ENCODING_UTF8);
-    if (l == -1)
+    size_t l = fl_unicode_char_size(src, FL_ENCODING_UTF8);
+    if (l == FL_UNICODE_INVALID_SIZE)
         return FL_UNICODE_INVALID_CHAR;
     if (l == 1) 
     {
@@ -374,13 +375,13 @@ bool utf8_mb_str_is_bigendian()
 */
 bool utf8_unicode_char_to_bytes(FlUnicodeChar chr, FlByte* dst)
 {
-    int32_t size = fl_unicode_char_size(chr, FL_ENCODING_UTF8);
-    if (size == -1)
+    size_t size = fl_unicode_char_size(chr, FL_ENCODING_UTF8);
+    if (size == FL_UNICODE_INVALID_SIZE)
         return false;
     dst[size] = 0x0;
     FlByte* src = (FlByte*)&chr;
     bool mbUsesBigEndian = utf8_mb_str_is_bigendian();
-    for (int32_t index=0, j=0; j < size; j++)
+    for (size_t index=0, j=0; j < size; j++)
     {
         if (mbUsesBigEndian)
             index = size-1-j;
@@ -396,13 +397,13 @@ bool utf8_unicode_char_to_bytes(FlUnicodeChar chr, FlByte* dst)
 FlUnicodeChar utf8_bytes_to_unicode_char(const FlByte *src)
 {
     FlUnicodeChar chr = 0;
-    int32_t bs = utf8_bytes_count(src);
+    size_t bs = utf8_bytes_count(src);
 
-    if (bs == -1)
+    if (bs == FL_UNICODE_INVALID_SIZE)
         return FL_UNICODE_INVALID_CHAR;
 
     bool mbUsesBigEndian = utf8_mb_str_is_bigendian();
-    for (int32_t index=0, j=0; j < bs; j++)
+    for (size_t index=0, j=0; j < bs; j++)
     {
         if (mbUsesBigEndian)
             index = bs-1-j;
@@ -412,11 +413,11 @@ FlUnicodeChar utf8_bytes_to_unicode_char(const FlByte *src)
 }
 
 /* -------------------------------------------------------------
-* Returns the size of a UTF-8 valida character represented by a
+* Returns the size of a UTF-8 valid character represented by a
 * multi-byte character
 * -------------------------------------------------------------
 */
-int32_t utf8_bytes_count(const FlByte* src)
+size_t utf8_bytes_count(const FlByte* src)
 {
     if (src == 0x0)
         return 0;
@@ -446,11 +447,11 @@ int32_t utf8_bytes_count(const FlByte* src)
         // Surrogates
         if (chr < 0xeda080 || chr > 0xedbfbf)
             return 3;
-        return -1;
+        return FL_UNICODE_INVALID_SIZE;
     }
     else if ((src[0] & UTF8_CP_LEADBYTE_4) && src[0] <= UTF8_CP_LEADBYTE_4_MAX && (src[1] & 0x80) && (src[2] & 0x80) && (src[3] & 0x80) && src[0] != 0xF5)
     {
         return 4;
     }
-    return -1;
+    return FL_UNICODE_INVALID_SIZE;
 }

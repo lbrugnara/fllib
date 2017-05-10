@@ -62,12 +62,24 @@ clang -O3 -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-f
 
 md .\tests\build\debug
 
-clang -O3 -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -std=c99 -pedantic -fstrict-aliasing -I.\include -I.\src -o tests\build\debug\tests.exe ^
-    build\debug\libfl.lib   ^
-    tests\obj\debug\Main.o  ^
-    tests\obj\debug\Test.o  ^
-    tests\obj\debug\Std.o   ^
-    tests\obj\debug\File.o  ^
-    tests\obj\debug\text\Test_Unicode.o  ^
-    tests\obj\debug\text\Test_String.o  ^
-    tests\obj\debug\Cstr.o
+:: clang -v -O3 -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -std=c99 -pedantic -fstrict-aliasing -I.\include -I.\src -o tests\build\debug\tests.exe ^
+::     build\debug\libfl.lib   ^
+::     tests\obj\debug\Main.o  ^
+::     tests\obj\debug\Test.o  ^
+::     tests\obj\debug\Std.o   ^
+::     tests\obj\debug\File.o  ^
+::     tests\obj\debug\text\Test_Unicode.o  ^
+::     tests\obj\debug\text\Test_String.o  ^
+::     tests\obj\debug\Cstr.o
+
+link.exe "-out:tests\\build\\debug\\tests.exe" ^
+    -defaultlib:libcmt ^
+    -nologo ^
+    build\\debug\\libfl.lib ^
+    tests\\obj\\debug\\Main.o ^
+    tests\\obj\\debug\\Test.o ^
+    tests\\obj\\debug\\Std.o ^
+    tests\\obj\\debug\\File.o ^
+    tests\\obj\\debug\\text\\Test_Unicode.o ^
+    tests\\obj\\debug\\text\\Test_String.o ^
+    tests\\obj\\debug\\Cstr.o

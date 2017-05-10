@@ -232,15 +232,17 @@ fl_cstr_replace_char(const FlCstr src, const char chr, const FlCstr rplc)
 }
 
 bool
-cstr_match_backw(const FlCstr str1, const FlCstr str2, int n)
+cstr_match_backw(const FlCstr str1, const FlCstr str2, size_t n)
 {
     flm_assert(str1 != NULL, "Input str1 cannot be NULL");
     flm_assert(str2 != NULL, "Input str2 cannot be NULL");
    
-    for (int i = n-1; i >= 0; i--)
+    for (size_t i = n-1;; i--)
     {
         if (str1[i] != str2[i])
             return false;
+        if (i == 0)
+            break;
     }
     return true;
 }

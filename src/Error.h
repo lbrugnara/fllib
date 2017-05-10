@@ -4,17 +4,19 @@
  * {module: Error}
  * =============================================================
  * Provides common data structures, functions and macros that
- * can be used by any module and user libary.
+ * can be used by any module and user libary for error handling.
  * Current support:
  *  - Error handling through {FlError} objects and the {fl_error_*} functions familiy
  *  - Assertion and a exit() wrapper for quick-leave-on-error situations
- *  - Utility functions like {fl_copy} or macros like the {FLBIT} familiy intended to be used to handle modules flags
  * -------------------------------------------------------------
  */
 
 #include <stddef.h>
 #include <setjmp.h>
 #include "Types.h"
+
+#define FL_ERROR_MSG_MAX_SIZE 256
+#define FL_ERROR_TRYCONTEXT_MAX_MSG_SIZE 256
 
 /* -------------------------------------------------------------
  * {datatype: enum FlErrorType}
@@ -39,13 +41,14 @@ typedef enum
 typedef struct FlError
 {
     int id;
-    char message[256];
+    char message[FL_ERROR_MSG_MAX_SIZE];
 } FlError;
 
 /* -------------------------------------------------------------
- * {function: fl_error_new}
+ * {function: fl_error_push}
  * -------------------------------------------------------------
- * Creates an {FlError} with the specified {id} and message
+ * Creates an {FlError} with the specified {id} and message and push it
+ * in the error queue
  * -------------------------------------------------------------
  * {param: int id} ID of the error. This is generic, each module can create its own mapping for error codes
  * {param: const FlCstr format} Error message. Accepts 3 format specifiers: %d, %c and %s
@@ -56,9 +59,32 @@ typedef struct FlError
  */
 void fl_error_push(int id, const FlCstr format, ...);
 
-char* fl_errno_str(int errnum, char* buf, size_t len);
-
+/* -------------------------------------------------------------
+* {function: fl_error_last}
+* -------------------------------------------------------------
+* Returns the most recent error. In a threaded environment, it is
+* the most recent error for the current thread id ({ref: fl_thread_current_id})
+* -------------------------------------------------------------
+* {return: FlError} FlError object with its id and message
+* -------------------------------------------------------------
+*/
 FlError fl_error_last();
+
+/* -------------------------------------------------------------
+* {function: fl_errno_str}
+* -------------------------------------------------------------
+* Populates {buf} with an error message based on errnum (errno) through
+* one of the strerror functions family
+. The target buffer must allocate the needed space.
+* -------------------------------------------------------------
+* {param: int errnum} Errno
+* {param: char* buf} Destination buffer
+* {param: size_t len} Max number of bytes to be write  in {buf}
+* -------------------------------------------------------------
+* {return: char*} String containing the error message represented by errno
+* -------------------------------------------------------------
+*/
+char* fl_errno_str(int errnum, char* buf, size_t len);
 
 /* -------------------------------------------------------------
  * {function: fl_exit}
@@ -132,7 +158,8 @@ void fl_exit(FlErrorType errtype, const FlCstr format, ...);
  * {datatype: struct FlContext}
  * -------------------------------------------------------------
  * Has a jmp_buf member to save and restore the state of the
- * program using setjmp and longjmp
+ * program using setjmp and longjmp. It is not opaque because
+ * we need to access jmp_buf directly
  * -------------------------------------------------------------
  * {member: jmp_buf env} State of the program
  * -------------------------------------------------------------
@@ -140,33 +167,6 @@ void fl_exit(FlErrorType errtype, const FlCstr format, ...);
 typedef struct {
   jmp_buf env;
 } FlContext;
-
-/* -------------------------------------------------------------
- * Error handling with setjmp/longjmp
- * -------------------------------------------------------------
- * Provides a mechanism to handle error conditions using the 
- * (evil?) sjlj. (Yup, like goto, nope, also non-local jumps)
- */
-
-/* -------------------------------------------------------------
- * {datatype: struct FlTryContext}
- * -------------------------------------------------------------
- * Contains information about the context (using jmp_buf through FlContext)
- * and information about the "exception". It is not opaque because
- * we need to access jmp_buf directly
- * -------------------------------------------------------------
- * {member: FlContext ctx} Saves the info to restore the program state 
- * {member: int exception} Value to be passed to longjmp. Represents an exception (General purpouse usage)
- * {member: char[] message} Contains a brief description about the exception
- * -------------------------------------------------------------
- */
-#define FL_TRYCONTEXT_EX_MSG_LENGTH 256
-typedef struct
-{
-    FlContext ctx;
-    int exception;
-    char message[FL_TRYCONTEXT_EX_MSG_LENGTH];
-} FlTryContext;
 
 /* -------------------------------------------------------------
  * {macro: fl_context_save}
@@ -190,6 +190,32 @@ typedef struct
 #define fl_context_restore(ctx, v) (longjmp((ctx)->env, v))
 
 /* -------------------------------------------------------------
+ * Error handling with setjmp/longjmp
+ * -------------------------------------------------------------
+ * Provides a mechanism to handle error conditions using the 
+ * (evil?) sjlj. (Yup, like goto, nope, also non-local jumps)
+ */
+
+/* -------------------------------------------------------------
+ * {datatype: struct FlTryContext}
+ * -------------------------------------------------------------
+ * Contains information about the context (using jmp_buf through FlContext)
+ * and information about the "exception". It is not opaque because
+ * we need to access jmp_buf directly through FlContext
+ * -------------------------------------------------------------
+ * {member: FlContext ctx} Saves the info to restore the program state 
+ * {member: int exception} Value to be passed to longjmp. Represents an exception (General purpouse usage)
+ * {member: char[] message} Contains a brief description about the exception
+ * -------------------------------------------------------------
+ */
+typedef struct
+{
+    FlContext ctx;
+    int exception;
+    char message[FL_ERROR_TRYCONTEXT_MAX_MSG_SIZE];
+} FlTryContext;
+
+/* -------------------------------------------------------------
  * Try...Catch...Rest...Finally...EndTry. Do not run away!
  * -------------------------------------------------------------
  * Remove all the defines and you will understand this ;)
@@ -198,7 +224,7 @@ typedef struct
 do                                                              \
 {                                                               \
     (tryctx)->exception=0;                                      \
-    memset((tryctx)->message, 0, FL_TRYCONTEXT_EX_MSG_LENGTH);  \
+    memset((tryctx)->message, 0, FL_ERROR_TRYCONTEXT_MAX_MSG_SIZE);  \
     int res = fl_context_save(&(tryctx)->ctx);                  \
     switch(res)                                                 \
     {                                                           \

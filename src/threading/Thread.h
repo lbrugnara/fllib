@@ -13,6 +13,7 @@
 #ifdef FL_WIN_THREADS
     #include <windows.h>
     #include <process.h>
+    #include <stdint.h>
 
     typedef HANDLE FlThread;
     typedef DWORD FlThreadId;

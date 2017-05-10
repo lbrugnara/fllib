@@ -6,7 +6,7 @@ FlThread fl_thread_create(FlThreadFunc routine, FlThreadArgs args)
 {
     FlThread thread;
     #ifdef FL_WIN_THREADS
-        thread = (FlThread)_beginthreadex(NULL, 0, (unsigned(__stdcall*)(void*))routine, args, 0, NULL);
+        thread = (FlThread)((uintptr_t)_beginthreadex(NULL, 0, (unsigned(__stdcall*)(void*))routine, args, 0, NULL));
     #elif defined(FL_PTHREADS)
         pthread_create(&thread, NULL, (void*(*)(void*))routine, args);
     #endif

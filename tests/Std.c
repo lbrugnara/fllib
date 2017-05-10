@@ -62,6 +62,19 @@ void c();
 void d();
 void e();
 
+void test_std_exception()
+{
+    Try(&simpletest)
+    {
+        a();
+    }
+    Rest
+    {
+        fl_expect("Catched exception in test_std_exception() should be 2", simpletest.exception == 2);
+    }
+    EndTry;
+}
+
 void a() 
 {
     b();
@@ -96,17 +109,4 @@ void d()
 void e() 
 {
     Throw(&simpletest, 1);
-}
-
-void test_std_exception()
-{
-    Try(&simpletest)
-    {
-        a();
-    }
-    Rest
-    {
-        fl_expect("Catched exception in test_std_exception() should be 2", simpletest.exception == 2);
-    }
-    EndTry;
 }

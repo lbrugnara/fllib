@@ -29,6 +29,15 @@ void routine(FlThreadArgs args)
 
 int main(void)
 {
+    // Std module testsº
+    FlTestSuite suite_std = fl_test_suite_new("Module Std", 
+        { "Exception handling", &test_std_exception },
+        { "Global error handling thread safety", &test_errors }
+    );
+    fl_test_suite_run(suite_std);
+    fl_test_suite_delete(suite_std);
+
+    // Cstr module tests
     FlTestSuite suite_cstr = fl_test_suite_new("Module Cstr", 
         { "fl_cstr_new",            &test_cstr_new          }, 
         { "fl_cstr_dup",            &test_cstr_dup          },
@@ -40,20 +49,14 @@ int main(void)
     fl_test_suite_run(suite_cstr);
     fl_test_suite_delete(suite_cstr);
 
-    FlTestSuite suite_std = fl_test_suite_new("Module Std", 
-        { "Exception handling", &test_std_exception },
-        { "Global error handling thread safety", &test_errors }
-    );
-    fl_test_suite_run(suite_std);
-    fl_test_suite_delete(suite_std);
-
+    // File module tests
     FlTestSuite suite_file = fl_test_suite_new("Module File", 
         { "fl_file_write_all_bytes and fl_file_read_all_bytes", &test_file_rw_all_bytes }
     );
     fl_test_suite_run(suite_file);
     fl_test_suite_delete(suite_file);
 
-
+    // Unicode module tests
     FlTestSuite suite_unicode = fl_test_suite_new("Module Unicode",
         { "fl_unicode_char_at", &test_fl_unicode_char_at },
         { "fl_unicode_char", &test_fl_unicode_char },
@@ -64,6 +67,7 @@ int main(void)
     fl_test_suite_run(suite_unicode);
     fl_test_suite_delete(suite_unicode);
 
+    // String module tests
     FlTestSuite suite_string = fl_test_suite_new("Module String", 
         { "fl_string_length", &test_fl_string_length },
         { "fl_string_size", &test_fl_string_size },
@@ -72,7 +76,7 @@ int main(void)
     fl_test_suite_run(suite_string);
     fl_test_suite_delete(suite_string);
 
-
+    /*
     int nthreads = 5;    
     FlMutex mutex;
     fl_mutex_init(&mutex);
@@ -82,7 +86,7 @@ int main(void)
         threads[i] = fl_thread_create(routine, &mutex);
     }
     fl_thread_join_all(threads, nthreads);
-    fl_mutex_destroy(&mutex);
+    fl_mutex_destroy(&mutex);*/
     /*
     setlocale(LC_ALL, "");
     FlString str = "ASCII";

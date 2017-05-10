@@ -136,7 +136,7 @@ bool fl_expect(const char* descr, bool conditionResult)
     if (!conditionResult)
     {
         printf(" |-- Failed: %s\n", descr);
-        fl_cstr_copy_n(testctx.message, descr, FL_TRYCONTEXT_EX_MSG_LENGTH);
+        fl_cstr_copy_n(testctx.message, descr, FL_ERROR_TRYCONTEXT_MAX_MSG_SIZE);
         Throw(&testctx, TEST_FAILURE);
     }
     printf(" |-- Passed: %s\n", descr);
@@ -157,9 +157,8 @@ void fl_test_suite_run(FlTestSuite suite)
 {
     #ifdef _WIN32
     FlWinExceptionHandler prevh = fl_winex_global_handler_set(exception_filter);
-    #else
-    fl_signal_global_handler_set(sighandler);
     #endif
+    fl_signal_global_handler_set(sighandler);
     printf("============================\n");
     printf("Test Suite: %s\n", suite->name);
     printf("----------------------------\n");

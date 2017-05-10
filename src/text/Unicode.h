@@ -64,6 +64,8 @@ typedef uint32_t FlUnicodeChar;
 */
 #define FL_UNICODE_INVALID_CHAR UINT32_MAX
 
+#define FL_UNICODE_INVALID_SIZE SIZE_MAX
+
 /* -------------------------------------------------------------
 * {function: fl_unicode_codepoint_to_char}
 * -------------------------------------------------------------
@@ -149,11 +151,11 @@ bool fl_unicode_char_to_encoding_to_codepoint(FlUnicodeChar chr, FlEncoding srce
 * -------------------------------------------------------------
 * {param: FlUnicodeChar chr} target Unicode character to retrieve its bytes size
 * -------------------------------------------------------------
-* {return: int32_t} Size in bytes of character 'chr'. If chr is an invalid
+* {return: size_t} Size in bytes of character 'chr'. If chr is an invalid
 * unicode char it returns -1
 * -------------------------------------------------------------
 */
-int32_t fl_unicode_char_size(const FlUnicodeChar chr, FlEncoding encoding);
+size_t fl_unicode_char_size(const FlUnicodeChar chr, FlEncoding encoding);
 
 /* -------------------------------------------------------------
 * {function: fl_unicode_codepoint_size}
@@ -164,11 +166,11 @@ int32_t fl_unicode_char_size(const FlUnicodeChar chr, FlEncoding encoding);
 * {param: const FlByte* src} Input bytes to get the size
 * {param: FlEncoding encoding} {src} encoding
 * -------------------------------------------------------------
-* {return: int32_t} Size in bytes of input bytes {src}. If {src} is an invalid
+* {return: size_t} Size in bytes of input bytes {src}. If {src} is an invalid
 * unicode char it returns -1
 * -------------------------------------------------------------
 */
-int32_t fl_unicode_codepoint_size(const FlByte* src, FlEncoding encoding);
+size_t fl_unicode_codepoint_size(const FlByte* src, FlEncoding encoding);
 
 /* -------------------------------------------------------------
 * {function: fl_unicode_char_array_size}

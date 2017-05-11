@@ -9,6 +9,6 @@ fl_copy(const FlPointer var, size_t nbytes)
 {
 	flm_assert(var != NULL, "const FlPointer var cannot be NULL");
 	FlPointer dest = fl_calloc(1, nbytes);
-	memcpy(&dest, &var, nbytes);
+	memcpy(dest, var, nbytes);
 	return dest;
 }

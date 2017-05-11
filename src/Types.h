@@ -12,6 +12,8 @@
 */
 typedef unsigned char FlByte;
 
+typedef FlByte* FlByteArray;
+
 /* -------------------------------------------------------------
 * {datatype: char* FlCstr}
 * -------------------------------------------------------------

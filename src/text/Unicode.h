@@ -64,6 +64,14 @@ typedef uint32_t FlUnicodeChar;
 */
 #define FL_UNICODE_INVALID_CHAR UINT32_MAX
 
+/* -------------------------------------------------------------
+* {macro: FL_UNICODE_INVALID_SIZE}
+* -------------------------------------------------------------
+* Represents an invalid Unicode character's size. The size of a single
+* code unit could be between 1 and 4 bytes (depending on the encoding).
+* Using SIZE_MAX we represent an invalid size for a unicode code point.
+* -------------------------------------------------------------
+*/
 #define FL_UNICODE_INVALID_SIZE SIZE_MAX
 
 /* -------------------------------------------------------------
@@ -93,12 +101,13 @@ FlUnicodeChar fl_unicode_codepoint_to_char(const FlByte* src, FlEncoding encodin
 * It takes a unicode char represented by an FlUnicodeChar
 * encoded with {encoding} and populates {dst} with the code
 * points of the unicode char. If {chr} is an invalid unicode
-* code point this function returns false.
+* code point this function returns false. Otherwise returns true.
 * -------------------------------------------------------------
 * {param: FlUnicodeChar chr} Unicode char to get the bytes from
 * {param: FlEncoding encoding} Encoding used by {chr}
 * {param: FlByte* dst} Target to save the bytes from {chr}. Caller MUST
-* ensure {dst} to have space to allocate a code point (1 to 4 bytes)
+* ensure {dst} to have space to allocate a code point (1 to 4 bytes depending
+* on the encoding). {dst} MAY NOT be null terminated.
 * -------------------------------------------------------------
 * {return: bool} If {chr} is an invalid unicode code point returns false,
 * if not true.
@@ -134,7 +143,8 @@ FlUnicodeChar fl_unicode_codepoint_to_encoding_to_char(const FlByte* src, FlEnco
 * {param: FlUnicodeChar chr} Input FlUnicodeChar to get the bytes from
 * {param: FlEncoding srcencoding} Encoding of {chr}
 * {param: FlByte* dst} Where to put the bytes of {chr}. Caller MUST ensure
-* {dst} to have enough space to save a code point (1 to 4 bytes)
+* {dst} to have enough space to save a code point (1 to 4 bytes).
+* {dst} MAY NOT be null terminated.
 * {param: FlEncoding dstencoding} Encoding of {dst}
 * -------------------------------------------------------------
 * {return: <Data type>} <Return description>
@@ -146,13 +156,13 @@ bool fl_unicode_char_to_encoding_to_codepoint(FlUnicodeChar chr, FlEncoding srce
 * {function: fl_unicode_char_size}
 * -------------------------------------------------------------
 * Returns the size in bytes of the code point represented by
-* FlUnicodeChar 'chr'. If {chr} is invalid, it returns -1, other
-* cases >= 0
+* FlUnicodeChar 'chr'. If {chr} is invalid, it returns FL_UNICODE_INVALID_SIZE, 
+* otherwise >= 0
 * -------------------------------------------------------------
 * {param: FlUnicodeChar chr} target Unicode character to retrieve its bytes size
 * -------------------------------------------------------------
 * {return: size_t} Size in bytes of character 'chr'. If chr is an invalid
-* unicode char it returns -1
+* unicode char it returns FL_UNICODE_INVALID_SIZE
 * -------------------------------------------------------------
 */
 size_t fl_unicode_char_size(const FlUnicodeChar chr, FlEncoding encoding);
@@ -161,13 +171,14 @@ size_t fl_unicode_char_size(const FlUnicodeChar chr, FlEncoding encoding);
 * {function: fl_unicode_codepoint_size}
 * -------------------------------------------------------------
 * Returns the size in bytes of the {src} input. If {src} is an invalid
-* unicode code point, this function returns -1, other cases >= 0.
+* unicode code point, this function returns FL_UNICODE_INVALID_SIZE, 
+* otherwise >= 0.
 * -------------------------------------------------------------
 * {param: const FlByte* src} Input bytes to get the size
 * {param: FlEncoding encoding} {src} encoding
 * -------------------------------------------------------------
 * {return: size_t} Size in bytes of input bytes {src}. If {src} is an invalid
-* unicode char it returns -1
+* unicode char it returns FL_UNICODE_INVALID_SIZE
 * -------------------------------------------------------------
 */
 size_t fl_unicode_codepoint_size(const FlByte* src, FlEncoding encoding);
@@ -179,7 +190,7 @@ size_t fl_unicode_codepoint_size(const FlByte* src, FlEncoding encoding);
 * an array of {FlUnicodeChar}s. The encoding of the chars is determined
 * by {encoding}. If {end} is NULL, the count of bytes will stop when
 * one of the elements of {string} is 0x0. If {end} has a value, it should
-* be a pointer to an element of string where the function should stop counting.
+* be a pointer to an element of {string} where the function should stop counting.
 * -------------------------------------------------------------
 * {param: const FlUnicodeChar* string} Input string
 * {param: FlEncoding encoding} Encoding used by {string}
@@ -212,7 +223,7 @@ size_t fl_unicode_codeunit_sequence_size(const FlByte* sequence, FlEncoding enco
 /* -------------------------------------------------------------
 * {function: fl_unicode_char_at}
 * -------------------------------------------------------------
-* Returns the 'at'-th character in the string 'str'. The char
+* Returns the 'at'-th character in the string {str}. The char
 * is an FlUnicodeChar (a UTF-8 representation of the caracter)
 * that could be easily used to compare it with another UTF-8
 * character that could be generated using the fl_unicode_char_from_xxx
@@ -230,8 +241,8 @@ FlUnicodeChar fl_unicode_char_at(const FlByte* str, FlEncoding encoding, size_t 
 /* -------------------------------------------------------------
 * {function: fl_unicode_char_encode_to}
 * -------------------------------------------------------------
-* Encodes src character with encoding {srcencoding} to thread_error
-* encoding specified in {dstencoding}
+* Encodes {src} character with the encoding provided in {srcencoding} 
+* to the encoding specified in {dstencoding}
 * -------------------------------------------------------------
 * {param: FlUnicodeChar src} Source character
 * {param: FlEncoding srcencoding} Encoding used by {src}

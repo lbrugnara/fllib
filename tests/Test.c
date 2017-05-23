@@ -162,6 +162,7 @@ void fl_test_suite_run(FlTestSuite suite)
     printf("============================\n");
     printf("Test Suite: %s\n", suite->name);
     printf("----------------------------\n");
+    size_t failedTests = 0;
     for (size_t i=0; i < suite->ntests; i++)
     {
         printf(" # Test Case: %s\n", suite->tests[i].name);
@@ -172,15 +173,19 @@ void fl_test_suite_run(FlTestSuite suite)
         }
         Catch(TEST_EXCEPTION)
         {
+            failedTests++;
             printf(" [Result] fail: %s\n\n", testctx.message);
         }
         Rest
         {
+            failedTests++;
             printf(" [Result] fail: %s\n\n", testctx.message);
         }
         EndTry;
     }
     printf("\n");
+    printf("Passed tests: %zu\n", suite->ntests - failedTests);
+    printf("Failed tests: %zu\n\n", failedTests);
     #ifdef _WIN32
     fl_winex_global_handler_set(prevh);
     #endif

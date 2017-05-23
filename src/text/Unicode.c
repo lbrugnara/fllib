@@ -26,7 +26,6 @@
 
 // UTF32
 #define UTF32_BYTES_SIZE 4
-#define REPLACEMENT_CHARACTER 0xFFFD
 
 
 /* -------------------------------------------------------------
@@ -36,7 +35,7 @@
 * and exec-charset are UTF-8
 * -------------------------------------------------------------
 */
-bool utf8_mb_str_is_bigendian();
+static inline bool utf8_mb_str_is_bigendian();
 size_t utf8_bytes_count(const FlByte* src);
 bool utf8_unicode_char_to_bytes(FlUnicodeChar chr, FlByte* dst);
 FlUnicodeChar utf8_bytes_to_unicode_char(const FlByte *src);
@@ -49,7 +48,7 @@ FlUnicodeChar fl_unicode_utf8_to_utf32(FlUnicodeChar src);
 * common chars.
 * -------------------------------------------------------------
 */
-bool utf8_mb_str_is_bigendian()
+static inline bool utf8_mb_str_is_bigendian()
 {
     FlString oldac = "𐌀"; // Hex 0xF0908C80
     int32_t oldah = 0xF0908C80;
@@ -80,12 +79,6 @@ void swap_representations(const FlByte *src, FlByte *dst, size_t nbytes)
 size_t utf8_bytes_count(const FlByte* src)
 {
     flm_assert(src != NULL, "The source byte array cannot be NULL.");
-
-    // NULL character
-    if (src[0] == 0x00)
-    {
-        return 1;
-    }
     
     // U+0000 to U+007F occupy 1 byte
     if (src[0] <= UTF8_LAST_CODEPOINT_1)
@@ -110,7 +103,7 @@ size_t utf8_bytes_count(const FlByte* src)
     {
         FlUnicodeChar chr = 0;
         swap_representations(src, (FlByte*)&chr, 3);
-        // Surrogates
+        // Surrogates (UTF-8 encoded)
         if (chr < 0xeda080 || chr > 0xedbfbf)
             return 3;
         return FL_UNICODE_INVALID_SIZE;
@@ -136,7 +129,7 @@ size_t utf8_bytes_count(const FlByte* src)
 */
 bool utf8_unicode_char_to_bytes(FlUnicodeChar chr, FlByte* dst)
 {
-    size_t size = fl_unicode_char_size(chr, FL_ENCODING_UTF8);
+    size_t size = fl_unicode_unichar_size(chr, FL_ENCODING_UTF8);
     if (size == FL_UNICODE_INVALID_SIZE)
         return false;
     swap_representations((FlByte*)&chr, dst, size);
@@ -165,14 +158,13 @@ FlUnicodeChar utf8_bytes_to_unicode_char(const FlByte *src)
 */
 FlUnicodeChar fl_unicode_utf32_to_utf8(FlUnicodeChar src)
 {
-    FlUnicodeChar chr = 0;
-    FlByte* dst = (FlByte*)&chr;
     if (src <= UTF8_LAST_CODEPOINT_1)
     {
-        chr = (FlUnicodeChar)src;
-        return chr;
+        return (FlUnicodeChar)src;
     }
     
+    FlUnicodeChar chr = 0;
+    FlByte* dst = (FlByte*)&chr;
     bool mbUsesBigEndian = utf8_mb_str_is_bigendian();
     if (src <= UTF8_LAST_CODEPOINT_2)
     {
@@ -214,18 +206,16 @@ FlUnicodeChar fl_unicode_utf32_to_utf8(FlUnicodeChar src)
 */
 FlUnicodeChar fl_unicode_utf8_to_utf32(FlUnicodeChar src)
 {
-    FlUnicodeChar chr = 0;
-    
-    size_t l = fl_unicode_char_size(src, FL_ENCODING_UTF8);
+    size_t l = fl_unicode_unichar_size(src, FL_ENCODING_UTF8);
     if (l == FL_UNICODE_INVALID_SIZE)
         return FL_UNICODE_INVALID_CHAR;
 
     if (l == 1) 
     {
-        chr = (FlUnicodeChar)src;
-        return chr;
+        return (FlUnicodeChar)src;
     }
 
+    FlUnicodeChar chr = 0;
     FlByte* dst = (FlByte*)&chr;
     bool mbUsesBigEndian = utf8_mb_str_is_bigendian();
     if (l == 2)
@@ -268,12 +258,12 @@ FlUnicodeChar fl_unicode_utf8_to_utf32(FlUnicodeChar src)
 * must match the 'encoding' parameter
 * -------------------------------------------------------------
 */
-FlUnicodeChar fl_unicode_codepoint_to_char(const FlByte* src, FlEncoding encoding)
+FlUnicodeChar fl_unicode_codepoint_to_unichar(const FlByte* src, FlEncoding encoding)
 {
-    return fl_unicode_char_at(src, encoding, 0);
+    return fl_unicode_unichar_at(src, encoding, 0);
 }
 
-bool fl_unicode_char_to_codepoint(FlUnicodeChar chr, FlEncoding encoding, FlByte* dst)
+bool fl_unicode_unichar_to_codepoint(FlUnicodeChar chr, FlEncoding encoding, FlByte* dst)
 {
     if (encoding == FL_ENCODING_UTF32)
     {
@@ -292,23 +282,23 @@ bool fl_unicode_char_to_codepoint(FlUnicodeChar chr, FlEncoding encoding, FlByte
 * The bytes array encoding must match the 'encoding' parameter
 * -------------------------------------------------------------
 */
-FlUnicodeChar fl_unicode_codepoint_to_encoding_to_char(const FlByte* src, FlEncoding srcencoding, FlEncoding dstencoding)
+FlUnicodeChar fl_unicode_codepoint_to_encoded_unichar(const FlByte* src, FlEncoding srcencoding, FlEncoding dstencoding)
 {
-    FlUnicodeChar chr = fl_unicode_char_at(src, srcencoding, 0);
-    return fl_unicode_char_encode_to(chr, srcencoding, dstencoding);
+    FlUnicodeChar chr = fl_unicode_unichar_at(src, srcencoding, 0);
+    return fl_unicode_unichar_encode_to(chr, srcencoding, dstencoding);
 }
 
-bool fl_unicode_char_to_encoding_to_codepoint(FlUnicodeChar chr, FlEncoding srcencoding, FlByte* dst, FlEncoding dstencoding)
+bool fl_unicode_unichar_to_encoded_codepoint(FlUnicodeChar chr, FlEncoding srcencoding, FlByte* dst, FlEncoding dstencoding)
 {
-    FlUnicodeChar dstchr = fl_unicode_char_encode_to(chr, srcencoding, dstencoding);
-    return fl_unicode_char_to_codepoint(dstchr, dstencoding, dst);
+    FlUnicodeChar dstchr = fl_unicode_unichar_encode_to(chr, srcencoding, dstencoding);
+    return fl_unicode_unichar_to_codepoint(dstchr, dstencoding, dst);
 }
 
 /* -------------------------------------------------------------
 * Returns the size of the FlUnicodeChar {chr} encoded as {encoding}
 * -------------------------------------------------------------
 */
-size_t fl_unicode_char_size(const FlUnicodeChar chr, FlEncoding encoding)
+size_t fl_unicode_unichar_size(const FlUnicodeChar chr, FlEncoding encoding)
 {
     if (encoding == FL_ENCODING_UTF8)
     {
@@ -333,7 +323,7 @@ size_t fl_unicode_char_size(const FlUnicodeChar chr, FlEncoding encoding)
             return 1;
         }
     }
-    else if (encoding == FL_ENCODING_UTF32 && chr <= UTF8_LAST_CODEPOINT_4)
+    else if (encoding == FL_ENCODING_UTF32 && chr <= UTF8_LAST_CODEPOINT_4 && (chr < 0xD800 || chr > 0xDFFF))
     {
         return 4;
     }
@@ -344,7 +334,7 @@ size_t fl_unicode_codepoint_size(const FlByte* src, FlEncoding encoding)
 {
     if (encoding == FL_ENCODING_UTF32)
     {
-        FlUnicodeChar srcchr = fl_unicode_codepoint_to_char(src, FL_ENCODING_UTF32);
+        FlUnicodeChar srcchr = fl_unicode_codepoint_to_unichar(src, FL_ENCODING_UTF32);
         if (srcchr <= UTF8_LAST_CODEPOINT_4)
         {
             return UTF32_BYTES_SIZE;
@@ -358,7 +348,7 @@ size_t fl_unicode_codepoint_size(const FlByte* src, FlEncoding encoding)
     return FL_UNICODE_INVALID_SIZE;
 }
 
-size_t fl_unicode_char_array_size(const FlUnicodeChar *string, FlEncoding encoding, FlUnicodeChar *end)
+size_t fl_unicode_unichar_sequence_size(const FlUnicodeChar *string, FlEncoding encoding, FlUnicodeChar *end)
 {
     flm_assert(string != NULL, "Source string cannot be NULL.");
     
@@ -366,7 +356,7 @@ size_t fl_unicode_char_array_size(const FlUnicodeChar *string, FlEncoding encodi
     size_t i = 0;
     do
     {
-        size_t tmp = fl_unicode_char_size(string[i], encoding);
+        size_t tmp = fl_unicode_unichar_size(string[i], encoding);
         if (tmp == FL_UNICODE_INVALID_SIZE)
             break;
         size += tmp;
@@ -417,7 +407,7 @@ size_t fl_unicode_codeunit_sequence_size(const FlByte* sequence, FlEncoding enco
 * Returns the 'at'-th character of a Unicode string encoded as 'encoding'
 * -------------------------------------------------------------
 */
-FlUnicodeChar fl_unicode_char_at(const FlByte* str, FlEncoding encoding, size_t at)
+FlUnicodeChar fl_unicode_unichar_at(const FlByte* str, FlEncoding encoding, size_t at)
 {
     // Initialize chr to 0 to "clear" it
     FlUnicodeChar chr = 0;
@@ -447,7 +437,7 @@ FlUnicodeChar fl_unicode_char_at(const FlByte* str, FlEncoding encoding, size_t 
 * a new character representing 'src' version under encoding 'dstencoding'
 * -------------------------------------------------------------
 */
-FlUnicodeChar fl_unicode_char_encode_to(const FlUnicodeChar src, const FlEncoding srcencoding, const FlEncoding dstencoding)
+FlUnicodeChar fl_unicode_unichar_encode_to(const FlUnicodeChar src, const FlEncoding srcencoding, const FlEncoding dstencoding)
 {
     if (srcencoding == FL_ENCODING_UTF32)
     {

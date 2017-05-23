@@ -58,10 +58,10 @@ int main(void)
 
     // Unicode module tests
     FlTestSuite suite_unicode = fl_test_suite_new("Module Unicode",
-        { "fl_unicode_char_at", &test_fl_unicode_char_at },
+        { "fl_unicode_unichar_at", &test_fl_unicode_unichar_at },
         { "fl_unicode_char", &test_fl_unicode_char },
-        { "fl_unicode_char_encode_to", &test_fl_unicode_char_encode_to },
-        { "fl_unicode_codepoint_to_char", &test_fl_unicode_codepoint_to_char },
+        { "fl_unicode_unichar_encode_to", &test_fl_unicode_unichar_encode_to },
+        { "fl_unicode_codepoint_to_unichar", &test_fl_unicode_codepoint_to_unichar },
         { "fl_unicode_codeunit_sequence_size", &test_fl_unicode_codeunit_sequence_size}
     );
     fl_test_suite_run(suite_unicode);

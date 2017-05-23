@@ -8,13 +8,13 @@
 
 FlString fl_string_new(const FlString str)
 {
-    //TODO
+    //TODO: Validate and create a new UTF-8 string from {str} (null-terminated string)
     return NULL;
 }
 
 FlString fl_string_new_from_bytes(const FlByte *bytes, size_t length, FlEncoding encoding)
 {
-    //TODO
+    //TODO: Validate and create a new UTF-8 string from {bytes} with encoding {encoding}
     return NULL;
 }
 
@@ -44,10 +44,10 @@ size_t fl_string_size(const FlString str, const FlByte* end)
 
 FlUnicodeChar fl_char(const FlString str)
 {
-    return fl_unicode_codepoint_to_char((const FlByte*)str, FL_ENCODING_UTF8);
+    return fl_unicode_codepoint_to_unichar((const FlByte*)str, FL_ENCODING_UTF8);
 }
 
 FlUnicodeChar fl_string_char_at(const FlString str, size_t at)
 {
-    return fl_unicode_char_at((const FlByte*) str, FL_ENCODING_UTF8, at);    
+    return fl_unicode_unichar_at((const FlByte*) str, FL_ENCODING_UTF8, at);    
 }

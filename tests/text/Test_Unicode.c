@@ -190,3 +190,23 @@ void test_fl_unicode_codeunit_sequence_size()
     fl_expect("兔 has 4 bytes", fl_unicode_codeunit_sequence_size((const FlByte*)"兔", FL_ENCODING_UTF8, NULL) == 4);
     fl_expect("ԱԲ has 4 bytes", fl_unicode_codeunit_sequence_size((const FlByte*)"ԱԲ", FL_ENCODING_UTF8, NULL) == 4);
 }
+
+void test_fl_unicode_unichar_validity()
+{
+    fl_expect("Overlong encoding of U+0000 (0xC080) is not valid UTF-8", !fl_unicode_unichar_is_valid(0xC080, FL_ENCODING_UTF8));
+    fl_expect("High surrogate U+D84C is not valid UTF-8", !fl_unicode_unichar_is_valid(0xEDA18C, FL_ENCODING_UTF8));
+    fl_expect("High surrogate U+D84C is not valid UTF-32", !fl_unicode_unichar_is_valid(0xD84c, FL_ENCODING_UTF32));
+    fl_expect("Overlong encoding of U+002F (0xc0af) is not valid UTF-8", !fl_unicode_unichar_is_valid(0xc0af, FL_ENCODING_UTF8));
+    fl_expect("Overlong encoding of U+002F (0xe080af) is not valid UTF-8", !fl_unicode_unichar_is_valid(0xe080af, FL_ENCODING_UTF8));
+    fl_expect("Overlong encoding of U+002F (0xf08080af) is not valid UTF-8", !fl_unicode_unichar_is_valid(0xf08080af, FL_ENCODING_UTF8));
+}
+
+void test_fl_unicode_codepoint_validity()
+{
+    fl_expect("Overlong encoding of U+0000 (0xC080) is not valid UTF-8", !fl_unicode_codepoint_is_valid((FlByte*)"\xC0\x80", FL_ENCODING_UTF8));
+    fl_expect("High surrogate U+D84C is not valid UTF-8", !fl_unicode_codepoint_is_valid((FlByte*)"\xED\xA1\x8C", FL_ENCODING_UTF8));
+    fl_expect("High surrogate U+D84C is not valid UTF-32", !fl_unicode_codepoint_is_valid((FlByte*)"\xD8\x4c", FL_ENCODING_UTF32));
+    fl_expect("Overlong encoding of U+002F (0xc0af) is not valid UTF-8", !fl_unicode_codepoint_is_valid((FlByte*)"\xc0\xaf", FL_ENCODING_UTF8));
+    fl_expect("Overlong encoding of U+002F (0xe080af) is not valid UTF-8", !fl_unicode_codepoint_is_valid((FlByte*)"\xe0\x80\xaf", FL_ENCODING_UTF8));
+    fl_expect("Overlong encoding of U+002F (0xf08080af) is not valid UTF-8", !fl_unicode_codepoint_is_valid((FlByte*)"\xf0\x80\x80\xaf", FL_ENCODING_UTF8));
+}

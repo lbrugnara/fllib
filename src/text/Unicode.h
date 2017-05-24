@@ -287,4 +287,12 @@ size_t fl_unicode_codeunit_sequence_size(const FlByte* sequence, FlEncoding enco
 */
 FlUnicodeChar fl_unicode_unichar_at(const FlByte* str, FlEncoding encoding, size_t at);
 
+bool fl_unicode_unichar_is_valid(const FlUnicodeChar chr, FlEncoding encoding);
+
+bool fl_unicode_unichar_sequence_is_valid(const FlUnicodeChar *sequence, FlEncoding encoding, FlUnicodeChar *end);
+
+bool fl_unicode_codepoint_is_valid(const FlByte* src, FlEncoding encoding);
+
+bool fl_unicode_codeunit_sequence_is_valid(const FlByte* src, FlEncoding encoding, FlByte* end);
+
 #endif /* FL_UNICODE_H */

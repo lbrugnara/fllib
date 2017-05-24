@@ -99,7 +99,7 @@ size_t utf8_bytes_count(const FlByte* src)
     // Check if first byte is a valid lead byte value for 3-bytes code points
     // Check if second and third bytes are continuation bytes (0x80)
     // (inside) Check UTF-16 surrogates
-    if ((src[0] & UTF8_CODEPOINT_LEADBYTE_3) && src[0] <= UTF8_CODEPOINT_LEADBYTE_3_MAX && (src[1] & 0x80) && (src[2] & 0x80))
+    if ((src[0] & UTF8_CODEPOINT_LEADBYTE_3) && src[0] <= UTF8_CODEPOINT_LEADBYTE_3_MAX && ((src[0] == UTF8_CODEPOINT_LEADBYTE_3 && src[1] >= 0xA0) || (src[0] > UTF8_CODEPOINT_LEADBYTE_3 && src[1] >= 0x80)) && (src[2] & 0x80))
     {
         FlUnicodeChar chr = 0;
         swap_representations(src, (FlByte*)&chr, 3);
@@ -113,7 +113,7 @@ size_t utf8_bytes_count(const FlByte* src)
     // Check if first byte is a valid lead byte value for 4-bytes code points
     // Check if second, third and fourth bytes are continuation bytes (0x80)
     // Check for invalid octets greather than F5 (F5-FF)
-    if ((src[0] & UTF8_CODEPOINT_LEADBYTE_4) && src[0] <= UTF8_CODEPOINT_LEADBYTE_4_MAX && (src[1] & 0x80) && (src[2] & 0x80) && (src[3] & 0x80) && src[0] < 0xF5)
+    if ((src[0] & UTF8_CODEPOINT_LEADBYTE_4) && src[0] <= UTF8_CODEPOINT_LEADBYTE_4_MAX && ((src[0] == UTF8_CODEPOINT_LEADBYTE_4 && src[1] >= 0x90) || (src[0] > UTF8_CODEPOINT_LEADBYTE_4 && src[1] >= 0x80)) && (src[2] & 0x80) && (src[3] & 0x80) && src[0] < 0xF5)
     {
         return 4;
     }
@@ -302,23 +302,45 @@ size_t fl_unicode_unichar_size(const FlUnicodeChar chr, FlEncoding encoding)
 {
     if (encoding == FL_ENCODING_UTF8)
     {
-        FlByte *chrb = (FlByte*)&chr;
-        if (chrb[3] > UTF8_CODEPOINT_LEADBYTE_3_MAX && (chrb[3] & UTF8_CODEPOINT_LEADBYTE_4) && chrb[3] <= UTF8_CODEPOINT_LEADBYTE_4_MAX && chrb[3] < 0xF5)
+        // {todo: Check this block to see if we can use utf8_bytes_count directly after changing representaitons}
+        // FlByte dst[] = {0x0,0x0,0x0,0x0};
+        // swap_representations((FlByte*)&chr, dst, 4);
+        // size_t i=0;
+        // while (dst[i] == 0x0) i++;
+        // return utf8_bytes_count(dst+i);
+        
+        FlByte *src = (FlByte*)&chr;
+        // Check if first byte is the lead byte of 4-bytes code points
+        // Check if first byte is a valid lead byte value for 4-bytes code points
+        // Check if second, third and fourth bytes are continuation bytes (0x80)
+        // Check for invalid octets greather than F5 (F5-FF)
+        if ((src[3] & UTF8_CODEPOINT_LEADBYTE_4) && src[3] <= UTF8_CODEPOINT_LEADBYTE_4_MAX && ((src[3] == UTF8_CODEPOINT_LEADBYTE_4 && src[2] >= 0x90) || (src[3] > UTF8_CODEPOINT_LEADBYTE_4 && src[2] >= 0x80)) && (src[1] & 0x80) && (src[0] & 0x80) && src[3] < 0xF5)
         {
             return 4;
         }
-        else if (chrb[2] > UTF8_CODEPOINT_LEADBYTE_2_MAX && (chrb[2] & UTF8_CODEPOINT_LEADBYTE_3) && chrb[2] <= UTF8_CODEPOINT_LEADBYTE_3_MAX)
+
+        // Check if first byte is the lead byte of 3-bytes code points
+        // Check if first byte is a valid lead byte value for 3-bytes code points
+        // Check if second and third bytes are continuation bytes (0x80)
+        // (inside) Check UTF-16 surrogates
+        if (src[3] == 0x0 && (src[2] & UTF8_CODEPOINT_LEADBYTE_3) && src[2] <= UTF8_CODEPOINT_LEADBYTE_3_MAX && ((src[2] == UTF8_CODEPOINT_LEADBYTE_3 && src[1] >= 0xA0) || (src[2] > UTF8_CODEPOINT_LEADBYTE_3 && src[1] >= 0x80)) && (src[0] & 0x80))
         {
-            // Surrogates
+            // Surrogates (UTF-8 encoded)
             if (chr < 0xeda080 || chr > 0xedbfbf)
                 return 3;
             return FL_UNICODE_INVALID_SIZE;
         }
-        else if (chrb[1] > UTF8_LAST_CODEPOINT_1 && (chrb[1] & UTF8_CODEPOINT_LEADBYTE_2) && chrb[1] <= UTF8_CODEPOINT_LEADBYTE_2_MAX && chrb[1] != 0xC0 && chrb[1] != 0xC1)
+
+        // Check if first byte is the lead byte of 2-bytes code points
+        // Check if first byte is a valid lead byte value for 2-bytes code points
+        // Check if second byte is a continuation byte (0x80)
+        // Check for invalid octets C0 and C1
+        if (src[3] == 0x0 && src[2] == 0x0 && (src[1] & UTF8_CODEPOINT_LEADBYTE_2) && src[1] <= UTF8_CODEPOINT_LEADBYTE_2_MAX && (src[0] & 0x80) && src[1] != 0xC0 && src[1] != 0xC1)
         {
             return 2;
         }
-        else if (chr <= UTF8_LAST_CODEPOINT_1)
+
+        if (src[3] == 0x0 && src[2] == 0x0 && src[1] == 0x0 && chr <= UTF8_LAST_CODEPOINT_1)
         {
             return 1;
         }
@@ -454,4 +476,43 @@ FlUnicodeChar fl_unicode_unichar_encode_to(const FlUnicodeChar src, const FlEnco
         }
     }
     return 0;
+}
+
+bool fl_unicode_unichar_is_valid(const FlUnicodeChar chr, FlEncoding encoding)
+{
+    return fl_unicode_unichar_size(chr, encoding) != FL_UNICODE_INVALID_SIZE;
+}
+
+bool fl_unicode_codepoint_is_valid(const FlByte* src, FlEncoding encoding)
+{
+    return fl_unicode_codepoint_size(src, encoding) != FL_UNICODE_INVALID_SIZE;
+}
+
+bool fl_unicode_unichar_sequence_is_valid(const FlUnicodeChar *sequence, FlEncoding encoding, FlUnicodeChar *end)
+{
+    flm_assert(sequence != NULL, "Source sequence cannot be NULL.");
+
+    size_t i = 0;
+    while ((end == NULL && sequence[i]) || (end != NULL && (sequence+i) < end))
+    {
+        if (fl_unicode_unichar_size(sequence[i], encoding) == FL_UNICODE_INVALID_SIZE)
+            return false;
+    }
+    return true;
+}
+
+
+bool fl_unicode_codeunit_sequence_is_valid(const FlByte* src, FlEncoding encoding, FlByte* end)
+{
+    flm_assert(src != NULL, "Source src cannot be NULL.");
+
+    size_t i = 0;
+    while ((end == NULL && src[i]) || (end != NULL && (src+i) < end))
+    {
+        size_t tmp = fl_unicode_codepoint_size(src+i, encoding);
+        if (tmp == FL_UNICODE_INVALID_SIZE)
+            return false;
+        i += tmp;
+    }
+    return true;
 }

@@ -30,8 +30,12 @@ size_t fl_string_length(const FlString str, const FlByte* end)
         return 0;
     size_t l=0;
     size_t c=0;
+    size_t tmp = 0;
     do {
-        c += fl_unicode_codeunit_sequence_size((FlByte*)str + c, FL_ENCODING_UTF8, (FlByte*)str + c +1);
+        tmp = fl_unicode_codeunit_sequence_size((FlByte*)str + c, FL_ENCODING_UTF8, (FlByte*)str + c +1);
+        if (tmp == 0)
+            break;
+        c += tmp;
         l++;
     } while((end ? (FlByte*)(str+c+1) < end : str[c]));
     return l;

@@ -199,6 +199,10 @@ void test_fl_unicode_unichar_validity()
     fl_expect("Overlong encoding of U+002F (0xc0af) is not valid UTF-8", !fl_unicode_unichar_is_valid(0xc0af, FL_ENCODING_UTF8));
     fl_expect("Overlong encoding of U+002F (0xe080af) is not valid UTF-8", !fl_unicode_unichar_is_valid(0xe080af, FL_ENCODING_UTF8));
     fl_expect("Overlong encoding of U+002F (0xf08080af) is not valid UTF-8", !fl_unicode_unichar_is_valid(0xf08080af, FL_ENCODING_UTF8));
+    fl_expect("High surrogate boundary U+D7FF is valid UTF-8", fl_unicode_unichar_is_valid(0xed9fbf, FL_ENCODING_UTF8));
+    fl_expect("Replacement char U+FFFD is valid UTF-8", fl_unicode_unichar_is_valid(0xefbfbd, FL_ENCODING_UTF8));
+    fl_expect("Max boundary U+10FFFF is valid UTF-8", fl_unicode_unichar_is_valid(0xf48fbfbf, FL_ENCODING_UTF8));
+    fl_expect("Max boundary+1 U+110000 is not valid UTF-8", !fl_unicode_unichar_is_valid(0xf4908080, FL_ENCODING_UTF8));
 }
 
 void test_fl_unicode_codepoint_validity()
@@ -209,4 +213,8 @@ void test_fl_unicode_codepoint_validity()
     fl_expect("Overlong encoding of U+002F (0xc0af) is not valid UTF-8", !fl_unicode_codepoint_is_valid((FlByte*)"\xc0\xaf", FL_ENCODING_UTF8));
     fl_expect("Overlong encoding of U+002F (0xe080af) is not valid UTF-8", !fl_unicode_codepoint_is_valid((FlByte*)"\xe0\x80\xaf", FL_ENCODING_UTF8));
     fl_expect("Overlong encoding of U+002F (0xf08080af) is not valid UTF-8", !fl_unicode_codepoint_is_valid((FlByte*)"\xf0\x80\x80\xaf", FL_ENCODING_UTF8));
+    fl_expect("High surrogate boundary U+D7FF is valid UTF-8", fl_unicode_codepoint_is_valid((FlByte*)"\xed\x9f\xbf", FL_ENCODING_UTF8));
+    fl_expect("Replacement char U+FFFD is valid UTF-8", fl_unicode_codepoint_is_valid((FlByte*)"\xef\xbf\xbd", FL_ENCODING_UTF8));
+    fl_expect("Max boundary U+10FFFF is valid UTF-8", fl_unicode_codepoint_is_valid((FlByte*)"\xf4\x8f\xbf\xbf", FL_ENCODING_UTF8));
+    fl_expect("Max boundary+1 U+110000 is not valid UTF-8", !fl_unicode_codepoint_is_valid((FlByte*)"\xf4\x90\x80\x80", FL_ENCODING_UTF8));
 }

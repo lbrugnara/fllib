@@ -8,10 +8,10 @@
 * Last code point (inclusive) of each UTF-8 range (1-4 bytes)
 * -------------------------------------------------------------
 */
-#define UTF8_LAST_CODEPOINT_1 0x00007F
-#define UTF8_LAST_CODEPOINT_2 0x0007FF
-#define UTF8_LAST_CODEPOINT_3 0x00FFFF
-#define UTF8_LAST_CODEPOINT_4 0x10FFFF
+#define UNICODE_LAST_CODEPOINT_1 0x00007F
+#define UNICODE_LAST_CODEPOINT_2 0x0007FF
+#define UNICODE_LAST_CODEPOINT_3 0x00FFFF
+#define UNICODE_LAST_CODEPOINT_4 0x10FFFF
 
 /* -------------------------------------------------------------
 * Lead byte of each UTF-8 and max value of each lead byte
@@ -24,9 +24,11 @@
 #define UTF8_CODEPOINT_LEADBYTE_4 0xF0
 #define UTF8_CODEPOINT_LEADBYTE_4_MAX 0xF7
 
-// UTF32
-#define UTF32_BYTES_SIZE 4
+// UTF-8
+#define UTF8_MAX_CODEPOINT ((FlByte*)"\xf4\x8f\xbf\xbf")
 
+// UTF-32
+#define UTF32_BYTES_SIZE 4
 
 /* -------------------------------------------------------------
 * PRIVATE API
@@ -81,7 +83,7 @@ size_t utf8_bytes_count(const FlByte* src)
     flm_assert(src != NULL, "The source byte array cannot be NULL.");
     
     // U+0000 to U+007F occupy 1 byte
-    if (src[0] <= UTF8_LAST_CODEPOINT_1)
+    if (src[0] <= UNICODE_LAST_CODEPOINT_1)
     {
         return 1;
     }
@@ -115,6 +117,8 @@ size_t utf8_bytes_count(const FlByte* src)
     // Check for invalid octets greather than F5 (F5-FF)
     if ((src[0] & UTF8_CODEPOINT_LEADBYTE_4) && src[0] <= UTF8_CODEPOINT_LEADBYTE_4_MAX && ((src[0] == UTF8_CODEPOINT_LEADBYTE_4 && src[1] >= 0x90) || (src[0] > UTF8_CODEPOINT_LEADBYTE_4 && src[1] >= 0x80)) && (src[2] & 0x80) && (src[3] & 0x80) && src[0] < 0xF5)
     {
+        if (memcmp(src, UTF8_MAX_CODEPOINT, 4) > 0)
+            return FL_UNICODE_INVALID_SIZE;
         return 4;
     }
 
@@ -158,7 +162,7 @@ FlUnicodeChar utf8_bytes_to_unicode_char(const FlByte *src)
 */
 FlUnicodeChar fl_unicode_utf32_to_utf8(FlUnicodeChar src)
 {
-    if (src <= UTF8_LAST_CODEPOINT_1)
+    if (src <= UNICODE_LAST_CODEPOINT_1)
     {
         return (FlUnicodeChar)src;
     }
@@ -166,14 +170,14 @@ FlUnicodeChar fl_unicode_utf32_to_utf8(FlUnicodeChar src)
     FlUnicodeChar chr = 0;
     FlByte* dst = (FlByte*)&chr;
     bool mbUsesBigEndian = utf8_mb_str_is_bigendian();
-    if (src <= UTF8_LAST_CODEPOINT_2)
+    if (src <= UNICODE_LAST_CODEPOINT_2)
     {
         // Control 10xxxxxx = 0x80 | 0x3f: Get last 6 bit
         dst[mbUsesBigEndian ? 0 : 1] = 0x80 |  (src & 0x3f);
         // Lead 110xxxxx => Shift 6 bits used in a continuation byte and get last five (0x1f) bits
         dst[mbUsesBigEndian ? 1 : 0] = UTF8_CODEPOINT_LEADBYTE_2 | ((src >> 6) & 0x1F);
     }    
-    else if (src <= UTF8_LAST_CODEPOINT_3) 
+    else if (src <= UNICODE_LAST_CODEPOINT_3) 
     {
         // Control 10xxxxxx = 0x80 | 0x3f: Get last 6 bit
         dst[mbUsesBigEndian ? 0 : 2] = 0x80 |  (src & 0x3f);
@@ -182,7 +186,7 @@ FlUnicodeChar fl_unicode_utf32_to_utf8(FlUnicodeChar src)
         // Lead 1110xxxx => Shift 12 bits used in two continuation bytes and get last four (0xf) bits
         dst[mbUsesBigEndian ? 2 : 0] = UTF8_CODEPOINT_LEADBYTE_3 | ((src >> 12) & 0xf);
     }
-    else if (src <= UTF8_LAST_CODEPOINT_4) 
+    else if (src <= UNICODE_LAST_CODEPOINT_4) 
     {
         // Control 10xxxxxx = 0x80 | 0x3f: Get last 6 bit
         dst[mbUsesBigEndian ? 0 : 3] = 0x80 | (src & 0x3f);
@@ -303,12 +307,12 @@ size_t fl_unicode_unichar_size(const FlUnicodeChar chr, FlEncoding encoding)
     if (encoding == FL_ENCODING_UTF8)
     {
         // {todo: Check this block to see if we can use utf8_bytes_count directly after changing representaitons}
-        // FlByte dst[] = {0x0,0x0,0x0,0x0};
-        // swap_representations((FlByte*)&chr, dst, 4);
-        // size_t i=0;
-        // while (dst[i] == 0x0) i++;
-        // return utf8_bytes_count(dst+i);
-        
+        FlByte dst[] = {0x0,0x0,0x0,0x0};
+        swap_representations((FlByte*)&chr, dst, 4);
+        size_t i=0;
+        while (dst[i] == 0x0) i++;
+        return utf8_bytes_count(dst+i);
+        /*
         FlByte *src = (FlByte*)&chr;
         // Check if first byte is the lead byte of 4-bytes code points
         // Check if first byte is a valid lead byte value for 4-bytes code points
@@ -340,12 +344,12 @@ size_t fl_unicode_unichar_size(const FlUnicodeChar chr, FlEncoding encoding)
             return 2;
         }
 
-        if (src[3] == 0x0 && src[2] == 0x0 && src[1] == 0x0 && chr <= UTF8_LAST_CODEPOINT_1)
+        if (src[3] == 0x0 && src[2] == 0x0 && src[1] == 0x0 && chr <= UNICODE_LAST_CODEPOINT_1)
         {
             return 1;
-        }
+        }*/
     }
-    else if (encoding == FL_ENCODING_UTF32 && chr <= UTF8_LAST_CODEPOINT_4 && (chr < 0xD800 || chr > 0xDFFF))
+    else if (encoding == FL_ENCODING_UTF32 && chr <= UNICODE_LAST_CODEPOINT_4 && (chr < 0xD800 || chr > 0xDFFF))
     {
         return 4;
     }
@@ -357,7 +361,7 @@ size_t fl_unicode_codepoint_size(const FlByte* src, FlEncoding encoding)
     if (encoding == FL_ENCODING_UTF32)
     {
         FlUnicodeChar srcchr = fl_unicode_codepoint_to_unichar(src, FL_ENCODING_UTF32);
-        if (srcchr <= UTF8_LAST_CODEPOINT_4)
+        if (srcchr <= UNICODE_LAST_CODEPOINT_4)
         {
             return UTF32_BYTES_SIZE;
         }

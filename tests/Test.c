@@ -1,3 +1,13 @@
+/* =============================================================
+* {module: Tests}
+* =============================================================
+* This is a basic module to run unit tests. It is very basic and
+* it was intended to be used as soon as possible, it will need
+* some refactoring to make it more pleasant to work with, robust
+* and extensible..
+* -------------------------------------------------------------
+*/
+
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -23,7 +33,7 @@ struct FlTestSuite
 };
 
 /* -------------------------------------------------------------
- * {function: _fl_test_suite_new}
+ * {function: fl_test_suite_new}
  * -------------------------------------------------------------
  * Creates a test suite
  * -------------------------------------------------------------
@@ -34,7 +44,7 @@ struct FlTestSuite
  * {return: FlTestSuite} Suite pointer
  * -------------------------------------------------------------
  */
-FlTestSuite _fl_test_suite_new(const char *name, const FlTest tests[], size_t ntests)
+FlTestSuite fl_test_suite_new(const char *name, const FlTest tests[], size_t ntests)
 {
     FlTestSuite t = calloc(1, sizeof(struct FlTestSuite));
     t->name = name;
@@ -150,10 +160,10 @@ bool fl_expect(const char* descr, bool conditionResult)
  * -------------------------------------------------------------
  * {param: FlTestSuite suite} Target suite to be ran
  * -------------------------------------------------------------
- * {return: void}
+ * {return: size_t} number of passed tests
  * -------------------------------------------------------------
  */
-void fl_test_suite_run(FlTestSuite suite)
+size_t fl_test_suite_run(FlTestSuite suite)
 {
     #ifdef _WIN32
     FlWinExceptionHandler prevh = fl_winex_global_handler_set(exception_filter);
@@ -184,9 +194,39 @@ void fl_test_suite_run(FlTestSuite suite)
         EndTry;
     }
     printf("\n");
-    printf("Passed tests: %zu\n", suite->ntests - failedTests);
-    printf("Failed tests: %zu\n\n", failedTests);
     #ifdef _WIN32
     fl_winex_global_handler_set(prevh);
     #endif
+    return suite->ntests - failedTests;
+}
+
+struct FlSuiteResult {
+    FlTestSuite *suite;
+    size_t passedTests;
+};
+
+void fl_test_run_all(FlTestSuite *suites, size_t number_of_suites)
+{
+    struct FlSuiteResult results[number_of_suites];
+    for (size_t i=0; i < number_of_suites; i++)
+    {
+        results[i].suite = &suites[i];
+        results[i].passedTests = fl_test_suite_run(suites[i]);
+    }
+
+    size_t ntests = 0;
+    size_t nptests = 0;
+    printf("+--------------------------+--------------+------------+\n");
+    printf("| %-25s| %-12s | %-10s |\n", "Suite", "Passed/Total", "Percentage");
+    printf("+--------------------------+--------------+------------+\n");
+    for (size_t i=0; i < number_of_suites; i++)
+    {
+        ntests += suites[i]->ntests;
+        nptests += results[i].passedTests;
+        printf("| %-25s| %6zu/%-5zu | %-2s%3.2f%%%-1s |\n", suites[i]->name, results[i].passedTests, suites[i]->ntests, "", (results[i].passedTests / (float)suites[i]->ntests)*100, "");
+        fl_test_suite_delete(suites[i]);
+    }
+    printf("+--------------------------+--------------+------------+\n");
+    printf("| %-25s| %6zu/%-5zu | %-2s%3.2f%%%-1s |\n", "Total", nptests, ntests, "", (nptests/(float)ntests)*100, "");
+    printf("+--------------------------+--------------+------------+\n");
 }

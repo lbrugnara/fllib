@@ -193,28 +193,184 @@ void test_fl_unicode_codeunit_sequence_size()
 
 void test_fl_unicode_unichar_validity()
 {
+    fl_expect("Replacement char U+FFFD is valid UTF-8", fl_unicode_unichar_is_valid(0xefbfbd, FL_ENCODING_UTF8));
+    
+    // Overlon encodings
     fl_expect("Overlong encoding of U+0000 (0xC080) is not valid UTF-8", !fl_unicode_unichar_is_valid(0xC080, FL_ENCODING_UTF8));
-    fl_expect("High surrogate U+D84C is not valid UTF-8", !fl_unicode_unichar_is_valid(0xEDA18C, FL_ENCODING_UTF8));
-    fl_expect("High surrogate U+D84C is not valid UTF-32", !fl_unicode_unichar_is_valid(0xD84c, FL_ENCODING_UTF32));
     fl_expect("Overlong encoding of U+002F (0xc0af) is not valid UTF-8", !fl_unicode_unichar_is_valid(0xc0af, FL_ENCODING_UTF8));
     fl_expect("Overlong encoding of U+002F (0xe080af) is not valid UTF-8", !fl_unicode_unichar_is_valid(0xe080af, FL_ENCODING_UTF8));
     fl_expect("Overlong encoding of U+002F (0xf08080af) is not valid UTF-8", !fl_unicode_unichar_is_valid(0xf08080af, FL_ENCODING_UTF8));
+    fl_expect("Overlong encoding of U+007F (0xc1bf) is not valid UTF-8", !fl_unicode_unichar_is_valid(0xc1bf, FL_ENCODING_UTF8));
+    fl_expect("Overlong encoding of U+07FF (0xe09fbf) is not valid UTF-8", !fl_unicode_unichar_is_valid(0xe09fbf, FL_ENCODING_UTF8));
+    fl_expect("Overlong encoding of U+FFFF (0xf08fbfbf) is not valid UTF-8", !fl_unicode_unichar_is_valid(0xf08fbfbf, FL_ENCODING_UTF8));
+    fl_expect("Overlong encoding of U+0000 (0xc080) is not valid UTF-8", !fl_unicode_unichar_is_valid(0xc080, FL_ENCODING_UTF8));
+    fl_expect("Overlong encoding of U+0000 (0xe08080) is not valid UTF-8", !fl_unicode_unichar_is_valid(0xe08080, FL_ENCODING_UTF8));
+    fl_expect("Overlong encoding of U+0000 (0xf0808080) is not valid UTF-8", !fl_unicode_unichar_is_valid(0xf0808080, FL_ENCODING_UTF8));
+    
+    // UTF-16 Surrogates
+    fl_expect("UTF-16 Surrogate U+D800 (0xeda080) is not valid UTF-8", !fl_unicode_unichar_is_valid(0xeda080, FL_ENCODING_UTF8));
+    fl_expect("UTF-16 Surrogate U+DB7F (0xedadbf) is not valid UTF-8", !fl_unicode_unichar_is_valid(0xedadbf, FL_ENCODING_UTF8));
+    fl_expect("UTF-16 Surrogate U+DB80 (0xedae80) is not valid UTF-8", !fl_unicode_unichar_is_valid(0xedae80, FL_ENCODING_UTF8));
+    fl_expect("UTF-16 Surrogate U+DBFF (0xedafbf) is not valid UTF-8", !fl_unicode_unichar_is_valid(0xedafbf, FL_ENCODING_UTF8));
+    fl_expect("UTF-16 Surrogate U+DC00 (0xedb080) is not valid UTF-8", !fl_unicode_unichar_is_valid(0xedb080, FL_ENCODING_UTF8));
+    fl_expect("UTF-16 Surrogate U+DF80 (0xedbe80) is not valid UTF-8", !fl_unicode_unichar_is_valid(0xedbe80, FL_ENCODING_UTF8));
+    fl_expect("UTF-16 Surrogate U+DFFF (0xedbfbf) is not valid UTF-8", !fl_unicode_unichar_is_valid(0xedbfbf, FL_ENCODING_UTF8));
+
+    // Boundaries
+    fl_expect("High surrogate U+D84C is not valid UTF-8", !fl_unicode_unichar_is_valid(0xEDA18C, FL_ENCODING_UTF8));
+    fl_expect("High surrogate U+D84C is not valid UTF-32", !fl_unicode_unichar_is_valid(0xD84c, FL_ENCODING_UTF32));
     fl_expect("High surrogate boundary U+D7FF is valid UTF-8", fl_unicode_unichar_is_valid(0xed9fbf, FL_ENCODING_UTF8));
-    fl_expect("Replacement char U+FFFD is valid UTF-8", fl_unicode_unichar_is_valid(0xefbfbd, FL_ENCODING_UTF8));
     fl_expect("Max boundary U+10FFFF is valid UTF-8", fl_unicode_unichar_is_valid(0xf48fbfbf, FL_ENCODING_UTF8));
     fl_expect("Max boundary+1 U+110000 is not valid UTF-8", !fl_unicode_unichar_is_valid(0xf4908080, FL_ENCODING_UTF8));
+
+    fl_expect("U+0000 is valid UTF-8 (0x0000)", fl_unicode_unichar_is_valid(0x0000, FL_ENCODING_UTF8));
+    fl_expect("U+0080 is valid UTF-8 (0xC280)", fl_unicode_unichar_is_valid(0xC280, FL_ENCODING_UTF8));
+    fl_expect("U+0800 is valid UTF-8 (0xe0a080)", fl_unicode_unichar_is_valid(0xe0a080, FL_ENCODING_UTF8));
+    fl_expect("U+10000 is valid UTF-8 (0xf0908080)", fl_unicode_unichar_is_valid(0xf0908080, FL_ENCODING_UTF8));
+
+    fl_expect("U+007F is valid UTF-8 (0x007F)", fl_unicode_unichar_is_valid(0x007F, FL_ENCODING_UTF8));
+    fl_expect("U+07FF is valid UTF-8 (0xdfbf)", fl_unicode_unichar_is_valid(0xdfbf, FL_ENCODING_UTF8));
+    fl_expect("U+FFFF is valid UTF-8 (0xefbfbf)", fl_unicode_unichar_is_valid(0xefbfbf, FL_ENCODING_UTF8));
+    
+    fl_expect("U+0E00 is valid UTF-8 (0xe0b880)", fl_unicode_unichar_is_valid(0xe0b880, FL_ENCODING_UTF8));
+
+
+    // Unexpected continuation bytes
+    fl_expect("Continuation byte 0x80 is not valid UTF-8", !fl_unicode_unichar_is_valid(0x80, FL_ENCODING_UTF8));
+    fl_expect("Continuation byte 0xbf is not valid UTF-8", !fl_unicode_unichar_is_valid(0xbf, FL_ENCODING_UTF8));
+
+    // 2-bytes sequence start bytes
+    fl_expect("0xC0 is not valid UTF-8", !fl_unicode_unichar_is_valid(0xC0, FL_ENCODING_UTF8));
+    fl_expect("0xC5 is not valid UTF-8", !fl_unicode_unichar_is_valid(0xC5, FL_ENCODING_UTF8));
+    fl_expect("0xCA is not valid UTF-8", !fl_unicode_unichar_is_valid(0xCA, FL_ENCODING_UTF8));
+    fl_expect("0xCF is not valid UTF-8", !fl_unicode_unichar_is_valid(0xCF, FL_ENCODING_UTF8));
+    fl_expect("0xD0 is not valid UTF-8", !fl_unicode_unichar_is_valid(0xD0, FL_ENCODING_UTF8));
+    fl_expect("0xD5 is not valid UTF-8", !fl_unicode_unichar_is_valid(0xD5, FL_ENCODING_UTF8));
+    fl_expect("0xDA is not valid UTF-8", !fl_unicode_unichar_is_valid(0xDA, FL_ENCODING_UTF8));
+    fl_expect("0xDF is not valid UTF-8", !fl_unicode_unichar_is_valid(0xDF, FL_ENCODING_UTF8));
+
+    // 3-bytes sequence start bytes
+    fl_expect("0xE0 is not valid UTF-8", !fl_unicode_unichar_is_valid(0xE0, FL_ENCODING_UTF8));
+    fl_expect("0xE5 is not valid UTF-8", !fl_unicode_unichar_is_valid(0xE5, FL_ENCODING_UTF8));
+    fl_expect("0xEA is not valid UTF-8", !fl_unicode_unichar_is_valid(0xEA, FL_ENCODING_UTF8));
+    fl_expect("0xEF is not valid UTF-8", !fl_unicode_unichar_is_valid(0xEF, FL_ENCODING_UTF8));
+
+    // 4-bytes sequence start bytes
+    fl_expect("0xF0 is not valid UTF-8", !fl_unicode_unichar_is_valid(0xF0, FL_ENCODING_UTF8));
+    fl_expect("0xF5 is not valid UTF-8", !fl_unicode_unichar_is_valid(0xF5, FL_ENCODING_UTF8));
+    fl_expect("0xFA is not valid UTF-8", !fl_unicode_unichar_is_valid(0xFA, FL_ENCODING_UTF8));
+    fl_expect("0xFE is not valid UTF-8", !fl_unicode_unichar_is_valid(0xFE, FL_ENCODING_UTF8));
+    fl_expect("0xFF is not valid UTF-8", !fl_unicode_unichar_is_valid(0xFF, FL_ENCODING_UTF8));
+
+    // Sequences
+    
+    // Last byte missing
+    fl_expect("Sequence xC0 is not valid UTF-8", !fl_unicode_unichar_sequence_is_valid((FlUnicodeChar[]){ 0xC0, 0x00 }, FL_ENCODING_UTF8, NULL)); // 0x00 == NULL terminated
+    fl_expect("Sequence xDF is not valid UTF-8", !fl_unicode_unichar_sequence_is_valid((FlUnicodeChar[]){ 0xDF, 0x00 }, FL_ENCODING_UTF8, NULL)); // 0x00 == NULL terminated
+    fl_expect("Sequence xE0x80 is not valid UTF-8", !fl_unicode_unichar_sequence_is_valid((FlUnicodeChar[]){ 0xE0, 0x80, 0x00 }, FL_ENCODING_UTF8, NULL)); // 0x00 == NULL terminated
+    fl_expect("Sequence xEFxBF is not valid UTF-8", !fl_unicode_unichar_sequence_is_valid((FlUnicodeChar[]){ 0xEF, 0xBF, 0x00 }, FL_ENCODING_UTF8, NULL)); // 0x00 == NULL terminated
+    fl_expect("Sequence xF0x80x80 is not valid UTF-8", !fl_unicode_unichar_sequence_is_valid((FlUnicodeChar[]){ 0xF0, 0x80, 0x80, 0x00 }, FL_ENCODING_UTF8, NULL)); // 0x00 == NULL terminated
+    fl_expect("Sequence xF7xBFxBF is not valid UTF-8", !fl_unicode_unichar_sequence_is_valid((FlUnicodeChar[]){ 0xF7, 0xBF, 0xBF, 0x00 }, FL_ENCODING_UTF8, NULL)); // 0x00 == NULL terminated
+
+    // Surrogates
+    fl_expect("Surrogates sequence U+D800 U+DC00 is not valid UTF-8", !fl_unicode_unichar_sequence_is_valid((FlUnicodeChar[]) { 0xeda080, 0xedb080, 0x00 }, FL_ENCODING_UTF8, NULL)); // 0x00 == NULL terminated
+    fl_expect("Surrogates sequence U+D800 U+DFFF is not valid UTF-8", !fl_unicode_unichar_sequence_is_valid((FlUnicodeChar[]) { 0xeda080, 0xedbfbf, 0x00 }, FL_ENCODING_UTF8, NULL)); // 0x00 == NULL terminated
+    fl_expect("Surrogates sequence U+DB7F U+DC00 is not valid UTF-8", !fl_unicode_unichar_sequence_is_valid((FlUnicodeChar[]) { 0xedadbf, 0xedb080, 0x00 }, FL_ENCODING_UTF8, NULL)); // 0x00 == NULL terminated
+    fl_expect("Surrogates sequence U+DB7F U+DFFF is not valid UTF-8", !fl_unicode_unichar_sequence_is_valid((FlUnicodeChar[]) { 0xedadbf, 0xedbfbf, 0x00 }, FL_ENCODING_UTF8, NULL)); // 0x00 == NULL terminated
+    fl_expect("Surrogates sequence U+DB80 U+DC00 is not valid UTF-8", !fl_unicode_unichar_sequence_is_valid((FlUnicodeChar[]) { 0xedae80, 0xedb080, 0x00 }, FL_ENCODING_UTF8, NULL)); // 0x00 == NULL terminated
+    fl_expect("Surrogates sequence U+DB80 U+DFFF is not valid UTF-8", !fl_unicode_unichar_sequence_is_valid((FlUnicodeChar[]) { 0xedae80, 0xedbfbf, 0x00 }, FL_ENCODING_UTF8, NULL)); // 0x00 == NULL terminated
+    fl_expect("Surrogates sequence U+DBFF U+DC00 is not valid UTF-8", !fl_unicode_unichar_sequence_is_valid((FlUnicodeChar[]) { 0xedafbf, 0xedb080, 0x00 }, FL_ENCODING_UTF8, NULL)); // 0x00 == NULL terminated
+    fl_expect("Surrogates sequence U+DBFF U+DFFF is not valid UTF-8", !fl_unicode_unichar_sequence_is_valid((FlUnicodeChar[]) { 0xedafbf, 0xedbfbf, 0x00 }, FL_ENCODING_UTF8, NULL)); // 0x00 == NULL terminated
 }
 
 void test_fl_unicode_codepoint_validity()
 {
+    fl_expect("Replacement char U+FFFD is valid UTF-8", fl_unicode_unichar_is_valid(0xefbfbd, FL_ENCODING_UTF8));
+    
+    // Overlon encodings
     fl_expect("Overlong encoding of U+0000 (0xC080) is not valid UTF-8", !fl_unicode_codepoint_is_valid((FlByte*)"\xC0\x80", FL_ENCODING_UTF8));
-    fl_expect("High surrogate U+D84C is not valid UTF-8", !fl_unicode_codepoint_is_valid((FlByte*)"\xED\xA1\x8C", FL_ENCODING_UTF8));
-    fl_expect("High surrogate U+D84C is not valid UTF-32", !fl_unicode_codepoint_is_valid((FlByte*)"\xD8\x4c", FL_ENCODING_UTF32));
     fl_expect("Overlong encoding of U+002F (0xc0af) is not valid UTF-8", !fl_unicode_codepoint_is_valid((FlByte*)"\xc0\xaf", FL_ENCODING_UTF8));
     fl_expect("Overlong encoding of U+002F (0xe080af) is not valid UTF-8", !fl_unicode_codepoint_is_valid((FlByte*)"\xe0\x80\xaf", FL_ENCODING_UTF8));
     fl_expect("Overlong encoding of U+002F (0xf08080af) is not valid UTF-8", !fl_unicode_codepoint_is_valid((FlByte*)"\xf0\x80\x80\xaf", FL_ENCODING_UTF8));
+    fl_expect("Overlong encoding of U+007F (0xc1bf) is not valid UTF-8", !fl_unicode_codepoint_is_valid((FlByte*)"\xc1\xbf", FL_ENCODING_UTF8));
+    fl_expect("Overlong encoding of U+07FF (0xe09fbf) is not valid UTF-8", !fl_unicode_codepoint_is_valid((FlByte*)"\xe0\x9f\xbf", FL_ENCODING_UTF8));
+    fl_expect("Overlong encoding of U+FFFF (0xf08fbfbf) is not valid UTF-8", !fl_unicode_codepoint_is_valid((FlByte*)"\xf0\x8f\xbf\xbf", FL_ENCODING_UTF8));
+    fl_expect("Overlong encoding of U+0000 (0xc080) is not valid UTF-8", !fl_unicode_codepoint_is_valid((FlByte*)"\xc0\x80", FL_ENCODING_UTF8));
+    fl_expect("Overlong encoding of U+0000 (0xe08080) is not valid UTF-8", !fl_unicode_codepoint_is_valid((FlByte*)"\xe0\x80\x80", FL_ENCODING_UTF8));
+    fl_expect("Overlong encoding of U+0000 (0xf0808080) is not valid UTF-8", !fl_unicode_codepoint_is_valid((FlByte*)"\xf0\x80\x80\x80", FL_ENCODING_UTF8));
+    
+    // UTF-16 Surrogates
+    fl_expect("UTF-16 Surrogate U+D800 (0xeda080) is not valid UTF-8", !fl_unicode_codepoint_is_valid((FlByte*)"\xed\xa0\x80", FL_ENCODING_UTF8));
+    fl_expect("UTF-16 Surrogate U+DB7F (0xedadbf) is not valid UTF-8", !fl_unicode_codepoint_is_valid((FlByte*)"\xed\xad\xbf", FL_ENCODING_UTF8));
+    fl_expect("UTF-16 Surrogate U+DB80 (0xedae80) is not valid UTF-8", !fl_unicode_codepoint_is_valid((FlByte*)"\xed\xae\x80", FL_ENCODING_UTF8));
+    fl_expect("UTF-16 Surrogate U+DBFF (0xedafbf) is not valid UTF-8", !fl_unicode_codepoint_is_valid((FlByte*)"\xed\xaf\xbf", FL_ENCODING_UTF8));
+    fl_expect("UTF-16 Surrogate U+DC00 (0xedb080) is not valid UTF-8", !fl_unicode_codepoint_is_valid((FlByte*)"\xed\xb0\x80", FL_ENCODING_UTF8));
+    fl_expect("UTF-16 Surrogate U+DF80 (0xedbe80) is not valid UTF-8", !fl_unicode_codepoint_is_valid((FlByte*)"\xed\xbe\x80", FL_ENCODING_UTF8));
+    fl_expect("UTF-16 Surrogate U+DFFF (0xedbfbf) is not valid UTF-8", !fl_unicode_codepoint_is_valid((FlByte*)"\xed\xbf\xbf", FL_ENCODING_UTF8));
+
+    // Boundaries
+    fl_expect("High surrogate U+D84C is not valid UTF-8", !fl_unicode_codepoint_is_valid((FlByte*)"\xED\xA1\x8C", FL_ENCODING_UTF8));
+    fl_expect("High surrogate U+D84C is not valid UTF-32", !fl_unicode_codepoint_is_valid((FlByte*)"\xD8\x4c", FL_ENCODING_UTF32));
     fl_expect("High surrogate boundary U+D7FF is valid UTF-8", fl_unicode_codepoint_is_valid((FlByte*)"\xed\x9f\xbf", FL_ENCODING_UTF8));
-    fl_expect("Replacement char U+FFFD is valid UTF-8", fl_unicode_codepoint_is_valid((FlByte*)"\xef\xbf\xbd", FL_ENCODING_UTF8));
     fl_expect("Max boundary U+10FFFF is valid UTF-8", fl_unicode_codepoint_is_valid((FlByte*)"\xf4\x8f\xbf\xbf", FL_ENCODING_UTF8));
     fl_expect("Max boundary+1 U+110000 is not valid UTF-8", !fl_unicode_codepoint_is_valid((FlByte*)"\xf4\x90\x80\x80", FL_ENCODING_UTF8));
+
+    fl_expect("U+0000 is valid UTF-8 (0x0000)", fl_unicode_codepoint_is_valid((FlByte*)"\x00\x00", FL_ENCODING_UTF8));
+    fl_expect("U+0080 is valid UTF-8 (0xC280)", fl_unicode_codepoint_is_valid((FlByte*)"\xC2\x80", FL_ENCODING_UTF8));
+    fl_expect("U+0800 is valid UTF-8 (0xe0a080)", fl_unicode_codepoint_is_valid((FlByte*)"\xe0\xa0\x80", FL_ENCODING_UTF8));
+    fl_expect("U+10000 is valid UTF-8 (0xf0908080)", fl_unicode_codepoint_is_valid((FlByte*)"\xf0\x90\x80\x80", FL_ENCODING_UTF8));
+
+    fl_expect("U+007F is valid UTF-8 (0x007F)", fl_unicode_codepoint_is_valid((FlByte*)"\x00\x7F", FL_ENCODING_UTF8));
+    fl_expect("U+07FF is valid UTF-8 (0xdfbf)", fl_unicode_codepoint_is_valid((FlByte*)"\xdf\xbf", FL_ENCODING_UTF8));
+    fl_expect("U+FFFF is valid UTF-8 (0xefbfbf)", fl_unicode_codepoint_is_valid((FlByte*)"\xef\xbf\xbf", FL_ENCODING_UTF8));
+    
+    fl_expect("U+0E00 is valid UTF-8 (0xe0b880)", fl_unicode_codepoint_is_valid((FlByte*)"\xe0\xb8\x80", FL_ENCODING_UTF8));
+
+
+    // Unexpected continuation bytes
+    fl_expect("Continuation byte 0x80 is not valid UTF-8", !fl_unicode_codepoint_is_valid((FlByte*)"\x80", FL_ENCODING_UTF8));
+    fl_expect("Continuation byte 0xbf is not valid UTF-8", !fl_unicode_codepoint_is_valid((FlByte*)"\xbf", FL_ENCODING_UTF8));
+
+    // 2-bytes sequence start bytes
+    fl_expect("0xC0 is not valid UTF-8", !fl_unicode_codepoint_is_valid((FlByte*)"\xC0", FL_ENCODING_UTF8));
+    fl_expect("0xC5 is not valid UTF-8", !fl_unicode_codepoint_is_valid((FlByte*)"\xC5", FL_ENCODING_UTF8));
+    fl_expect("0xCA is not valid UTF-8", !fl_unicode_codepoint_is_valid((FlByte*)"\xCA", FL_ENCODING_UTF8));
+    fl_expect("0xCF is not valid UTF-8", !fl_unicode_codepoint_is_valid((FlByte*)"\xCF", FL_ENCODING_UTF8));
+    fl_expect("0xD0 is not valid UTF-8", !fl_unicode_codepoint_is_valid((FlByte*)"\xD0", FL_ENCODING_UTF8));
+    fl_expect("0xD5 is not valid UTF-8", !fl_unicode_codepoint_is_valid((FlByte*)"\xD5", FL_ENCODING_UTF8));
+    fl_expect("0xDA is not valid UTF-8", !fl_unicode_codepoint_is_valid((FlByte*)"\xDA", FL_ENCODING_UTF8));
+    fl_expect("0xDF is not valid UTF-8", !fl_unicode_codepoint_is_valid((FlByte*)"\xDF", FL_ENCODING_UTF8));
+
+    // 3-bytes sequence start bytes
+    fl_expect("0xE0 is not valid UTF-8", !fl_unicode_codepoint_is_valid((FlByte*)"\xE0", FL_ENCODING_UTF8));
+    fl_expect("0xE5 is not valid UTF-8", !fl_unicode_codepoint_is_valid((FlByte*)"\xE5", FL_ENCODING_UTF8));
+    fl_expect("0xEA is not valid UTF-8", !fl_unicode_codepoint_is_valid((FlByte*)"\xEA", FL_ENCODING_UTF8));
+    fl_expect("0xEF is not valid UTF-8", !fl_unicode_codepoint_is_valid((FlByte*)"\xEF", FL_ENCODING_UTF8));
+
+    // 4-bytes sequence start bytes
+    fl_expect("0xF0 is not valid UTF-8", !fl_unicode_codepoint_is_valid((FlByte*)"\xF0", FL_ENCODING_UTF8));
+    fl_expect("0xF5 is not valid UTF-8", !fl_unicode_codepoint_is_valid((FlByte*)"\xF5", FL_ENCODING_UTF8));
+    fl_expect("0xFA is not valid UTF-8", !fl_unicode_codepoint_is_valid((FlByte*)"\xFA", FL_ENCODING_UTF8));
+    fl_expect("0xFE is not valid UTF-8", !fl_unicode_codepoint_is_valid((FlByte*)"\xFE", FL_ENCODING_UTF8));
+    fl_expect("0xFF is not valid UTF-8", !fl_unicode_codepoint_is_valid((FlByte*)"\xFF", FL_ENCODING_UTF8));
+
+    // Sequences
+    
+    // Last byte missing
+    fl_expect("Sequence xC0 is not valid UTF-8", !fl_unicode_codeunit_sequence_is_valid((FlByte*)"\xC0\x00", FL_ENCODING_UTF8, NULL)); // x00 == NULL terminated
+    fl_expect("Sequence xDF is not valid UTF-8", !fl_unicode_codeunit_sequence_is_valid((FlByte*)"\xDF\x00", FL_ENCODING_UTF8, NULL)); // x00 == NULL terminated
+    fl_expect("Sequence xE0x80 is not valid UTF-8", !fl_unicode_codeunit_sequence_is_valid((FlByte*)"\xE0\x80\x00", FL_ENCODING_UTF8, NULL)); // x00 == NULL terminated
+    fl_expect("Sequence xEFxBF is not valid UTF-8", !fl_unicode_codeunit_sequence_is_valid((FlByte*)"\xEF\xBF\x00", FL_ENCODING_UTF8, NULL)); // x00 == NULL terminated
+    fl_expect("Sequence xF0x80x80 is not valid UTF-8", !fl_unicode_codeunit_sequence_is_valid((FlByte*)"\xF0\x80\x80\x00", FL_ENCODING_UTF8, NULL)); // x00 == NULL terminated
+    fl_expect("Sequence xF7xBFxBF is not valid UTF-8", !fl_unicode_codeunit_sequence_is_valid((FlByte*)"\xF7\xBF\xBF\x00", FL_ENCODING_UTF8, NULL)); // x00 == NULL terminated
+
+    // Surrogates
+    fl_expect("Surrogates sequence U+D800 U+DC00 is not valid UTF-8", !fl_unicode_codeunit_sequence_is_valid((FlByte*) "\xed\xa0\x80\xed\xb0\x80\x00", FL_ENCODING_UTF8, NULL)); // x00 == NULL terminated
+    fl_expect("Surrogates sequence U+D800 U+DFFF is not valid UTF-8", !fl_unicode_codeunit_sequence_is_valid((FlByte*) "\xed\xa0\x80\xed\xbf\xbf\x00", FL_ENCODING_UTF8, NULL)); // x00 == NULL terminated
+    fl_expect("Surrogates sequence U+DB7F U+DC00 is not valid UTF-8", !fl_unicode_codeunit_sequence_is_valid((FlByte*) "\xed\xad\xbf\xed\xb0\x80\x00", FL_ENCODING_UTF8, NULL)); // x00 == NULL terminated
+    fl_expect("Surrogates sequence U+DB7F U+DFFF is not valid UTF-8", !fl_unicode_codeunit_sequence_is_valid((FlByte*) "\xed\xad\xbf\xed\xbf\xbf\x00", FL_ENCODING_UTF8, NULL)); // x00 == NULL terminated
+    fl_expect("Surrogates sequence U+DB80 U+DC00 is not valid UTF-8", !fl_unicode_codeunit_sequence_is_valid((FlByte*) "\xed\xae\x80\xed\xb0\x80\x00", FL_ENCODING_UTF8, NULL)); // x00 == NULL terminated
+    fl_expect("Surrogates sequence U+DB80 U+DFFF is not valid UTF-8", !fl_unicode_codeunit_sequence_is_valid((FlByte*) "\xed\xae\x80\xed\xbf\xbf\x00", FL_ENCODING_UTF8, NULL)); // x00 == NULL terminated
+    fl_expect("Surrogates sequence U+DBFF U+DC00 is not valid UTF-8", !fl_unicode_codeunit_sequence_is_valid((FlByte*) "\xed\xaf\xbf\xed\xb0\x80\x00", FL_ENCODING_UTF8, NULL)); // x00 == NULL terminated
+    fl_expect("Surrogates sequence U+DBFF U+DFFF is not valid UTF-8", !fl_unicode_codeunit_sequence_is_valid((FlByte*) "\xed\xaf\xbf\xed\xbf\xbf\x00", FL_ENCODING_UTF8, NULL)); // x00 == NULL terminated
 }

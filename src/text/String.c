@@ -26,19 +26,7 @@ void fl_string_delete(FlString str)
 
 size_t fl_string_length(const FlString str, const FlByte* end)
 {
-    if (!end && !*str)
-        return 0;
-    size_t l=0;
-    size_t c=0;
-    size_t tmp = 0;
-    do {
-        tmp = fl_unicode_codeunit_sequence_size(FL_ENCODING_UTF8, (FlByte*)str + c, (FlByte*)str + c +1);
-        if (tmp == 0)
-            break;
-        c += tmp;
-        l++;
-    } while((end ? (FlByte*)(str+c+1) < end : str[c]));
-    return l;
+    return fl_unicode_codepoint_sequence_length(FL_ENCODING_UTF8, (FlByte*)str, end);
 }
 
 size_t fl_string_size(const FlString str, const FlByte* end)
@@ -48,10 +36,10 @@ size_t fl_string_size(const FlString str, const FlByte* end)
 
 FlUnicodeChar fl_char(const FlString str)
 {
-    return fl_unicode_codepoint_to_unichar(FL_ENCODING_UTF8, (const FlByte*)str);
+    return fl_unicode_codepoint_to_unichar(FL_ENCODING_UTF8, (const FlByte*)str, 0x00);
 }
 
 FlUnicodeChar fl_string_char_at(const FlString str, size_t at)
 {
-    return fl_unicode_codepoint_at(FL_ENCODING_UTF8, (const FlByte*)str, at);    
+    return fl_unicode_codepoint_at(FL_ENCODING_UTF8, (const FlByte*)str, 0x00, at);    
 }

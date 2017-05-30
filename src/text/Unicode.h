@@ -124,7 +124,7 @@ typedef uint32_t FlUnicodeChar;
 * character of the string {src} or FL_UNICODE_INVALID_CHAR
 * -------------------------------------------------------------
 */
-FlUnicodeChar fl_unicode_codepoint_to_unichar(FlEncoding encoding, const FlByte* src);
+FlUnicodeChar fl_unicode_codepoint_to_unichar(FlEncoding encoding, const FlByte *src, const FlByte *end);
 
 /* -------------------------------------------------------------
 * {function: fl_unicode_codepoint_to_encoded_unichar}
@@ -143,7 +143,7 @@ FlUnicodeChar fl_unicode_codepoint_to_unichar(FlEncoding encoding, const FlByte*
 * with encoding 'dstencoding'
 * -------------------------------------------------------------
 */
-FlUnicodeChar fl_unicode_codepoint_to_encoded_unichar(FlEncoding srcencoding, const FlByte* src, FlEncoding dstencoding);
+FlUnicodeChar fl_unicode_codepoint_to_encoded_unichar(FlEncoding srcencoding, const FlByte *src, const FlByte *end, FlEncoding dstencoding);
 
 /* -------------------------------------------------------------
 * {function: fl_unicode_codepoint_size}
@@ -159,7 +159,7 @@ FlUnicodeChar fl_unicode_codepoint_to_encoded_unichar(FlEncoding srcencoding, co
 * unicode char it returns FL_UNICODE_INVALID_SIZE
 * -------------------------------------------------------------
 */
-size_t fl_unicode_codepoint_size(FlEncoding encoding, const FlByte* src);
+size_t fl_unicode_codepoint_size(FlEncoding encoding, const FlByte *src, const FlByte *end);
 
 /* -------------------------------------------------------------
 * {function: fl_unicode_codeunit_sequence_size}
@@ -182,6 +182,26 @@ size_t fl_unicode_codepoint_size(FlEncoding encoding, const FlByte* src);
 size_t fl_unicode_codeunit_sequence_size(FlEncoding encoding, const FlByte* sequence, const FlByte *end);
 
 /* -------------------------------------------------------------
+* {function: fl_unicode_codepoint_sequence_length}
+* -------------------------------------------------------------
+* Returns the count of valid code points in sequence represented by the
+* byte array {sequence}, interpreted with the provided encoding. {end}
+* could be NULL and the bytes count will stop when the first
+* NULL character is found, or a pointer to byte where the algorithm
+* should stop.
+* This function returns the number of well-formed code points under encoding
+* {encoding} that are found in {sequence}.
+* -------------------------------------------------------------
+* {param: const FlByte* sequence} Source bytes array
+* {param: FlEncoding encoding} Encoding used to interpret the bytes array
+* {param: const FlByte* end} A pointer to a byte or NULL.
+* -------------------------------------------------------------
+* {return: size_t} Number of valid code points in sequence {sequence}
+* -------------------------------------------------------------
+*/
+size_t fl_unicode_codepoint_sequence_length(FlEncoding encoding, const FlByte* sequence, const FlByte *end);
+
+/* -------------------------------------------------------------
 * {function: fl_unicode_codepoint_at}
 * -------------------------------------------------------------
 * Returns the 'at'-th character in the string {str}. The char
@@ -197,11 +217,11 @@ size_t fl_unicode_codeunit_sequence_size(FlEncoding encoding, const FlByte* sequ
 * in the 'at'-th position of 'str'
 * -------------------------------------------------------------
 */
-FlUnicodeChar fl_unicode_codepoint_at(FlEncoding encoding, const FlByte* str, size_t at);
+FlUnicodeChar fl_unicode_codepoint_at(FlEncoding encoding, const FlByte *str, const FlByte *end, size_t at);
 
-bool fl_unicode_codepoint_is_valid(FlEncoding encoding, const FlByte* src);
+bool fl_unicode_codepoint_is_valid(FlEncoding encoding, const FlByte *src, const FlByte *end);
 
-bool fl_unicode_codeunit_sequence_is_valid(FlEncoding encoding, const FlByte* src, FlByte* end);
+bool fl_unicode_codeunit_sequence_is_valid(FlEncoding encoding, const FlByte* src, const FlByte* end);
 
 /* -------------------------------------------------------------
 * UNICODE CHARACTER FUNCTIONS (FlUnicodeChar)

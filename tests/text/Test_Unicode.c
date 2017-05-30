@@ -4,16 +4,16 @@
 
 #include "../Test.h"
 
-void test_fl_unicode_unichar_at()
+void test_fl_unicode_codepoint_at()
 {
     FlString str = "ĀāĂăĄąĆćĈĉĊċČčĎďĐđĒēĔĕĖėĘęĚěĜĝĞğĠġĢģĤĥĦħĨĩĪīĬĭĮįİıĲĳĴĵĶķĸĹĺĻļĽľĿŀŁłŃńŅņŇňŉŊŋŌōŎŏŐőŒœŔŕŖŗŘřŚśŜŝŞşŠšŢţŤťŦŧŨũŪūŬŭŮůŰűŲųŴŵŶŷŸŹźŻżŽž";
-    fl_expect("0 = Ā", fl_unicode_unichar_at((FlByte*)str, FL_ENCODING_UTF8, 0) == fl_unicode_codepoint_to_unichar((FlByte*)"Ā", FL_ENCODING_UTF8));
-    fl_expect("28 = Ĝ", fl_unicode_unichar_at((FlByte*)str, FL_ENCODING_UTF8, 28) == fl_unicode_codepoint_to_unichar((FlByte*)"Ĝ", FL_ENCODING_UTF8));
-    fl_expect("40 = Ĩ", fl_unicode_unichar_at((FlByte*)str, FL_ENCODING_UTF8, 40) == fl_unicode_codepoint_to_unichar((FlByte*)"Ĩ", FL_ENCODING_UTF8));
-    fl_expect("60 = ļ", fl_unicode_unichar_at((FlByte*)str, FL_ENCODING_UTF8, 60) == fl_unicode_codepoint_to_unichar((FlByte*)"ļ", FL_ENCODING_UTF8));
-    fl_expect("60 = ļ", fl_unicode_unichar_at((FlByte*)str, FL_ENCODING_UTF8, 60) == fl_unicode_codepoint_to_unichar((FlByte*)"ļ", FL_ENCODING_UTF8));
-    fl_expect("92 = Ŝ", fl_unicode_unichar_at((FlByte*)str, FL_ENCODING_UTF8, 92) == fl_unicode_codepoint_to_unichar((FlByte*)"Ŝ", FL_ENCODING_UTF8));
-    fl_expect("126 = ž", fl_unicode_unichar_at((FlByte*)str, FL_ENCODING_UTF8, 126) == fl_unicode_codepoint_to_unichar((FlByte*)"ž", FL_ENCODING_UTF8));
+    fl_expect("0 = Ā", fl_unicode_codepoint_at((FlByte*)str, FL_ENCODING_UTF8, 0) == fl_unicode_codepoint_to_unichar((FlByte*)"Ā", FL_ENCODING_UTF8));
+    fl_expect("28 = Ĝ", fl_unicode_codepoint_at((FlByte*)str, FL_ENCODING_UTF8, 28) == fl_unicode_codepoint_to_unichar((FlByte*)"Ĝ", FL_ENCODING_UTF8));
+    fl_expect("40 = Ĩ", fl_unicode_codepoint_at((FlByte*)str, FL_ENCODING_UTF8, 40) == fl_unicode_codepoint_to_unichar((FlByte*)"Ĩ", FL_ENCODING_UTF8));
+    fl_expect("60 = ļ", fl_unicode_codepoint_at((FlByte*)str, FL_ENCODING_UTF8, 60) == fl_unicode_codepoint_to_unichar((FlByte*)"ļ", FL_ENCODING_UTF8));
+    fl_expect("60 = ļ", fl_unicode_codepoint_at((FlByte*)str, FL_ENCODING_UTF8, 60) == fl_unicode_codepoint_to_unichar((FlByte*)"ļ", FL_ENCODING_UTF8));
+    fl_expect("92 = Ŝ", fl_unicode_codepoint_at((FlByte*)str, FL_ENCODING_UTF8, 92) == fl_unicode_codepoint_to_unichar((FlByte*)"Ŝ", FL_ENCODING_UTF8));
+    fl_expect("126 = ž", fl_unicode_codepoint_at((FlByte*)str, FL_ENCODING_UTF8, 126) == fl_unicode_codepoint_to_unichar((FlByte*)"ž", FL_ENCODING_UTF8));
 
     size_t strl = fl_string_length(str, NULL);
     size_t strs = fl_string_size(str, NULL);
@@ -21,7 +21,7 @@ void test_fl_unicode_unichar_at()
     size_t chrs = 0;
     for (size_t i=0; i < strl; i++)
     {
-        FlUnicodeChar chr = fl_unicode_unichar_at((FlByte*)str, FL_ENCODING_UTF8, i);
+        FlUnicodeChar chr = fl_unicode_codepoint_at((FlByte*)str, FL_ENCODING_UTF8, i);
         chrl++;
         chrs += fl_unicode_unichar_size(chr, FL_ENCODING_UTF8);
     }

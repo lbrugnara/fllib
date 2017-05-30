@@ -53,5 +53,5 @@ FlUnicodeChar fl_char(const FlString str)
 
 FlUnicodeChar fl_string_char_at(const FlString str, size_t at)
 {
-    return fl_unicode_unichar_at((const FlByte*) str, FL_ENCODING_UTF8, at);    
+    return fl_unicode_codepoint_at((const FlByte*) str, FL_ENCODING_UTF8, at);    
 }

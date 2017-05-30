@@ -270,7 +270,7 @@ size_t fl_unicode_unichar_sequence_size(const FlUnicodeChar *string, FlEncoding 
 size_t fl_unicode_codeunit_sequence_size(const FlByte* sequence, FlEncoding encoding, const FlByte *end);
 
 /* -------------------------------------------------------------
-* {function: fl_unicode_unichar_at}
+* {function: fl_unicode_codepoint_at}
 * -------------------------------------------------------------
 * Returns the 'at'-th character in the string {str}. The char
 * is an FlUnicodeChar (a UTF-8 representation of the caracter)
@@ -285,7 +285,7 @@ size_t fl_unicode_codeunit_sequence_size(const FlByte* sequence, FlEncoding enco
 * in the 'at'-th position of 'str'
 * -------------------------------------------------------------
 */
-FlUnicodeChar fl_unicode_unichar_at(const FlByte* str, FlEncoding encoding, size_t at);
+FlUnicodeChar fl_unicode_codepoint_at(const FlByte* str, FlEncoding encoding, size_t at);
 
 bool fl_unicode_unichar_is_valid(const FlUnicodeChar chr, FlEncoding encoding);
 

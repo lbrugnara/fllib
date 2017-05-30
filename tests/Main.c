@@ -31,7 +31,7 @@ int main(void)
             { "fl_file_write_all_bytes and fl_file_read_all_bytes", &test_file_rw_all_bytes }
         ),
         fl_test_suite("Module Unicode",
-            { "fl_unicode_unichar_at", &test_fl_unicode_unichar_at },
+            { "fl_unicode_codepoint_at", &test_fl_unicode_codepoint_at },
             { "fl_unicode_char", &test_fl_unicode_char },
             { "fl_unicode_unichar_encode_to", &test_fl_unicode_unichar_encode_to },
             { "fl_unicode_codepoint_to_unichar", &test_fl_unicode_codepoint_to_unichar },

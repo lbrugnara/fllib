@@ -9,6 +9,10 @@
 
 #include "containers/Dictionary.h"
 
+#ifndef min
+#define min(a,b) (((a)<(b))?(a):(b))
+#endif
+
 /* -------------------------------------------------------------
  * {datatype: struct FlError}
  * -------------------------------------------------------------

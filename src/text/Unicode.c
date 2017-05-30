@@ -38,9 +38,9 @@
 * -------------------------------------------------------------
 */
 static inline bool utf8_mb_str_is_bigendian();
-size_t utf8_bytes_count(const FlByte* src);
+size_t utf8_bytes_count(const FlByte* src, const FlByte *end);
 bool utf8_unicode_char_to_bytes(FlUnicodeChar chr, FlByte* dst);
-FlUnicodeChar utf8_bytes_to_unicode_char(const FlByte *src);
+FlUnicodeChar utf8_bytes_to_unicode_char(const FlByte *src, const FlByte *end);
 FlUnicodeChar fl_unicode_utf32_to_utf8(FlUnicodeChar src);
 FlUnicodeChar fl_unicode_utf8_to_utf32(FlUnicodeChar src);
 
@@ -78,14 +78,25 @@ void swap_representations(const FlByte *src, FlByte *dst, size_t nbytes)
 * multi-byte character
 * -------------------------------------------------------------
 */
-size_t utf8_bytes_count(const FlByte* src)
+size_t utf8_bytes_count(const FlByte *src, const FlByte *end)
 {
     flm_assert(src != NULL, "The source byte array cannot be NULL.");
+
+    // If end is NULL and src[0], we are NOT handling U+0000
+    if ((end != NULL && src == end))
+    {
+        return FL_UNICODE_INVALID_SIZE;
+    }
     
     // U+0000 to U+007F occupy 1 byte
     if (src[0] <= UNICODE_LAST_CODEPOINT_1)
     {
         return 1;
+    }
+
+    if ((end != NULL && src+1 == end) || src[1] == 0x0)
+    {
+        return FL_UNICODE_INVALID_SIZE;
     }
     
     // Check if first byte is the lead byte of 2-bytes code points
@@ -95,6 +106,11 @@ size_t utf8_bytes_count(const FlByte* src)
     if ((src[0] & UTF8_CODEPOINT_LEADBYTE_2) && src[0] <= UTF8_CODEPOINT_LEADBYTE_2_MAX && (src[1] & 0x80) && src[0] != 0xC0 && src[0] != 0xC1)
     {
         return 2;
+    }
+
+    if ((end != NULL && src+2 == end) || src[2] == 0x0)
+    {
+        return FL_UNICODE_INVALID_SIZE;
     }
     
     // Check if first byte is the lead byte of 3-bytes code points
@@ -110,7 +126,12 @@ size_t utf8_bytes_count(const FlByte* src)
             return 3;
         return FL_UNICODE_INVALID_SIZE;
     }
-    
+ 
+    if ((end != NULL && src+3 == end) || src[3] == 0x0)
+    {
+        return FL_UNICODE_INVALID_SIZE;
+    }
+
     // Check if first byte is the lead byte of 4-bytes code points
     // Check if first byte is a valid lead byte value for 4-bytes code points
     // Check if second, third and fourth bytes are continuation bytes (0x80)
@@ -144,10 +165,10 @@ bool utf8_unicode_char_to_bytes(FlUnicodeChar chr, FlByte* dst)
 * Converts a multi-byte char into its FlUnicodeChar representation
 * -------------------------------------------------------------
 */
-FlUnicodeChar utf8_bytes_to_unicode_char(const FlByte *src)
+FlUnicodeChar utf8_bytes_to_unicode_char(const FlByte *src, const FlByte *end)
 {
     FlUnicodeChar chr = 0;
-    size_t bs = utf8_bytes_count(src);
+    size_t bs = utf8_bytes_count(src, end);
 
     if (bs == FL_UNICODE_INVALID_SIZE)
         return FL_UNICODE_INVALID_CHAR;
@@ -264,7 +285,7 @@ FlUnicodeChar fl_unicode_utf8_to_utf32(FlUnicodeChar src)
 */
 FlUnicodeChar fl_unicode_codepoint_to_unichar(const FlByte* src, FlEncoding encoding)
 {
-    return fl_unicode_unichar_at(src, encoding, 0);
+    return fl_unicode_codepoint_at(src, encoding, 0);
 }
 
 bool fl_unicode_unichar_to_codepoint(FlUnicodeChar chr, FlEncoding encoding, FlByte* dst)
@@ -288,7 +309,7 @@ bool fl_unicode_unichar_to_codepoint(FlUnicodeChar chr, FlEncoding encoding, FlB
 */
 FlUnicodeChar fl_unicode_codepoint_to_encoded_unichar(const FlByte* src, FlEncoding srcencoding, FlEncoding dstencoding)
 {
-    FlUnicodeChar chr = fl_unicode_unichar_at(src, srcencoding, 0);
+    FlUnicodeChar chr = fl_unicode_codepoint_at(src, srcencoding, 0);
     return fl_unicode_unichar_encode_to(chr, srcencoding, dstencoding);
 }
 
@@ -307,11 +328,11 @@ size_t fl_unicode_unichar_size(const FlUnicodeChar chr, FlEncoding encoding)
     if (encoding == FL_ENCODING_UTF8)
     {
         // {todo: Check this block to see if we can use utf8_bytes_count directly after changing representaitons}
-        FlByte dst[] = {0x0,0x0,0x0,0x0};
+        FlByte dst[4] = {0x0,0x0,0x0,0x0};
         swap_representations((FlByte*)&chr, dst, 4);
         size_t i=0;
-        while (dst[i] == 0x0) i++;
-        return utf8_bytes_count(dst+i);
+        while (dst[i] == 0x0 && i < 3) i++;
+        return utf8_bytes_count(dst+i, dst+4);
         /*
         FlByte *src = (FlByte*)&chr;
         // Check if first byte is the lead byte of 4-bytes code points
@@ -369,7 +390,7 @@ size_t fl_unicode_codepoint_size(const FlByte* src, FlEncoding encoding)
     }
     else if (encoding == FL_ENCODING_UTF8)
     {
-        return utf8_bytes_count(src);
+        return utf8_bytes_count(src, NULL);
     }
     return FL_UNICODE_INVALID_SIZE;
 }
@@ -416,7 +437,7 @@ size_t fl_unicode_codeunit_sequence_size(const FlByte* sequence, FlEncoding enco
         size_t i=0;
         do
         {
-            size_t tmp = utf8_bytes_count(sequence+i);
+            size_t tmp = utf8_bytes_count(sequence+i, end);
             if (tmp == FL_UNICODE_INVALID_SIZE)
                 break; // truncated string
             // If we are NOT taking in consideration the NULL character for the size (it is the end marker), set tmp to 0
@@ -433,7 +454,7 @@ size_t fl_unicode_codeunit_sequence_size(const FlByte* sequence, FlEncoding enco
 * Returns the 'at'-th character of a Unicode string encoded as 'encoding'
 * -------------------------------------------------------------
 */
-FlUnicodeChar fl_unicode_unichar_at(const FlByte* str, FlEncoding encoding, size_t at)
+FlUnicodeChar fl_unicode_codepoint_at(const FlByte* str, FlEncoding encoding, size_t at)
 {
     // Initialize chr to 0 to "clear" it
     FlUnicodeChar chr = 0;
@@ -499,8 +520,10 @@ bool fl_unicode_unichar_sequence_is_valid(const FlUnicodeChar *sequence, FlEncod
     size_t i = 0;
     while ((end == NULL && sequence[i]) || (end != NULL && (sequence+i) < end))
     {
-        if (fl_unicode_unichar_size(sequence[i], encoding) == FL_UNICODE_INVALID_SIZE)
-            return false;
+        size_t tmp = fl_unicode_unichar_size(sequence[i], encoding);
+        if (tmp == FL_UNICODE_INVALID_SIZE)
+            return false;        
+        i += tmp;
     }
     return true;
 }

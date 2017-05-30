@@ -13,7 +13,7 @@ void test_fl_string_size();
 
 void test_fl_string_char_at();
 
-void test_fl_unicode_unichar_at();
+void test_fl_unicode_codepoint_at();
 
 void test_fl_unicode_char();
 

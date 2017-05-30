@@ -10,7 +10,7 @@ void test_fl_string_length()
     fl_expect("String 'ASCII' has 5 characters", fl_string_length(str, NULL) == 5);
   
     FlString str2 = "\x41\x00\x42"; // "A\0B"
-    fl_expect("String 'A\\0B' has 3 characters", fl_string_length(str2, (FlByte*)str2+4) == 3);
+    fl_expect("String 'A\\0B' has 3 characters", fl_string_length(str2, (FlByte*)str2+3) == 3);
     
     FlString eos = "\0";
     fl_expect("String '\\0' if formed by 1 characters", fl_string_length(eos, (FlByte*)eos+1) == 1);
@@ -48,13 +48,13 @@ void test_fl_string_size()
     fl_expect("Character '\\0' occupies 1 byte", fl_string_size(nullchar, (FlByte*)nullchar+1) == 1);
     
     FlString twobytes = "Π";
-    fl_expect("Character 'Π' occupies 2 bytes", fl_string_size(twobytes, (FlByte*)twobytes+1) == 2);
+    fl_expect("Character 'Π' occupies 2 bytes", fl_string_size(twobytes, (FlByte*)twobytes+2) == 2);
     
     FlString threebytes = "Ａ";
-    fl_expect("Character 'Ａ' occupies 3 bytes", fl_string_size(threebytes, (FlByte*)threebytes+1) == 3);
+    fl_expect("Character 'Ａ' occupies 3 bytes", fl_string_size(threebytes, (FlByte*)threebytes+3) == 3);
     
     FlString fourbytes = "兔";
-    fl_expect("Character '兔' occupies 4 bytes", fl_string_size(fourbytes, (FlByte*)fourbytes+1) == 4);
+    fl_expect("Character '兔' occupies 4 bytes", fl_string_size(fourbytes, (FlByte*)fourbytes+4) == 4);
 }
 
 void test_fl_string_char_at()

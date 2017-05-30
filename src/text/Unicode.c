@@ -425,28 +425,55 @@ size_t fl_unicode_codeunit_sequence_size(FlEncoding encoding, const FlByte* sequ
     size_t size = 0;
     if (encoding == FL_ENCODING_UTF32)
     {
-        size_t i = 0;
-        const uint32_t *src = (const uint32_t*)sequence;
-        do
+        // {todo: This needs to be tested}
+        size_t i=0;
+        bool isValid = true;
+        while (isValid)
         {
+            if (end == NULL && sequence[i] == 0x00)
+                break;
+            if (end != NULL && sequence+i >= end)
+                break;
+            if (!fl_unicode_codepoint_is_valid(encoding, sequence+i, end))
+                break;
             size += UTF32_BYTES_SIZE;
-            i++;
-        } while ((end == NULL && src[i]) || (end != NULL && ((FlByte*)src)+i < end));
+            size_t tmp = UTF32_BYTES_SIZE;
+            while (tmp-- > 0)
+            {
+                i++;
+                if (end == NULL && sequence[i] == 0x00)
+                {
+                    isValid = false;
+                    break;
+                }
+            }
+        }
     }
     else if (encoding == FL_ENCODING_UTF8)
     {
         size_t i=0;
-        do
+        bool isValid = true;
+        while (isValid)
         {
+            if (end == NULL && sequence[i] == 0x00)
+                break;
+            if (end != NULL && sequence+i >= end)
+                break;
+
             size_t tmp = utf8_bytes_count(sequence+i, end);
             if (tmp == FL_UNICODE_INVALID_SIZE)
                 break; // truncated string
-            // If we are NOT taking in consideration the NULL character for the size (it is the end marker), set tmp to 0
-            if (tmp == 1 && sequence[i] == 0x0 && end == NULL)
-                tmp = 0;
             size += tmp;
-            i += tmp;
-        } while ((end == NULL && sequence[i]) || (end != NULL && sequence+i < end));
+            while (tmp-- > 0)
+            {
+                i++;
+                if (end == NULL && sequence[i] == 0x00)
+                {
+                    isValid = false;
+                    break;
+                }
+            }
+        }
     }
     return size;
 }
@@ -464,28 +491,55 @@ size_t fl_unicode_codepoint_sequence_length(FlEncoding encoding, const FlByte* s
     size_t size = 0;
     if (encoding == FL_ENCODING_UTF32)
     {
-        size_t i = 0;
-        const uint32_t *src = (const uint32_t*)sequence;
-        do
+        // {todo: This needs to be tested}
+        size_t i=0;
+        bool isValid = true;
+        while (isValid)
         {
-            i++;
-        } while ((end == NULL && src[i]) || (end != NULL && ((FlByte*)src)+i < end));
-        size = i;
+            if (end == NULL && sequence[i] == 0x00)
+                break;
+            if (end != NULL && sequence+i >= end)
+                break;
+            if (!fl_unicode_codepoint_is_valid(encoding, sequence+i, end))
+                break;
+            size++;
+            size_t tmp = UTF32_BYTES_SIZE;
+            while (tmp-- > 0)
+            {
+                i++;
+                if (end == NULL && sequence[i] == 0x00)
+                {
+                    isValid = false;
+                    break;
+                }
+            }
+        }
     }
     else if (encoding == FL_ENCODING_UTF8)
     {
         size_t i=0;
-        do
+        bool isValid = true;
+        while (isValid)
         {
+            if (end == NULL && sequence[i] == 0x00)
+                break;
+            if (end != NULL && sequence+i >= end)
+                break;
+
             size_t tmp = utf8_bytes_count(sequence+i, end);
             if (tmp == FL_UNICODE_INVALID_SIZE)
                 break; // truncated string
-            // If we are NOT taking in consideration the NULL character for the size (it is the end marker), set tmp to 0
-            if (tmp == 1 && sequence[i] == 0x0 && end == NULL)
-                tmp = 0;
             size++;
-            i += tmp;
-        } while ((end == NULL && sequence[i]) || (end != NULL && sequence+i < end));
+            while (tmp-- > 0)
+            {
+                i++;
+                if (end == NULL && sequence[i] == 0x00)
+                {
+                    isValid = false;
+                    break;
+                }
+            }
+        }
     }
     return size;
 }

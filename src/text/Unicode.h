@@ -217,7 +217,7 @@ size_t fl_unicode_codepoint_sequence_length(FlEncoding encoding, const FlByte* s
 * in the 'at'-th position of 'str'
 * -------------------------------------------------------------
 */
-FlUnicodeChar fl_unicode_codepoint_at(FlEncoding encoding, const FlByte *str, const FlByte *end, size_t at);
+size_t fl_unicode_codepoint_at(FlEncoding encoding, const FlByte *str, const FlByte *end, size_t at, FlByte *dst);
 
 bool fl_unicode_codepoint_is_valid(FlEncoding encoding, const FlByte *src, const FlByte *end);
 
@@ -246,7 +246,7 @@ bool fl_unicode_codeunit_sequence_is_valid(FlEncoding encoding, const FlByte* sr
 * if not true.
 * -------------------------------------------------------------
 */
-bool fl_unicode_unichar_to_codepoint(FlEncoding encoding, FlUnicodeChar chr, FlByte* dst);
+size_t fl_unicode_unichar_to_codepoint(FlEncoding encoding, FlUnicodeChar chr, FlByte* dst);
 
 /* -------------------------------------------------------------
 * {function: fl_unicode_unichar_to_encoded_codepoint}
@@ -267,7 +267,7 @@ bool fl_unicode_unichar_to_codepoint(FlEncoding encoding, FlUnicodeChar chr, FlB
 * if not true.
 * -------------------------------------------------------------
 */
-bool fl_unicode_unichar_to_encoded_codepoint(FlEncoding srcencoding, FlUnicodeChar chr, FlEncoding dstencoding, FlByte* dst);
+size_t fl_unicode_unichar_to_encoded_codepoint(FlEncoding srcencoding, FlUnicodeChar chr, FlEncoding dstencoding, FlByte* dst);
 
 /* -------------------------------------------------------------
 * {function: fl_unicode_unichar_encode_to}

@@ -6,28 +6,47 @@
 
 void test_fl_unicode_codepoint_at()
 {
-    // {todo: FIX THIS TEST. the codepoint_at changed its interface and purpose}
-    /*FlString str = "ĀāĂăĄąĆćĈĉĊċČčĎďĐđĒēĔĕĖėĘęĚěĜĝĞğĠġĢģĤĥĦħĨĩĪīĬĭĮįİıĲĳĴĵĶķĸĹĺĻļĽľĿŀŁłŃńŅņŇňŉŊŋŌōŎŏŐőŒœŔŕŖŗŘřŚśŜŝŞşŠšŢţŤťŦŧŨũŪūŬŭŮůŰűŲųŴŵŶŷŸŹźŻżŽž\x00";
-    fl_expect("0 = Ā", fl_unicode_codepoint_at(FL_ENCODING_UTF8, (FlByte*)str, 0x00, 0) == fl_unicode_codepoint_to_unichar(FL_ENCODING_UTF8, (FlByte*)"Ā\x00", 0x00));
-    fl_expect("28 = Ĝ", fl_unicode_codepoint_at(FL_ENCODING_UTF8, (FlByte*)str, 0x00, 28) == fl_unicode_codepoint_to_unichar(FL_ENCODING_UTF8, (FlByte*)"Ĝ\x00", 0x00));
-    fl_expect("40 = Ĩ", fl_unicode_codepoint_at(FL_ENCODING_UTF8, (FlByte*)str, 0x00, 40) == fl_unicode_codepoint_to_unichar(FL_ENCODING_UTF8, (FlByte*)"Ĩ\x00", 0x00));
-    fl_expect("60 = ļ", fl_unicode_codepoint_at(FL_ENCODING_UTF8, (FlByte*)str, 0x00, 60) == fl_unicode_codepoint_to_unichar(FL_ENCODING_UTF8, (FlByte*)"ļ\x00", 0x00));
-    fl_expect("60 = ļ", fl_unicode_codepoint_at(FL_ENCODING_UTF8, (FlByte*)str, 0x00, 60) == fl_unicode_codepoint_to_unichar(FL_ENCODING_UTF8, (FlByte*)"ļ\x00", 0x00));
-    fl_expect("92 = Ŝ", fl_unicode_codepoint_at(FL_ENCODING_UTF8, (FlByte*)str, 0x00, 92) == fl_unicode_codepoint_to_unichar(FL_ENCODING_UTF8, (FlByte*)"Ŝ\x00", 0x00));
-    fl_expect("126 = ž", fl_unicode_codepoint_at(FL_ENCODING_UTF8, (FlByte*)str, 0x00, 126) == fl_unicode_codepoint_to_unichar(FL_ENCODING_UTF8, (FlByte*)"ž\x00", 0x00));
+    // All the code points size in this string is two-bytes
+    FlString str = "ĀāĂăĄąĆćĈĉĊċČčĎďĐđĒēĔĕĖėĘęĚěĜĝĞğĠġĢģĤĥĦħĨĩĪīĬĭĮįİıĲĳĴĵĶķĸĹĺĻļĽľĿŀŁłŃńŅņŇňŉŊŋŌōŎŏŐőŒœŔŕŖŗŘřŚśŜŝŞşŠšŢţŤťŦŧŨũŪūŬŭŮůŰűŲųŴŵŶŷŸŹźŻżŽž\x00";
+    fl_expect("str is 127 code points long and it is composed of 256 code units", 
+        fl_unicode_codepoint_sequence_length(FL_ENCODING_UTF8, (FlByte*)str, 0x00)
+        && fl_unicode_codeunit_sequence_size(FL_ENCODING_UTF8, (FlByte*)str, 0x00)
+    );
 
-    size_t strl = fl_string_length(str, NULL);
-    size_t strs = fl_string_size(str, NULL);
-    size_t chrl = 0;
-    size_t chrs = 0;
-    for (size_t i=0; i < strl; i++)
-    {
-        FlUnicodeChar chr = fl_unicode_codepoint_at(FL_ENCODING_UTF8, (FlByte*)str, 0x00, i);
-        chrl++;
-        size_t tmp = fl_unicode_unichar_size(FL_ENCODING_UTF8, chr);
-        chrs += tmp;
-    }
-    fl_expect("Length and size of 'str' is equals to length and size of the characters iteration", strl == chrl && strs == chrs);*/
+    // 
+    FlByte dst[4] = {0,0,0,0};
+    size_t nbytes = fl_unicode_codepoint_at(FL_ENCODING_UTF8, (FlByte*)str, 0x00, 0, dst);
+    fl_expect("0 = Ā and it is 2 bytes long", memcmp(str, dst, nbytes) == 0 && nbytes == 2);
+
+    // 
+    memset(dst, 0, 4);
+    nbytes = fl_unicode_codepoint_at(FL_ENCODING_UTF8, (FlByte*)str, 0x00, 28, dst);
+    fl_expect("28 = Ĝ and it is 2 bytes long", memcmp(str+28*2, dst, nbytes) == 0 && nbytes == 2); // Char 28 multiplied by 2 bytes each one
+
+    // 
+    memset(dst, 0, 4);
+    nbytes = fl_unicode_codepoint_at(FL_ENCODING_UTF8, (FlByte*)str, 0x00, 40, dst);
+    fl_expect("40 = Ĩ and it is 2 bytes long", memcmp(str+40*2, dst, nbytes) == 0 && nbytes == 2); // Char 28 multiplied by 2 bytes each one
+
+    // 
+    memset(dst, 0, 4);
+    nbytes = fl_unicode_codepoint_at(FL_ENCODING_UTF8, (FlByte*)str, 0x00, 60, dst);
+    fl_expect("60 = ļ and it is 2 bytes long", memcmp(str+60*2, dst, nbytes) == 0 && nbytes == 2); // Char 28 multiplied by 2 bytes each one
+
+    // 
+    memset(dst, 0, 4);
+    nbytes = fl_unicode_codepoint_at(FL_ENCODING_UTF8, (FlByte*)str, 0x00, 40, dst);
+    fl_expect("40 = Ĩ and it is 2 bytes long", memcmp(str+40*2, dst, nbytes) == 0 && nbytes == 2); // Char 28 multiplied by 2 bytes each one
+
+    // 
+    memset(dst, 0, 4);
+    nbytes = fl_unicode_codepoint_at(FL_ENCODING_UTF8, (FlByte*)str, 0x00, 92, dst);
+    fl_expect("92 = Ŝ and it is 2 bytes long", memcmp(str+92*2, dst, nbytes) == 0 && nbytes == 2); // Char 28 multiplied by 2 bytes each one
+
+    // 
+    memset(dst, 0, 4);
+    nbytes = fl_unicode_codepoint_at(FL_ENCODING_UTF8, (FlByte*)str, 0x00, 126, dst);
+    fl_expect("126 = ž and it is 2 bytes long", memcmp(str+126*2, dst, nbytes) == 0 && nbytes == 2); // Char 28 multiplied by 2 bytes each one
 }
 
 void test_fl_unicode_char()

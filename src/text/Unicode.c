@@ -578,7 +578,7 @@ size_t fl_unicode_unichar_size(FlEncoding encoding, const FlUnicodeChar chr)
     return FL_UNICODE_INVALID_SIZE; // Not unicode
 }
 
-size_t fl_unicode_unichar_sequence_size(FlEncoding encoding, const FlUnicodeChar *string, FlUnicodeChar *end)
+size_t fl_unicode_unichar_sequence_size(FlEncoding encoding, const FlUnicodeChar *string, const FlUnicodeChar *end)
 {
     flm_assert(string != NULL, "Source string cannot be NULL.");
     
@@ -624,7 +624,7 @@ bool fl_unicode_unichar_is_valid(FlEncoding encoding, const FlUnicodeChar chr)
     return fl_unicode_unichar_size(encoding, chr) != FL_UNICODE_INVALID_SIZE;
 }
 
-bool fl_unicode_unichar_sequence_is_valid(FlEncoding encoding, const FlUnicodeChar *sequence, FlUnicodeChar *end)
+bool fl_unicode_unichar_sequence_is_valid(FlEncoding encoding, const FlUnicodeChar *sequence, const FlUnicodeChar *end)
 {
     flm_assert(sequence != NULL, "Source sequence cannot be NULL.");
 

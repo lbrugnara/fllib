@@ -54,6 +54,8 @@
 #include "../Types.h"
 #include "Encoding.h"
 
+#define UCHARSEQ(...) ((FlUnicodeChar[]){__VA_ARGS__})
+
 /* -------------------------------------------------------------
 * {datatype: uint32_t FlUnicodeChar}
 * -------------------------------------------------------------
@@ -386,5 +388,7 @@ bool fl_unicode_unichar_is_valid(FlEncoding encoding, const FlUnicodeChar chr);
 * -------------------------------------------------------------
 */
 bool fl_unicode_unichar_sequence_is_valid(FlEncoding encoding, const FlUnicodeChar *sequence, const FlUnicodeChar *end);
+
+FlUnicodeChar* fl_unicode_unichar_sequence_validate(FlEncoding encoding, const FlUnicodeChar *sequence, const FlUnicodeChar *end);
 
 #endif /* FL_UNICODE_H */

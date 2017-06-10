@@ -24,8 +24,11 @@
 #define UTF8_CODEPOINT_LEADBYTE_4 0xF0
 #define UTF8_CODEPOINT_LEADBYTE_4_MAX 0xF7
 
-// UTF-8
+// UTF-8 (codepoint)
 #define UTF8_MAX_CODEPOINT ((FlByte*)"\xf4\x8f\xbf\xbf")
+
+// UTF-8 (FlUnicodeChar)
+#define UTF8_REPLACEMENT_CHARACTER 0xEFBFBD
 
 // UTF-32
 #define UTF32_BYTES_SIZE 4
@@ -637,4 +640,39 @@ bool fl_unicode_unichar_sequence_is_valid(FlEncoding encoding, const FlUnicodeCh
         i += tmp;
     }
     return true;
+}
+
+size_t unichar_sequence_length(const FlUnicodeChar *sequence, const FlUnicodeChar *end)
+{
+    flm_assert(end == NULL || end > sequence, "End byte cannot be an address lesser than sequence's start address.'");
+    if (end != NULL)
+        return end-sequence;
+    size_t i=0;
+    while (sequence[i])
+        i++;
+    return i;
+}
+
+FlUnicodeChar* fl_unicode_unichar_sequence_validate(FlEncoding encoding, const FlUnicodeChar *sequence, const FlUnicodeChar *end)
+{
+    flm_assert(sequence != NULL, "Source sequence cannot be NULL.");
+    flm_assert(end == NULL || end > sequence, "End byte cannot be an address lesser than sequence's start address.'");
+    FlUnicodeChar replcChar = 0x0;
+    if (encoding == FL_ENCODING_UTF8)
+    {
+        replcChar = UTF8_REPLACEMENT_CHARACTER;
+    }
+    else if (encoding == FL_ENCODING_UTF32)
+    {
+        replcChar = FL_UNICODE_REPLACEMENT_CHARACTER;
+    }
+    size_t length = unichar_sequence_length(sequence, end);
+    FlUnicodeChar *validated = fl_calloc(length, sizeof(FlUnicodeChar));
+    size_t i = 0;
+    while ((end == NULL && sequence[i]) || (end != NULL && (sequence+i) < end))
+    {
+        validated[i] = fl_unicode_unichar_is_valid(encoding, sequence[i]) ? sequence[i] : replcChar;
+        i++;
+    }
+    return validated;
 }

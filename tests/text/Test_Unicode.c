@@ -397,3 +397,19 @@ void test_fl_unicode_codepoint_validity()
     fl_expect("Surrogates sequence U+DBFF U+DC00 is not valid UTF-8", !fl_unicode_codeunit_sequence_is_valid(FL_ENCODING_UTF8, (FlByte*) "\xed\xaf\xbf\xed\xb0\x80\x00", NULL)); // x00 == NULL terminated
     fl_expect("Surrogates sequence U+DBFF U+DFFF is not valid UTF-8", !fl_unicode_codeunit_sequence_is_valid(FL_ENCODING_UTF8, (FlByte*) "\xed\xaf\xbf\xed\xbf\xbf\x00", NULL)); // x00 == NULL terminated
 }
+
+void test_fl_unicode_unichar_sequence_validate()
+{
+    #define seq_are_eq(a, b, l) (memcmp((a), (b), sizeof(FlUnicodeChar)*(l)) == 0)
+    #define REPLCHAR 0xEFBFBD
+    
+    //
+    FlUnicodeChar *validated = fl_unicode_unichar_sequence_validate(FL_ENCODING_UTF8, UCHARSEQ(0x31, 0x32, 0xC0, 0x34, 0x00), NULL); // 12�4
+    fl_expect("UTF8 sequence 0x31 0x32 0xC0 0x34 validates as 0x31 0x32 0xFFFD 0x34", seq_are_eq(validated, UCHARSEQ(0x31, 0x32, REPLCHAR, 0x34), 4));
+    fl_free(validated);
+
+    //
+    validated = fl_unicode_unichar_sequence_validate(FL_ENCODING_UTF32, UCHARSEQ(0x31, 0x32, 0xD800, 0x34, 0x00), NULL); // 12�4
+    fl_expect("UTF32 sequence 0x31 0x32 0xD800 0x34 validates as 0x31 0x32 0xFFFD 0x34", seq_are_eq(validated, UCHARSEQ(0x31, 0x32, FL_UNICODE_REPLACEMENT_CHARACTER, 0x34), 4));
+    fl_free(validated);
+}

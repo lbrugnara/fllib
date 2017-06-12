@@ -85,9 +85,9 @@ size_t fl_string_length(const FlString str, const FlByte* end);
 * -------------------------------------------------------------
 */
 size_t fl_string_size(const FlString str, const FlByte* end);
-
+/*
 FlUnicodeChar fl_char(const FlString str);
 
 FlUnicodeChar fl_string_char_at(const FlString str, size_t at);
-
+*/
 #endif /* FL_STRING_H */

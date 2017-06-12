@@ -54,20 +54,6 @@
 #include "../Types.h"
 #include "Encoding.h"
 
-#define UCHARSEQ(...) ((FlUnicodeChar[]){__VA_ARGS__})
-
-/* -------------------------------------------------------------
-* {datatype: uint32_t FlUnicodeChar}
-* -------------------------------------------------------------
-* Represents a Unicode char. To make it easy to work with Unicode
-* characters, the type of FlUnicodeChar is an uint32_t, to be able
-* to represents all the unicode code points. It is up to library's
-* users to keep track of the encoding of each FlUnicodeChar and to
-* convert it to an stream of bytes representing valid unicode char
-* -------------------------------------------------------------
-*/
-typedef uint32_t FlUnicodeChar;
-
 /* -------------------------------------------------------------
 * {define: FL_UNICODE_INVALID_CHAR}
 * -------------------------------------------------------------
@@ -96,55 +82,14 @@ typedef uint32_t FlUnicodeChar;
 */
 #define FL_UNICODE_REPLACEMENT_CHARACTER 0xFFFD
 
+#define fl_unicode_codeunit_sequence_equals(a,b,s) (memcmp(a,b,s) == 0)
+
 /* -------------------------------------------------------------
 * UNICODE CODE POINT AND UNIT FUNCTIONS (FlByte*)
 * -------------------------------------------------------------
 */
 
-/* -------------------------------------------------------------
-* {function: fl_unicode_codepoint_to_unichar}
-* -------------------------------------------------------------
-* It receives an array of bytes that represents a unicode code point, 
-* and returns its FlUnicodeChar representation with the same encoding. 
-* If {src} is composed by more than one character (more than one code point)
-* it will return the FlUnicodeChar representation of the first code 
-* point of src. src will be interpreted using the encoding provided
-* by the user. The encoding of the returned FlUnicodeChar is the same as the
-* used used to interpret the input bytes.
-* If {src} is an invalid character under encoding {encoding} this function
-* returns FL_UNICODE_INVALID_CHAR
-* -------------------------------------------------------------
-* {param: FlEncoding encoding} src bytes encoding
-* {param: const FlByte* src} Bytes to process as a single codepoint
-* {param: const FlByte* end} A pointer to a byte or NULL to stop while looking 
-* for the code point.
-* -------------------------------------------------------------
-* {return: FlUnicodeChar} FlUnicodeChar of the first
-* character of the string {src} or FL_UNICODE_INVALID_CHAR
-* -------------------------------------------------------------
-*/
-FlUnicodeChar fl_unicode_codepoint_to_unichar(FlEncoding encoding, const FlByte *src, const FlByte *end);
-
-/* -------------------------------------------------------------
-* {function: fl_unicode_codepoint_to_encoded_unichar}
-* -------------------------------------------------------------
-* Similar to fl_unicode_codepoint_to_unichar, but it converts the input
-* bytes array ({srcencoding} encoded) to an FlUnicodeChar encoded
-* with {dstencoding}.
-* If {src} is an invalid character under encoding {srcencoding} this function
-* returns FL_UNICODE_INVALID_CHAR
-* -------------------------------------------------------------
-* {param: FlEncoding srcencoding} Encoding of the bytes array
-* {param: const FlByte* src} Source bytes
-* {param: const FlByte* end} A pointer to a byte or NULL to stop while looking 
-* for the code point.
-* {param: FlEncoding dstencoding} Encoding used for the returned FlUnicodeChar
-* -------------------------------------------------------------
-* {return: FlUnicodeChar} Result of convert src (encoded as 'srcencoding') to an FlUnicodeChar 
-* with encoding 'dstencoding'
-* -------------------------------------------------------------
-*/
-FlUnicodeChar fl_unicode_codepoint_to_encoded_unichar(FlEncoding srcencoding, const FlByte *src, const FlByte *end, FlEncoding dstencoding);
+size_t fl_unicode_codepoint_convert(FlEncoding srcencoding, const FlByte *src, const FlByte *end, FlEncoding dstencoding, FlByte *dst);
 
 /* -------------------------------------------------------------
 * {function: fl_unicode_codepoint_size}
@@ -258,137 +203,5 @@ bool fl_unicode_codepoint_is_valid(FlEncoding encoding, const FlByte *src, const
 * -------------------------------------------------------------
 */
 bool fl_unicode_codeunit_sequence_is_valid(FlEncoding encoding, const FlByte* src, const FlByte* end);
-
-/* -------------------------------------------------------------
-* UNICODE CHARACTER FUNCTIONS (FlUnicodeChar)
-* -------------------------------------------------------------
-*/
-
-/* -------------------------------------------------------------
-* {function: fl_unicode_unichar_to_codepoint}
-* -------------------------------------------------------------
-* It takes a unicode char represented by an FlUnicodeChar
-* encoded with {encoding} and populates {dst} with the code
-* points of the unicode char. If {chr} is an invalid unicode
-* code point this function returns false. Otherwise returns true.
-* -------------------------------------------------------------
-* {param: FlEncoding encoding} Encoding used by {chr}
-* {param: FlUnicodeChar chr} Unicode char to get the bytes from
-* {param: FlByte* dst} Target to save the bytes from {chr}. Caller MUST
-* ensure {dst} to have space to allocate a code point (1 to 4 bytes depending
-* on the encoding). {dst} MAY NOT be null terminated.
-* -------------------------------------------------------------
-* {return: bool} If {chr} is an invalid unicode code point returns false,
-* if not true.
-* -------------------------------------------------------------
-*/
-size_t fl_unicode_unichar_to_codepoint(FlEncoding encoding, FlUnicodeChar chr, FlByte* dst);
-
-/* -------------------------------------------------------------
-* {function: fl_unicode_unichar_to_encoded_codepoint}
-* -------------------------------------------------------------
-* Similar to fl_unicode_unichar_to_codepoint, but instead of return the bytes
-* of the input {chr}, it previously encode {chr} to {dstencoding}
-* and copies the resulting bytes into {dst}. {chr} is encoded
-* with {srcencoding}.
-* -------------------------------------------------------------
-* {param: FlEncoding srcencoding} Encoding of {chr}
-* {param: FlUnicodeChar chr} Input FlUnicodeChar to get the bytes from
-* {param: FlEncoding dstencoding} Encoding of {dst}
-* {param: FlByte* dst} Where to put the bytes of {chr}. Caller MUST ensure
-* {dst} to have enough space to save a code point (1 to 4 bytes).
-* {dst} MAY NOT be null terminated.
-* -------------------------------------------------------------
-* {return: size_t} Count of bytes populated in {dst}
-* -------------------------------------------------------------
-*/
-size_t fl_unicode_unichar_to_encoded_codepoint(FlEncoding srcencoding, FlUnicodeChar chr, FlEncoding dstencoding, FlByte* dst);
-
-/* -------------------------------------------------------------
-* {function: fl_unicode_unichar_encode_to}
-* -------------------------------------------------------------
-* Encodes {src} character with the encoding provided in {srcencoding} 
-* to the encoding specified in {dstencoding}
-* If {src} is an invalid character under encoding {srcencoding} this function
-* returns FL_UNICODE_INVALID_CHAR
-* -------------------------------------------------------------
-* {param: FlEncoding srcencoding} Encoding used by {src}
-* {param: FlUnicodeChar src} Source character
-* {param: FlEncoding dstencoding} Encoding of the return value
-* -------------------------------------------------------------
-* {return: FlUnicodeChar} Unicode character that represents
-* {src} character encoded as {dstencoding} or FL_UNICODE_INVALID_CHAR
-* -------------------------------------------------------------
-*/
-FlUnicodeChar fl_unicode_unichar_encode_to(const FlEncoding srcencoding, const FlUnicodeChar src, const FlEncoding dstencoding);
-
-/* -------------------------------------------------------------
-* {function: fl_unicode_unichar_size}
-* -------------------------------------------------------------
-* Returns the size in bytes of the code point represented by
-* FlUnicodeChar 'chr'. If {chr} is invalid, it returns FL_UNICODE_INVALID_SIZE, 
-* otherwise >= 0
-* -------------------------------------------------------------
-* {param: FlEncoding encoding} Encoding used by {chr}
-* {param: FlUnicodeChar chr} target Unicode character to retrieve its bytes size
-* -------------------------------------------------------------
-* {return: size_t} Size in bytes of character 'chr'. If chr is an invalid
-* unicode char it returns FL_UNICODE_INVALID_SIZE
-* -------------------------------------------------------------
-*/
-size_t fl_unicode_unichar_size(FlEncoding encoding, const FlUnicodeChar chr);
-
-/* -------------------------------------------------------------
-* {function: fl_unicode_unichar_sequence_size}
-* -------------------------------------------------------------
-* Returns the size in bytes of the unicode string represented by
-* an array of {FlUnicodeChar}s. The encoding of the chars is determined
-* by {encoding}. If {end} is NULL, the count of bytes will stop when
-* one of the elements of {string} is 0x0. If {end} has a value, it should
-* be a pointer to an element of {string} where the function should stop counting.
-* -------------------------------------------------------------
-* {param: FlEncoding encoding} Encoding used by {string}
-* {param: const FlUnicodeChar* string} Input string
-* {param: FlUnicodeChar* end} Element from {string} where to stop counting,
-* or NULL to stop at the first 0x0 value.
-* -------------------------------------------------------------
-* {return: size_t} Number of valid bytes in {string}
-* -------------------------------------------------------------
-*/
-size_t fl_unicode_unichar_sequence_size(FlEncoding encoding, const FlUnicodeChar *string, const FlUnicodeChar *end);
-
-/* -------------------------------------------------------------
-* {function: fl_unicode_unichar_is_valid}
-* -------------------------------------------------------------
-* Returns true if {chr} is a valid code point under encoding
-* {encoding}.
-* -------------------------------------------------------------
-* {param: FlEncoding encoding} Encoding of {src}
-* {param: const FlUnicodeChar chr} Character that possibly represents a unicode code point
-* -------------------------------------------------------------
-* {return: bool} True if the codepoint encoded in {chr} is valid under
-* encoding {encoding}
-* -------------------------------------------------------------
-*/
-bool fl_unicode_unichar_is_valid(FlEncoding encoding, const FlUnicodeChar chr);
-
-/* -------------------------------------------------------------
-* {function: fl_unicode_unichar_sequence_is_valid}
-* -------------------------------------------------------------
-* Returns true if {sequence} is a valid sequence of code points under encoding
-* {encoding}.
-* -------------------------------------------------------------
-* {param: FlEncoding encoding} Encoding of {sequence}
-* {param: const FlUnicodeChar* sequence} Code points to check its validity
-* {param: const FlUnicodeChar* end} Pointer to some element of {sequence} (or after it)
-* where to stop processing, * or NULL to stop at the first 0x0 value.
-* -------------------------------------------------------------
-* {return: bool} True if the codepoint sequence encoded in {sequence} is valid under
-* encoding {encoding}
-* -------------------------------------------------------------
-*/
-bool fl_unicode_unichar_sequence_is_valid(FlEncoding encoding, const FlUnicodeChar *sequence, const FlUnicodeChar *end);
-
-FlUnicodeChar* fl_unicode_unichar_sequence_validate(FlEncoding encoding, const FlUnicodeChar *sequence, const FlUnicodeChar *end);
 
 #endif /* FL_UNICODE_H */

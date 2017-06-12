@@ -289,10 +289,10 @@ void test_fl_unicode_unichar_validity()
     // Last byte missing
     fl_expect("Sequence xC0 is not valid UTF-8", !fl_unicode_unichar_sequence_is_valid(FL_ENCODING_UTF8, (FlUnicodeChar[]){ 0xC0, 0x00 }, NULL)); // 0x00 == NULL terminated
     fl_expect("Sequence xDF is not valid UTF-8", !fl_unicode_unichar_sequence_is_valid(FL_ENCODING_UTF8, (FlUnicodeChar[]){ 0xDF, 0x00 }, NULL)); // 0x00 == NULL terminated
-    fl_expect("Sequence xE0x80 is not valid UTF-8", !fl_unicode_unichar_sequence_is_valid(FL_ENCODING_UTF8, (FlUnicodeChar[]){ 0xE0, 0x80, 0x00 }, NULL)); // 0x00 == NULL terminated
-    fl_expect("Sequence xEFxBF is not valid UTF-8", !fl_unicode_unichar_sequence_is_valid(FL_ENCODING_UTF8, (FlUnicodeChar[]){ 0xEF, 0xBF, 0x00 }, NULL)); // 0x00 == NULL terminated
-    fl_expect("Sequence xF0x80x80 is not valid UTF-8", !fl_unicode_unichar_sequence_is_valid(FL_ENCODING_UTF8, (FlUnicodeChar[]){ 0xF0, 0x80, 0x80, 0x00 }, NULL)); // 0x00 == NULL terminated
-    fl_expect("Sequence xF7xBFxBF is not valid UTF-8", !fl_unicode_unichar_sequence_is_valid(FL_ENCODING_UTF8, (FlUnicodeChar[]){ 0xF7, 0xBF, 0xBF, 0x00 }, NULL)); // 0x00 == NULL terminated
+    fl_expect("Sequence xE0x80 is not valid UTF-8", !fl_unicode_unichar_sequence_is_valid(FL_ENCODING_UTF8, (FlUnicodeChar[]){ 0xE080, 0x00 }, NULL)); // 0x00 == NULL terminated
+    fl_expect("Sequence xEFxBF is not valid UTF-8", !fl_unicode_unichar_sequence_is_valid(FL_ENCODING_UTF8, (FlUnicodeChar[]){ 0xEFBF, 0x00 }, NULL)); // 0x00 == NULL terminated
+    fl_expect("Sequence xF0x80x80 is not valid UTF-8", !fl_unicode_unichar_sequence_is_valid(FL_ENCODING_UTF8, (FlUnicodeChar[]){ 0xF08080, 0x00 }, NULL)); // 0x00 == NULL terminated
+    fl_expect("Sequence xF7xBFxBF is not valid UTF-8", !fl_unicode_unichar_sequence_is_valid(FL_ENCODING_UTF8, (FlUnicodeChar[]){ 0xF7BFBF, 0x00 }, NULL)); // 0x00 == NULL terminated
 
     // Surrogates
     fl_expect("Surrogates sequence U+D800 U+DC00 is not valid UTF-8", !fl_unicode_unichar_sequence_is_valid(FL_ENCODING_UTF8, (FlUnicodeChar[]) { 0xeda080, 0xedb080, 0x00 }, NULL)); // 0x00 == NULL terminated
@@ -406,6 +406,11 @@ void test_fl_unicode_unichar_sequence_validate()
     //
     FlUnicodeChar *validated = fl_unicode_unichar_sequence_validate(FL_ENCODING_UTF8, UCHARSEQ(0x31, 0x32, 0xC0, 0x34, 0x00), NULL); // 12�4
     fl_expect("UTF8 sequence 0x31 0x32 0xC0 0x34 validates as 0x31 0x32 0xFFFD 0x34", seq_are_eq(validated, UCHARSEQ(0x31, 0x32, REPLCHAR, 0x34), 4));
+    fl_free(validated);
+
+    //
+    validated = fl_unicode_unichar_sequence_validate(FL_ENCODING_UTF8, UCHARSEQ(0xC2, 0x41, 0x42, 0x00), NULL);
+    fl_expect("UTF8 sequence 0xC2 0x41 0x42 validates as 0xFFFD 0x41 0x42", seq_are_eq(validated, UCHARSEQ(REPLCHAR, 0x41, 0x42), 3));
     fl_free(validated);
 
     //

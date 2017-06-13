@@ -33,6 +33,11 @@
 // UTF-32
 #define UTF32_BYTES_SIZE 4
 
+#define UTF32_LAST_CODEPOINT_1 ((FlByte*)"\x00\x00\x00\x7F")
+#define UTF32_LAST_CODEPOINT_2 ((FlByte*)"\x00\x00\x07\xFF")
+#define UTF32_LAST_CODEPOINT_3 ((FlByte*)"\x00\x00\xFF\xFF")
+#define UTF32_LAST_CODEPOINT_4 ((FlByte*)"\x00\x10\xFF\xFF")
+
 /* -------------------------------------------------------------
 * PRIVATE API
 * -------------------------------------------------------------
@@ -169,6 +174,54 @@ static inline size_t utf8_codepoint_size(const FlByte *src, const FlByte *end)
 * Converts an UTF-32 uint32_t to its UTF-8 representation
 * -------------------------------------------------------------
 */
+static inline size_t _utf32_to_utf8(const FlByte *src, FlByte *dst)
+{
+    if (memcmp(src, UTF32_LAST_CODEPOINT_1, 4) <= 0)
+    {
+        dst[0] = src[3];
+        return 1;
+    }
+
+    if (memcmp(src, UTF32_LAST_CODEPOINT_2, 4) <= 0)
+    {
+        // Control 10xxxxxx = 0x80 | 0x3f: Get last 6 bit
+        dst[1] = 0x80 | (src[3] & 0x3f);
+        // Lead 110xxxxx => Shift 6 bits used in a continuation byte and get last five (0x1f) bits
+        dst[0] = UTF8_CODEPOINT_LEADBYTE_2 | ((src[2] << 2) & 0x1C) | ((src[3] >> 6) & 0x3);
+        
+        if (dst[0] == 0xC0 || dst[0] == 0xC1)
+            return FL_UNICODE_INVALID_CHAR;
+        return 2;
+    }    
+    if (memcmp(src, UTF32_LAST_CODEPOINT_3, 4) <= 0)
+    {
+        // Control 10xxxxxx = 0x80 | 0x3f: Get last 6 bit
+        dst[2] = 0x80 | (src[3] & 0x3f);
+        // Control 10xxxxxx = 0x80 | 0x3f: Shift 6 and get last 6 bits
+        dst[1] = 0x80 | ((src[2] << 2) & 0x3C) | ((src[3] >> 6) & 0x3);
+        // Lead 1110xxxx => Shift 12 bits used in two continuation bytes and get last four (0xf) bits
+        dst[0] = UTF8_CODEPOINT_LEADBYTE_3 | ((src[2] >> 4) & 0xF);
+
+        // Surrogates
+        if (memcmp(src, "\x00\x00\xD8\x00", 4) >= 0 && memcmp(src, "\x00\x00\xDF\xFF", 4) <= 0)
+            return FL_UNICODE_INVALID_CHAR;
+        return 3;
+    }
+    if (memcmp(src, UTF32_LAST_CODEPOINT_4, 4) <= 0)
+    {
+        // Control 10xxxxxx = 0x80 | 0x3f: Get last 6 bit
+        dst[3] = 0x80 | (src[3] & 0x3f);
+        // Control 10xxxxxx = 0x80 | 0x3f: Shift 6 and get last 6 bits
+        dst[2] = 0x80 | ((src[2] << 2) & 0x3C) | ((src[3] >> 6) & 0x3);
+        // Control 10xxxxxx = 0x80 | 0x3f: Shift 12 and get last 6 bsits
+        dst[1] = 0x80 | ((src[1] << 4) & 0x30) | ((src[2] >> 4) & 0xF);
+        // Lead 11110xxx => Shift 18 bits used in three continuation bytes and get last three (0x7) bits
+        dst[0] = UTF8_CODEPOINT_LEADBYTE_4 | ((src[1] >> 2) & 0x7);
+        return 4;
+    }
+    return FL_UNICODE_INVALID_CHAR;
+}
+
 static inline uint32_t utf32_to_utf8(uint32_t src)
 {
     if (src <= UNICODE_LAST_CODEPOINT_1)
@@ -223,6 +276,47 @@ static inline uint32_t utf32_to_utf8(uint32_t src)
 * Converts an UTF-8 uint32_t to its UTF-32 representation
 * -------------------------------------------------------------
 */
+static inline bool _utf8_to_utf32(const FlByte *src, const FlByte *end, FlByte *dst)
+{
+    size_t l = utf8_codepoint_size(src, end);
+    if (l == FL_UNICODE_INVALID_SIZE)
+    {
+        return false;
+    }
+    else if (l == 1) 
+    {
+        dst[3] = src[0];
+    }    
+    else if (l == 2)
+    {
+        // LB: 110xxxxx CB: 10xxxxxx => We take the last two bytes from LB and 6 bits from CB (0x3f)
+        dst[3] = ((src[0] << 6) & 0xC0) | (src[1] & 0x3f);
+        // Remove CB (>> 8) and take the three first bits after 110 (avoid last two already taken in previous step)
+        dst[2] = ((src[0] >> 2) & 0x7);
+    }
+    else if (l == 3)
+    {
+        // Format: LB: 1110xxxx CB1: 10xxxxxx CB2: 10xxxxxx
+        // Shift 2 bits from CB1 to replace 10 from CB2. Get last 2 bits from CB1 | Get last 6 bits from CB2
+        dst[3] = ((src[1] << 6) & 0xC0) | (src[2] & 0x3f);
+        // Shift CB2 and the LS half of CB1. Get 4 MS bits from the result | Shift CB2 bits and the two LS bits from CB1. Get remaining 4 bits from CB1
+        dst[2] = ((src[0] << 4) & 0xF0) | ((src[1] >> 2) & 0xF);
+    }
+    else if (l == 4)
+    {
+        // Format: LB: 11110xxx CB1: 10xxxxxx CB2: 10xxxxxx CB3: 10xxxxxx
+        // Shift 2 bits from CB2 to replace 10 from CB3. Get last 2 bits from CB2 | Get last 6 bits from CB3
+        dst[3] = ((src[2] << 6) & 0xC0) | (src[3] & 0x3f);
+        dst[2] = ((src[1] << 4) & 0xF0) | ((src[2] >> 2) & 0xF);
+        dst[1] = ((src[0] << 2) & 0x1C) | ((src[1] >> 4) & 0x3);
+    }
+    else
+    {
+        return false;
+    }
+    return true;
+}
+
 static inline uint32_t utf8_to_utf32(uint32_t src)
 {
     FlByte tmp[4] = {0x0,0x0,0x0,0x0};
@@ -282,41 +376,18 @@ size_t fl_unicode_codepoint_convert(FlEncoding srcencoding, const FlByte *src, c
     {
         if (dstencoding == FL_ENCODING_UTF32)
         {
-            size_t nbytes = utf8_codepoint_size(src, end);
-            if (nbytes != FL_UNICODE_INVALID_SIZE)
-            {
-                uint32_t srcn = 0x0;
-                swap_representations(src, (FlByte*)&srcn, nbytes);
-                uint32_t dstn = utf8_to_utf32(srcn);
-                if (dstn != FL_UNICODE_INVALID_CHAR)
-                {
-                    swap_representations((FlByte*)&dstn, dst, UTF32_BYTES_SIZE);
-                    return UTF32_BYTES_SIZE;
-                }
-            }
+            if (!_utf8_to_utf32(src, end, dst))
+                return FL_UNICODE_INVALID_SIZE;
+            return UTF32_BYTES_SIZE;
         }
     }
     else if (srcencoding == FL_ENCODING_UTF32)
     {
         if (dstencoding == FL_ENCODING_UTF8)
         {
-            uint32_t srcn = 0x0;
-            swap_representations(src, (FlByte*)&srcn, UTF32_BYTES_SIZE);
-            uint32_t dstn = utf32_to_utf8(srcn);
-            if (dstn != FL_UNICODE_INVALID_CHAR)
+            size_t nbytes = _utf32_to_utf8(src, dst);
+            if (nbytes != FL_UNICODE_INVALID_SIZE)
             {
-                size_t nbytes = 0;
-                if (srcn <= UNICODE_LAST_CODEPOINT_1)
-                    nbytes = 1;
-                else if (srcn <= UNICODE_LAST_CODEPOINT_2)
-                    nbytes = 2;
-                else if (srcn <= UNICODE_LAST_CODEPOINT_3)
-                    nbytes = 3;
-                else if (srcn <= UNICODE_LAST_CODEPOINT_4)
-                    nbytes = 4;
-                else
-                    return FL_UNICODE_INVALID_SIZE;
-                swap_representations((FlByte*)&dstn, dst, nbytes);
                 return nbytes;
             }
         }

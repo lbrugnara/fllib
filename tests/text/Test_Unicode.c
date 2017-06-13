@@ -64,130 +64,6 @@ void test_fl_unicode_codepoint_at()
     fl_expect("Size of U+DFFF is FL_UNICODE_INVALID_SIZE because it is a Low Surrogate", fl_unicode_codepoint_size(FL_ENCODING_UTF32, (FlByte*)"\x00\xDF\xFF\xFF\x00", NULL) == FL_UNICODE_INVALID_SIZE);
 }
 
-void test_fl_unicode_unichar_encode_to()
-{
-    /*// UTF8 1-byte
-    uint32_t u32 = 0x0000;
-    uint32_t u8 = 0x0;
-    fl_expect("UTF32 -> UTF8: U+0000 equals to 0x0", fl_unicode_unichar_encode_to(FL_ENCODING_UTF32, u32, FL_ENCODING_UTF8) == u8);
-    fl_expect("UTF8 -> UTF32: 0x0 equals to U+0000", fl_unicode_unichar_encode_to(FL_ENCODING_UTF8, u8, FL_ENCODING_UTF32) == u32);
-
-    u32 = 0x0048;
-    u8 = 0x48;
-    fl_expect("UTF32 -> UTF8: U+0048 equals to 0x48", fl_unicode_unichar_encode_to(FL_ENCODING_UTF32, u32, FL_ENCODING_UTF8) == u8);
-    fl_expect("UTF8 -> UTF32: 0x48 equals to U+0048", fl_unicode_unichar_encode_to(FL_ENCODING_UTF8, u8, FL_ENCODING_UTF32) == u32);
-
-    u32 = 0x007F;
-    u8 = 0x7f;
-    fl_expect("UTF32 -> UTF8: U+007F equals to 0x7f", fl_unicode_unichar_encode_to(FL_ENCODING_UTF32, u32, FL_ENCODING_UTF8) == u8);
-    fl_expect("UTF8 -> UTF32: 0x7f equals to U+007F", fl_unicode_unichar_encode_to(FL_ENCODING_UTF8, u8, FL_ENCODING_UTF32) == u32);
-
-    // UTF8 2-bytes
-    u32 = 0x0080;
-    u8 = 0xC280;
-    fl_expect("UTF32 -> UTF8: U+0080 equals to 0xC280", fl_unicode_unichar_encode_to(FL_ENCODING_UTF32, u32, FL_ENCODING_UTF8) == u8);
-    fl_expect("UTF8 -> UTF32: 0xC280 equals to U+0080", fl_unicode_unichar_encode_to(FL_ENCODING_UTF8, u8, FL_ENCODING_UTF32) == u32);
-
-    u32 = 0x0100;
-    u8 = 0xC480;
-    fl_expect("UTF32 -> UTF8: U+0100 equals to 0xC480", fl_unicode_unichar_encode_to(FL_ENCODING_UTF32, u32, FL_ENCODING_UTF8) == u8);
-    fl_expect("UTF8 -> UTF32: 0xC480 equals to U+0100", fl_unicode_unichar_encode_to(FL_ENCODING_UTF8, u8, FL_ENCODING_UTF32) == u32);
-
-    u32 = 0x07FF;
-    u8 = 0xdfbf;
-    fl_expect("UTF32 -> UTF8: U+07FF equals to 0xdfbf", fl_unicode_unichar_encode_to(FL_ENCODING_UTF32, u32, FL_ENCODING_UTF8) == u8);
-    fl_expect("UTF8 -> UTF32: 0xdfbf equals to U+07FF", fl_unicode_unichar_encode_to(FL_ENCODING_UTF8, u8, FL_ENCODING_UTF32) == u32);
-
-    // UTF8 3-bytes
-    u32 = 0x0800;
-    u8 = 0xe0a080;
-    fl_expect("UTF32 -> UTF8: U+0800 equals to 0xe0a080", fl_unicode_unichar_encode_to(FL_ENCODING_UTF32, u32, FL_ENCODING_UTF8) == u8);
-    fl_expect("UTF8 -> UTF32: 0xe0a080 equals to U+0800", fl_unicode_unichar_encode_to(FL_ENCODING_UTF8, u8, FL_ENCODING_UTF32) == u32);
-
-    u32 = 0xA8F9;
-    u8 = 0xeaa3b9;
-    fl_expect("UTF32 -> UTF8: U+A8F9 equals to 0xeaa3b9", fl_unicode_unichar_encode_to(FL_ENCODING_UTF32, u32, FL_ENCODING_UTF8) == u8);
-    fl_expect("UTF8 -> UTF32: 0xeaa3b9 equals to U+A8F9", fl_unicode_unichar_encode_to(FL_ENCODING_UTF8, u8, FL_ENCODING_UTF32) == u32);
-
-    u32 = 0xFFFF;
-    u8 = 0xefbfbf;
-    fl_expect("UTF32 -> UTF8: U+FFFF equals to 0xefbfbf", fl_unicode_unichar_encode_to(FL_ENCODING_UTF32, u32, FL_ENCODING_UTF8) == u8);
-    fl_expect("UTF8 -> UTF32: 0xefbfbf equals to U+FFFF", fl_unicode_unichar_encode_to(FL_ENCODING_UTF8, u8, FL_ENCODING_UTF32) == u32);
-
-    // UTF8 4-bytes
-    u32 = 0x10000;
-    u8 = 0xf0908080;
-    fl_expect("UTF32 -> UTF8: U+10000 equals to 0xf0908080", fl_unicode_unichar_encode_to(FL_ENCODING_UTF32, u32, FL_ENCODING_UTF8) == u8);
-    fl_expect("UTF8 -> UTF32: 0xf0908080 equals to U+10000", fl_unicode_unichar_encode_to(FL_ENCODING_UTF8, u8, FL_ENCODING_UTF32) == u32);
-
-    u32 = 0x1F615;
-    u8 = 0xf09f9895;
-    fl_expect("UTF32 -> UTF8: U+1F615 equals to 0xf09f9895", fl_unicode_unichar_encode_to(FL_ENCODING_UTF32, u32, FL_ENCODING_UTF8) == u8);
-    fl_expect("UTF8 -> UTF32: 0xf09f9895 equals to U+1F615", fl_unicode_unichar_encode_to(FL_ENCODING_UTF8, u8, FL_ENCODING_UTF32) == u32);
-
-    u32 = 0x10FFFF;
-    u8 = 0xf48fbfbf;
-    fl_expect("UTF32 -> UTF8: U+FFFF equals to 0xf48fbfbf", fl_unicode_unichar_encode_to(FL_ENCODING_UTF32, u32, FL_ENCODING_UTF8) == u8);
-    fl_expect("UTF8 -> UTF32: 0xf48fbfbf equals to U+FFFF", fl_unicode_unichar_encode_to(FL_ENCODING_UTF8, u8, FL_ENCODING_UTF32) == u32);
-    
-    // Invalid
-    u32 = 0x110000;
-    fl_expect("UTF8 -> UTF32: 0xf48fbfc0 is an invalid Unicode char", fl_unicode_unichar_encode_to(FL_ENCODING_UTF32, u32, FL_ENCODING_UTF8) == FL_UNICODE_INVALID_CHAR);
-
-    // From string
-    u8 = fl_unicode_codepoint_to_unichar(FL_ENCODING_UTF8, (FlByte*)"Ɓ\x00", 0x00);
-    u32 = 0x0181;
-    fl_expect("UTF32 -> UTF8: U+0181 equals to 0xC681", fl_unicode_unichar_encode_to(FL_ENCODING_UTF32, u32, FL_ENCODING_UTF8) == u8);
-    fl_expect("UTF8 -> UTF32: 0xC681 equals to U+0181", fl_unicode_unichar_encode_to(FL_ENCODING_UTF8, u8, FL_ENCODING_UTF32) == u32);*/
-}
-
-void test_fl_unicode_codepoint_to_unichar()
-{
-    /*uint32_t u8fromStr = fl_unicode_codepoint_to_unichar(FL_ENCODING_UTF8, (FlByte*)"Ɓ\x00", 0x00);
-    FlByte u32bytes[] = {0,0,0,0,0}; 
-    if (fl_system_is_little_endian()) 
-    {
-        u32bytes[0] = 129;
-        u32bytes[1] = 1;
-    }
-    else
-    {
-         u32bytes[2] = 1;
-         u32bytes[3] = 129;
-    }
-    uint32_t u8fromBytes = fl_unicode_codepoint_to_encoded_unichar(FL_ENCODING_UTF32, u32bytes, 0x00, FL_ENCODING_UTF8);
-
-    uint32_t u32fromBytes = 0;
-    memcpy(&u32fromBytes, u32bytes, sizeof(uint32_t));
-    uint32_t u32fromStr = fl_unicode_codepoint_to_encoded_unichar(FL_ENCODING_UTF8, (FlByte*)"Ɓ\x00", 0x00, FL_ENCODING_UTF32);
-
-    fl_expect("Character Ɓ is compound of bytes {1,129}", u8fromStr == u8fromBytes && u32fromStr == u32fromBytes);
-
-
-    char *b = "Ɓ";
-    char b2[5];
-    uint32_t ucharB = fl_unicode_codepoint_to_encoded_unichar(FL_ENCODING_UTF8, (FlByte*)b, 0x00, FL_ENCODING_UTF32);
-    fl_unicode_unichar_to_encoded_codepoint(FL_ENCODING_UTF32, ucharB, FL_ENCODING_UTF8, (FlByte*)b2);
-    fl_expect("Bytes after conversion UTF-8 bytes -> uint32_t UTF-32 -> UTF-8 bytes are the same for character Ɓ", memcmp(b, b2, 2) == 0);
-
-    ucharB = fl_unicode_codepoint_to_unichar(FL_ENCODING_UTF8, (FlByte*)b, 0x00);
-    fl_unicode_unichar_to_codepoint(FL_ENCODING_UTF8, ucharB, (FlByte*)b2);
-    fl_expect("Bytes after conversion UTF-8 bytes -> uint32_t UTF-8 -> UTF-8 bytes are the same for character Ɓ", memcmp(b, b2, 2) == 0);
-
-    char *b3 = "你";
-    ucharB = fl_unicode_codepoint_to_encoded_unichar(FL_ENCODING_UTF8, (FlByte*)b3, 0x00, FL_ENCODING_UTF32);
-    fl_unicode_unichar_to_codepoint(FL_ENCODING_UTF32, ucharB, (FlByte*)b2);
-    fl_expect("Bytes after conversion UTF-8 bytes -> uint32_t UTF-32 -> UTF-32 bytes are the same for character Ɓ", memcmp(&ucharB, b2, 4) == 0);
-
-    FlCstr wdir = fl_system_get_working_dir();
-    FlCstr path = fl_cstr_concat((FlCstr[]){ wdir, "\\tmp\\b.txt", 0x0 });
-    FlByteArray bytes = fl_file_read_all_bytes(path);
-    fl_cstr_delete(wdir);
-    fl_cstr_delete(path);
-    if (bytes)
-        fl_array_delete(bytes);*/
-}
-
 void test_fl_unicode_codeunit_sequence_size()
 {
     fl_expect("abc123 has 6 bytes", fl_unicode_codeunit_sequence_size(FL_ENCODING_UTF8, (const FlByte*)"abc123", NULL) == 6);
@@ -412,7 +288,6 @@ void test_fl_unicode_codepoint_convert()
     bytes = fl_unicode_codepoint_convert(FL_ENCODING_UTF32, (FlByte*)"\x00\x00\x00\x41\x00", NULL, FL_ENCODING_UTF8, dst);
     fl_expect("UTF-32 U+0041 encoded to UTF-8 is equals to 0x41 and occupies 1 byte", bytes == 1 && fl_unicode_codeunit_sequence_equals(dst, "\x41", bytes));
 
-    //
     memset(dst, 0, 4);
     bytes = fl_unicode_codepoint_convert(FL_ENCODING_UTF8, (FlByte*)"\x41\x00", NULL, FL_ENCODING_UTF32, dst);
     fl_expect("UTF-8 0x41 encoded to UTF-32 is equals to 0x00000041 and occupies 4 bytes", bytes == 4 && fl_unicode_codeunit_sequence_equals(dst, "\x00\x00\x00\x41", bytes));
@@ -488,4 +363,135 @@ void test_fl_unicode_codepoint_convert()
     memset(dst, 0, 4);
     bytes = fl_unicode_codepoint_convert(FL_ENCODING_UTF8, (FlByte*)"\xED\xBF\xBF", NULL, FL_ENCODING_UTF32, dst);
     fl_expect("UTF-8 0xEDBFBF encoded to UTF-32 is invalid because it is the last Low Surrogate U+DFFF", bytes == FL_UNICODE_INVALID_SIZE);
+
+    // UTF8 1-byte
+    memset(dst, 0, 4);
+    const FlByte *str = (FlByte*)"\x00\x00\x00\x00";
+    bytes = fl_unicode_codepoint_convert(FL_ENCODING_UTF32, (FlByte*)str, str+4, FL_ENCODING_UTF8, dst);
+    fl_expect("UTF-32 U+0000 encoded to UTF-8 is equals to 0x00 and occupies 1 byte", bytes == 1 && fl_unicode_codeunit_sequence_equals(dst, "\x00", bytes));
+
+    memset(dst, 0, 4);
+    str = (FlByte*)"\x00";
+    bytes = fl_unicode_codepoint_convert(FL_ENCODING_UTF8, (FlByte*)str, str+1, FL_ENCODING_UTF32, dst);
+    fl_expect("UTF-8 0x00 encoded to UTF-32 is equals to 0x00000000 and occupies 4 bytes", bytes == 4 && fl_unicode_codeunit_sequence_equals(dst, "\x00\x00\x00\x00", bytes));
+
+    //
+    memset(dst, 0, 4);
+    bytes = fl_unicode_codepoint_convert(FL_ENCODING_UTF32, (FlByte*)"\x00\x00\x00\x48\x00", NULL, FL_ENCODING_UTF8, dst);
+    fl_expect("UTF-32 U+0048 encoded to UTF-8 is equals to 0x48 and occupies 1 byte", bytes == 1 && fl_unicode_codeunit_sequence_equals(dst, "H\x00", bytes));
+
+    memset(dst, 0, 4);
+    bytes = fl_unicode_codepoint_convert(FL_ENCODING_UTF8, (FlByte*)"H\x00", NULL, FL_ENCODING_UTF32, dst);
+    fl_expect("UTF-8 H encoded to UTF-32 is equals to 0x00000048 and occupies 4 bytes", bytes == 4 && fl_unicode_codeunit_sequence_equals(dst, "\x00\x00\x00\x48", bytes));
+
+    //
+    memset(dst, 0, 4);
+    bytes = fl_unicode_codepoint_convert(FL_ENCODING_UTF32, (FlByte*)"\x00\x00\x00\x7F\x00", NULL, FL_ENCODING_UTF8, dst);
+    fl_expect("UTF-32 U+007F encoded to UTF-8 is equals to 0x7F and occupies 1 byte", bytes == 1 && fl_unicode_codeunit_sequence_equals(dst, "\x7F\x00", bytes));
+
+    memset(dst, 0, 4);
+    bytes = fl_unicode_codepoint_convert(FL_ENCODING_UTF8, (FlByte*)"\x7F\x00", NULL, FL_ENCODING_UTF32, dst);
+    fl_expect("UTF-8 0x7F encoded to UTF-32 is equals to 0x0000007F and occupies 4 bytes", bytes == 4 && fl_unicode_codeunit_sequence_equals(dst, "\x00\x00\x00\x7F", bytes));
+
+    // UTF8 2-bytes
+    memset(dst, 0, 4);
+    bytes = fl_unicode_codepoint_convert(FL_ENCODING_UTF32, (FlByte*)"\x00\x00\x00\x80\x00", NULL, FL_ENCODING_UTF8, dst);
+    fl_expect("UTF-32 U+0080 encoded to UTF-8 is equals to 0xC280 and occupies 2 bytes", bytes == 2 && fl_unicode_codeunit_sequence_equals(dst, "\xC2\x80", bytes));
+
+    memset(dst, 0, 4);
+    bytes = fl_unicode_codepoint_convert(FL_ENCODING_UTF8, (FlByte*)"\xC2\x80\x00", NULL, FL_ENCODING_UTF32, dst);
+    fl_expect("UTF-8 0xC280 encoded to UTF-32 is equals to 0x00000080 and occupies 4 bytes", bytes == 4 && fl_unicode_codeunit_sequence_equals(dst, "\x00\x00\x00\x80", bytes));
+
+    //
+    memset(dst, 0, 4);
+    bytes = fl_unicode_codepoint_convert(FL_ENCODING_UTF32, (FlByte*)"\x00\x00\x01\x81\x00", NULL, FL_ENCODING_UTF8, dst);
+    fl_expect("UTF-32 U+0181 encoded to UTF-8 is equals to 0xC681 and occupies 2 bytes", bytes == 2 && fl_unicode_codeunit_sequence_equals(dst, "\xC6\x81", bytes));
+
+    memset(dst, 0, 4);
+    bytes = fl_unicode_codepoint_convert(FL_ENCODING_UTF8, (FlByte*)"\xC6\x81\x00", NULL, FL_ENCODING_UTF32, dst);
+    fl_expect("UTF-8 0xC681 encoded to UTF-32 is equals to 0x00000181 and occupies 4 bytes", bytes == 4 && fl_unicode_codeunit_sequence_equals(dst, "\x00\x00\x01\x81", bytes));
+
+    //
+    memset(dst, 0, 4);
+    bytes = fl_unicode_codepoint_convert(FL_ENCODING_UTF32, (FlByte*)"\x00\x00\x07\xFF\x00", NULL, FL_ENCODING_UTF8, dst);
+    fl_expect("UTF-32 U+07FF encoded to UTF-8 is equals to 0xDFBF and occupies 2 bytes", bytes == 2 && fl_unicode_codeunit_sequence_equals(dst, "\xDF\xBF", bytes));
+
+    memset(dst, 0, 4);
+    bytes = fl_unicode_codepoint_convert(FL_ENCODING_UTF8, (FlByte*)"\xDF\xBF\x00", NULL, FL_ENCODING_UTF32, dst);
+    fl_expect("UTF-8 0xDFBF encoded to UTF-32 is equals to 0x000007FF and occupies 4 bytes", bytes == 4 && fl_unicode_codeunit_sequence_equals(dst, "\x00\x00\x07\xFF", bytes));
+
+    // UTF8 3-bytes
+    memset(dst, 0, 4);
+    bytes = fl_unicode_codepoint_convert(FL_ENCODING_UTF32, (FlByte*)"\x00\x00\x08\x00\x00", NULL, FL_ENCODING_UTF8, dst);
+    fl_expect("UTF-32 U+0800 encoded to UTF-8 is equals to 0xE0A080 and occupies 3 bytes", bytes == 3 && fl_unicode_codeunit_sequence_equals(dst, "\xE0\xA0\x80", bytes));
+
+    memset(dst, 0, 4);
+    bytes = fl_unicode_codepoint_convert(FL_ENCODING_UTF8, (FlByte*)"\xE0\xA0\x80\x00", NULL, FL_ENCODING_UTF32, dst);
+    fl_expect("UTF-8 0xE0A080 encoded to UTF-32 is equals to 0x00000800 and occupies 4 bytes", bytes == 4 && fl_unicode_codeunit_sequence_equals(dst, "\x00\x00\x08\x00", bytes));
+
+    //
+    memset(dst, 0, 4);
+    bytes = fl_unicode_codepoint_convert(FL_ENCODING_UTF32, (FlByte*)"\x00\x00\xA8\xF9\x00", NULL, FL_ENCODING_UTF8, dst);
+    fl_expect("UTF-32 U+A8F9 encoded to UTF-8 is equals to 0xEAA3B9 and occupies 3 bytes", bytes == 3 && fl_unicode_codeunit_sequence_equals(dst, "\xEA\xA3\xB9", bytes));
+
+    memset(dst, 0, 4);
+    bytes = fl_unicode_codepoint_convert(FL_ENCODING_UTF8, (FlByte*)"\xEA\xA3\xB9\x00", NULL, FL_ENCODING_UTF32, dst);
+    fl_expect("UTF-8 0xEAA3B9 encoded to UTF-32 is equals to 0x0000A8F9 and occupies 4 bytes", bytes == 4 && fl_unicode_codeunit_sequence_equals(dst, "\x00\x00\xA8\xF9", bytes));
+
+    //
+    memset(dst, 0, 4);
+    bytes = fl_unicode_codepoint_convert(FL_ENCODING_UTF32, (FlByte*)"\x00\x00\xFF\xFF\x00", NULL, FL_ENCODING_UTF8, dst);
+    fl_expect("UTF-32 U+FFFF encoded to UTF-8 is equals to 0xEFBFBF and occupies 3 bytes", bytes == 3 && fl_unicode_codeunit_sequence_equals(dst, "\xEF\xBF\xBF", bytes));
+
+    memset(dst, 0, 4);
+    bytes = fl_unicode_codepoint_convert(FL_ENCODING_UTF8, (FlByte*)"\xEF\xBF\xBF\x00", NULL, FL_ENCODING_UTF32, dst);
+    fl_expect("UTF-8 0xEFBFBF encoded to UTF-32 is equals to 0x0000FFFF and occupies 4 bytes", bytes == 4 && fl_unicode_codeunit_sequence_equals(dst, "\x00\x00\xFF\xFF", bytes));
+
+    // UTF8 4-bytes
+    memset(dst, 0, 4);
+    bytes = fl_unicode_codepoint_convert(FL_ENCODING_UTF32, (FlByte*)"\x00\x01\x00\x00\x00", NULL, FL_ENCODING_UTF8, dst);
+    fl_expect("UTF-32 U+10000 encoded to UTF-8 is equals to 0xF0908080 and occupies 4 bytes", bytes == 4 && fl_unicode_codeunit_sequence_equals(dst, "\xF0\x90\x80\x80", bytes));
+
+    memset(dst, 0, 4);
+    bytes = fl_unicode_codepoint_convert(FL_ENCODING_UTF8, (FlByte*)"\xF0\x90\x80\x80\x00", NULL, FL_ENCODING_UTF32, dst);
+    fl_expect("UTF-8 0xF0908080 encoded to UTF-32 is equals to 0x00010000 and occupies 4 bytes", bytes == 4 && fl_unicode_codeunit_sequence_equals(dst, "\x00\x01\x00\x00", bytes));
+
+    //
+    memset(dst, 0, 4);
+    bytes = fl_unicode_codepoint_convert(FL_ENCODING_UTF32, (FlByte*)"\x00\x01\xF6\x15\x00", NULL, FL_ENCODING_UTF8, dst);
+    fl_expect("UTF-32 U+1F615 encoded to UTF-8 is equals to 0xF09F9895 and occupies 4 bytes", bytes == 4 && fl_unicode_codeunit_sequence_equals(dst, "\xF0\x9F\x98\x95", bytes));
+
+    memset(dst, 0, 4);
+    bytes = fl_unicode_codepoint_convert(FL_ENCODING_UTF8, (FlByte*)"\xF0\x9F\x98\x95\x00", NULL, FL_ENCODING_UTF32, dst);
+    fl_expect("UTF-8 0xF09F9895 encoded to UTF-32 is equals to 0x0001F615 and occupies 4 bytes", bytes == 4 && fl_unicode_codeunit_sequence_equals(dst, "\x00\x01\xF6\x15", bytes));
+
+    //
+    memset(dst, 0, 4);
+    bytes = fl_unicode_codepoint_convert(FL_ENCODING_UTF32, (FlByte*)"\x00\x10\xFF\xFF\x00", NULL, FL_ENCODING_UTF8, dst);
+    fl_expect("UTF-32 U+10FFFF encoded to UTF-8 is equals to 0xF48FBFBF and occupies 4 bytes", bytes == 4 && fl_unicode_codeunit_sequence_equals(dst, "\xF4\x8F\xBF\xBF", bytes));
+
+    memset(dst, 0, 4);
+    bytes = fl_unicode_codepoint_convert(FL_ENCODING_UTF8, (FlByte*)"\xF4\x8F\xBF\xBF\x00", NULL, FL_ENCODING_UTF32, dst);
+    fl_expect("UTF-8 0xF48FBFBF encoded to UTF-32 is equals to 0x0010FFFF and occupies 4 bytes", bytes == 4 && fl_unicode_codeunit_sequence_equals(dst, "\x00\x10\xFF\xFF", bytes));
+
+    //
+    memset(dst, 0, 4);
+    bytes = fl_unicode_codepoint_convert(FL_ENCODING_UTF32, (FlByte*)"\x00\x11\x00\x00\x00", NULL, FL_ENCODING_UTF8, dst);
+    fl_expect("UTF-32 U+110000 encoded to UTF-8 is invalid because it is beyond the upper bound", bytes == FL_UNICODE_INVALID_SIZE);
+
+    memset(dst, 0, 4);
+    bytes = fl_unicode_codepoint_convert(FL_ENCODING_UTF8, (FlByte*)"\xF4\x8F\xBF\xC0\x00", NULL, FL_ENCODING_UTF32, dst);
+    fl_expect("UTF-8 0xF48FBFC0 encoded to UTF-32 is invalid because it is beyond the upper bound", bytes == FL_UNICODE_INVALID_SIZE);
+
+    //
+    FlByte *chr = (FlByte*)"你\x00";
+    memset(dst, 0, 4);
+    bytes = fl_unicode_codepoint_convert(FL_ENCODING_UTF8, chr, NULL, FL_ENCODING_UTF32, dst);
+    fl_expect("Char 你 is 4 bytes in UTF-32", bytes == 4);
+    fl_expect("Char 你 is encoded as 0x2F804 in UTF-32", fl_unicode_codeunit_sequence_equals(dst, "\x00\x02\xF8\x04", bytes));
+    
+    FlByte dst2[4] = {0,0,0,0};
+    bytes = fl_unicode_codepoint_convert(FL_ENCODING_UTF32, dst, NULL, FL_ENCODING_UTF8, dst2);
+    fl_expect("Char 你 is 4 bytes in UTF-8", bytes == 4);
+    fl_expect("Char 你 is encoded as 0xF0AFA084 in UTF-8", fl_unicode_codeunit_sequence_equals(dst2, "\xF0\xAF\xA0\x84", bytes));
 }

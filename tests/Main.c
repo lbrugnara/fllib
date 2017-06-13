@@ -32,8 +32,6 @@ int main(void)
         ),
         fl_test_suite("Module Unicode",
             { "fl_unicode_codepoint_at", &test_fl_unicode_codepoint_at },
-            { "fl_unicode_unichar_encode_to", &test_fl_unicode_unichar_encode_to },
-            { "fl_unicode_codepoint_to_unichar", &test_fl_unicode_codepoint_to_unichar },
             { "fl_unicode_codeunit_sequence_size", &test_fl_unicode_codeunit_sequence_size},
             { "test_fl_unicode_unichar_validity", &test_fl_unicode_unichar_validity },
             { "test_fl_unicode_codepoint_validity", &test_fl_unicode_codepoint_validity },

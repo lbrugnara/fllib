@@ -49,8 +49,8 @@ static inline void swap_representations(const FlByte *src, FlByte *dst, size_t n
 static inline bool utf8_mb_str_is_bigendian();
 static inline size_t utf8_codepoint_size(const FlByte* src, const FlByte *end);
 static inline size_t utf32_codepoint_size(const FlByte* src);
-static inline uint32_t utf8_to_utf32(uint32_t src);
-static inline uint32_t utf32_to_utf8(uint32_t src);
+static inline bool utf8_to_utf32(const FlByte *src, const FlByte *end, FlByte *dst);
+static inline size_t utf32_to_utf8(const FlByte *src, FlByte *dst);
 
 /* -------------------------------------------------------------
 * Checks if a multibyte character is stored as big-endiann. It
@@ -174,7 +174,7 @@ static inline size_t utf8_codepoint_size(const FlByte *src, const FlByte *end)
 * Converts an UTF-32 uint32_t to its UTF-8 representation
 * -------------------------------------------------------------
 */
-static inline size_t _utf32_to_utf8(const FlByte *src, FlByte *dst)
+static inline size_t utf32_to_utf8(const FlByte *src, FlByte *dst)
 {
     if (memcmp(src, UTF32_LAST_CODEPOINT_1, 4) <= 0)
     {
@@ -190,7 +190,7 @@ static inline size_t _utf32_to_utf8(const FlByte *src, FlByte *dst)
         dst[0] = UTF8_CODEPOINT_LEADBYTE_2 | ((src[2] << 2) & 0x1C) | ((src[3] >> 6) & 0x3);
         
         if (dst[0] == 0xC0 || dst[0] == 0xC1)
-            return FL_UNICODE_INVALID_CHAR;
+            return FL_UNICODE_INVALID_SIZE;
         return 2;
     }    
     if (memcmp(src, UTF32_LAST_CODEPOINT_3, 4) <= 0)
@@ -204,7 +204,7 @@ static inline size_t _utf32_to_utf8(const FlByte *src, FlByte *dst)
 
         // Surrogates
         if (memcmp(src, "\x00\x00\xD8\x00", 4) >= 0 && memcmp(src, "\x00\x00\xDF\xFF", 4) <= 0)
-            return FL_UNICODE_INVALID_CHAR;
+            return FL_UNICODE_INVALID_SIZE;
         return 3;
     }
     if (memcmp(src, UTF32_LAST_CODEPOINT_4, 4) <= 0)
@@ -219,64 +219,14 @@ static inline size_t _utf32_to_utf8(const FlByte *src, FlByte *dst)
         dst[0] = UTF8_CODEPOINT_LEADBYTE_4 | ((src[1] >> 2) & 0x7);
         return 4;
     }
-    return FL_UNICODE_INVALID_CHAR;
-}
-
-static inline uint32_t utf32_to_utf8(uint32_t src)
-{
-    if (src <= UNICODE_LAST_CODEPOINT_1)
-    {
-        return (uint32_t)src;
-    }
-    
-    uint32_t chr = 0;
-    FlByte* dst = (FlByte*)&chr;
-    bool mbUsesBigEndian = utf8_mb_str_is_bigendian();
-    if (src <= UNICODE_LAST_CODEPOINT_2)
-    {
-        // Control 10xxxxxx = 0x80 | 0x3f: Get last 6 bit
-        dst[mbUsesBigEndian ? 0 : 1] = 0x80 |  (src & 0x3f);
-        // Lead 110xxxxx => Shift 6 bits used in a continuation byte and get last five (0x1f) bits
-        dst[mbUsesBigEndian ? 1 : 0] = UTF8_CODEPOINT_LEADBYTE_2 | ((src >> 6) & 0x1F);
-        
-        if (dst[mbUsesBigEndian ? 1 : 0] == 0xC0 || dst[mbUsesBigEndian ? 1 : 0] == 0xC1)
-            return FL_UNICODE_INVALID_CHAR;
-    }    
-    else if (src <= UNICODE_LAST_CODEPOINT_3) 
-    {
-        // Control 10xxxxxx = 0x80 | 0x3f: Get last 6 bit
-        dst[mbUsesBigEndian ? 0 : 2] = 0x80 |  (src & 0x3f);
-        // Control 10xxxxxx = 0x80 | 0x3f: Shift 6 and get last 6 bits
-        dst[1                      ] = 0x80 | ((src >> 6) & 0x3f );
-        // Lead 1110xxxx => Shift 12 bits used in two continuation bytes and get last four (0xf) bits
-        dst[mbUsesBigEndian ? 2 : 0] = UTF8_CODEPOINT_LEADBYTE_3 | ((src >> 12) & 0xf);
-
-        if (chr >= 0xeda080 && chr <= 0xedbfbf)
-            return FL_UNICODE_INVALID_CHAR;
-    }
-    else if (src <= UNICODE_LAST_CODEPOINT_4) 
-    {
-        // Control 10xxxxxx = 0x80 | 0x3f: Get last 6 bit
-        dst[mbUsesBigEndian ? 0 : 3] = 0x80 | (src & 0x3f);
-        // Control 10xxxxxx = 0x80 | 0x3f: Shift 6 and get last 6 bits
-        dst[mbUsesBigEndian ? 1 : 2] = 0x80 | ((src >> 6) & 0x3f);
-        // Control 10xxxxxx = 0x80 | 0x3f: Shift 12 and get last 6 bits
-        dst[mbUsesBigEndian ? 2 : 1] = 0x80 | ((src >> 12) & 0x3f);
-        // Lead 1110xxxx => Shift 18 bits used in three continuation bytes and get last three (0x7) bits
-        dst[mbUsesBigEndian ? 3 : 0] = UTF8_CODEPOINT_LEADBYTE_4 | ((src >> 18) & 0x7);
-    }
-    else
-    {
-        return FL_UNICODE_INVALID_CHAR;
-    }
-    return chr;
+    return FL_UNICODE_INVALID_SIZE;
 }
 
 /* -------------------------------------------------------------
 * Converts an UTF-8 uint32_t to its UTF-32 representation
 * -------------------------------------------------------------
 */
-static inline bool _utf8_to_utf32(const FlByte *src, const FlByte *end, FlByte *dst)
+static inline bool utf8_to_utf32(const FlByte *src, const FlByte *end, FlByte *dst)
 {
     size_t l = utf8_codepoint_size(src, end);
     if (l == FL_UNICODE_INVALID_SIZE)
@@ -317,54 +267,6 @@ static inline bool _utf8_to_utf32(const FlByte *src, const FlByte *end, FlByte *
     return true;
 }
 
-static inline uint32_t utf8_to_utf32(uint32_t src)
-{
-    FlByte tmp[4] = {0x0,0x0,0x0,0x0};
-    swap_representations((FlByte*)&src, tmp, 4);
-    size_t i=0;
-    while (tmp[i] == 0x0 && i < 3) i++;
-    size_t l = utf8_codepoint_size(tmp+i, tmp+4);
-    if (l == FL_UNICODE_INVALID_SIZE)
-        return FL_UNICODE_INVALID_CHAR;
-
-    if (l == 1) 
-    {
-        return (uint32_t)src;
-    }
-
-    uint32_t chr = 0;
-    FlByte* dst = (FlByte*)&chr;
-    bool mbUsesBigEndian = utf8_mb_str_is_bigendian();
-    if (l == 2)
-    {
-        // LB: 110xxxxx CB: 10xxxxxx => We take the last two bytes from LB and 6 bits from CB (0x3f)
-        dst[mbUsesBigEndian ? 0 : 1] = ((src >> 2) & 0xC0) | (src & 0x3f);
-        // Remove CB (>> 8) and take the three first bits after 110 (avoid last two already taken in previous step)
-        dst[mbUsesBigEndian ? 1 : 0] = ((src >> 8) & 0x1c) >> 2;
-    }
-    else if (l == 3)
-    {
-        // Format: LB: 1110xxxx CB1: 10xxxxxx CB2: 10xxxxxx
-        // Shift 2 bits from CB1 to replace 10 from CB2. Get last 2 bits from CB1 | Get last 6 bits from CB2
-        dst[mbUsesBigEndian ? 0 : 1] = ((src >> 2) & 0xC0 ) | (src & 0x3f);
-        // Shift CB2 and the LS half of CB1. Get 4 MS bits from the result | Shift CB2 bits and the two LS bits from CB1. Get remaining 4 bits from CB1
-        dst[mbUsesBigEndian ? 1 : 0] = ((src >> 12) & 0xF0 ) | ((src >> 10) & 0xF);
-    }
-    else if (l == 4)
-    {
-        // Format: LB: 11110xxx CB1: 10xxxxxx CB2: 10xxxxxx CB3: 10xxxxxx
-        // Shift 2 bits from CB2 to replace 10 from CB3. Get last 2 bits from CB2 | Get last 6 bits from CB3
-        dst[mbUsesBigEndian ? 0 : 2] = ((src >> 2) & 0xC0 ) | (src & 0x3f);
-        dst[                      1] = ((src >> 12) & 0xF0 ) | ((src >> 10) & 0xF);
-        dst[mbUsesBigEndian ? 2 : 0] = ((src >> 22) & 0x1C ) | ((src >> 20) & 0x3);
-    }
-    else
-    {
-        return FL_UNICODE_INVALID_CHAR;
-    }
-    return chr;
-}
-
 /* -------------------------------------------------------------
 * PUBLIC API
 * -------------------------------------------------------------
@@ -376,7 +278,7 @@ size_t fl_unicode_codepoint_convert(FlEncoding srcencoding, const FlByte *src, c
     {
         if (dstencoding == FL_ENCODING_UTF32)
         {
-            if (!_utf8_to_utf32(src, end, dst))
+            if (!utf8_to_utf32(src, end, dst))
                 return FL_UNICODE_INVALID_SIZE;
             return UTF32_BYTES_SIZE;
         }
@@ -385,7 +287,7 @@ size_t fl_unicode_codepoint_convert(FlEncoding srcencoding, const FlByte *src, c
     {
         if (dstencoding == FL_ENCODING_UTF8)
         {
-            size_t nbytes = _utf32_to_utf8(src, dst);
+            size_t nbytes = utf32_to_utf8(src, dst);
             if (nbytes != FL_UNICODE_INVALID_SIZE)
             {
                 return nbytes;

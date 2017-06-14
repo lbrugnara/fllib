@@ -55,16 +55,6 @@
 #include "Encoding.h"
 
 /* -------------------------------------------------------------
-* {define: FL_UNICODE_INVALID_CHAR}
-* -------------------------------------------------------------
-* Represents an invalid Unicode character. FlUnicodeChar is an
-* unsigned 32 bits int, so to represent an invalid unicode code point
-* we used 2^32-1 bits (too much greater than the maximum valid code point)
-* -------------------------------------------------------------
-*/
-#define FL_UNICODE_INVALID_CHAR UINT32_MAX
-
-/* -------------------------------------------------------------
 * {define: FL_UNICODE_INVALID_SIZE}
 * -------------------------------------------------------------
 * Represents an invalid Unicode character's size. The size of a single

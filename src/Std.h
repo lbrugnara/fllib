@@ -31,6 +31,8 @@
  */
 FlPointer fl_copy(const FlPointer var, size_t nbytes);
 
+#define fl_equals(a,b,z) (memcmp((a),(b),(z)) == 0)
+
 /* -------------------------------------------------------------
  * {macro: FLBIT}
  * -------------------------------------------------------------

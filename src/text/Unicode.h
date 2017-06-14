@@ -3,40 +3,18 @@
 /* =============================================================
 * {module: UNICODE}
 * =============================================================
-* Contains a set of function to work with unicode characters
-* and strings. The two most important data types in this module are:
-*
-* {FlByte} Used to represents each byte of a Unicode code point.
-* Generally, when working with stream of bytes that contains
-* unicode strings, is recommended to work with FlByte. This module
-* provides functions to work with stream of unicode bytes.
-* All the functions using the keywords /codepoint/ and /codeunit/, are functions
-* that work with stream of bytes representing code units.
-*
-* {FlUnicodeChar} It is a typedef uint32_t, it can represent any
-* unicode point in any encoding. If you want the UTF-32 representation
-* of code point U+0181, you simply write `FlUnicodeChar u181 = 0x0181; // UTF-32`,
-* or if you want its UTF-8 representaiton you write `FlUnicodeChar u181 = 0xc681; // UTF-8`.
-* In this module the set of functions that work with FlUnicodeChar are the functions that contains
-* in its name the work /unichar/. unichar is used as a synonym of FlUnicodeChar.
-*
-* This module provides functions to convert FlUnicodeChar between encodings and to get
-* the bytes from that FlUnicodeChar. Keep in mind that FlUnicodeChar IS NOT INTERCHANGEABLE
-* with the byte representation of a unicode point, except for UTF-32. That means, if you convert
-* an stream of unicode bytes representing a UTF-8 string to an array of FlUnicodeChar, you MUST
-* convert it back to unicode bytes before sharing it to be a valid unicode string. FlUnicodeChar
-* is a handy way to handle unicode code points inside your library.
-* This module provides functions to convert from bytes to FlUnicodeChar and vice versa. Alongside
-* each function related with FlUnicodeChar declared in this header, you will find (if exists)
-* its FlByte version.
-*
+* Contains a set of function to work with sequence of {FlByte}s representing
+* unicode codepoints.
+* This modules is a partial implementation of the Unicode Standard version 9.0.
+* 
 * TODO
 * ====
-* - Add fl_unicode_unichar_validate: If the input is invalid, return FL_UNICODE_REPLACEMENT_CHARACTER
-* - Add fl_unicode_unichar_sequence_validate: If the input is invalid, replace ill-formed characters by FL_UNICODE_REPLACEMENT_CHARACTER
+* 
 * - Add fl_unicode_codepoint_validate: If the input is invalid, return REPLACEMENT CHARACTER
 * - Add fl_unicode_codepoint_sequence_validate: If the input is invalid, replace ill-formed characters by REPLACEMENT CHARACTER
-*
+* Normalization
+* Case-Folding
+* UTF-16 support
 * -------------------------------------------------------------
 */
 
@@ -71,8 +49,6 @@
 * -------------------------------------------------------------
 */
 #define FL_UNICODE_REPLACEMENT_CHARACTER 0xFFFD
-
-#define fl_unicode_codeunit_sequence_equals(a,b,s) (memcmp(a,b,s) == 0)
 
 /* -------------------------------------------------------------
 * UNICODE CODE POINT AND UNIT FUNCTIONS (FlByte*)
@@ -142,20 +118,19 @@ size_t fl_unicode_codepoint_sequence_length(FlEncoding encoding, const FlByte* s
 /* -------------------------------------------------------------
 * {function: fl_unicode_codepoint_at}
 * -------------------------------------------------------------
-* Returns the 'at'-th character in the string {str}. The char
-* is an FlUnicodeChar (a UTF-8 representation of the caracter)
-* that could be easily used to compare it with another UTF-8
-* character that could be generated using the fl_unicode_char_from_xxx
-* functions family
+* Copies the {at}-th character from {str} with encoding {encoding} 
+* into {dst}. If the unicode string and target character is valid, it will return the
+* amount of bytes copied into {dst}. If any character inside {str}
+* is invalid or the {at}-th character is invalid it returns FL_UNICODE_INVALID_SIZE
 * -------------------------------------------------------------
 * {param: FlEncoding encoding} Encoding used to interpret {str}
-* {param: const FlByte* str} String to retrieve the 'at'-th character
+* {param: const FlByte* str} String to retrieve the {at}-th character
 * {param: const FlByte* end} A pointer to a byte or NULL to stop processing {str}.
 * {param: size_t at} Position in string to retrieve the character
 * {param: FlByte* dst} Destination allocation for the {at}-character of
 * {str}. User must assign enough space in {dst} to hold a code point (Up to 4 bytes)
 * -------------------------------------------------------------
-* {return: size_t} Count of bytes populated in {dst}
+* {return: size_t} Count of bytes populated in {dst} or FL_UNICODE_INVALID_SIZE
 * -------------------------------------------------------------
 */
 size_t fl_unicode_codepoint_at(FlEncoding encoding, const FlByte *str, const FlByte *end, size_t at, FlByte *dst);

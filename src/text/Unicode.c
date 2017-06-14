@@ -88,9 +88,7 @@ static inline void swap_representations(const FlByte *src, FlByte *dst, size_t n
 */
 static inline size_t utf32_codepoint_size(const FlByte *src)
 {
-    uint32_t srcchr = 0x0;
-    swap_representations(src, (FlByte*)&srcchr, UTF32_BYTES_SIZE);
-    if (srcchr <= UNICODE_LAST_CODEPOINT_4 && (srcchr < 0xD800 || srcchr > 0xDFFF)) // Check surrogates
+    if (memcmp(src, UTF32_LAST_CODEPOINT_4, 4) <= 0 && (memcmp(src, "\x00\x00\xD8\x00", 4) < 0 || memcmp(src, "\x00\x00\xDF\xFF", 4) > 0))
     {
         return UTF32_BYTES_SIZE;
     }
@@ -143,10 +141,8 @@ static inline size_t utf8_codepoint_size(const FlByte *src, const FlByte *end)
     // (inside) Check UTF-16 surrogates
     if ((src[0] & UTF8_CODEPOINT_LEADBYTE_3) && src[0] <= UTF8_CODEPOINT_LEADBYTE_3_MAX && ((src[0] == UTF8_CODEPOINT_LEADBYTE_3 && src[1] >= 0xA0) || (src[0] > UTF8_CODEPOINT_LEADBYTE_3 && src[1] >= 0x80)) && (src[2] & 0x80))
     {
-        uint32_t chr = 0;
-        swap_representations(src, (FlByte*)&chr, 3);
         // Surrogates (UTF-8 encoded)
-        if (chr < 0xeda080 || chr > 0xedbfbf)
+        if (memcmp(src, "\xED\xA0\x80", 3) < 0 || memcmp(src, "\xED\xBF\xBF", 3) > 0)
             return 3;
         return FL_UNICODE_INVALID_SIZE;
     }
@@ -471,6 +467,8 @@ size_t fl_unicode_codepoint_at(FlEncoding encoding, const FlByte *str, const FlB
             offset += tmp;
         }
         size_t bs = fl_unicode_codepoint_size(encoding, str+offset, end);
+        if (bs == FL_UNICODE_INVALID_SIZE)
+            return FL_UNICODE_INVALID_SIZE;
         memcpy(dst, str+offset, bs);
         return bs;
     }

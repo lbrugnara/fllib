@@ -7,4 +7,6 @@ void test_fl_unicode_unichar_validity();
 void test_fl_unicode_codepoint_validity();
 void test_fl_unicode_unichar_sequence_validate();
 void test_fl_unicode_codepoint_convert();
+void test_fl_unicode_codepoint_sequence_validate();
+
 #endif /* FL_UNICODE_TEST_H */

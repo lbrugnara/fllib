@@ -71,6 +71,8 @@ void test_fl_unicode_codeunit_sequence_size()
     fl_expect("a兔c123 has 9 bytes", fl_unicode_codeunit_sequence_size(FL_ENCODING_UTF8, (const FlByte*)"a兔c123", NULL) == 9);
     fl_expect("兔 has 4 bytes", fl_unicode_codeunit_sequence_size(FL_ENCODING_UTF8, (const FlByte*)"兔", NULL) == 4);
     fl_expect("ԱԲ has 4 bytes", fl_unicode_codeunit_sequence_size(FL_ENCODING_UTF8, (const FlByte*)"ԱԲ", NULL) == 4);
+    fl_expect("Code Point size is the same as the Code Unit sequence size (of length 4) for 兔", fl_unicode_codeunit_sequence_size(FL_ENCODING_UTF8, (const FlByte*)"兔", NULL) == fl_unicode_codepoint_size(FL_ENCODING_UTF8, (const FlByte*)"兔", NULL));
+    fl_expect("Code Point size is the same as the Code Unit sequence size (of length 2) for Ɓ", fl_unicode_codeunit_sequence_size(FL_ENCODING_UTF8, (const FlByte*)"Ɓ", NULL) == fl_unicode_codepoint_size(FL_ENCODING_UTF8, (const FlByte*)"Ɓ", NULL));
 }
 
 void test_fl_unicode_unichar_validity()
@@ -494,4 +496,62 @@ void test_fl_unicode_codepoint_convert()
     bytes = fl_unicode_codepoint_convert(FL_ENCODING_UTF32, dst, NULL, FL_ENCODING_UTF8, dst2);
     fl_expect("Char 你 is 4 bytes in UTF-8", bytes == 4);
     fl_expect("Char 你 is encoded as 0xF0AFA084 in UTF-8", fl_equals(dst2, "\xF0\xAF\xA0\x84", bytes));
+}
+
+void test_fl_unicode_codepoint_sequence_validate()
+{
+    /// UTF-32
+    // 1-Byte length sequence
+    FlByte *str = (FlByte*)"\x00\x00\x00\x01";
+    FlByte *validstr = fl_unicode_codepoint_sequence_validate(FL_ENCODING_UTF32, str, str+4);
+    fl_expect("UTF-32: Validated Code Point Sequence {U+0001} is equals to {U+0001}", fl_equals(str, validstr, 4));
+    free(validstr);
+
+    // Sequence larger than 1 byte
+    str = (FlByte*)"\x00\x00\x00\x01\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00\x04";
+    validstr = fl_unicode_codepoint_sequence_validate(FL_ENCODING_UTF32, str, str+4*4);
+    fl_expect("UTF-32: Validated Code Point Sequence {U+0001,U+0002,U+0003,U+0004} is equals to {U+0001,U+0002,U+0003,U+0004}", fl_equals(str, validstr, 4*4));
+    free(validstr);
+
+    // One ill-formed code point in the middle of the sequence
+    str = (FlByte*)"\x00\x00\x00\x01\xFF\xFF\xFF\xFF\x00\x00\x00\x03\x00\x00\x00\x04";
+    validstr = fl_unicode_codepoint_sequence_validate(FL_ENCODING_UTF32, str, str+4*4);
+    fl_expect("UTF-32: Validated Code Point Sequence {U+0001,U+FFFFFFFF,U+0003,U+0004} is equals to {U+0001,U+FFFD,U+0003,U+0004}", fl_equals((const FlByte*)"\x00\x00\x00\x01\x00\x00\xFF\xFD\x00\x00\x00\x03\x00\x00\x00\x04", validstr, 4*4));
+    free(validstr);
+
+    // Two ill-formed code point in the middle of the sequence
+    str = (FlByte*)"\x00\x00\x00\x01\xFF\xFF\xFF\xFF\x00\x00\x00\x03\xFF\x10\xFF\xEE\x00\x00\x00\x05";
+    validstr = fl_unicode_codepoint_sequence_validate(FL_ENCODING_UTF32, str, str+4*5);
+    fl_expect("UTF-32: Validated Code Point Sequence {U+0001,U+FFFFFFFF,U+0003,U+FF10FFEE,U+0005} is equals to {U+0001,U+FFFD,U+0003,U+FFFD,U+0005}", fl_equals((const FlByte*)"\x00\x00\x00\x01\x00\x00\xFF\xFD\x00\x00\x00\x03\x00\x00\xFF\xFD\x00\x00\x00\x05", validstr, 4*5));
+    free(validstr);
+
+    // Two ill-formed code point, one in the middle of the sequence another in the upper bound
+    str = (FlByte*)"\x00\x00\x00\x01\xFF\xFF\xFF\xFF\x00\x00\x00\x03\xFF\x10\xFF\xEE";
+    validstr = fl_unicode_codepoint_sequence_validate(FL_ENCODING_UTF32, str, str+4*4);
+    fl_expect("UTF-32: Validated Code Point Sequence {U+0001,U+FFFFFFFF,U+0003,U+FF10FFEE} is equals to {U+0001,U+FFFD,U+0003,U+FFFD}", fl_equals((const FlByte*)"\x00\x00\x00\x01\x00\x00\xFF\xFD\x00\x00\x00\x03\x00\x00\xFF\xFD", validstr, 4*4));
+    free(validstr);
+
+    // Two ill-formed code point, one in the lower bound of the sequence another in the middle
+    str = (FlByte*)"\xFF\x10\xFF\xEE\x00\x00\x00\x02\x00\x00\x00\x03\xFF\xFF\xFF\xFF\x00\x00\x00\x05";
+    validstr = fl_unicode_codepoint_sequence_validate(FL_ENCODING_UTF32, str, str+4*5);
+    fl_expect("UTF-32: Validated Code Point Sequence {U+FF10FFEE,U+0002,U+0003,U+FFFFFFFF,U+0005} is equals to {U+FFFD,U+0002,U+0003,U+FFFD,U+0005}", fl_equals((const FlByte*)"\x00\x00\xFF\xFD\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\xFF\xFD\x00\x00\x00\x05", validstr, 4*5));
+    free(validstr);
+
+    // Two ill-formed code point at both bounds
+    str = (FlByte*)"\xFF\x10\xFF\xEE\x00\x00\x00\x02\x00\x00\x00\x03\xFF\xFF\xFF\xFF";
+    validstr = fl_unicode_codepoint_sequence_validate(FL_ENCODING_UTF32, str, str+4*4);
+    fl_expect("UTF-32: Validated Code Point Sequence {U+FF10FFEE,U+0002,U+0003,U+FFFFFFFF} is equals to {U+FFFD,U+0002,U+0003,U+FFFD}", fl_equals((const FlByte*)"\x00\x00\xFF\xFD\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\xFF\xFD", validstr, 4*4));
+    free(validstr);
+
+    // Interleaved ill-formed and well-formed code points
+    str = (FlByte*)"\xFF\x10\xFF\xEE\x00\x00\x00\x02\xFF\xFF\xFF\xFF\x00\x00\x00\x04\xFF\xFF\xFF\xDD\x00\x00\x00\x06";
+    validstr = fl_unicode_codepoint_sequence_validate(FL_ENCODING_UTF32, str, str+4*6);
+    fl_expect("UTF-32: Validated Code Point Sequence {U+FF10FFEE,U+0002,U+FFFFFFFF,U+0004,U+FFFFFFDD,U+0006} is equals to {U+FFFD,U+0002,U+FFFD,U+0004,U+FFFD,U+0006}", fl_equals((const FlByte*)"\x00\x00\xFF\xFD\x00\x00\x00\x02\x00\x00\xFF\xFD\x00\x00\x00\x04\x00\x00\xFF\xFD\x00\x00\x00\x06", validstr, 4*6));
+    free(validstr);
+
+    // Full ill-formed sequence
+    str = (FlByte*)"\xFF\x10\xFF\xEE\xFF\xEF\xBC\xED\xFF\xEA\xAF\xA3\xFF\xFF\xFF\xFF\xF9\xFF\xEF\xFF";
+    validstr = fl_unicode_codepoint_sequence_validate(FL_ENCODING_UTF32, str, str+4*5);
+    fl_expect("UTF-32: Validated Code Point Sequence {U+FF10FFEE,U+FFEFBCED,U+FFEAAFA3,U+FFFFFFFF,U+F9FFEFFF} is equals to {U+FFFD,U+FFFD,U+FFFD,U+FFFD,U+FFFD}", fl_equals((const FlByte*)"\x00\x00\xFF\xFD\x00\x00\xFF\xFD\x00\x00\xFF\xFD\x00\x00\xFF\xFD\x00\x00\xFF\xFD", validstr, 4*5));
+    free(validstr);
 }

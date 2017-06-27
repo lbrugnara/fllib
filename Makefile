@@ -16,7 +16,9 @@ TESTS=
 
 ifneq ($(OS),Windows_NT)
 	override CFLAGS += -fPIC
-	override LIBS += -lpthread
+	ifeq (,$(findstring pthread,$(CFLAGS)))
+		override LIBS += -lpthread
+	endif
 endif
 
 ifneq (,$(findstring FL_PTHREADS,$(CFLAGS)))
@@ -114,8 +116,10 @@ obj/$(TARGET)/tests/%.o: tests/%.c
 
 .PHONY: clean folders
 clean:	
-	@rm -fr {obj,build}/
-	@rm -fr tests/{obj,build}/
+	rm -fr obj/
+	rm -fr build/
+	rm -fr tests/obj/
+	rm -fr tests/build/
 
 folders:
 	@mkdir -p obj/$(TARGET)/src

@@ -55,6 +55,20 @@
 * -------------------------------------------------------------
 */
 
+/* -------------------------------------------------------------
+* {function: fl_unicode_codepoint_convert}
+* -------------------------------------------------------------
+* Converts code point units between Unicode representations.
+* -------------------------------------------------------------
+* {param: FlEncoding encoding} Encoding used by {src}
+* {param: const FlByte* src} Source code point under encoding {srcencoding}
+* {param: const FlByte* end} A pointer to a byte or NULL to stop while computing {src} code point size
+* {param: FlEncoding dstencoding} Target encoding to convert {src} to
+* {param: FlByte* dst} Destination to pointer to write the bytes of {src} encoding with {dstencoding}
+* -------------------------------------------------------------
+* {return: size_t} Number of bytes written in {dst}
+* -------------------------------------------------------------
+*/
 size_t fl_unicode_codepoint_convert(FlEncoding srcencoding, const FlByte *src, const FlByte *end, FlEncoding dstencoding, FlByte *dst);
 
 /* -------------------------------------------------------------
@@ -84,7 +98,9 @@ size_t fl_unicode_codepoint_size(FlEncoding encoding, const FlByte *src, const F
 * NULL character is found, or a pointer to byte where the algorithm
 * should stop.
 * This function returns the number of well-formed bytes under encoding
-* {encoding} that are found in {sequence}.
+* {encoding} that are found in {sequence}. If any ill-formed character is found
+* the algorithm will stop returning the number of valid bytes before the
+* ill-formed character occurrence.
 * -------------------------------------------------------------
 * {param: FlEncoding encoding} Encoding used to interpret the bytes array
 * {param: const FlByte* sequence} Source bytes array
@@ -104,7 +120,9 @@ size_t fl_unicode_codeunit_sequence_size(FlEncoding encoding, const FlByte* sequ
 * NULL character is found, or a pointer to byte where the algorithm
 * should stop.
 * This function returns the number of well-formed code points under encoding
-* {encoding} that are found in {sequence}.
+* {encoding} that are found in {sequence}. If any ill-formed character is found
+* the algorithm will stop returning the number of valid code points before the
+* ill-formed character occurrence.
 * -------------------------------------------------------------
 * {param: FlEncoding encoding} Encoding used to interpret the bytes array
 * {param: const FlByte* sequence} Source bytes array
@@ -120,8 +138,8 @@ size_t fl_unicode_codepoint_sequence_length(FlEncoding encoding, const FlByte* s
 * -------------------------------------------------------------
 * Copies the {at}-th character from {str} with encoding {encoding} 
 * into {dst}. If the unicode string and target character is valid, it will return the
-* amount of bytes copied into {dst}. If any character inside {str}
-* is invalid or the {at}-th character is invalid it returns FL_UNICODE_INVALID_SIZE
+* amount of bytes copied into {dst}. If any character inside {str} between 0 and {at}
+* is invalid this function returns FL_UNICODE_INVALID_SIZE
 * -------------------------------------------------------------
 * {param: FlEncoding encoding} Encoding used to interpret {str}
 * {param: const FlByte* str} String to retrieve the {at}-th character
@@ -168,5 +186,7 @@ bool fl_unicode_codepoint_is_valid(FlEncoding encoding, const FlByte *src, const
 * -------------------------------------------------------------
 */
 bool fl_unicode_codeunit_sequence_is_valid(FlEncoding encoding, const FlByte* src, const FlByte* end);
+
+FlByte* fl_unicode_codepoint_sequence_validate(FlEncoding encoding, const FlByte *sequence, const FlByte *end);
 
 #endif /* FL_UNICODE_H */

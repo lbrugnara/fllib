@@ -32,6 +32,7 @@
 
 // UTF-32
 #define UTF32_BYTES_SIZE 4
+#define UTF32_REPLACEMENT_CHARACTER ((FlByte*)"\x00\x00\xFF\xFD")
 
 #define UTF32_LAST_CODEPOINT_1 ((FlByte*)"\x00\x00\x00\x7F")
 #define UTF32_LAST_CODEPOINT_2 ((FlByte*)"\x00\x00\x07\xFF")
@@ -493,4 +494,49 @@ bool fl_unicode_codeunit_sequence_is_valid(FlEncoding encoding, const FlByte* sr
         i += tmp;
     }
     return true;
+}
+
+FlByte* fl_unicode_codepoint_sequence_validate(FlEncoding encoding, const FlByte *sequence, const FlByte *end)
+{
+    flm_assert(sequence != NULL, "Source sequence cannot be NULL.");
+    if (encoding == FL_ENCODING_UTF32)
+    {
+        // Compute the "at first glance" min size (the ideal case is the right size if the sequence is already valid)
+        size_t minsize = fl_unicode_codeunit_sequence_size(encoding, sequence, end);
+        FlByte* result = fl_calloc(1, minsize);
+
+        size_t i = 0, lbo = 0; // i = INDEX | lbo = LAST BASE-OFFSET
+        while ((end == NULL && sequence[i]) || (end != NULL && (sequence+i) < end))
+        {
+            // Resize the destination if needed
+            if (minsize <= i)
+            {                
+                size_t remainingsize = fl_unicode_codeunit_sequence_size(encoding, sequence+i, end);
+                // If starting offset returns FL_UNICODE_INVALID_SIZE, we will replace with U+FFFD, so at least add 4 bytes,
+                // if not, the remaining
+                minsize += remainingsize == 0 ? UTF32_BYTES_SIZE : remainingsize;
+                result = fl_realloc(result, minsize);
+            }
+            size_t tmp = fl_unicode_codepoint_size(encoding, sequence+i, end);
+
+            // If tmp is a well-formed code point, just increment i, if not,
+            // copy the bytes between lbo and i, add the replacement char, and update lbo
+            if (tmp == FL_UNICODE_INVALID_SIZE)
+            {
+                size_t nbytes = i-lbo; // Bytes to copy
+                memcpy(result+lbo, sequence+lbo, nbytes);
+                memcpy(result+lbo+nbytes, UTF32_REPLACEMENT_CHARACTER, UTF32_BYTES_SIZE); // Add the U+FFFD
+                lbo = i+UTF32_BYTES_SIZE; // i-Valid bytes plus Replacement Char
+            }
+            i += UTF32_BYTES_SIZE; // Always, the well-formed code point or the replacement character
+        }
+        // If i is greater than lbo, there are remaining valid bytes to be copied
+        if (i > lbo)
+        {
+            size_t nbytes = i-lbo;
+            memcpy(result+lbo, sequence+lbo, nbytes);
+        }
+        return (FlByte*)result;
+    }
+    return NULL;
 }

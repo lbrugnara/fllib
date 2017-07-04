@@ -28,7 +28,7 @@
 #define UTF8_MAX_CODEPOINT ((FlByte*)"\xf4\x8f\xbf\xbf")
 
 // UTF-8 (uint32_t)
-#define UTF8_REPLACEMENT_CHARACTER 0xEFBFBD
+#define UTF8_REPLACEMENT_CHARACTER ((FlByte*)"\xEF\xBF\xBD")
 
 // UTF-32
 #define UTF32_BYTES_SIZE 4
@@ -126,7 +126,7 @@ static inline size_t utf8_codepoint_size(const FlByte *src, const FlByte *end)
     // Check if first byte is a valid lead byte value for 2-bytes code points
     // Check if second byte is a continuation byte (0x80)
     // Check for invalid octets C0 and C1
-    if ((src[0] & UTF8_CODEPOINT_LEADBYTE_2) && src[0] <= UTF8_CODEPOINT_LEADBYTE_2_MAX && (src[1] & 0x80) && src[0] != 0xC0 && src[0] != 0xC1)
+    if ((src[0] >= UTF8_CODEPOINT_LEADBYTE_2) && src[0] <= UTF8_CODEPOINT_LEADBYTE_2_MAX && src[0] != 0xC0 && src[0] != 0xC1 && src[1] >= 0x80 && src[1] <= 0xBF)
     {
         return 2;
     }
@@ -140,7 +140,7 @@ static inline size_t utf8_codepoint_size(const FlByte *src, const FlByte *end)
     // Check if first byte is a valid lead byte value for 3-bytes code points
     // Check if second and third bytes are continuation bytes (0x80)
     // (inside) Check UTF-16 surrogates
-    if ((src[0] & UTF8_CODEPOINT_LEADBYTE_3) && src[0] <= UTF8_CODEPOINT_LEADBYTE_3_MAX && ((src[0] == UTF8_CODEPOINT_LEADBYTE_3 && src[1] >= 0xA0) || (src[0] > UTF8_CODEPOINT_LEADBYTE_3 && src[1] >= 0x80)) && (src[2] & 0x80))
+    if ((src[0] >= UTF8_CODEPOINT_LEADBYTE_3) && src[0] <= UTF8_CODEPOINT_LEADBYTE_3_MAX && ((src[0] == UTF8_CODEPOINT_LEADBYTE_3 && src[1] >= 0xA0 && src[1] <= 0xBF) || (src[0] > UTF8_CODEPOINT_LEADBYTE_3 && src[1] >= 0x80 && src[1] <= 0xBF)) && ((src[2] >= 0x80) && src[2] <= 0xBF))
     {
         // Surrogates (UTF-8 encoded)
         if (memcmp(src, "\xED\xA0\x80", 3) < 0 || memcmp(src, "\xED\xBF\xBF", 3) > 0)
@@ -157,7 +157,7 @@ static inline size_t utf8_codepoint_size(const FlByte *src, const FlByte *end)
     // Check if first byte is a valid lead byte value for 4-bytes code points
     // Check if second, third and fourth bytes are continuation bytes (0x80)
     // Check for invalid octets greather than F5 (F5-FF)
-    if ((src[0] & UTF8_CODEPOINT_LEADBYTE_4) && src[0] <= UTF8_CODEPOINT_LEADBYTE_4_MAX && ((src[0] == UTF8_CODEPOINT_LEADBYTE_4 && src[1] >= 0x90) || (src[0] > UTF8_CODEPOINT_LEADBYTE_4 && src[1] >= 0x80)) && (src[2] & 0x80) && (src[3] & 0x80) && src[0] < 0xF5)
+    if ((src[0] >= UTF8_CODEPOINT_LEADBYTE_4) && src[0] <= UTF8_CODEPOINT_LEADBYTE_4_MAX && ((src[0] == UTF8_CODEPOINT_LEADBYTE_4 && src[1] >= 0x90 && src[1] <= 0xBF) || (src[0] == 0xF4 && src[1] >= 0x80 && src[1] <= 0x8F) || (src[0] > UTF8_CODEPOINT_LEADBYTE_4 && src[0] < 0xF4 && src[1] >= 0x80 && src[1] <= 0xBF)) && (src[2] >= 0x80 && src[2] <= 0xBF) && (src[3] >= 0x80 && src[3] <= 0xBF))
     {
         if (memcmp(src, UTF8_MAX_CODEPOINT, 4) > 0)
             return FL_UNICODE_INVALID_SIZE;
@@ -165,6 +165,93 @@ static inline size_t utf8_codepoint_size(const FlByte *src, const FlByte *end)
     }
 
     return FL_UNICODE_INVALID_SIZE;
+}
+
+/* -------------------------------------------------------------
+* Returns the maximal subpart of an ill-formed code unit sequence
+* (Unicode 9.0 - 3.9 Unicode Encoding Forms - Best practices for using U+FFFD)
+* -------------------------------------------------------------
+*/
+static inline size_t utf8_maximal_subpart(const FlByte *src, const FlByte *end)
+{
+    flm_assert(src != NULL, "The source byte array cannot be NULL.");
+
+    if ((end != NULL && src == end))
+    {
+        return 0;
+    }
+
+    if (src[0] <= UNICODE_LAST_CODEPOINT_1)
+    {
+        return 0;
+    }
+
+    if ((end != NULL && src+1 == end) || src[1] == 0x0)
+    {
+        return 1;
+    }
+
+    if ((src[0] >= UTF8_CODEPOINT_LEADBYTE_2) && src[0] <= UTF8_CODEPOINT_LEADBYTE_2_MAX)
+    {
+        if (src[0] == 0xC0 || src[0] == 0xC1)
+            return 1;
+         if (src[1] < 0x80 || src[1] > 0xBF)
+            return 1;
+        return 0;
+    }
+
+    if ((end != NULL && src+2 == end) || src[2] == 0x0)
+    {
+        return 1;
+    }
+    
+    if ((src[0] >= UTF8_CODEPOINT_LEADBYTE_3) && src[0] <= UTF8_CODEPOINT_LEADBYTE_3_MAX)
+    {
+        if (src[0] == UTF8_CODEPOINT_LEADBYTE_3 && (src[1] < 0xA0 || src[1] > 0xBF))
+            return 1;
+        
+        if (src[0] > UTF8_CODEPOINT_LEADBYTE_3 && (src[1] < 0x80 || src[1] > 0xBF))
+            return 1;
+
+        if (src[2] < 0x80 || src[2] > 0xBF)
+            return 2;
+
+        // Surrogates (UTF-8 encoded)
+        if (memcmp(src, "\xED\xA0\x80", 3) < 0 || memcmp(src, "\xED\xBF\xBF", 3) > 0)
+            return 0;
+        return 3;
+    }
+ 
+    if ((end != NULL && src+3 == end) || src[3] == 0x0)
+    {
+        return 1;
+    }
+
+    if ((src[0] >= UTF8_CODEPOINT_LEADBYTE_4) && src[0] <= UTF8_CODEPOINT_LEADBYTE_4_MAX)
+    {
+        if (src[0] == UTF8_CODEPOINT_LEADBYTE_4 && (src[1] < 0x90 || src[1] > 0xBF))
+            return 1;
+        
+        if (src[0] == 0xF4 && (src[1] < 0x80 || src[1] > 0x8F))
+            return 1;
+            
+        if (src[0] > UTF8_CODEPOINT_LEADBYTE_4 && (src[0] > 0xF4 || src[1] < 0x80 || src[1] > 0xBF))
+            return 1;
+        
+        
+        if (src[2] < 0x80 || src[2] > 0xBF)
+            return 2;
+
+        if (src[3] < 0x80 || src[3] > 0xBF)
+            return 3;
+
+        if (memcmp(src, UTF8_MAX_CODEPOINT, 4) > 0)
+            return 4;
+
+        return 0;
+    }
+
+    return 1;
 }
 
 /* -------------------------------------------------------------
@@ -535,6 +622,50 @@ FlByte* fl_unicode_codepoint_sequence_validate(FlEncoding encoding, const FlByte
         {
             size_t nbytes = i-lbo;
             memcpy(result+lbo, sequence+lbo, nbytes);
+        }
+        return (FlByte*)result;
+    }
+    else if (encoding == FL_ENCODING_UTF8)
+    {
+        // Compute the "at first glance" min size (the ideal case is the right size if the sequence is already valid)
+        size_t minsize = fl_unicode_codeunit_sequence_size(encoding, sequence, end);
+        FlByte* result = fl_calloc(1, minsize);
+
+        size_t i = 0, last_sequence_offset = 0, last_result_offset = 0; // i = INDEX | last_sequence_offset = LAST BASE-OFFSET
+        while ((end == NULL && sequence[i]) || (end != NULL && (sequence+i) < end))
+        {
+            size_t tmp = fl_unicode_codepoint_size(encoding, sequence+i, end);
+
+            // If tmp is a well-formed code point, just increment i, if not,
+            // copy the bytes between last_sequence_offset and i, add the replacement char, and update last_sequence_offset
+            if (tmp == FL_UNICODE_INVALID_SIZE)
+            {
+                tmp = utf8_maximal_subpart(sequence+i, end);
+
+                size_t nbytes = 0;
+                if (i > last_sequence_offset)
+                {
+                    nbytes = i-last_sequence_offset; // Bytes to copy
+                }
+                
+                if (minsize <= last_result_offset+3+nbytes)
+                {
+                    minsize += 3+nbytes;
+                    result = fl_realloc(result, minsize);
+                }
+
+                memcpy(result+last_result_offset, sequence+last_sequence_offset, nbytes);
+                memcpy(result+last_result_offset+nbytes, UTF8_REPLACEMENT_CHARACTER, 3); // Add the U+FFFD
+                last_sequence_offset += nbytes+tmp; // i-Valid bytes plus Replacement Char
+                last_result_offset += nbytes+3;
+            }
+            i += tmp; // Always, the well-formed code point or the replacement character
+        }
+        // If i is greater than last_sequence_offset, there are remaining valid bytes to be copied
+        if (i > last_sequence_offset)
+        {
+            size_t nbytes = i-last_sequence_offset;
+            memcpy(result+last_result_offset, sequence+last_sequence_offset, nbytes);
         }
         return (FlByte*)result;
     }

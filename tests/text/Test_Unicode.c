@@ -554,4 +554,22 @@ void test_fl_unicode_codepoint_sequence_validate()
     validstr = fl_unicode_codepoint_sequence_validate(FL_ENCODING_UTF32, str, str+4*5);
     fl_expect("UTF-32: Validated Code Point Sequence {U+FF10FFEE,U+FFEFBCED,U+FFEAAFA3,U+FFFFFFFF,U+F9FFEFFF} is equals to {U+FFFD,U+FFFD,U+FFFD,U+FFFD,U+FFFD}", fl_equals((const FlByte*)"\x00\x00\xFF\xFD\x00\x00\xFF\xFD\x00\x00\xFF\xFD\x00\x00\xFF\xFD\x00\x00\xFF\xFD", validstr, 4*5));
     free(validstr);
+
+    /// UTF-8
+    str = (FlByte*)"\x61\xF1\x80\x80\xE1\x80\xC2\x62\x80\x63\x80\xBF\x64";
+    validstr = fl_unicode_codepoint_sequence_validate(FL_ENCODING_UTF8, str, str+13);
+    fl_expect("UTF-8: Validated form of <61 F1 80 80 E1 80 C2 62 80 63 80 BF 64> is  <61 EF BF BD EF BF BD EF BF BD 62 EF BF BD 63 EF BF BD EF BF BD 64>", fl_equals((const FlByte*)"\x61\xEF\xBF\xBD\xEF\xBF\xBD\xEF\xBF\xBD\x62\xEF\xBF\xBD\x63\xEF\xBF\xBD\xEF\xBF\xBD\x64", validstr, 22));
+    free(validstr);
+
+    str = (FlByte*)"\x41\xC0\xAF\x41\xF4\x80\x80\x41";
+    validstr = fl_unicode_codepoint_sequence_validate(FL_ENCODING_UTF8, str, str+8);
+    fl_expect("UTF-8: Validated form of <41 C0 AF 41 F4 80 80 41> is <41 EF BF BD EF BF BD 41 EF BF BD 41>", fl_equals((const FlByte*)"\x41\xEF\xBF\xBD\xEF\xBF\xBD\x41\xEF\xBF\xBD\x41", validstr, 12));
+    free(validstr);
+
+    str = (FlByte*)"\x41\xE0\x9F\x80\x41";
+    validstr = fl_unicode_codepoint_sequence_validate(FL_ENCODING_UTF8, str, str+5);
+    fl_expect("UTF-8: Validated form of <41 E0 9F 80 41> is <41 EF BF BD EF BF BD EF BF BD 41>", fl_equals((const FlByte*)"\x41\xEF\xBF\xBD\xEF\xBF\xBD\xEF\xBF\xBD\x41", validstr, 11));
+    free(validstr);   
+
+    //TODO: Test edge cases like full ill-formed, starts with ill-formed code point or end with it
 }

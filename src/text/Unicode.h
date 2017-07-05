@@ -10,8 +10,6 @@
 * TODO
 * ====
 * 
-* - Add fl_unicode_codepoint_validate: If the input is invalid, return REPLACEMENT CHARACTER
-* - Add fl_unicode_codepoint_sequence_validate: If the input is invalid, replace ill-formed characters by REPLACEMENT CHARACTER
 * Normalization
 * Case-Folding
 * UTF-16 support
@@ -187,6 +185,22 @@ bool fl_unicode_codepoint_is_valid(FlEncoding encoding, const FlByte *src, const
 */
 bool fl_unicode_codeunit_sequence_is_valid(FlEncoding encoding, const FlByte* src, const FlByte* end);
 
-FlByte* fl_unicode_codepoint_sequence_validate(FlEncoding encoding, const FlByte *sequence, const FlByte *end);
+/* -------------------------------------------------------------
+* {function: fl_unicode_codepoint_sequence_validate}
+* -------------------------------------------------------------
+* Takes {sequence} and replace all the ill-formed code points by
+* REPLACEMENT CHARACTER (U+FFFD). The new sequence will be allocated
+* into {destination}, and the size of the new sequence in bytes will be
+* returned by the function.
+* -------------------------------------------------------------
+* {param: FlEncoding encoding} Encoding of the source {sequence}
+* {param: const FlByte* sequence} Source sequence to convert to a valid Unicode sequence
+* {param: const FlByte* end} Byte address from {src} where to stop processing,
+* {param: FlByte** destination} The new sequence will be allocated into {destination}
+* -------------------------------------------------------------
+* {return: size_t} Number of bytes allocated into destination.
+* -------------------------------------------------------------
+*/
+size_t fl_unicode_codepoint_sequence_validate(FlEncoding encoding, const FlByte *sequence, const FlByte *end, FlByte **destination);
 
 #endif /* FL_UNICODE_H */

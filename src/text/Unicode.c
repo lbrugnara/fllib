@@ -183,30 +183,38 @@ static inline size_t utf8_maximal_subpart(const FlByte *src, const FlByte *end)
 
     if (src[0] <= UNICODE_LAST_CODEPOINT_1)
     {
+        if ((end != NULL && src+1 == end) || src[1] == 0x0)
+        {
+            return 1;
+        }
         return 0;
-    }
-
-    if ((end != NULL && src+1 == end) || src[1] == 0x0)
-    {
-        return 1;
     }
 
     if ((src[0] >= UTF8_CODEPOINT_LEADBYTE_2) && src[0] <= UTF8_CODEPOINT_LEADBYTE_2_MAX)
     {
+        if ((end != NULL && src+1 == end) || src[1] == 0x0)
+        {
+            return 1;
+        }
+
         if (src[0] == 0xC0 || src[0] == 0xC1)
             return 1;
          if (src[1] < 0x80 || src[1] > 0xBF)
             return 1;
         return 0;
     }
-
-    if ((end != NULL && src+2 == end) || src[2] == 0x0)
-    {
-        return 1;
-    }
     
     if ((src[0] >= UTF8_CODEPOINT_LEADBYTE_3) && src[0] <= UTF8_CODEPOINT_LEADBYTE_3_MAX)
     {
+        if ((end != NULL && src+1 == end) || src[1] == 0x0)
+        {
+            return 1;
+        }
+        if ((end != NULL && src+2 == end) || src[2] == 0x0)
+        {
+            return 2;
+        }
+
         if (src[0] == UTF8_CODEPOINT_LEADBYTE_3 && (src[1] < 0xA0 || src[1] > 0xBF))
             return 1;
         
@@ -221,14 +229,22 @@ static inline size_t utf8_maximal_subpart(const FlByte *src, const FlByte *end)
             return 0;
         return 3;
     }
- 
-    if ((end != NULL && src+3 == end) || src[3] == 0x0)
-    {
-        return 1;
-    }
 
     if ((src[0] >= UTF8_CODEPOINT_LEADBYTE_4) && src[0] <= UTF8_CODEPOINT_LEADBYTE_4_MAX)
     {
+        if ((end != NULL && src+1 == end) || src[1] == 0x0)
+        {
+            return 1;
+        }
+        if ((end != NULL && src+2 == end) || src[2] == 0x0)
+        {
+            return 2;
+        }
+        if ((end != NULL && src+3 == end) || src[3] == 0x0)
+        {
+            return 3;
+        }
+
         if (src[0] == UTF8_CODEPOINT_LEADBYTE_4 && (src[1] < 0x90 || src[1] > 0xBF))
             return 1;
         
@@ -583,14 +599,16 @@ bool fl_unicode_codeunit_sequence_is_valid(FlEncoding encoding, const FlByte* sr
     return true;
 }
 
-FlByte* fl_unicode_codepoint_sequence_validate(FlEncoding encoding, const FlByte *sequence, const FlByte *end)
+size_t fl_unicode_codepoint_sequence_validate(FlEncoding encoding, const FlByte *sequence, const FlByte *end, FlByte **destination)
 {
     flm_assert(sequence != NULL, "Source sequence cannot be NULL.");
+    flm_assert(destination != NULL, "Destination cannot be NULL.");
+
     if (encoding == FL_ENCODING_UTF32)
     {
         // Compute the "at first glance" min size (the ideal case is the right size if the sequence is already valid)
         size_t minsize = fl_unicode_codeunit_sequence_size(encoding, sequence, end);
-        FlByte* result = fl_calloc(1, minsize);
+        *destination = fl_calloc(1, minsize);
 
         size_t i = 0, lbo = 0; // i = INDEX | lbo = LAST BASE-OFFSET
         while ((end == NULL && sequence[i]) || (end != NULL && (sequence+i) < end))
@@ -602,7 +620,7 @@ FlByte* fl_unicode_codepoint_sequence_validate(FlEncoding encoding, const FlByte
                 // If starting offset returns FL_UNICODE_INVALID_SIZE, we will replace with U+FFFD, so at least add 4 bytes,
                 // if not, the remaining
                 minsize += remainingsize == 0 ? UTF32_BYTES_SIZE : remainingsize;
-                result = fl_realloc(result, minsize);
+                *destination = fl_realloc(*destination, minsize);
             }
             size_t tmp = fl_unicode_codepoint_size(encoding, sequence+i, end);
 
@@ -611,8 +629,8 @@ FlByte* fl_unicode_codepoint_sequence_validate(FlEncoding encoding, const FlByte
             if (tmp == FL_UNICODE_INVALID_SIZE)
             {
                 size_t nbytes = i-lbo; // Bytes to copy
-                memcpy(result+lbo, sequence+lbo, nbytes);
-                memcpy(result+lbo+nbytes, UTF32_REPLACEMENT_CHARACTER, UTF32_BYTES_SIZE); // Add the U+FFFD
+                memcpy(*destination+lbo, sequence+lbo, nbytes);
+                memcpy(*destination+lbo+nbytes, UTF32_REPLACEMENT_CHARACTER, UTF32_BYTES_SIZE); // Add the U+FFFD
                 lbo = i+UTF32_BYTES_SIZE; // i-Valid bytes plus Replacement Char
             }
             i += UTF32_BYTES_SIZE; // Always, the well-formed code point or the replacement character
@@ -621,15 +639,15 @@ FlByte* fl_unicode_codepoint_sequence_validate(FlEncoding encoding, const FlByte
         if (i > lbo)
         {
             size_t nbytes = i-lbo;
-            memcpy(result+lbo, sequence+lbo, nbytes);
+            memcpy(*destination+lbo, sequence+lbo, nbytes);
         }
-        return (FlByte*)result;
+        return minsize;
     }
     else if (encoding == FL_ENCODING_UTF8)
     {
         // Compute the "at first glance" min size (the ideal case is the right size if the sequence is already valid)
         size_t minsize = fl_unicode_codeunit_sequence_size(encoding, sequence, end);
-        FlByte* result = fl_calloc(1, minsize);
+        *destination = fl_calloc(1, minsize);
 
         size_t i = 0, last_sequence_offset = 0, last_result_offset = 0; // i = INDEX | last_sequence_offset = LAST BASE-OFFSET
         while ((end == NULL && sequence[i]) || (end != NULL && (sequence+i) < end))
@@ -650,12 +668,14 @@ FlByte* fl_unicode_codepoint_sequence_validate(FlEncoding encoding, const FlByte
                 
                 if (minsize <= last_result_offset+3+nbytes)
                 {
-                    minsize += 3+nbytes;
-                    result = fl_realloc(result, minsize);
+                    minsize += 3;
+                    if (last_result_offset > 0)
+                        minsize += nbytes;
+                    *destination = fl_realloc(*destination, minsize);
                 }
 
-                memcpy(result+last_result_offset, sequence+last_sequence_offset, nbytes);
-                memcpy(result+last_result_offset+nbytes, UTF8_REPLACEMENT_CHARACTER, 3); // Add the U+FFFD
+                memcpy(*destination+last_result_offset, sequence+last_sequence_offset, nbytes);
+                memcpy(*destination+last_result_offset+nbytes, UTF8_REPLACEMENT_CHARACTER, 3); // Add the U+FFFD
                 last_sequence_offset += nbytes+tmp; // i-Valid bytes plus Replacement Char
                 last_result_offset += nbytes+3;
             }
@@ -665,9 +685,14 @@ FlByte* fl_unicode_codepoint_sequence_validate(FlEncoding encoding, const FlByte
         if (i > last_sequence_offset)
         {
             size_t nbytes = i-last_sequence_offset;
-            memcpy(result+last_result_offset, sequence+last_sequence_offset, nbytes);
+            if (minsize < last_result_offset+nbytes)
+            {
+                minsize += nbytes;
+                *destination = fl_realloc(*destination, minsize);
+            }
+            memcpy(*destination+last_result_offset, sequence+last_sequence_offset, nbytes);
         }
-        return (FlByte*)result;
+        return minsize;
     }
-    return NULL;
+    return 0;
 }

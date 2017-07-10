@@ -2,3 +2,4 @@ obj/
 build/
 tmp/
 conventions.md
+src/text/resources/gen*

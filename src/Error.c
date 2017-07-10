@@ -13,16 +13,9 @@
 #define min(a,b) (((a)<(b))?(a):(b))
 #endif
 
-/* -------------------------------------------------------------
- * {datatype: struct FlError}
- * -------------------------------------------------------------
- * Represents an error. There is no implementation restrictions,
- * each module or library can use {id} and {message} as it wish.
- * -------------------------------------------------------------
- * {member: int id} Error id or code. Module/library implementation defined
- * {member: FlCstr message} Is a brief message that contains information about the error
- * -------------------------------------------------------------
- */
+#ifndef FL_ERROR_QUEUE
+    #define FL_ERROR_QUEUE 1
+#endif
 
 /* -------------------------------------------------------------
 * The FlErrQueue struct is used as a circular queue, through FL_ERROR_QUEUE
@@ -31,21 +24,17 @@
 * case, each thread has its own FL_ERROR_QUEUE restriction.
 * -------------------------------------------------------------
 */
-#ifndef FL_ERROR_QUEUE
-    #define FL_ERROR_QUEUE 1
-#endif
-
 typedef struct FlErrQueue {
     int last;
     FlError errors[FL_ERROR_QUEUE];
 } FlErrQueue;
 
 /* -------------------------------------------------------------
-* Errors is am FlDictionary<FlThreadId, FlErrQueue> that will containers
+* Errors is an FlDictionary<FlThreadId, FlErrQueue> that will contains
 * up to FL_ERROR_QUEUE errors for each thread.
 * -------------------------------------------------------------
 */
-FlDictionary Errors/*<FlThreadId, FlErrQueue>*/;
+FlDictionary Errors;
 
 FlMutex ErrMutex = FL_MUTEX_INIT_STATIC;
 
@@ -90,8 +79,8 @@ void fl_error_push(int id, const FlCstr format, ...)
     va_start(args, format);
     FlCstr str = fl_cstr_vadup(format, args);
     va_end(args);
-    // Cap the message to FL_ERROR_MSG_MAX_SIZE
-    size_t length = min(FL_ERROR_MSG_MAX_SIZE, strlen(str) + 1);
+    // Cap the message to FL_ERROR_MAX_MSG_SIZE
+    size_t length = min(FL_ERROR_MAX_MSG_SIZE, strlen(str) + 1);
     memcpy(error.message, str, length);
     error.message[length-1] = FL_EOS;
     fl_cstr_delete(str);

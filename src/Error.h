@@ -15,7 +15,7 @@
 #include <setjmp.h>
 #include "Types.h"
 
-#define FL_ERROR_MSG_MAX_SIZE 256
+#define FL_ERROR_MAX_MSG_SIZE 256
 #define FL_ERROR_TRYCONTEXT_MAX_MSG_SIZE 256
 
 /* -------------------------------------------------------------
@@ -41,7 +41,7 @@ typedef enum
 typedef struct FlError
 {
     int id;
-    char message[FL_ERROR_MSG_MAX_SIZE];
+    char message[FL_ERROR_MAX_MSG_SIZE];
 } FlError;
 
 /* -------------------------------------------------------------

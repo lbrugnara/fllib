@@ -14,6 +14,10 @@ override CFLAGS += -Wall \
 # Macros for target tests
 TESTS=
 
+ifneq ($(wildcard src/text/resources/UnicodeDataDb.h),) 
+    override CFLAGS += -DFL_UNICODE_DB
+endif
+
 ifneq ($(OS),Windows_NT)
 	override CFLAGS += -fPIC
 	ifeq (,$(findstring pthread,$(CFLAGS)))
@@ -106,13 +110,19 @@ fllib: folders $(FL_OBJECTS)
 tests: fllib $(FL_TEST_OBJECTS)
 	$(COMMAND_COMPILE_TEST)
 
+unicode: fllib
+	$(CC) $(CFLAGS) $(LIBS) -I./include src/text/resources/Main.c build/$(TARGET)/$(FL_STATIC_LIB) -o src/text/resources/gen
+
+unicode-db: fllib unicode
+	./src/text/resources/gen || ./src/text/resources/gen.exe
+
 obj/$(TARGET)/src/%.o: src/%.c
 	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) $(LIBS) -c $< -o $@
 
 obj/$(TARGET)/tests/%.o: tests/%.c
 	@mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) $(LIBS) $(TESTS) -c $< -o $@ -I./include -I./src
+	$(CC) $(CFLAGS) $(LIBS) $(TESTS) -c $< -o $@ -I./include
 
 .PHONY: clean folders
 clean:	

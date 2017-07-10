@@ -260,17 +260,31 @@ fl_cstr_replace(const FlCstr src, const FlCstr needle, const FlCstr rplc)
     flm_assert(rplc != NULL, "Replacement cannot be NULL");
 
     size_t src_size = strlen(src);
-    size_t needle_size = (size_t)-1;
-    // If needle is NULL or it is longer than src, no need to replace anything
-    if (needle == NULL || src_size < (needle_size = strlen(needle)))
-        return fl_cstr_dup(src);
+    size_t needle_size = needle == NULL ? 0 : strlen(needle);
+    size_t rplc_size = strlen(rplc);
 
-    FlCstr dst = NULL;
+    FlCstr dst;
+    size_t newlength = fl_cstr_replace_n(src, src_size, needle, needle_size, rplc, rplc_size, &dst);
+    return dst;
+}
+
+size_t fl_cstr_replace_n(const FlCstr src, size_t src_size, const FlCstr needle, size_t needle_size, const FlCstr rplc, size_t rplc_size, FlCstr *dst)
+{
+    flm_assert(src != NULL, "Source cannot be NULL");
+    flm_assert(rplc != NULL, "Replacement cannot be NULL");
+
+    // If needle is NULL or it is longer than src, no need to replace anything
+    if (needle == NULL || src_size < needle_size)
+    {
+        *dst = fl_cstr_dup(src);
+        return src_size;
+    }
+
     if (needle_size == 0)
     {
-        dst = fl_cstr_dup(rplc);
-        fl_cstr_append(&dst, src);
-        return dst;
+        *dst = fl_cstr_dup(rplc);
+        fl_cstr_append(dst, src);
+        return rplc_size + src_size;
     }
 
     FlDictionary table = fl_dictionary_new(sizeof(char), sizeof(size_t));
@@ -281,7 +295,6 @@ fl_cstr_replace(const FlCstr src, const FlCstr needle, const FlCstr rplc)
 
     FlCstr strptr = src;
     FlCstr result = NULL;
-    size_t rplc_size = strlen(rplc);
     short map[src_size];
     memset(map, 0, src_size * sizeof(short));
     size_t newlength = src_size;
@@ -306,7 +319,7 @@ fl_cstr_replace(const FlCstr src, const FlCstr needle, const FlCstr rplc)
     }
     fl_dictionary_delete(table);
 
-    dst = fl_cstr_new(newlength);
+    *dst = fl_cstr_new(newlength);
     // spi = source pointer index
     // mpi = map pointer index
     // dpi = dest pointer index
@@ -315,17 +328,17 @@ fl_cstr_replace(const FlCstr src, const FlCstr needle, const FlCstr rplc)
         if (map[mpi])
         {
             for (size_t j=mpi; j < mpi+rplc_size; j++)
-                dst[dpi++] = rplc[j-mpi];
+                (*dst)[dpi++] = rplc[j-mpi];
             spi += needle_size;
             mpi += needle_size;
         }
         else
         {
-            dst[dpi++] = src[spi++];
+            (*dst)[dpi++] = src[spi++];
             mpi++;
         }
     }
-    return dst;
+    return newlength;
 }
 
 bool

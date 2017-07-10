@@ -88,6 +88,8 @@ FlCstr fl_cstr_replace_char(const FlCstr src, const char chr, const FlCstr rplc)
  */
 FlCstr fl_cstr_replace(const FlCstr src, const FlCstr needle, const FlCstr rplc);
 
+size_t fl_cstr_replace_n(const FlCstr src, size_t src_size, const FlCstr needle, size_t needle_size, const FlCstr rplc, size_t rplc_size, FlCstr *dst);
+
 /**
  * {str} Target string
  * {needle} String to find in {str}
@@ -137,6 +139,6 @@ FlCstr fl_char_join(FlVector vector, FlCstr glue);
 FlCstr fl_cstr_concat(FlCstr *strings);
 
 #define flm_cstr_equals(cstr1, cstr2) (strcmp((cstr1), (cstr2)) == 0)
-#define flm_cstr_ncmp(cstr1, cstr2, n) (strncmp((cstr1), (cstr2), (n)) == 0)
+#define flm_cstr_nequals(cstr1, cstr2, n) (strncmp((cstr1), (cstr2), (n)) == 0)
 
 #endif /* FL_C_STR_H */

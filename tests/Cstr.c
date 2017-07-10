@@ -80,6 +80,71 @@ void test_cstr_replace_char()
     fl_cstr_delete(withZz);
 }
 
+void test_cstr_replace()
+{
+    FlCstr replaced = fl_cstr_replace("", "abc", "123");
+    fl_expect("Some test here", flm_cstr_equals(replaced, ""));
+    fl_cstr_delete(replaced);
+
+    replaced = fl_cstr_replace("abc", "", "123");
+    fl_expect("Some test here", flm_cstr_equals(replaced, "123abc"));
+    fl_cstr_delete(replaced);
+
+    replaced = fl_cstr_replace("", "", "123");
+    fl_expect("Some test here", flm_cstr_equals(replaced, "123"));
+    fl_cstr_delete(replaced);
+
+    replaced = fl_cstr_replace("Remove my Es", "e", "");
+    fl_expect("Some test here", flm_cstr_equals(replaced, "Rmov my Es"));
+    fl_cstr_delete(replaced);
+
+    replaced = fl_cstr_replace("hello", "k", "z");
+    fl_expect("Some test here", flm_cstr_equals(replaced, "hello"));
+    fl_cstr_delete(replaced);
+
+    replaced = fl_cstr_replace("hello", "nhelloz", "z");
+    fl_expect("Some test here", flm_cstr_equals(replaced, "hello"));
+    fl_cstr_delete(replaced);
+
+    replaced = fl_cstr_replace("hello", "e", "a");
+    fl_expect("Some test here", flm_cstr_equals(replaced, "hallo"));
+    fl_cstr_delete(replaced);
+
+    replaced = fl_cstr_replace("hello", "ll", "l");
+    fl_expect("Some test here", flm_cstr_equals(replaced, "helo"));
+    fl_cstr_delete(replaced);
+
+    replaced = fl_cstr_replace("hello", "ll", "lll");
+    fl_expect("Some test here", flm_cstr_equals(replaced, "helllo"));
+    fl_cstr_delete(replaced);
+
+    replaced = fl_cstr_replace("hello", "hello", "");
+    fl_expect("Some test here", flm_cstr_equals(replaced, ""));
+    fl_cstr_delete(replaced);
+
+    replaced = fl_cstr_replace("hellobye", "hellox", "");
+    fl_expect("Some test here", flm_cstr_equals(replaced, "hellobye"));
+    fl_cstr_delete(replaced);
+
+    replaced = fl_cstr_replace("Hello world!", "o w", "O W");
+    fl_expect("Some test here", flm_cstr_equals(replaced, "HellO World!"));
+    fl_cstr_delete(replaced);
+
+    replaced = fl_cstr_replace("hellohello", "jello", "zello");
+    fl_expect("Some test here", flm_cstr_equals(replaced, "hellohello"));
+    fl_cstr_delete(replaced);
+
+    const FlCstr msg = "Actually, we are changing all the text by a larger one";
+    replaced = fl_cstr_replace("none", "none", msg);
+    fl_expect("Some test here", flm_cstr_equals(replaced, msg));
+    fl_cstr_delete(replaced);
+
+    const FlCstr shortermsg = "Now, a shorter one";
+    replaced = fl_cstr_replace(msg, msg, shortermsg);
+    fl_expect("Some test here", flm_cstr_equals(replaced, shortermsg));
+    fl_cstr_delete(replaced);
+}
+
 void test_cstr_append()
 {
     FlCstr helloWorld = fl_cstr_dup("Hello ");

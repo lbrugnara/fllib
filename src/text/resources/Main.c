@@ -73,7 +73,7 @@ int main(void)
             if (endField5[1] == '<')
             {
                 char buffer[50];
-                size_t length = get_decomp_type(value, buffer);
+                int length = (int)get_decomp_type(value, buffer);
                 if (length > 0)
                 {
                     fprintf(outfd, ".decomposition_type = %.*s, ", length, buffer);
@@ -119,6 +119,7 @@ int main(void)
         {
             size_t s = lengthField3+1;
             char str[s];
+            memset(str, 0, s);
             memcpy(str, endField3+1, lengthField3);
             str[s] = FL_EOS;
             int intval = atoi(str);

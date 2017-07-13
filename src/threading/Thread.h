@@ -6,8 +6,10 @@
 // we will use Windows threads
 #if _WIN32 && !defined(FL_PTHREADS)
     #define FL_WIN_THREADS
-#elif defined(__linux__)
+#elif defined(__linux__) || defined(__CYGWIN__)
     #define FL_PTHREADS
+#else
+    #define FL_NO_THREADS
 #endif
 
 #ifdef FL_WIN_THREADS
@@ -57,9 +59,16 @@
     #include <pthread.h>
     
     typedef pthread_t FlThread;
-    typedef pid_t FlThreadId;
+    typedef pthread_t FlThreadId;
     typedef pthread_mutex_t FlMutex;
     #define FL_MUTEX_INIT_STATIC PTHREAD_MUTEX_INITIALIZER
+#elif defined(FL_NO_THREADS)
+    #include <stddef.h>
+
+    typedef int FlThread;
+    typedef int FlThreadId;
+    typedef int FlMutex;
+    #define FL_MUTEX_INIT_STATIC 0
 #endif
 
 typedef void(*FlThreadFunc)(void*);

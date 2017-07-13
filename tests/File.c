@@ -10,9 +10,8 @@ void test_file_rw_all_bytes()
 
     // Use a temporary path
     FlCstr path = NULL;
-    #ifdef __linux__
     path = "/tmp";
-    #elif defined(_WIN32)
+    #if defined(_WIN32)
     path = "c:\\tmp";
     #endif
     // Create the temporary dir
@@ -27,9 +26,9 @@ void test_file_rw_all_bytes()
 
     // Write all thebytes to the test_file.txt file and check if it exists
     fl_file_write_all_bytes("test_file.txt", arr);
-    #ifdef __linux__
+    #ifndef _WIN32
     fl_expect("File /tmp/test_file.txt exists", fl_file_exists("/tmp/test_file.txt"));
-    #elif defined(_WIN32)
+    #else
     fl_expect("File C:\\tmp\\test_file.txt exists", fl_file_exists("C:\\tmp\\test_file.txt"));
     #endif
 

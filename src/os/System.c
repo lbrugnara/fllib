@@ -10,7 +10,7 @@
     #include <direct.h>
     #define getcwd _getcwd
     #define chdir _chdir
-#elif __linux__
+#elif defined(__linux__) || defined(__CYGWIN__)
     #include <unistd.h>
 #endif
 

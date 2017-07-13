@@ -11,7 +11,7 @@
     #include <io.h>
     #define access _access
     #define mkdir(path, mode) _mkdir((path))
-#elif defined(__linux__)
+#elif defined(__linux__) || defined(__CYGWIN__)
     #include <unistd.h>
     #include <sys/stat.h>
     #include <sys/types.h>

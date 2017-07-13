@@ -232,7 +232,7 @@ void fl_winex_message_get(DWORD exceptionCode, char *destmsg)
             msg = "[STATUS_CONTROL_C_EXIT]";
             break;
         default:
-            sprintf(msg, "Unknown error: code %lu", exceptionCode);
+            sprintf(msg, "Unknown error: code %u", exceptionCode);
             break;
     }
     if (msg == NULL)

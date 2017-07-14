@@ -20,8 +20,8 @@ endif
 
 ifneq ($(OS),Windows_NT)
 	override CFLAGS += -fPIC
-	ifeq (,$(findstring pthread,$(CFLAGS)))
-		override LIBS += -lpthread
+	ifeq (,$(findstring -pthread,$(CFLAGS)))
+		override LIBS += -pthread
 	endif
 endif
 
@@ -56,6 +56,7 @@ FL_OBJECTS=\
 	obj/$(TARGET)/src/Std.o 						\
 	obj/$(TARGET)/src/Error.o 						\
 	obj/$(TARGET)/src/Mem.o 						\
+	obj/$(TARGET)/src/text/resources/UnicodeData.o 	\
 	obj/$(TARGET)/src/text/Unicode.o 				\
 	obj/$(TARGET)/src/text/String.o 				\
 	obj/$(TARGET)/src/Cstr.o 						\
@@ -115,6 +116,11 @@ unicode: fllib
 
 unicode-db: fllib unicode
 	./src/text/resources/gen || ./src/text/resources/gen.exe
+
+# Specific target for UnicodeData module to recompile if UnicodeDataDb.txt has changed
+obj/$(TARGET)/src/text/resources/UnicodeData.o: src/text/resources/UnicodeData.c src/text/resources/UnicodeDataDb.h
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) $(LIBS) -c $< -o $@
 
 obj/$(TARGET)/src/%.o: src/%.c
 	@mkdir -p $(dir $@)

@@ -38,7 +38,8 @@ int main(void)
             { "test_fl_unicode_codepoint_validity", &test_fl_unicode_codepoint_validity },
             { "test_fl_unicode_unichar_sequence_validate", &test_fl_unicode_unichar_sequence_validate },
             { "test_fl_unicode_codepoint_convert", &test_fl_unicode_codepoint_convert },
-            { "test_fl_unicode_codepoint_sequence_validate", &test_fl_unicode_codepoint_sequence_validate }
+            { "test_fl_unicode_codepoint_sequence_validate", &test_fl_unicode_codepoint_sequence_validate },
+            { "test_fl_unicode_data", &test_fl_unicode_data }
         ),
         fl_test_suite("Module String", 
             { "fl_string_length", &test_fl_string_length },

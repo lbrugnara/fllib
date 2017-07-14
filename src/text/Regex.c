@@ -632,7 +632,7 @@ FlVector parse_regex(FlCstr regex, RegexFlags *flags)
 FlVector regex_to_postfix (FlCstr regex, RegexFlags *flags) 
 {
 	//error = NULL;
-	if (!regex && !regex[0])
+	if (regex == NULL || regex[0] == 0x0)
 	{
 		fl_error_push(-1, "Empty pattern");
 		return NULL;

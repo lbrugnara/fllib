@@ -1,8 +1,10 @@
 #include <string.h>
+#include <stdint.h>
 
 #include "../Std.h"
 #include "../Mem.h"
 #include "Unicode.h"
+#include "resources/UnicodeData.h"
 
 /* -------------------------------------------------------------
 * Last code point (inclusive) of each UTF-8 range (1-4 bytes)
@@ -38,60 +40,6 @@
 #define UTF32_LAST_CODEPOINT_2 ((FlByte*)"\x00\x00\x07\xFF")
 #define UTF32_LAST_CODEPOINT_3 ((FlByte*)"\x00\x00\xFF\xFF")
 #define UTF32_LAST_CODEPOINT_4 ((FlByte*)"\x00\x10\xFF\xFF")
-
-/* -------------------------------------------------------------
-* Private DataTypes
-* -------------------------------------------------------------
-*/
-typedef enum
-{
-    DECOMP_TYPE_CANONICAL, // default
-    DECOMP_TYPE_FONT,
-    DECOMP_TYPE_NOBREAK,
-    DECOMP_TYPE_INITIAL,
-    DECOMP_TYPE_MEDIAL,
-    DECOMP_TYPE_FINAL,
-    DECOMP_TYPE_ISOLATED,
-    DECOMP_TYPE_CIRCLE,
-    DECOMP_TYPE_SUPER,
-    DECOMP_TYPE_SUB,
-    DECOMP_TYPE_VERTICAL,
-    DECOMP_TYPE_WIDE,
-    DECOMP_TYPE_NARROW,
-    DECOMP_TYPE_SMALL,
-    DECOMP_TYPE_SQUARE,
-    DECOMP_TYPE_FRACTION,
-    DECOMP_TYPE_COMPAT
-} FlDecompositionType;
-
-// http://unicode.org/reports/tr44/#Property_List_Table
-// unicode_1_name obsolete                  // 10
-// iso_comment deprecated                   // 11
-typedef struct
-{
-    double numerical_value_3;               // 8- nt, nv | -1 default value (NULL)
-    int numerical_value_1;                  // 6- nt, nv | -1 default value (NULL)
-    int numerical_value_2;                  // 7- nt, nv | -1 default value (NULL)
-    FlDecompositionType decomposition_type; // 5
-    const uint32_t* decomposition_mapping;       // 5
-    uint32_t code;                     // 0
-    const FlCstr name;                     // 1
-    const FlCstr general_category;         // 2- gc
-    const FlCstr bidi_class;               // 4- bc
-    uint32_t simple_uppercase_mapping;           // 12- suc | 0 is default value (NULL)
-    uint32_t simple_lowercase_mapping;           // 13- slc | 0 is default value (NULL)
-    uint32_t simple_titlecase_mapping;           // 14- stc | 0 is default value (NULL)
-    bool bidi_mirrored;                     // 9
-    FlByte canonical_combining_class;       // 3- ccc | 0 is default value
-} FlUnicodeData;
-
-static FlUnicodeData UnicodeData[] = {
-    #ifdef FL_UNICODE_DB
-        #include "resources/UnicodeDataDb.h"
-    #else
-        0
-    #endif
-};
 
 /* -------------------------------------------------------------
 * PRIVATE API

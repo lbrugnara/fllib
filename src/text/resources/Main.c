@@ -92,7 +92,7 @@ int main(void)
 
             char *str;
             int strsize = (int)fl_cstr_replace_n(buf, bufsize, " ", 1, ", 0x", 4, &str);
-            fprintf(outfd, ".decomposition_mapping = (const uint32_t[]){ %.*s }, ", strsize, str);
+            fprintf(outfd, ".decomposition_mapping = (const uint32_t[]){ %.*s, UINT32_MAX }, ", strsize, str);
             fl_cstr_delete(str);
         }
 

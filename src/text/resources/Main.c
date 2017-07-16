@@ -2,6 +2,25 @@
 #include <string.h>
 #include <fllib.h>
 
+typedef struct 
+{
+    FlCstr code;
+    FlCstr name;
+    FlCstr numerical_value_1;
+    FlCstr numerical_value_2;
+    FlCstr numerical_value_3;
+    FlCstr decomposition_type;
+    FlCstr decomposition_mapping;
+    FlCstr general_category;
+    FlCstr simple_uppercase_mapping;
+    FlCstr simple_lowercase_mapping;
+    FlCstr simple_titlecase_mapping;
+    FlCstr canonical_combining_class;
+    FlCstr bidi_class;
+    FlCstr bidi_mirrored;
+    FlCstr full_composition_exclusion;
+} UnicodeData;
+
 size_t get_decomp_type(const char *udata, char *dest)
 {
     static char* types[] = {"<font>", "<noBreak>", "<initial>", "<medial>", "<final>", "<isolated>", "<circle>", "<super>", "<sub>", "<vertical>", "<wide>", "<narrow>", "<small>", "<square>", "<fraction>", "<compat>"};
@@ -18,15 +37,52 @@ size_t get_decomp_type(const char *udata, char *dest)
     return 0;
 }
 
-int main(void)
+typedef FlVector FlCstrVector;
+
+FlCstrVector split_text(const FlCstr source, size_t length, char chr)
 {
-    FlFile *outfd = fl_file_open("src/text/resources/UnicodeDataDb.h", "w");
+    FlCstrVector lines = fl_vector_new(sizeof(FlCstr*), 10);
+    size_t s = 0;
+    FlCstr tmp = NULL;
+    for (size_t i=0; i < length; i++)
+    {
+        if (source[i] != chr)
+            continue;
+        size_t nb = i-s;
+        if (nb > 0 && source[s] != '#')
+        {
+            tmp = fl_cstr_dup_n(source+s, nb);
+            fl_vector_add(lines, &tmp);
+        }
+        s = i+1;
+        tmp = NULL;
+    }
+    return lines;
+}
+
+void parse_composition_exclusion(FlVector data)
+{
+    FlByteArray buffer = fl_file_read_all_bytes("src/text/resources/DerivedNormalizationProps-9.0.0.txt");
+    size_t size = fl_array_length(buffer);
+    
+    FlCstr fce_start = strstr((const FlCstr)buffer, "# Derived Property: Full_Composition_Exclusion");
+    FlCstr fce_end = strstr(fce_start, "# ================================================");
+    
+    FlCstrVector lines = split_text((const FlCstr)fce_start, (fce_end-fce_start), '\n');
+
+    fl_vector_delete_ptrs(lines);
+    fl_array_delete(buffer);
+}
+
+void parse_unicode_data(FlVector data)
+{
     FlByteArray buffer = fl_file_read_all_bytes("src/text/resources/UnicodeData-9.0.0.txt");
     size_t size = fl_array_length(buffer);
     const char *base = (const char*)buffer;
     do
     {
-        const char* endField1 = strchr((const char*)base, ';');
+        UnicodeData *ud = fl_malloc(sizeof(UnicodeData));
+        const char* endField1 = strchr(base, ';');
         const char* endField2 = strchr(endField1+1, ';');
         const char* endField3 = strchr(endField2+1, ';');
         const char* endField4 = strchr(endField3+1, ';');
@@ -55,14 +111,12 @@ int main(void)
         int lengthField14 = (endField15-1-endField14);
         int lengthField9 = (endField10-1-endField9);
         int lengthField3 = (endField4-1-endField3);
-
-        fprintf(outfd, "{");
         
-        fprintf(outfd, ".code = 0x%.*s, ", lengthField0, (const char*)base);
-        fprintf(outfd, ".name = \"%.*s\", ", lengthField1, endField1+1);
-        fprintf(outfd, ".numerical_value_3 = %.*s, ", lengthField8 == 0 ? 2 : lengthField8, lengthField8 == 0 ? "-1" : endField8+1);
-        fprintf(outfd, ".numerical_value_1 = %.*s, ", lengthField6 == 0 ? 2 : lengthField6, lengthField6 == 0 ? "-1" : endField6+1);
-        fprintf(outfd, ".numerical_value_2 = %.*s, ", lengthField7 == 0 ? 2 : lengthField7, lengthField7 == 0 ? "-1" : endField7+1);
+        ud->code = fl_cstr_dup_n((const FlCstr)base, lengthField0);
+        ud->name = fl_cstr_dup_n((const FlCstr)endField1+1, lengthField1);
+        ud->numerical_value_3 = fl_cstr_dup_n((const FlCstr)(lengthField8 == 0 ? "-1" : endField8+1), lengthField8 == 0 ? 2 : lengthField8);
+        ud->numerical_value_1 = fl_cstr_dup_n((const FlCstr)(lengthField6 == 0 ? "-1" : endField6+1), lengthField6 == 0 ? 2 : lengthField6);
+        ud->numerical_value_2 = fl_cstr_dup_n((const FlCstr)(lengthField7 == 0 ? "-1" : endField7+1), lengthField7 == 0 ? 2 : lengthField7);
 
 
         // Decomposition_Mapping
@@ -76,13 +130,12 @@ int main(void)
                 int length = (int)get_decomp_type(value, buffer);
                 if (length > 0)
                 {
-                    fprintf(outfd, ".decomposition_type = %.*s, ", length, buffer);
+                    ud->decomposition_type = fl_cstr_dup_n(buffer, length);
                 }
                 size_t toremove = length - 12 + 2 +1; // DECOMP_TYPE_xxx - strlen(DECOMP_TYPE_) + '<' and '>' + ' '
                 lengthField5 = lengthField5 - toremove;
                 start = value + toremove;
             }
-            //fprintf(outfd, ".decomposition_mapping = %.*s, ", lengthField5, start);
             int bufsize = (int)2+lengthField5+1;
             char buf[bufsize];
             memset(buf, 0, bufsize);
@@ -92,28 +145,28 @@ int main(void)
 
             char *str;
             int strsize = (int)fl_cstr_replace_n(buf, bufsize, " ", 1, ", 0x", 4, &str);
-            fprintf(outfd, ".decomposition_mapping = (const uint32_t[]){ %.*s, UINT32_MAX }, ", strsize, str);
+            ud->decomposition_mapping = fl_cstr_dup_n(str, strsize);
             fl_cstr_delete(str);
         }
 
         // General_Category
         if (lengthField2 != 0)
         {
-            fprintf(outfd, ".general_category = \"%.*s\", ", lengthField2, endField2+1);
+            ud->general_category = fl_cstr_dup_n((const FlCstr)endField2+1, lengthField2);
         }
         else
         {
-            fprintf(outfd, ".general_category = \"Cn\", ");
+            ud->general_category = fl_cstr_dup("\"Cn\"");
         }
 
-        fprintf(outfd, ".bidi_class = \"%.*s\", ", lengthField4, endField4+1);
+        ud->bidi_class = fl_cstr_dup_n((const FlCstr)endField4+1, lengthField4);
 
         if (lengthField12 != 0)
-            fprintf(outfd, ".simple_uppercase_mapping = 0x%.*s, ", lengthField12, endField12+1);
+            ud->simple_uppercase_mapping = fl_cstr_dup_n((const FlCstr)endField12+1, lengthField12);
         if (lengthField13 != 0)
-            fprintf(outfd, ".simple_lowercase_mapping = 0x%.*s, ", lengthField13, endField13+1);
+            ud->simple_lowercase_mapping = fl_cstr_dup_n((const FlCstr)endField13+1, lengthField13);
         if (lengthField14 != 0)
-            fprintf(outfd, ".simple_titlecase_mapping = 0x%.*s, ", lengthField14, endField14+1);
+            ud->simple_titlecase_mapping = fl_cstr_dup_n((const FlCstr)endField14+1, lengthField14);
         
         if (lengthField3 > 1 || (lengthField3 == 1 && (endField3+1)[0] != '0'))
         {
@@ -122,27 +175,94 @@ int main(void)
             memset(str, 0, s);
             memcpy(str, endField3+1, lengthField3);
             str[s] = FL_EOS;
-            int intval = atoi(str);
-            fprintf(outfd, ".canonical_combining_class = %d, ", intval);
+            ud->canonical_combining_class = fl_cstr_dup_n(str, s);
         }
         
         if (lengthField9 != 0 && (endField9+1)[0] == 'Y')
         {
-            fprintf(outfd, ".bidi_mirrored = true ");
-        }
-        else
-        {
-            fprintf(outfd, ".bidi_mirrored = false ");
+            ud->bidi_mirrored = fl_cstr_dup("true");
         }
 
-        fprintf(outfd, "}");
-        
+        fl_vector_add(data, &ud);
         base = endField15 + 1;
-        if (base < (const char*)buffer+size)
-            fprintf(outfd, ",");
-        fprintf(outfd, "\n");
-
     } while (base < (const char*)buffer+size);
-    fl_file_close(outfd);
     fl_array_delete(buffer);
+}
+
+void delete_data_handler(FlByte *ptr)
+{
+    UnicodeData *ud = (UnicodeData*)ptr;
+    if (ud->code) fl_cstr_delete(ud->code);
+    if (ud->name) fl_cstr_delete(ud->name);
+    if (ud->numerical_value_1) fl_cstr_delete(ud->numerical_value_1);
+    if (ud->numerical_value_2) fl_cstr_delete(ud->numerical_value_2);
+    if (ud->numerical_value_3) fl_cstr_delete(ud->numerical_value_3);
+    if (ud->decomposition_type) fl_cstr_delete(ud->decomposition_type);
+    if (ud->decomposition_mapping) fl_cstr_delete(ud->decomposition_mapping);
+    if (ud->general_category) fl_cstr_delete(ud->general_category);
+    if (ud->simple_uppercase_mapping) fl_cstr_delete(ud->simple_uppercase_mapping);
+    if (ud->simple_lowercase_mapping) fl_cstr_delete(ud->simple_lowercase_mapping);
+    if (ud->simple_titlecase_mapping) fl_cstr_delete(ud->simple_titlecase_mapping);
+    if (ud->canonical_combining_class) fl_cstr_delete(ud->canonical_combining_class);
+    if (ud->bidi_class) fl_cstr_delete(ud->bidi_class);
+    if (ud->bidi_mirrored) fl_cstr_delete(ud->bidi_mirrored);
+    if (ud->full_composition_exclusion) fl_cstr_delete(ud->full_composition_exclusion);
+    fl_free(ud);
+}
+
+void create_unicode_database_file(FlVector data)
+{
+    FlFile *outfd = fl_file_open("src/text/resources/UnicodeDataDb.h", "w");
+    size_t data_length = fl_vector_length(data);
+    for (size_t i=0; i < data_length; i++)
+    {
+        UnicodeData *ud = *(UnicodeData**)fl_vector_get(data, i);
+        fprintf(outfd, "{");
+        fprintf(outfd, ".code = 0x%s, ",                        ud->code);
+        fprintf(outfd, ".name = \"%s\", ",                      ud->name);
+        fprintf(outfd, ".numerical_value_3 = %s, ",            ud->numerical_value_3);
+        fprintf(outfd, ".numerical_value_1 = %s, ",            ud->numerical_value_1);
+        fprintf(outfd, ".numerical_value_2 = %s, ",            ud->numerical_value_2);
+
+        if (ud->decomposition_type)
+            fprintf(outfd, ".decomposition_type = %s, ",           ud->decomposition_type);
+        if (ud->decomposition_mapping)
+            fprintf(outfd, ".decomposition_mapping = (const uint32_t[]){ %s, UINT32_MAX }, ", ud->decomposition_mapping);
+
+        fprintf(outfd, ".general_category = \"%s\", ",         ud->general_category);
+        fprintf(outfd, ".bidi_class = \"%s\", ",               ud->bidi_class);
+
+        if (ud->simple_uppercase_mapping)
+            fprintf(outfd, ".simple_uppercase_mapping = 0x%s, ",    ud->simple_uppercase_mapping);
+        
+        if (ud->simple_lowercase_mapping)
+            fprintf(outfd, ".simple_lowercase_mapping = 0x%s, ",    ud->simple_lowercase_mapping);
+        
+        if (ud->simple_titlecase_mapping)
+            fprintf(outfd, ".simple_titlecase_mapping = 0x%s, ",    ud->simple_titlecase_mapping);
+        
+        if (ud->canonical_combining_class)
+            fprintf(outfd, ".canonical_combining_class = %s, ",     ud->canonical_combining_class);
+        
+        if (ud->bidi_mirrored)
+            fprintf(outfd, ".bidi_mirrored = %s ",                  ud->bidi_mirrored);
+        
+        fprintf(outfd, "}");
+
+        if (i < data_length-1)
+        {
+            fprintf(outfd, ",");
+            fprintf(outfd, "\n");
+        }
+    }
+    fl_file_close(outfd);
+}
+
+int main(void)
+{
+    FlVector data = fl_vector_new(sizeof(UnicodeData*), 30000);
+    parse_unicode_data(data);
+    parse_composition_exclusion(data);
+    create_unicode_database_file(data);
+    fl_vector_delete_h(data, &delete_data_handler);
 }

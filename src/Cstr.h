@@ -45,6 +45,8 @@ FlCstr fl_cstr_copy_n(FlCstr dest, const char* source, size_t n);
  */
 FlCstr fl_cstr_dup(const FlCstr s);
 
+FlCstr fl_cstr_dup_n(const FlCstr s, size_t n);
+
 /**
  * Duplicates {s} replacing modifiers %c,%d and %s
  * using stdarg. Handles all the memory allocation

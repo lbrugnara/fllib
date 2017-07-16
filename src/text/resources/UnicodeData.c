@@ -91,7 +91,9 @@ size_t lookup_data(uint32_t codepoint)
 size_t fl_unicode_get_decomposition_mapping(uint32_t codepoint, bool canonical, uint32_t *destination)
 {
     size_t i = lookup_data(codepoint);
-    if (i == SIZE_MAX || UnicodeData[i].decomposition_mapping == NULL || (canonical && UnicodeData[i].decomposition_type != DECOMP_TYPE_CANONICAL))
+    if (i == SIZE_MAX || UnicodeData[i].decomposition_mapping == NULL 
+        || (canonical && UnicodeData[i].decomposition_type != DECOMP_TYPE_CANONICAL)
+        || (!canonical && UnicodeData[i].decomposition_type == DECOMP_TYPE_CANONICAL))
     {
         // Default value for Decomposition_Mapping is the same value
         *destination = codepoint;

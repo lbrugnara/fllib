@@ -62,9 +62,15 @@ fl_cstr_dup (const FlCstr s)
 {
     flm_assert(s != NULL, "FlCstr argument to duplicate cannot be NULL");
     size_t l = strlen(s);
-    FlCstr sd = fl_cstr_new(l+1);
-    memcpy(sd, s, l);
-    sd[l] = '\0';
+    return fl_cstr_dup_n(s, l);
+}
+
+FlCstr fl_cstr_dup_n(const FlCstr s, size_t n)
+{
+    flm_assert(s != NULL, "FlCstr argument to duplicate cannot be NULL");
+    FlCstr sd = fl_cstr_new(n+1);
+    memcpy(sd, s, n);
+    sd[n] = '\0';
     return sd;
 }
 

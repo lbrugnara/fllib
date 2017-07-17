@@ -5,7 +5,7 @@
 
 void test_cstr_new()
 {
-    FlCstr str = fl_cstr_new(5);
+    char *str = fl_cstr_new(5);
     fl_expect("fl_cstr_new(5) returns a valid pointer", str != NULL);
     str[0] = 'H';
     str[1] = 'e';
@@ -19,7 +19,7 @@ void test_cstr_new()
 
 void test_cstr_dup()
 {
-    FlCstr str = fl_cstr_dup("Hello");
+    char *str = fl_cstr_dup("Hello");
     fl_expect("str not null", str != NULL);
     fl_expect("str == \"Hello\"", flm_cstr_equals(str, "Hello"));
     fl_cstr_delete(str);
@@ -57,32 +57,32 @@ void test_cstr_split()
 
 void test_cstr_replace_char()
 {
-    FlCstr world = "World";
-    FlCstr worl = fl_cstr_replace_char(world, 'd', "");
+    char *world = "World";
+    char *worl = fl_cstr_replace_char(world, 'd', "");
     fl_expect("Replace char 'd' with empty string in 'World' results in 'Worl'", flm_cstr_equals(worl, "Worl"));
-    FlCstr word = fl_cstr_replace_char(worl, 'l', "d");
+    char *word = fl_cstr_replace_char(worl, 'l', "d");
     fl_expect("Replace char 'l' with 'd' in 'Worl' results in 'Word'", flm_cstr_equals(word, "Word"));
     fl_cstr_delete(word);
     fl_cstr_delete(worl);
 
-    FlCstr dot = "object.property";
-    FlCstr noDot = fl_cstr_replace_char(dot, '.', "");
+    char *dot = "object.property";
+    char *noDot = fl_cstr_replace_char(dot, '.', "");
     fl_expect("Replace char '.' with empty string in 'object.property' results in 'objectproperty'", flm_cstr_equals(noDot, "objectproperty"));
     fl_cstr_delete(noDot);
 
-    FlCstr multipleA = "abcabcabca";
-    FlCstr noA = fl_cstr_replace_char(multipleA, 'a', "");
+    char *multipleA = "abcabcabca";
+    char *noA = fl_cstr_replace_char(multipleA, 'a', "");
     fl_expect("Replace char 'a' with empty string in 'abcabcabca' results in 'bcbcbc'", flm_cstr_equals(noA, "bcbcbc"));
     fl_cstr_delete(noA);
 
-    FlCstr withZz = fl_cstr_replace_char(multipleA, 'a', "zz");
+    char *withZz = fl_cstr_replace_char(multipleA, 'a', "zz");
     fl_expect("Replace char 'a' with string 'zz' in 'abcabcabca' results in 'zzbczzbczzbczz'", flm_cstr_equals(withZz, "zzbczzbczzbczz"));
     fl_cstr_delete(withZz);
 }
 
 void test_cstr_replace()
 {
-    FlCstr replaced = fl_cstr_replace("", "abc", "123");
+    char *replaced = fl_cstr_replace("", "abc", "123");
     fl_expect("Some test here", flm_cstr_equals(replaced, ""));
     fl_cstr_delete(replaced);
 
@@ -134,12 +134,12 @@ void test_cstr_replace()
     fl_expect("Some test here", flm_cstr_equals(replaced, "hellohello"));
     fl_cstr_delete(replaced);
 
-    const FlCstr msg = "Actually, we are changing all the text by a larger one";
+    const char *msg = "Actually, we are changing all the text by a larger one";
     replaced = fl_cstr_replace("none", "none", msg);
     fl_expect("Some test here", flm_cstr_equals(replaced, msg));
     fl_cstr_delete(replaced);
 
-    const FlCstr shortermsg = "Now, a shorter one";
+    const char *shortermsg = "Now, a shorter one";
     replaced = fl_cstr_replace(msg, msg, shortermsg);
     fl_expect("Some test here", flm_cstr_equals(replaced, shortermsg));
     fl_cstr_delete(replaced);
@@ -147,7 +147,7 @@ void test_cstr_replace()
 
 void test_cstr_append()
 {
-    FlCstr helloWorld = fl_cstr_dup("Hello ");
+    char *helloWorld = fl_cstr_dup("Hello ");
     fl_cstr_append(&helloWorld, "world!");
     fl_expect("Append 'world!' to string 'Hello ' results in 'Hello world!'", flm_cstr_equals(helloWorld, "Hello world!"));
     fl_expect("Combined string  'Hello world!' has 12 characters", strlen(helloWorld) == 12);
@@ -162,15 +162,15 @@ void test_cstr_append()
 
 void test_cstr_join()
 {
-    FlVector str_vector = flm_vector_new(FlCstr, 3);
-    FlCstr str1 = fl_cstr_dup("one");
-    FlCstr str2 = fl_cstr_dup("two");
-    FlCstr str3 = fl_cstr_dup("three");
+    FlVector str_vector = flm_vector_new(char*, 3);
+    char *str1 = fl_cstr_dup("one");
+    char *str2 = fl_cstr_dup("two");
+    char *str3 = fl_cstr_dup("three");
 
     fl_vector_add(str_vector, &str1);
     fl_vector_add(str_vector, &str2);
     fl_vector_add(str_vector, &str3);
-    FlCstr str = fl_cstr_join(str_vector, ", ");
+    char *str = fl_cstr_join(str_vector, ", ");
     fl_expect("Join vector with three items 'one', 'two' and 'three' using ', ' as glue, results in 'one, two, three'", flm_cstr_equals(str, "one, two, three"));
     fl_expect("Length of previous joined string is 15 characters", strlen(str) == 15);
     fl_cstr_delete(str);

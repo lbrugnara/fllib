@@ -42,7 +42,7 @@ size_t fl_dictionary_val_dtsize(const FlDictionary dictionary);
  * Adds the {key}-{value} pair into {dictionary}
  * Return a pointer to the inserted element
  */
-FlKeyValuePair fl_dictionary_add(FlDictionary dictionary, const FlPointer key, const FlPointer value);
+FlKeyValuePair fl_dictionary_add(FlDictionary dictionary, const void *key, const void *value);
 
 /**
  * {@dictionary} Target dictionary to add a new value
@@ -51,20 +51,20 @@ FlKeyValuePair fl_dictionary_add(FlDictionary dictionary, const FlPointer key, c
  * If {key} exists, this function overrides its value with {val}. If not, works as {fl_dictionary_add}.
  * Return a pointer to the inserted element.
  */
-FlKeyValuePair fl_dictionary_set(FlDictionary dict, const FlPointer key, const FlPointer val);
+FlKeyValuePair fl_dictionary_set(FlDictionary dict, const void *key, const void *val);
 
 /**
  * Returns a pointer to the element with key {key}
  */
-FlPointer fl_dictionary_get_val(const FlDictionary dictionary, const FlPointer key);
+void* fl_dictionary_get_val(const FlDictionary dictionary, const void *key);
 
 /**
  * If {val} exists, returns a pointer to its key 
  */
-FlPointer fl_dictionary_get_key(const FlDictionary dictionary, const FlPointer val);
+void* fl_dictionary_get_key(const FlDictionary dictionary, const void *val);
 
-FlGenericArray fl_dictionary_keys(const FlDictionary dictionary);
-FlGenericArray fl_dictionary_values(const FlDictionary dictionary);
+void* fl_dictionary_keys(const FlDictionary dictionary);
+void* fl_dictionary_values(const FlDictionary dictionary);
 
 /**
  * Returns a pointer to a list element (the internal representation of FlDictionary is an FlList of FlKeyValuePair elements)
@@ -74,17 +74,17 @@ FlList fl_dictionary_to_list(const FlDictionary dictionary);
 /**
  * Returns a pointer to an FlKeyValuePair element where the key is {key}
  */
-FlKeyValuePair fl_dictionary_get_kvp(const FlDictionary dictionary, const FlPointer key);
+FlKeyValuePair fl_dictionary_get_kvp(const FlDictionary dictionary, const void *key);
 
 /**
  * Return true if {dictionary} contains a key with value {key}
  */
-bool fl_dictionary_contains_key(const FlDictionary dictionary, const FlPointer key);
+bool fl_dictionary_contains_key(const FlDictionary dictionary, const void *key);
 
 /**
  * Return true if {dictionary} contains a value with value {value}
  */
-bool fl_dictionary_contains_val(const FlDictionary dictionary, const FlPointer value);
+bool fl_dictionary_contains_val(const FlDictionary dictionary, const void *value);
 
 /**
  * Append {dictionary2} elements at the end of {dictionary}. Repeated keys are overrided
@@ -103,7 +103,7 @@ FlDictionary fl_dictionary_merge(const FlDictionary dictionary, const FlDictiona
  * Remove from {dictionary}, the element with key {key}.
  * The value for the removed element will be copied in {dest} if it is provided
  */
-bool fl_dictionary_remove(FlDictionary dictionary, const FlPointer key, FlPointer dest);
+bool fl_dictionary_remove(FlDictionary dictionary, const void *key, void *dest);
 
 /**
  * Remove all elements from the dictionary

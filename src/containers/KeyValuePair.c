@@ -48,14 +48,12 @@ fl_kvp_val_dtsize(FlKeyValuePair kvp)
 	return kvp->vdtsize;
 }
 
-FlPointer
-fl_kvp_get_key(FlKeyValuePair kvp)
+void* fl_kvp_get_key(FlKeyValuePair kvp)
 {
 	return kvp->key;
 }
 
-FlPointer
-fl_kvp_get_val(FlKeyValuePair kvp)
+void* fl_kvp_get_val(FlKeyValuePair kvp)
 {
 	return kvp->val;
 }

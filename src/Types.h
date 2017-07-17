@@ -12,31 +12,14 @@
 */
 typedef unsigned char FlByte;
 
-typedef FlByte* FlByteArray;
 
 /* -------------------------------------------------------------
-* {datatype: char* FlCstr}
-* -------------------------------------------------------------
-* Represents an ANSI C-Like string
-* -------------------------------------------------------------
-*/
-typedef char* FlCstr;
-
-/* -------------------------------------------------------------
-* {datatype: char* FlString}
+* {define: FlString}
 * -------------------------------------------------------------
 * Represents an UTF8 string
 * -------------------------------------------------------------
 */
-typedef char* FlString;
-
-/* -------------------------------------------------------------
-* {datatype: void* FlPointer}
-* -------------------------------------------------------------
-* Used for readability purposes, but it is not mandatory
-* -------------------------------------------------------------
-*/
-typedef void* FlPointer;
+#define FlString char*
 
 #ifndef NULL
     #define NULL (void*)0

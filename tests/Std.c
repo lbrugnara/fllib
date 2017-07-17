@@ -10,7 +10,7 @@
 void thread_error()
 {
     FlError error;
-    FlCstr str;
+    char *str;
     FlThreadId id = fl_thread_current_id();
     fl_error_push(1, "ID=%d | Testing error 1", id);
     error = fl_error_last();

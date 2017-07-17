@@ -40,7 +40,7 @@ size_t fl_vector_dtsize(FlVector vector);
  * Copy {elem} content in {vector}.
  * Return a pointer to the inserted element
  */
-FlPointer fl_vector_add(FlVector vector, const FlPointer elem);
+void* fl_vector_add(FlVector vector, const void *elem);
 
 /**
  * {@vector} Target vector to insert a new value
@@ -48,7 +48,7 @@ FlPointer fl_vector_add(FlVector vector, const FlPointer elem);
  * Insert {elem} in the position {pos} of {vector}
  * Return a pointer to the inserted element
  */
-FlPointer fl_vector_insert(FlVector vector, const FlPointer elem, size_t pos);
+void* fl_vector_insert(FlVector vector, const void *elem, size_t pos);
 
 /**
  * Increases {vector} capacity by {nelem}
@@ -58,31 +58,31 @@ void fl_vector_resize(FlVector vector, size_t nelem);
 /**
  * Returns a pointer to the element in the {index} index of {vector}
  */
-FlPointer fl_vector_get(FlVector vector, size_t index);
+void* fl_vector_get(FlVector vector, size_t index);
 
 void fl_vector_qsort(FlVector vector, int (*comparer)(const void *, const void*));
 
-FlPointer fl_vector_bsearch(FlVector vector, const void *needle, int (*comparer)(const void *, const void*));
+void* fl_vector_bsearch(FlVector vector, const void *needle, int (*comparer)(const void *, const void*));
 
 /**
  * Remove from {vector}, the first element in {vector} copying it into {dest}
  */
-bool fl_vector_shift(FlVector vector, FlPointer dest);
+bool fl_vector_shift(FlVector vector, void *dest);
 
 /**
  * Insert {elem} in the first position of {vector}
  */
-FlPointer fl_vector_unshift(FlVector vector, const FlPointer elem);
+void* fl_vector_unshift(FlVector vector, const void *elem);
 
 /**
  * Remove from {vector}, the last element copying it into {dest}
  */
-bool fl_vector_pop(FlVector vector, FlPointer dest);
+bool fl_vector_pop(FlVector vector, void *dest);
 
 /**
  * Return true if {vector} contains {elem}
  */
-bool fl_vector_contains(FlVector vector, const FlPointer elem);
+bool fl_vector_contains(FlVector vector, const void *elem);
 
 /**
  * Append {vector2} elements at the end of {vector}
@@ -99,7 +99,7 @@ FlVector fl_vector_merge(FlVector vector, FlVector vector2);
  * Removes the {pos}-th element in {vector}.
  * The removed element will be copied in {dest} if it's different from NULL
  */
-bool fl_vector_remove(FlVector vector, size_t pos, FlPointer dest);
+bool fl_vector_remove(FlVector vector, size_t pos, void *dest);
 
 /**
  * Remove all elements from the vector
@@ -144,12 +144,12 @@ do {    									\
 /**
  * Creates a copy of {src} and adds the new copy to {vector}
  */
-void fl_vector_add_cstr(FlVector vector, const FlCstr src);
+void fl_vector_add_cstr(FlVector vector, const char *src);
 
 /**
  * Creates a copy of {src} and insert it in the first position of {vector}
  */
-void fl_vector_unshift_cstr(FlVector vector, const FlCstr src);
+void fl_vector_unshift_cstr(FlVector vector, const char *src);
 
 /* -------------------------------------------------------------
  * {function: fl_vector_start}

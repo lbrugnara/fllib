@@ -12,16 +12,16 @@ struct FlDictionary
 
 
 bool 
-kvp_key_cmp(const FlPointer celem, const FlPointer key, size_t dtsize)
+kvp_key_cmp(const void *celem, const void *key, size_t dtsize)
 {
-	FlKeyValuePair *kvp = celem;
+	const FlKeyValuePair *kvp = celem;
 	return memcmp(fl_kvp_get_key(*kvp), key, fl_kvp_key_dtsize(*kvp)) == 0;
 }
 
 bool 
-kvp_val_cmp(const FlPointer celem, const FlPointer val, size_t dtsize)
+kvp_val_cmp(const void *celem, const void *val, size_t dtsize)
 {
-	FlKeyValuePair *kvp = celem;
+	const FlKeyValuePair *kvp = celem;
 	return memcmp(fl_kvp_get_val(*kvp), val, fl_kvp_val_dtsize(*kvp)) == 0;
 }
 
@@ -67,7 +67,7 @@ fl_dictionary_val_dtsize(const FlDictionary dict)
  * Return a pointer to the inserted element
  */
 FlKeyValuePair
-fl_dictionary_add(FlDictionary dict, const FlPointer key, const FlPointer val)
+fl_dictionary_add(FlDictionary dict, const void *key, const void *val)
 {
 	flm_assert(dict != NULL, "Dictionary cannot be NULL");
 	flm_assert(key != NULL, "Key cannot be NULL");
@@ -82,7 +82,7 @@ fl_dictionary_add(FlDictionary dict, const FlPointer key, const FlPointer val)
 }
 
 FlKeyValuePair
-fl_dictionary_set(FlDictionary dict, const FlPointer key, const FlPointer val)
+fl_dictionary_set(FlDictionary dict, const void *key, const void *val)
 {
 	flm_assert(dict != NULL, "Dictionary cannot be NULL");
 	flm_assert(key != NULL, "Key cannot be NULL");
@@ -105,8 +105,7 @@ fl_dictionary_set(FlDictionary dict, const FlPointer key, const FlPointer val)
 /**
  * Returns a pointer to the element in with key {key}
  */
-FlPointer
-fl_dictionary_get_val(const FlDictionary dict, const FlPointer key)
+void* fl_dictionary_get_val(const FlDictionary dict, const void *key)
 {
 	flm_assert(dict != NULL, "Dictionary cannot be NULL");
 	flm_assert(key != NULL, "Key cannot be NULL");
@@ -117,8 +116,7 @@ fl_dictionary_get_val(const FlDictionary dict, const FlPointer key)
 	return fl_kvp_get_val(*kvp);
 }
 
-FlPointer
-fl_dictionary_get_key(const FlDictionary dict, const FlPointer val)
+void* fl_dictionary_get_key(const FlDictionary dict, const void *val)
 {
 	flm_assert(dict != NULL, "Dictionary cannot be NULL");
 	flm_assert(val != NULL, "Value cannot be NULL");
@@ -129,11 +127,11 @@ fl_dictionary_get_key(const FlDictionary dict, const FlPointer val)
 	return fl_kvp_get_key(*kvp);
 }
 
-FlGenericArray fl_dictionary_keys(const FlDictionary dictionary)
+void* fl_dictionary_keys(const FlDictionary dictionary)
 {
 	FlList kvplist = dictionary->list;
 	size_t nelem = fl_list_length(kvplist);
-	FlGenericArray *arr = fl_array_new(dictionary->kdtsize, nelem);
+	void **arr = fl_array_new(dictionary->kdtsize, nelem);
 	for (size_t i=0, k=0; i < nelem; (i++, k += dictionary->kdtsize))
 	{
 		FlKeyValuePair *kvp = fl_list_get(kvplist, i);
@@ -142,11 +140,11 @@ FlGenericArray fl_dictionary_keys(const FlDictionary dictionary)
 	return arr;
 }
 
-FlGenericArray fl_dictionary_values(const FlDictionary dictionary)
+void* fl_dictionary_values(const FlDictionary dictionary)
 {
 	FlList kvplist = dictionary->list;
 	size_t nelem = fl_list_length(kvplist);
-	FlGenericArray *arr = fl_array_new(dictionary->vdtsize, nelem);
+	void **arr = fl_array_new(dictionary->vdtsize, nelem);
 	for (size_t i=0, k=0; i < nelem; (i++, k += dictionary->vdtsize))
 	{
 		FlKeyValuePair *kvp = fl_list_get(kvplist, i);
@@ -166,7 +164,7 @@ fl_dictionary_to_list(const FlDictionary dict)
  * Returns a pointer to a FlKeyValuePair element where the key is {key}
  */
 FlKeyValuePair
-fl_dictionary_get_kvp(const FlDictionary dict, const FlPointer key)
+fl_dictionary_get_kvp(const FlDictionary dict, const void *key)
 {
 	flm_assert(dict != NULL, "Dictionary cannot be NULL");
 	flm_assert(key != NULL, "Key cannot be NULL");
@@ -181,7 +179,7 @@ fl_dictionary_get_kvp(const FlDictionary dict, const FlPointer key)
  * Return true if {dictionary} contains a key with value {key}
  */
 bool
-fl_dictionary_contains_key(const FlDictionary dict, const FlPointer key)
+fl_dictionary_contains_key(const FlDictionary dict, const void *key)
 {
 	flm_assert(dict != NULL, "Dictionary cannot be NULL");
 	flm_assert(key != NULL, "Key cannot be NULL");
@@ -193,7 +191,7 @@ fl_dictionary_contains_key(const FlDictionary dict, const FlPointer key)
  * Return true if {dictionary} contains a value with value {value}
  */
 bool
-fl_dictionary_contains_val(const FlDictionary dict, const FlPointer value)
+fl_dictionary_contains_val(const FlDictionary dict, const void *value)
 {
 	flm_assert(dict != NULL, "Dictionary cannot be NULL");
 	flm_assert(value != NULL, "Value cannot be NULL");
@@ -251,7 +249,7 @@ fl_dictionary_merge(const FlDictionary dict1, const FlDictionary dict2)
  * The value for the removed element will be copied in {dest}
  */
 bool
-fl_dictionary_remove(FlDictionary dict, const FlPointer key, FlPointer dest)
+fl_dictionary_remove(FlDictionary dict, const void *key, void *dest)
 {
 	flm_assert(dict != NULL, "Dictionary cannot be NULL");
 	flm_assert(key != NULL, "Key cannot be NULL");
@@ -259,7 +257,7 @@ fl_dictionary_remove(FlDictionary dict, const FlPointer key, FlPointer dest)
 	bool res = fl_list_remove_h(dict->list, kvp_key_cmp, key, &kvp);
 	if (dest != NULL)
 	{
-		FlPointer val = fl_kvp_get_val(kvp);
+		void *val = fl_kvp_get_val(kvp);
 		memcpy(dest, val, dict->vdtsize);
 		fl_kvp_delete(kvp);
 	}
@@ -334,7 +332,7 @@ typedef struct FlDictionaryIterator {
     FlListNode prev;
 } FlDictionaryIterator;
 
-static void it_next(FlPointer it)
+static void it_next(void *it)
 {
     FlDictionaryIterator *lit = (FlDictionaryIterator*)it;
     lit->prev = lit->current;
@@ -342,7 +340,7 @@ static void it_next(FlPointer it)
     lit->next = fl_list_node_next(lit->current);
 }
 
-static void it_prev(FlPointer it)
+static void it_prev(void *it)
 {
     FlDictionaryIterator *lit = (FlDictionaryIterator*)it;
     lit->next = lit->current;
@@ -350,20 +348,20 @@ static void it_prev(FlPointer it)
     lit->next = fl_list_node_prev(lit->current);
 }
 
-static FlPointer it_value(FlPointer it)
+static void* it_value(void *it)
 {
     FlDictionaryIterator *lit = (FlDictionaryIterator*)it;
     return fl_list_node_data(lit->current);
 }
 
-static bool it_equals(FlPointer it1, FlPointer it2)
+static bool it_equals(void *it1, void *it2)
 {
     FlDictionaryIterator *lit1 = (FlDictionaryIterator*)it1;
     FlDictionaryIterator *lit2 = (FlDictionaryIterator*)it2;
     return lit1->current == lit2->current;
 }
 
-static bool it_start(FlPointer it, FlPointer container)
+static bool it_start(void *it, void *container)
 {
     FlDictionaryIterator *lit = it;
     FlDictionary dict = container;
@@ -371,7 +369,7 @@ static bool it_start(FlPointer it, FlPointer container)
     return  head != NULL && lit->current == head;
 }
 
-static bool it_end(FlPointer it, FlPointer container)
+static bool it_end(void *it, void *container)
 {
     FlDictionaryIterator *lit = it;
     FlDictionary dict = container;
@@ -379,7 +377,7 @@ static bool it_end(FlPointer it, FlPointer container)
     return  tail != NULL && lit->prev == tail;
 }
 
-static void it_delete(FlPointer it)
+static void it_delete(void *it)
 {
     fl_free(it);
 }

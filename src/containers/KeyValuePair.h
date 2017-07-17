@@ -35,12 +35,12 @@ size_t fl_kvp_val_dtsize(FlKeyValuePair kvp);
 /**
  * Returns the key of {kvp}
  */
-FlPointer fl_kvp_get_key(FlKeyValuePair kvp);
+void* fl_kvp_get_key(FlKeyValuePair kvp);
 
 /**
  * Returns the value of {kvp}
  */
-FlPointer fl_kvp_get_val(FlKeyValuePair kvp);
+void* fl_kvp_get_val(FlKeyValuePair kvp);
 
 /**
  * Set the key and value of {kvp} using {key} and {val}

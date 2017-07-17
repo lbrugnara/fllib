@@ -17,7 +17,7 @@
     #include <sys/types.h>
 #endif
 
-FlFile* fl_file_open(FlCstr filename, FlCstr mode)
+FlFile* fl_file_open(char *filename, char *mode)
 {
     #if defined(_WIN32) && __STDC_WANT_SECURE_LIB__
     {
@@ -34,12 +34,12 @@ FlFile* fl_file_open(FlCstr filename, FlCstr mode)
 }
 
 
-bool fl_file_exists(FlCstr filename)
+bool fl_file_exists(char *filename)
 {
     return access(filename, 0) != -1;
 }
 
-bool fl_file_create_dir(FlCstr pathname)
+bool fl_file_create_dir(char *pathname)
 {
     int res = mkdir(pathname, 0775);
     if (res == 0)
@@ -64,7 +64,7 @@ long fl_file_size(FlFile *fd)
     return size;
 }
 
-void fl_file_write_all_bytes(FlCstr filename, FlByteArray bytes)
+void fl_file_write_all_bytes(char *filename, FlByte *bytes)
 {
     FlFile *fd = fl_file_open(filename, "wb");
     if (!fd)
@@ -74,21 +74,21 @@ void fl_file_write_all_bytes(FlCstr filename, FlByteArray bytes)
     fl_file_close(fd);
 }
 
-FlByteArray fl_file_read_all_bytes(FlCstr filename)
+FlByte* fl_file_read_all_bytes(char *filename)
 {
     FlFile *fd = fl_file_open(filename, "rb");
     if (!fd)
         return NULL;
     fseek(fd, 0, SEEK_END);
     int length = ftell(fd);
-    FlByteArray buffer = (FlByteArray)fl_array_new(1, length);
+    FlByte *buffer = (FlByte*)fl_array_new(1, length);
     fseek(fd, 0, SEEK_SET);
     fread(buffer, length, 1, fd);
     fl_file_close(fd);
     return buffer;
 }
 
-size_t fl_file_read_bytes(FlFile *file, size_t bytesToRead, FlByteArray dst)
+size_t fl_file_read_bytes(FlFile *file, size_t bytesToRead, FlByte *dst)
 {
     flm_assert(file != NULL, "File descriptor cannot be NULL");
     size_t read = fread(dst, 1, bytesToRead, file);

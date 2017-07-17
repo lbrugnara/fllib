@@ -195,7 +195,7 @@ void parse_derived_normalization_property(FlVector data, const char *buffer, Nor
                 fl_vector_add(newcodepoints, &ud);
             }
 
-            char *propval = fl_cstr_dup((const FlCstr)value);
+            char *propval = fl_cstr_dup((const char*)value);
             switch (property)
             {
                 case NORM_PROP_FCE:
@@ -232,7 +232,7 @@ void parse_derived_normalization_property(FlVector data, const char *buffer, Nor
 void parse_derived_normalization_properties(FlVector data)
 {
     flm_assert(data != NULL && fl_vector_length(data) > 0, "Vector with UnicodeData.txt information must be populated before calling this function");
-    FlByteArray buffer = fl_file_read_all_bytes("src/text/resources/DerivedNormalizationProps-9.0.0.txt");
+    FlByte *buffer = fl_file_read_all_bytes("src/text/resources/DerivedNormalizationProps-9.0.0.txt");
     size_t size = fl_array_length(buffer);
 
     // Full_Composition_Exclusion
@@ -263,7 +263,7 @@ void parse_derived_normalization_properties(FlVector data)
 // any other parsing function to populate {data} with the UCD
 void parse_unicode_data(FlVector data)
 {
-    FlByteArray buffer = fl_file_read_all_bytes("src/text/resources/UnicodeData-9.0.0.txt");
+    FlByte *buffer = fl_file_read_all_bytes("src/text/resources/UnicodeData-9.0.0.txt");
     size_t size = fl_array_length(buffer);
     const char *base = (const char*)buffer;
     do
@@ -299,21 +299,21 @@ void parse_unicode_data(FlVector data)
         int lengthField9 = (endField10-1-endField9);
         int lengthField3 = (endField4-1-endField3);
         
-        ud->code = fl_cstr_dup_n((const FlCstr)base, lengthField0);
-        ud->name = fl_cstr_dup_n((const FlCstr)endField1+1, lengthField1);
+        ud->code = fl_cstr_dup_n((const char*)base, lengthField0);
+        ud->name = fl_cstr_dup_n((const char*)endField1+1, lengthField1);
 
         if (lengthField8 > 0)
-            ud->numerical_value_3 = fl_cstr_dup_n((const FlCstr)endField8+1, lengthField8);
+            ud->numerical_value_3 = fl_cstr_dup_n((const char*)endField8+1, lengthField8);
         
         if (lengthField6)
-            ud->numerical_value_1 = fl_cstr_dup_n((const FlCstr)endField6+1, lengthField6);
+            ud->numerical_value_1 = fl_cstr_dup_n((const char*)endField6+1, lengthField6);
 
         if (lengthField7)
-            ud->numerical_value_2 = fl_cstr_dup_n((const FlCstr)endField7+1, lengthField7);
+            ud->numerical_value_2 = fl_cstr_dup_n((const char*)endField7+1, lengthField7);
 
 
         // Decomposition_Mapping
-        FlCstr value = (char*)endField5+1;
+        char* value = (char*)endField5+1;
         if (lengthField5 != 0)
         {
             char *start = value;
@@ -345,17 +345,17 @@ void parse_unicode_data(FlVector data)
         // General_Category
         if (lengthField2 != 0)
         {
-            ud->general_category = fl_cstr_dup_n((const FlCstr)endField2+1, lengthField2);
+            ud->general_category = fl_cstr_dup_n((const char*)endField2+1, lengthField2);
         }
 
-        ud->bidi_class = fl_cstr_dup_n((const FlCstr)endField4+1, lengthField4);
+        ud->bidi_class = fl_cstr_dup_n((const char*)endField4+1, lengthField4);
 
         if (lengthField12 != 0)
-            ud->simple_uppercase_mapping = fl_cstr_dup_n((const FlCstr)endField12+1, lengthField12);
+            ud->simple_uppercase_mapping = fl_cstr_dup_n((const char*)endField12+1, lengthField12);
         if (lengthField13 != 0)
-            ud->simple_lowercase_mapping = fl_cstr_dup_n((const FlCstr)endField13+1, lengthField13);
+            ud->simple_lowercase_mapping = fl_cstr_dup_n((const char*)endField13+1, lengthField13);
         if (lengthField14 != 0)
-            ud->simple_titlecase_mapping = fl_cstr_dup_n((const FlCstr)endField14+1, lengthField14);
+            ud->simple_titlecase_mapping = fl_cstr_dup_n((const char*)endField14+1, lengthField14);
         
         if (lengthField3 > 1 || (lengthField3 == 1 && (endField3+1)[0] != '0'))
         {

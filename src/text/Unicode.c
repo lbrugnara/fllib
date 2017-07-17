@@ -63,7 +63,7 @@ static inline size_t utf32_to_utf8(const FlByte *src, FlByte *dst);
 */
 static inline bool utf8_mb_str_is_bigendian()
 {
-    FlString oldac = "𐌀"; // Hex 0xF0908C80
+    char *oldac = "𐌀"; // Hex 0xF0908C80
     int32_t oldah = 0xF0908C80;
     return ((FlByte*)oldac)[0] != ((FlByte*)&oldah)[0];
 }

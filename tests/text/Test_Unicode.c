@@ -7,7 +7,7 @@
 void test_fl_unicode_codepoint_at()
 {
     // All the code points size in this string is two-bytes
-    FlString str = "ĀāĂăĄąĆćĈĉĊċČčĎďĐđĒēĔĕĖėĘęĚěĜĝĞğĠġĢģĤĥĦħĨĩĪīĬĭĮįİıĲĳĴĵĶķĸĹĺĻļĽľĿŀŁłŃńŅņŇňŉŊŋŌōŎŏŐőŒœŔŕŖŗŘřŚśŜŝŞşŠšŢţŤťŦŧŨũŪūŬŭŮůŰűŲųŴŵŶŷŸŹźŻżŽž\x00";
+    char *str = "ĀāĂăĄąĆćĈĉĊċČčĎďĐđĒēĔĕĖėĘęĚěĜĝĞğĠġĢģĤĥĦħĨĩĪīĬĭĮįİıĲĳĴĵĶķĸĹĺĻļĽľĿŀŁłŃńŅņŇňŉŊŋŌōŎŏŐőŒœŔŕŖŗŘřŚśŜŝŞşŠšŢţŤťŦŧŨũŪūŬŭŮůŰűŲųŴŵŶŷŸŹźŻżŽž\x00";
     fl_expect("str is 127 code points long and it is composed of 256 code units", 
         fl_unicode_codepoint_sequence_length(FL_ENCODING_UTF8, (FlByte*)str, 0x00)
         && fl_unicode_codeunit_sequence_size(FL_ENCODING_UTF8, (FlByte*)str, 0x00)

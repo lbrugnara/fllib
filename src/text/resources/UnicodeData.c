@@ -52,9 +52,9 @@ typedef struct
     FlNormQuickCheckResult nfkc_quick_check;// (DerivedNormalizationProps: NFKC_Quick_Check)
     const uint32_t* decomposition_mapping;  // 5
     const uint32_t code;                    // 0
-    const FlCstr name;                      // 1
-    const FlCstr general_category;          // 2- gc
-    const FlCstr bidi_class;                // 4- bc
+    const char *name;                      // 1
+    const char *general_category;          // 2- gc
+    const char *bidi_class;                // 4- bc
     uint32_t simple_uppercase_mapping;      // 12- suc | 0 is default value (NULL)
     uint32_t simple_lowercase_mapping;      // 13- slc | 0 is default value (NULL)
     uint32_t simple_titlecase_mapping;      // 14- stc | 0 is default value (NULL)

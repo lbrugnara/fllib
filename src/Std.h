@@ -23,13 +23,13 @@
  * This is a memcpy-like function but it creates the destination
  * pointer.
  * -------------------------------------------------------------
- * {param: const FlPointer var} A pointer to the memory to be copied in the destination pointer
+ * {param: const void *var} A pointer to the memory to be copied in the destination pointer
  * {param: size_t nbytes} Number of bytes to copy from {var} in destination pointer
  * -------------------------------------------------------------
- * {return: FlPointer} A pointer to the allocated memory
+ * {return: void*} A pointer to the allocated memory
  * -------------------------------------------------------------
  */
-FlPointer fl_copy(const FlPointer var, size_t nbytes);
+void* fl_copy(const void *var, size_t nbytes);
 
 #define fl_equals(a,b,z) (memcmp((a),(b),(z)) == 0)
 

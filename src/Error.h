@@ -51,13 +51,13 @@ typedef struct FlError
  * in the error queue
  * -------------------------------------------------------------
  * {param: int id} ID of the error. This is generic, each module can create its own mapping for error codes
- * {param: const FlCstr format} Error message. Accepts 3 format specifiers: %d, %c and %s
+ * {param: const char *format} Error message. Accepts 3 format specifiers: %d, %c and %s
  * {param: ... arguments} Additional arguments used to replace format specifiers in {format}
  * -------------------------------------------------------------
  * {return: FlError} Created error
  * -------------------------------------------------------------
  */
-void fl_error_push(int id, const FlCstr format, ...);
+void fl_error_push(int id, const char *format, ...);
 
 /* -------------------------------------------------------------
 * {function: fl_error_last}
@@ -92,13 +92,13 @@ char* fl_errno_str(int errnum, char* buf, size_t len);
  * Writes a message to {stderr} and call exit(-1)
  * -------------------------------------------------------------
  * {param: FlErrorType errtype} Type of error to show in the message
- * {param: const FlCstr format} Contains the text to be write to {stderr}
+ * {param: const char *format} Contains the text to be write to {stderr}
  * {param: ... arguments} Additional arguments used to replace format specifiers in {format}
  * -------------------------------------------------------------
  * {return: void}
  * -------------------------------------------------------------
  */
-void fl_exit(FlErrorType errtype, const FlCstr format, ...);
+void fl_exit(FlErrorType errtype, const char *format, ...);
 
 /* -------------------------------------------------------------
  * {macro: flm_exit}
@@ -106,7 +106,7 @@ void fl_exit(FlErrorType errtype, const FlCstr format, ...);
  * Provides a verbose error message
  * -------------------------------------------------------------
  * {param: FlErrorType errtype} Type of error
- * {param: const FlCstr message} Error message
+ * {param: const char *message} Error message
  * -------------------------------------------------------------
  */
 #define flm_exit(errtype, message) fl_exit(errtype, "in ["__FILE__ ":" FL_LINE "|%s] " message, __func__)
@@ -117,7 +117,7 @@ void fl_exit(FlErrorType errtype, const FlCstr format, ...);
  * Provides a verbose error message
  * -------------------------------------------------------------
  * {param: FlErrorType errtype} Type of error
- * {param: const FlCstr format} Error message with format specifers support
+ * {param: const char *format} Error message with format specifers support
  * {param: ... arguments} Additional arguments used to replace format specifiers in {format}
  * -------------------------------------------------------------
  */
@@ -131,7 +131,7 @@ void fl_exit(FlErrorType errtype, const FlCstr format, ...);
      * message error defined in {error}
      * -------------------------------------------------------------
      * {param: bool condition} Expression that returns a boolean value
-     * {param: const FlCstr error} Error message
+     * {param: const char *error} Error message
      * -------------------------------------------------------------
      */
     #define flm_assert(condition, error) if (!(condition)) (flm_exit(ERR_FATAL, "Condition '" #condition "' failed. " error));
@@ -143,7 +143,7 @@ void fl_exit(FlErrorType errtype, const FlCstr format, ...);
       * message error defined in {error}.
       * -------------------------------------------------------------
       * {param: bool condition} Expression that returns a boolean value
-      * {param: const FlCstr error} Error message that supports format specifiers
+      * {param: const char *error} Error message that supports format specifiers
       * {param: ... arguments} Additional arguments used to replace format specifiers in {error}
       * -------------------------------------------------------------
       */

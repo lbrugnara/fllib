@@ -31,7 +31,7 @@ FlThreadId fl_thread_current_id()
     return threadId;
 }
 
-void fl_thread_exit(FlPointer retval)
+void fl_thread_exit(void *retval)
 {
     #ifdef FL_WIN_THREADS
         _endthreadex(retval ? *(unsigned int*)retval : 0);

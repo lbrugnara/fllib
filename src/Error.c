@@ -20,7 +20,7 @@
  * each module or library can use {id} and {message} as it wish.
  * -------------------------------------------------------------
  * {member: int id} Error id or code. Module/library implementation defined
- * {member: FlCstr message} Is a brief message that contains information about the error
+ * {member: char *message} Is a brief message that contains information about the error
  * -------------------------------------------------------------
  */
 
@@ -81,14 +81,14 @@ void delete_errors(void)
     fl_dictionary_delete_h(Errors, delete_errors_h);
 }
 
-void fl_error_push(int id, const FlCstr format, ...)
+void fl_error_push(int id, const char *format, ...)
 {
     // Prepare the new error
     struct FlError error = {0};
     error.id = id;
     va_list args;
     va_start(args, format);
-    FlCstr str = fl_cstr_vadup(format, args);
+    char *str = fl_cstr_vadup(format, args);
     va_end(args);
     // Cap the message to FL_ERROR_MSG_MAX_SIZE
     size_t length = min(FL_ERROR_MSG_MAX_SIZE, strlen(str) + 1);
@@ -172,9 +172,9 @@ char* fl_errno_str(int errnum, char* buf, size_t len)
 * stderror
 * -------------------------------------------------------------
 */
-void fl_exit(FlErrorType errtype, const FlCstr format, ...)
+void fl_exit(FlErrorType errtype, const char *format, ...)
 {
-    FlCstr errtypemsg;
+    char *errtypemsg;
     switch(errtype)
     {
         case ERR_FATAL:
@@ -189,7 +189,7 @@ void fl_exit(FlErrorType errtype, const FlCstr format, ...)
 
     va_list args;
     va_start(args, format);
-    FlCstr msg = fl_cstr_dup(format);
+    char *msg = fl_cstr_dup(format);
     fl_cstr_append(&msg, "\n");
     fl_cstr_append(&errtypemsg, msg);
     vfprintf(stderr, errtypemsg, args);

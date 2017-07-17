@@ -4,27 +4,48 @@
 
 typedef struct 
 {
-    FlCstr code;
-    FlCstr name;
-    FlCstr numerical_value_1;
-    FlCstr numerical_value_2;
-    FlCstr numerical_value_3;
-    FlCstr decomposition_type;
-    FlCstr decomposition_mapping;
-    FlCstr general_category;
-    FlCstr simple_uppercase_mapping;
-    FlCstr simple_lowercase_mapping;
-    FlCstr simple_titlecase_mapping;
-    FlCstr canonical_combining_class;
-    FlCstr bidi_class;
-    FlCstr bidi_mirrored;
-    FlCstr full_composition_exclusion;
+    char *code;
+    char *name;
+    char *numerical_value_1;
+    char *numerical_value_2;
+    char *numerical_value_3;
+    char *decomposition_type;
+    char *decomposition_mapping;
+    char *general_category;
+    char *simple_uppercase_mapping;
+    char *simple_lowercase_mapping;
+    char *simple_titlecase_mapping;
+    char *canonical_combining_class;
+    char *bidi_class;
+    char *bidi_mirrored;
+    char *full_composition_exclusion;
+    char *nfd_quick_check;
+    char *nfc_quick_check;
+    char *nfkd_quick_check;
+    char *nfkc_quick_check;
 } UnicodeData;
 
+typedef enum
+{
+    NORM_PROP_FCE,
+    NORM_PROP_NFD_QC_NO,
+    NORM_PROP_NFC_QC_NO,
+    NORM_PROP_NFC_QC_MAYBE,
+    NORM_PROP_NFKD_QC_NO,
+    NORM_PROP_NFKC_QC_NO,
+    NORM_PROP_NFKC_QC_MAYBE
+} NormProperty;
+
+// Handy typedefs
+typedef FlVector FlStringVector;
+typedef char** FlStringArray;
+
+// This function translates from UCD to FlDecompositionType enum copying it 
+// into dest returning the number of characters copied
 size_t get_decomp_type(const char *udata, char *dest)
 {
-    static char* types[] = {"<font>", "<noBreak>", "<initial>", "<medial>", "<final>", "<isolated>", "<circle>", "<super>", "<sub>", "<vertical>", "<wide>", "<narrow>", "<small>", "<square>", "<fraction>", "<compat>"};
-    static char* ctypes[] = {"DECOMP_TYPE_FONT", "DECOMP_TYPE_NOBREAK", "DECOMP_TYPE_INITIAL", "DECOMP_TYPE_MEDIAL", "DECOMP_TYPE_FINAL", "DECOMP_TYPE_ISOLATED", "DECOMP_TYPE_CIRCLE", "DECOMP_TYPE_SUPER", "DECOMP_TYPE_SUB", "DECOMP_TYPE_VERTICAL", "DECOMP_TYPE_WIDE", "DECOMP_TYPE_NARROW", "DECOMP_TYPE_SMALL", "DECOMP_TYPE_SQUARE", "DECOMP_TYPE_FRACTION", "DECOMP_TYPE_COMPAT"};
+    static char *types[] = {"<font>", "<noBreak>", "<initial>", "<medial>", "<final>", "<isolated>", "<circle>", "<super>", "<sub>", "<vertical>", "<wide>", "<narrow>", "<small>", "<square>", "<fraction>", "<compat>"};
+    static char *ctypes[] = {"DECOMP_TYPE_FONT", "DECOMP_TYPE_NOBREAK", "DECOMP_TYPE_INITIAL", "DECOMP_TYPE_MEDIAL", "DECOMP_TYPE_FINAL", "DECOMP_TYPE_ISOLATED", "DECOMP_TYPE_CIRCLE", "DECOMP_TYPE_SUPER", "DECOMP_TYPE_SUB", "DECOMP_TYPE_VERTICAL", "DECOMP_TYPE_WIDE", "DECOMP_TYPE_NARROW", "DECOMP_TYPE_SMALL", "DECOMP_TYPE_SQUARE", "DECOMP_TYPE_FRACTION", "DECOMP_TYPE_COMPAT"};
     size_t length = flm_array_length(types);
     for (size_t i=0; i < length; i++)
     {
@@ -37,13 +58,32 @@ size_t get_decomp_type(const char *udata, char *dest)
     return 0;
 }
 
-typedef FlVector FlCstrVector;
 
-FlCstrVector split_text(const FlCstr source, size_t length, char chr)
+int code_comparer(const void *a, const void *b)
 {
-    FlCstrVector lines = fl_vector_new(sizeof(FlCstr*), 10);
+    char *acode = (char*)a;
+    UnicodeData *udb = *(UnicodeData**)b;
+    long ha = strtol(acode, NULL, 16);
+    long hb = strtol(udb->code, NULL, 16);
+    return ha-hb;
+}
+
+int unicodedata_comparer(const void *a, const void *b)
+{
+    UnicodeData *uda = *(UnicodeData**)a;
+    UnicodeData *udb = *(UnicodeData**)b;
+    long ha = strtol(uda->code, NULL, 16);
+    long hb = strtol(udb->code, NULL, 16);
+    return ha-hb;
+}
+// Splits {source} (with length {length}) by character {chr} ignoring
+// empty lines and lines starting with '#' (UCD comment).
+// It returns a vector of char*, caller must free the memory.
+FlStringVector split_text(const char *source, size_t length, char chr)
+{
+    FlStringVector lines = fl_vector_new(sizeof(char**), 10);
     size_t s = 0;
-    FlCstr tmp = NULL;
+    char *tmp = NULL;
     for (size_t i=0; i < length; i++)
     {
         if (source[i] != chr)
@@ -51,7 +91,7 @@ FlCstrVector split_text(const FlCstr source, size_t length, char chr)
         size_t nb = i-s;
         if (nb > 0 && source[s] != '#')
         {
-            tmp = fl_cstr_dup_n(source+s, nb);
+            tmp = fl_cstr_dup_n((char*)source+s, nb);
             fl_vector_add(lines, &tmp);
         }
         s = i+1;
@@ -60,20 +100,167 @@ FlCstrVector split_text(const FlCstr source, size_t length, char chr)
     return lines;
 }
 
-void parse_composition_exclusion(FlVector data)
+// Receives a line from the DerivedNormalizationProps and returns
+// a list of codes from the first column, 1 when the column has just
+// one code, or the range when the column has the format <start_code>..<end_code>
+FlStringArray get_codes_from_dnp(char *line)
 {
+    char *p = strstr(line, "..");
+    if (p == NULL)
+    {
+        FlStringArray out = (FlStringArray)fl_array_new(sizeof(char*), 1);
+        char *p2 = strchr(line, ' ');
+        char *code = fl_cstr_dup_n(line, p2-line);
+        out[0] = code;
+        return out;
+    }
+    else
+    {
+        long start = strtol(line, NULL, 16);
+        long end = strtol(p+2, NULL, 16);
+        FlStringArray out = fl_array_new(sizeof(char*), end-start+1);
+        size_t index = 0;
+        for (long i=start; i <= end; i++)
+        {
+            char tmp[11];
+            sprintf(tmp, "%X", i);
+            out[index++] = fl_cstr_dup(tmp);
+        }
+        return out;
+    }
+}
+
+void parse_derived_normalization_property(FlVector data, const char *buffer, NormProperty property)
+{
+    const char *startv = NULL;
+    const char *endv = "# ================================================";
+    const char *value = NULL;
+    switch (property)
+    {
+        case NORM_PROP_FCE:
+            startv = "# Derived Property: Full_Composition_Exclusion";
+            value = "true";
+            break;
+        case NORM_PROP_NFD_QC_NO:
+            startv = "# NFD_Quick_Check=No";
+            value = "NORM_QC_NO";
+            break;
+        case NORM_PROP_NFC_QC_NO:
+            startv = "# NFC_Quick_Check=No";
+            value = "NORM_QC_NO";
+            break;
+        case NORM_PROP_NFC_QC_MAYBE:
+            startv = "# NFC_Quick_Check=Maybe";
+            value = "NORM_QC_MAYBE";
+            break;
+        case NORM_PROP_NFKD_QC_NO:
+            startv = "# NFKD_Quick_Check=No";
+            value = "NORM_QC_NO";
+            break;
+        case NORM_PROP_NFKC_QC_NO:
+            startv = "# NFKC_Quick_Check=No";
+            value = "NORM_QC_NO";
+            break;
+        case NORM_PROP_NFKC_QC_MAYBE:
+            startv = "# NFKC_Quick_Check=Maybe";
+            value = "NORM_QC_MAYBE";
+            break;
+    }
+
+    FlVector newcodepoints = fl_vector_new(sizeof(UnicodeData*),1000);
+
+    char* start = strstr((const char*)buffer, startv);
+    char* end = strstr(start, endv);
+    FlStringVector lines = split_text((const char*)start, (end-start), '\n');
+    size_t nlines = fl_vector_length(lines);
+    for (size_t i=0; i < nlines; i++)
+    {
+        char* line = *(char**)fl_vector_get(lines, i);
+        FlStringArray codes = get_codes_from_dnp(line);
+        size_t codes_length = fl_array_length(codes);
+        for (size_t j=0; j < codes_length; j++)
+        {
+            UnicodeData *ud = NULL;
+            UnicodeData **ptr = (UnicodeData**)fl_vector_bsearch(data, codes[j], &code_comparer);
+            if (!ptr)
+            {
+                ptr = (UnicodeData**)fl_vector_bsearch(newcodepoints, codes[j], &code_comparer);
+            }
+            if (ptr) ud = *ptr;
+
+            if (ud == NULL)
+            {
+                ud = fl_malloc(sizeof(UnicodeData));
+                ud->code = fl_cstr_dup(codes[j]);
+                fl_vector_add(newcodepoints, &ud);
+            }
+
+            char *propval = fl_cstr_dup((const FlCstr)value);
+            switch (property)
+            {
+                case NORM_PROP_FCE:
+                    ud->full_composition_exclusion = propval;
+                    break;
+                case NORM_PROP_NFD_QC_NO:
+                    ud->nfd_quick_check = propval;
+                    break;
+                case NORM_PROP_NFC_QC_NO:
+                case NORM_PROP_NFC_QC_MAYBE:
+                    ud->nfc_quick_check = propval;
+                    break;
+                case NORM_PROP_NFKD_QC_NO:
+                    ud->nfkd_quick_check = propval;
+                    break;
+                case NORM_PROP_NFKC_QC_NO:
+                case NORM_PROP_NFKC_QC_MAYBE:
+                    ud->nfkc_quick_check = propval;
+                    break;
+            }
+            fl_cstr_delete(codes[j]);
+        }
+        fl_array_delete(codes);
+    }
+    fl_vector_delete_ptrs(lines);
+
+    fl_vector_concat(data, newcodepoints);
+    fl_vector_delete(newcodepoints);
+    fl_vector_qsort(data, &unicodedata_comparer);
+}
+
+// This function parses DerivedNormalizationProps and set some of these properties in {data}
+// that contains UnicodeData pointers.
+void parse_derived_normalization_properties(FlVector data)
+{
+    flm_assert(data != NULL && fl_vector_length(data) > 0, "Vector with UnicodeData.txt information must be populated before calling this function");
     FlByteArray buffer = fl_file_read_all_bytes("src/text/resources/DerivedNormalizationProps-9.0.0.txt");
     size_t size = fl_array_length(buffer);
-    
-    FlCstr fce_start = strstr((const FlCstr)buffer, "# Derived Property: Full_Composition_Exclusion");
-    FlCstr fce_end = strstr(fce_start, "# ================================================");
-    
-    FlCstrVector lines = split_text((const FlCstr)fce_start, (fce_end-fce_start), '\n');
 
-    fl_vector_delete_ptrs(lines);
+    // Full_Composition_Exclusion
+    parse_derived_normalization_property(data, (const char*)buffer, NORM_PROP_FCE);
+
+    // NFD_Quick_Check=No
+    parse_derived_normalization_property(data, (const char*)buffer, NORM_PROP_NFD_QC_NO);
+
+    // NFC_Quick_Check=No
+    parse_derived_normalization_property(data, (const char*)buffer, NORM_PROP_NFC_QC_NO);
+
+    // NFC_Quick_Check=Maybe
+    parse_derived_normalization_property(data, (const char*)buffer, NORM_PROP_NFC_QC_MAYBE);
+
+    // NFKD_Quick_Check=No
+    parse_derived_normalization_property(data, (const char*)buffer, NORM_PROP_NFKD_QC_NO);
+
+    // NFKC_Quick_Check=No
+    parse_derived_normalization_property(data, (const char*)buffer, NORM_PROP_NFKC_QC_NO);
+
+    // NFKC_Quick_Check=Maybe
+    parse_derived_normalization_property(data, (const char*)buffer, NORM_PROP_NFKC_QC_MAYBE);
+
     fl_array_delete(buffer);
 }
 
+// This function parses the UnicodeData.txt file. It is expected to be called before
+// any other parsing function to populate {data} with the UCD
 void parse_unicode_data(FlVector data)
 {
     FlByteArray buffer = fl_file_read_all_bytes("src/text/resources/UnicodeData-9.0.0.txt");
@@ -114,9 +301,15 @@ void parse_unicode_data(FlVector data)
         
         ud->code = fl_cstr_dup_n((const FlCstr)base, lengthField0);
         ud->name = fl_cstr_dup_n((const FlCstr)endField1+1, lengthField1);
-        ud->numerical_value_3 = fl_cstr_dup_n((const FlCstr)(lengthField8 == 0 ? "-1" : endField8+1), lengthField8 == 0 ? 2 : lengthField8);
-        ud->numerical_value_1 = fl_cstr_dup_n((const FlCstr)(lengthField6 == 0 ? "-1" : endField6+1), lengthField6 == 0 ? 2 : lengthField6);
-        ud->numerical_value_2 = fl_cstr_dup_n((const FlCstr)(lengthField7 == 0 ? "-1" : endField7+1), lengthField7 == 0 ? 2 : lengthField7);
+
+        if (lengthField8 > 0)
+            ud->numerical_value_3 = fl_cstr_dup_n((const FlCstr)endField8+1, lengthField8);
+        
+        if (lengthField6)
+            ud->numerical_value_1 = fl_cstr_dup_n((const FlCstr)endField6+1, lengthField6);
+
+        if (lengthField7)
+            ud->numerical_value_2 = fl_cstr_dup_n((const FlCstr)endField7+1, lengthField7);
 
 
         // Decomposition_Mapping
@@ -153,10 +346,6 @@ void parse_unicode_data(FlVector data)
         if (lengthField2 != 0)
         {
             ud->general_category = fl_cstr_dup_n((const FlCstr)endField2+1, lengthField2);
-        }
-        else
-        {
-            ud->general_category = fl_cstr_dup("\"Cn\"");
         }
 
         ud->bidi_class = fl_cstr_dup_n((const FlCstr)endField4+1, lengthField4);
@@ -207,6 +396,10 @@ void delete_data_handler(FlByte *ptr)
     if (ud->bidi_class) fl_cstr_delete(ud->bidi_class);
     if (ud->bidi_mirrored) fl_cstr_delete(ud->bidi_mirrored);
     if (ud->full_composition_exclusion) fl_cstr_delete(ud->full_composition_exclusion);
+    if (ud->nfd_quick_check) fl_cstr_delete(ud->nfd_quick_check);
+    if (ud->nfc_quick_check) fl_cstr_delete(ud->nfc_quick_check);
+    if (ud->nfkd_quick_check) fl_cstr_delete(ud->nfkd_quick_check);
+    if (ud->nfkc_quick_check) fl_cstr_delete(ud->nfkc_quick_check);
     fl_free(ud);
 }
 
@@ -214,40 +407,85 @@ void create_unicode_database_file(FlVector data)
 {
     FlFile *outfd = fl_file_open("src/text/resources/UnicodeDataDb.h", "w");
     size_t data_length = fl_vector_length(data);
+    UnicodeData *prevud = NULL;
     for (size_t i=0; i < data_length; i++)
     {
         UnicodeData *ud = *(UnicodeData**)fl_vector_get(data, i);
+        if (prevud != NULL)
+        {
+            size_t lp = strlen(prevud->code);
+            size_t lc = strlen(ud->code);
+            if (lp == lc && fl_equals(prevud->code, ud->code, lc))
+            {
+                flm_vexit(ERR_FATAL, "Repeated codepoint %s", ud->code);
+            }
+        }
+        prevud = ud;
         fprintf(outfd, "{");
-        fprintf(outfd, ".code = 0x%s, ",                        ud->code);
-        fprintf(outfd, ".name = \"%s\", ",                      ud->name);
-        fprintf(outfd, ".numerical_value_3 = %s, ",            ud->numerical_value_3);
-        fprintf(outfd, ".numerical_value_1 = %s, ",            ud->numerical_value_1);
-        fprintf(outfd, ".numerical_value_2 = %s, ",            ud->numerical_value_2);
+        fprintf(outfd, ".code = 0x%s",                        ud->code);
+
+        if (ud->name)
+            fprintf(outfd, ", .name = \"%s\"",                      ud->name);
+
+        if (ud->numerical_value_3)
+            fprintf(outfd, ", .numerical_value_3 = %s",            ud->numerical_value_3);
+        else
+            fprintf(outfd, ", .numerical_value_3 = -1");
+        
+        if (ud->numerical_value_1)
+            fprintf(outfd, ", .numerical_value_1 = %s",            ud->numerical_value_1);
+        else
+            fprintf(outfd, ", .numerical_value_1 = -1");
+        
+        if (ud->numerical_value_2)
+            fprintf(outfd, ", .numerical_value_2 = %s",            ud->numerical_value_2);
+        else
+            fprintf(outfd, ", .numerical_value_2 = -1");
 
         if (ud->decomposition_type)
-            fprintf(outfd, ".decomposition_type = %s, ",           ud->decomposition_type);
+            fprintf(outfd, ", .decomposition_type = %s",           ud->decomposition_type);
         if (ud->decomposition_mapping)
-            fprintf(outfd, ".decomposition_mapping = (const uint32_t[]){ %s, UINT32_MAX }, ", ud->decomposition_mapping);
+            fprintf(outfd, ", .decomposition_mapping = (const uint32_t[]){ %s, UINT32_MAX }", ud->decomposition_mapping);
 
-        fprintf(outfd, ".general_category = \"%s\", ",         ud->general_category);
-        fprintf(outfd, ".bidi_class = \"%s\", ",               ud->bidi_class);
+        if (ud->general_category)
+            fprintf(outfd, ", .general_category = \"%s\"",         ud->general_category);
+        else
+            fprintf(outfd, ", .general_category = \"Cn\"");
+
+        if (ud->bidi_class)
+            fprintf(outfd, ", .bidi_class = \"%s\"",               ud->bidi_class);
 
         if (ud->simple_uppercase_mapping)
-            fprintf(outfd, ".simple_uppercase_mapping = 0x%s, ",    ud->simple_uppercase_mapping);
+            fprintf(outfd, ", .simple_uppercase_mapping = 0x%s",    ud->simple_uppercase_mapping);
         
         if (ud->simple_lowercase_mapping)
-            fprintf(outfd, ".simple_lowercase_mapping = 0x%s, ",    ud->simple_lowercase_mapping);
+            fprintf(outfd, ", .simple_lowercase_mapping = 0x%s",    ud->simple_lowercase_mapping);
         
         if (ud->simple_titlecase_mapping)
-            fprintf(outfd, ".simple_titlecase_mapping = 0x%s, ",    ud->simple_titlecase_mapping);
+            fprintf(outfd, ", .simple_titlecase_mapping = 0x%s",    ud->simple_titlecase_mapping);
         
         if (ud->canonical_combining_class)
-            fprintf(outfd, ".canonical_combining_class = %s, ",     ud->canonical_combining_class);
+            fprintf(outfd, ", .canonical_combining_class = %s",     ud->canonical_combining_class);
         
         if (ud->bidi_mirrored)
-            fprintf(outfd, ".bidi_mirrored = %s ",                  ud->bidi_mirrored);
+            fprintf(outfd, ", .bidi_mirrored = %s",                  ud->bidi_mirrored);
+
+        if (ud->full_composition_exclusion)
+            fprintf(outfd, ", .full_composition_exclusion = %s",                  ud->full_composition_exclusion);
+
+        if (ud->nfd_quick_check)
+            fprintf(outfd, ", .nfd_quick_check = %s",                  ud->nfd_quick_check);
+
+        if (ud->nfc_quick_check)
+            fprintf(outfd, ", .nfc_quick_check = %s",                  ud->nfc_quick_check);
+
+        if (ud->nfkd_quick_check)
+            fprintf(outfd, ", .nfkd_quick_check = %s",                  ud->nfkd_quick_check);
+
+        if (ud->nfkc_quick_check)
+            fprintf(outfd, ", .nfkc_quick_check = %s",                  ud->nfkc_quick_check);
         
-        fprintf(outfd, "}");
+        fprintf(outfd, " }");
 
         if (i < data_length-1)
         {
@@ -262,7 +500,7 @@ int main(void)
 {
     FlVector data = fl_vector_new(sizeof(UnicodeData*), 30000);
     parse_unicode_data(data);
-    parse_composition_exclusion(data);
+    parse_derived_normalization_properties(data);
     create_unicode_database_file(data);
     fl_vector_delete_h(data, &delete_data_handler);
 }

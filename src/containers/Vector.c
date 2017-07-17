@@ -121,6 +121,16 @@ fl_vector_get(FlVector vector, size_t index)
     return (vector->data + sizet);
 }
 
+void fl_vector_qsort(FlVector vector, int (*comparer)(const void *, const void*))
+{
+    qsort(vector->data, vector->length, vector->dtsize, comparer);
+}
+
+FlPointer fl_vector_bsearch(FlVector vector, const void *needle, int (*comparer)(const void *, const void*))
+{
+    return bsearch(needle, vector->data, vector->length, vector->dtsize, comparer);
+}
+
 bool
 fl_vector_shift(FlVector vector, FlPointer dest)
 {

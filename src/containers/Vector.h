@@ -60,6 +60,10 @@ void fl_vector_resize(FlVector vector, size_t nelem);
  */
 FlPointer fl_vector_get(FlVector vector, size_t index);
 
+void fl_vector_qsort(FlVector vector, int (*comparer)(const void *, const void*));
+
+FlPointer fl_vector_bsearch(FlVector vector, const void *needle, int (*comparer)(const void *, const void*));
+
 /**
  * Remove from {vector}, the first element in {vector} copying it into {dest}
  */

@@ -305,6 +305,12 @@ static inline bool is_escape_seq(char c)
 	return fl_array_contains_n(EscapedChars, flm_array_length(EscapedChars), &c, sizeof(char)); 
 }
 
+static inline void* vector_add_cstr(FlVector vector, const char *src)
+{
+    char *copy = fl_cstr_dup(src);
+    return fl_vector_add(vector, &copy);
+}
+
 enum {	 
 	CONCAT_LEFT, 
 	CONCAT_RIGHT
@@ -510,7 +516,7 @@ FlVector parse_regex(char* regex, RegexFlags *flags)
 				// we need to add a concatenator operator, because now, the ] character, is a literal bracket
 				if (fl_vector_length(output) > 0)
 				{
-					fl_vector_add_cstr(output, "&");
+					vector_add_cstr(output, "&");
 				}
 				bslash = true;
 			}
@@ -523,7 +529,7 @@ FlVector parse_regex(char* regex, RegexFlags *flags)
 			// because it was an operator, not an operand (e.g. [^^a])
 			if (prev != '^' && !prev_bslash)
 			{
-				fl_vector_add_cstr(output, "|");
+				vector_add_cstr(output, "|");
 			}
 			bslash = true;
 		} 
@@ -610,7 +616,7 @@ FlVector parse_regex(char* regex, RegexFlags *flags)
 		bool nexAllowConcatLeft = nexIsOp && allow_concat(CONCAT_LEFT, nex);
 		if ((!curIsOperator || curAllowConcatRight) && (!nexIsOp || nexAllowConcatLeft))
 		{
-			fl_vector_add_cstr(output, "&");
+			vector_add_cstr(output, "&");
 		}
 	}
 
@@ -648,8 +654,8 @@ FlVector regex_to_postfix (char* regex, RegexFlags *flags)
 		return NULL;
 
 	int length = strlen(regex);
-	FlVector stack = flm_vector_new(char*, fl_vector_length(tokens));
-	FlVector output = flm_vector_new(char*, fl_vector_length(tokens));
+	FlVector stack = fl_vector_new(sizeof(char*), fl_vector_length(tokens));
+	FlVector output = fl_vector_new(sizeof(char*), fl_vector_length(tokens));
 
 	bool inCharClass = false;
 	int currentGroup = 0;
@@ -844,7 +850,7 @@ FlRegex fl_regex_compile (char* pattern)
 	// Create the initial state and add a concatenation operator between S0 and the rest of the regex
 	int stateId = 0;
 	NfaState *s = create_nfa_state(stateId++, "S0");
-	fl_vector_add_cstr(tokens, "&");
+	vector_add_cstr(tokens, "&");
 	PushState(s);
 
 	// Variables to handle capturing groups indexes
@@ -972,13 +978,13 @@ FlRegex fl_regex_compile (char* pattern)
 					fl_vector_shift(tokens, &nexttok);
 					if (flm_cstr_equals(nexttok, "^")) 
 					{
-						fl_vector_add_cstr(display, "^");
+						vector_add_cstr(display, "^");
 						s = create_charclass_nfa_state(stateId++, NULL, true); // negated capturing group = true
 					} 
 					else 
 					{
 						if (!flm_cstr_equals(nexttok, "]"))
-							fl_vector_add_cstr(tmptokens, nexttok);
+							vector_add_cstr(tmptokens, nexttok);
 						s = create_charclass_nfa_state(stateId++, NULL, false); // negated capturing group = false
 					}
 
@@ -1013,7 +1019,7 @@ FlRegex fl_regex_compile (char* pattern)
 							
 							char* endchar;
 							fl_vector_pop(display, &endchar);
-							fl_vector_add_cstr(display, "-");
+							vector_add_cstr(display, "-");
 							fl_vector_add(display, &endchar);
 						}
 						else 
@@ -1028,7 +1034,7 @@ FlRegex fl_regex_compile (char* pattern)
 								ord = tmptoken[0];
 								flm_vector_addl(ascii_codes, int, ord);
 							}
-							fl_vector_add_cstr(display, tmptoken);
+							vector_add_cstr(display, tmptoken);
 						}
 					}
 
@@ -1037,8 +1043,10 @@ FlRegex fl_regex_compile (char* pattern)
 						((NfaStateCharClass*)s)->map[ord] = 1;
 					}
 
-					fl_vector_unshift_cstr(display, "/[");
-					fl_vector_add_cstr(display, "]/");
+					char *tmp = fl_cstr_dup("/[");
+    				fl_vector_unshift(display, &tmp);  
+
+					vector_add_cstr(display, "]/");
 					((NfaStateCharClass*)s)->value = fl_cstr_join(display, "");
 
 					// Add the new charclass state

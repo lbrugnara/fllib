@@ -83,7 +83,8 @@ FL_TEST_OBJECTS=\
 	obj/$(TARGET)/tests/File.o \
 	obj/$(TARGET)/tests/Cstr.o \
 	obj/$(TARGET)/tests/text/Test_Unicode.o \
-	obj/$(TARGET)/tests/text/Test_String.o 
+	obj/$(TARGET)/tests/text/Test_String.o 	\
+	obj/$(TARGET)/tests/text/Test_Regex.o 
 
 ifeq ($(LINKAGE),static)
 	# Creates the .a file

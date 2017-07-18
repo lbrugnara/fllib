@@ -23,5 +23,6 @@ size_t fl_test_suite_run(FlTestSuite suite);
 void fl_test_run_all(FlTestSuite *suites, size_t number_of_suites);
 
 bool fl_expect(const char* name, bool condition);
+bool fl_vexpect(bool conditionResult, const char* format, ...);
 
 #endif

@@ -162,7 +162,7 @@ void test_cstr_append()
 
 void test_cstr_join()
 {
-    FlVector str_vector = flm_vector_new(char*, 3);
+    FlVector str_vector = fl_vector_new(sizeof(char*), 3);
     char *str1 = fl_cstr_dup("one");
     char *str2 = fl_cstr_dup("two");
     char *str3 = fl_cstr_dup("three");

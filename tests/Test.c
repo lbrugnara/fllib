@@ -154,6 +154,36 @@ bool fl_expect(const char* descr, bool conditionResult)
 }
 
 /* -------------------------------------------------------------
+ * {function: fl_expect}
+ * -------------------------------------------------------------
+ * Simple functions that throws an exception when the condition
+ * is false
+ * -------------------------------------------------------------
+ * {param: const char* descr} Description of the conditions to check
+ * {param: bool conditionResult} Condition result
+ * -------------------------------------------------------------
+ * {return: bool} true if conditionResult is valid, throws exception if not
+ * -------------------------------------------------------------
+ */
+bool fl_vexpect(bool conditionResult, const char* format, ...)
+{
+    char descr[FL_ERROR_TRYCONTEXT_MAX_MSG_SIZE];
+    va_list args;
+    va_start(args, format);
+    vsnprintf(descr, FL_ERROR_TRYCONTEXT_MAX_MSG_SIZE, format, args);
+    va_end(args);
+
+    if (!conditionResult)
+    {
+        printf(" |-- Failed: %s\n", descr);
+        fl_cstr_copy_n(testctx.message, descr, FL_ERROR_TRYCONTEXT_MAX_MSG_SIZE);
+        Throw(&testctx, TEST_FAILURE);
+    }
+    printf(" |-- Passed: %s\n", descr);
+    return true;
+}
+
+/* -------------------------------------------------------------
  * {function: fl_test_suite_run}
  * -------------------------------------------------------------
  * Run a suite of tests

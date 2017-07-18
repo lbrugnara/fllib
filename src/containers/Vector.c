@@ -36,7 +36,7 @@ fl_vector_new(size_t dtsize, size_t nelem)
 void* fl_vector_add(FlVector vector, const void *elem) 
 {
     if (vector->length >= vector->capacity) {
-        fl_vector_resize(vector, vector->capacity);
+        fl_vector_resize(vector, vector->capacity * 2);
     }
     size_t sizet = (vector->length * vector->dtsize);
     memcpy(vector->data + sizet, elem, vector->dtsize);
@@ -70,10 +70,10 @@ void* fl_vector_insert(FlVector vector, const void *elem, size_t pos)
     }
 
     if (vector->length >= vector->capacity) {
-        fl_vector_resize(vector, vector->capacity);
+        fl_vector_resize(vector, vector->capacity * 2);
     }
     else if (pos >= vector->capacity) {
-        fl_vector_resize(vector, pos);
+        fl_vector_resize(vector, vector->capacity + pos);
     }
 
     if (vector->length < pos)
@@ -101,9 +101,8 @@ void* fl_vector_unshift(FlVector vector, const void *elem)
     return fl_vector_insert(vector, elem, 0);
 }
 
-void
-fl_vector_resize(FlVector vector, size_t nelem) {
-    vector->capacity += nelem;
+void fl_vector_resize(FlVector vector, size_t nelem) {
+    vector->capacity = nelem;
     size_t new_size = vector->dtsize * vector->capacity;
     vector->data = fl_realloc(vector->data, new_size);
 }
@@ -174,7 +173,7 @@ fl_vector_concat(FlVector v, FlVector v2)
     size_t sizev = v->dtsize*v->length;
     size_t sizev2 = v2->dtsize*v2->length;
     if (v->length + v2->length >= v->capacity) {
-        fl_vector_resize(v, v2->length);
+        fl_vector_resize(v, v->capacity + v2->length);
     }
     memcpy(v->data+sizev, v2->data, sizev2);
     v->length += v2->length;
@@ -255,20 +254,6 @@ fl_vector_delete_h(FlVector vector, void (*delete_handler)(FlByte*))
     }
     fl_free(vector->data);
     fl_free(vector);
-}
-
-void
-fl_vector_add_cstr(FlVector vector, const char *src)
-{
-    char *copy = fl_cstr_dup(src);
-    fl_vector_add(vector, &copy);
-}
-
-void 
-fl_vector_unshift_cstr(FlVector vector, const char *src)
-{
-    char *copy = fl_cstr_dup(src);
-    fl_vector_unshift(vector, &copy);    
 }
 
 /* -------------------------------------------------------------

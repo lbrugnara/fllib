@@ -123,7 +123,7 @@ FlStringArray get_codes_from_dnp(char *line)
         for (long i=start; i <= end; i++)
         {
             char tmp[11];
-            sprintf(tmp, "%X", i);
+            sprintf(tmp, "%lX", i);
             out[index++] = fl_cstr_dup(tmp);
         }
         return out;

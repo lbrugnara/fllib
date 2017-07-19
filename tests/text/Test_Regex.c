@@ -8,6 +8,9 @@ void tokenize(char *regex, char *expect[])
 	RegexFlags flags;
 	FlVector tokens = parse_regex(regex, &flags);
 
+	if (tokens == NULL)
+		return;
+
     size_t l = fl_vector_length(tokens);
     bool pass = true;
 	for(size_t i=0; i < l; i++)
@@ -49,9 +52,9 @@ void test_fl_regex_tokenize()
     tokenize("123[abc]", expect("1", "&", "2", "&", "3", "&", "[", "a", "b", "c", "]"));
     tokenize("[abc]456", expect("[", "a", "b", "c", "]", "&", "4", "&", "5", "&", "6"));
     tokenize("[^abc]", expect("[", "^", "a", "b", "c", "]"));
-    tokenize("[ab^cd]", NULL);
-    tokenize("[^^]", NULL);
-    tokenize("[a-z]", expect("[", "a", "-", "z", "]"));
+    tokenize("[ab^cd]", expect("[", "a", "b", "\\^", "c", "d", "]"));
+	tokenize("[^^]", expect("[", "^", "\\^", "]"));
+	tokenize("[a-z]", expect("[", "a", "-", "z", "]"));
     tokenize("[1-9]", expect("[", "1", "-", "9", "]"));
     
     tokenize("[3-1]", NULL);
@@ -59,16 +62,21 @@ void test_fl_regex_tokenize()
     fl_expect("Regex [3-1] must not compile because it is an invalid range", err.message != NULL && fl_equals(err.message, "Invalid range", 13));
 
     tokenize("[x-j]", NULL);
-    tokenize("[j-x]", NULL);
-    tokenize("[9-ao-zqwe]", NULL);
-    tokenize("(ab|cd)", NULL);
-    tokenize("([0-9]|[a-z]+)", NULL);
+	err = fl_error_last();
+    fl_expect("Regex [x-j] must not compile because it is an invalid range", err.message != NULL && fl_equals(err.message, "Invalid range", 13));
+
+    tokenize("[j-x]", expect("[", "j", "-", "x", "]"));
+    tokenize("[9-ao-zqwe]", expect("[", "9", "-", "a", "o", "-", "z", "q", "w", "e", "]"));
+    tokenize("(ab|cd)", expect("(", "a", "&", "b", "|", "c", "&", "d", ")"));
+    tokenize("([0-9]|[a-z]+)", expect("(", "[", "0", "-", "9", "]", "|", "[", "a", "-", "z", "]", "+", ")"));
     #undef expect
 }
 
 bool fl_regex_match_test(char *pattern, char *input)
 {
 	FlRegex regex = fl_regex_compile(pattern);
+	if (regex == NULL)
+		return false;
     FlError err = fl_error_last();
 	bool res = fl_regex_match(regex, input);
 	fl_regex_delete(regex);

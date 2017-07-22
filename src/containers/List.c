@@ -596,7 +596,7 @@ static void it_delete(void *it)
     fl_free(it);
 }
 
-FlIterator fl_list_start(const FlList list)
+FlIterator fl_list_begin(const FlList list)
 {
     FlListIterator *list_it = fl_calloc(1, sizeof(struct FlListIterator));
     list_it->prev = NULL;

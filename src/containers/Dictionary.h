@@ -122,7 +122,7 @@ void fl_dictionary_delete(FlDictionary dictionary);
 void fl_dictionary_delete_h(FlDictionary dictionary, void (*delete_handler)(FlByte*));
 
 /* -------------------------------------------------------------
- * {function: fl_dictionary_start}
+ * {function: fl_dictionary_begin}
  * -------------------------------------------------------------
  * Returns an {FlIterator} that points to the first element in {param: dict}
  * The element pointed by the {FlIterator} is an {FlKeyValuePair}
@@ -132,7 +132,7 @@ void fl_dictionary_delete_h(FlDictionary dictionary, void (*delete_handler)(FlBy
  * {return: FlIterator} Iterator pointing to the first element in {param: dict}
  * -------------------------------------------------------------
  */
-FlIterator fl_dictionary_start(const FlDictionary dict);
+FlIterator fl_dictionary_begin(const FlDictionary dict);
 
 /* -------------------------------------------------------------
  * {function: fl_dictionary_end}

@@ -382,7 +382,7 @@ static void it_delete(void *it)
     fl_free(it);
 }
 
-FlIterator fl_dictionary_start(const FlDictionary dict)
+FlIterator fl_dictionary_begin(const FlDictionary dict)
 {
     FlDictionaryIterator *dict_it = fl_calloc(1, sizeof(struct FlDictionaryIterator));
     dict_it->prev = NULL;

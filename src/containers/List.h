@@ -142,7 +142,7 @@ FlListNode fl_list_node_prev(FlListNode node);
 FlByte* fl_list_node_data(FlListNode node);
 
 /* -------------------------------------------------------------
- * {function: fl_list_start}
+ * {function: fl_list_begin}
  * -------------------------------------------------------------
  * Returns an {FlIterator} that points to the first element in {param: list}
  * -------------------------------------------------------------
@@ -151,7 +151,7 @@ FlByte* fl_list_node_data(FlListNode node);
  * {return: FlIterator} Iterator pointing to the first element in {param: list}
  * -------------------------------------------------------------
  */
-FlIterator fl_list_start(const FlList list);
+FlIterator fl_list_begin(const FlList list);
 
 /* -------------------------------------------------------------
  * {function: fl_list_end}

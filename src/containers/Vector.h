@@ -116,33 +116,6 @@ void fl_vector_resize(FlVector vector, size_t nelem);
 void* fl_vector_get(FlVector vector, size_t index);
 
 /* -------------------------------------------------------------
-* {function: fl_vector_qsort}
-* -------------------------------------------------------------
-* Sorts the elements of {vector}.
-* -------------------------------------------------------------
-* {param: FlVector vector} Vector to be sorted
-* {param: int (*)(const void*, const void*) comparer} Function that compares two elements of {vector}
-* -------------------------------------------------------------
-* {return: void}
-* -------------------------------------------------------------
-*/
-void fl_vector_qsort(FlVector vector, int (*comparer)(const void *, const void*));
-
-/* -------------------------------------------------------------
-* {function: fl_vector_bsearch}
-* -------------------------------------------------------------
-* Binary search of element {needle} in {vector}
-* -------------------------------------------------------------
-* {param: FlVector vector} Vector where to search {needle}
-* {param: const void *needle} Element to be found
-* {param: int (*)(const void*, const void*) comparer} Function that compares two elements of {vector}
-* -------------------------------------------------------------
-* {return: void*} Pointer to the entry or NULL if {needle} is not present in {vector}
-* -------------------------------------------------------------
-*/
-void* fl_vector_bsearch(FlVector vector, const void *needle, int (*comparer)(const void *, const void*));
-
-/* -------------------------------------------------------------
 * {function: fl_vector_shift}
 * -------------------------------------------------------------
 * Removes the first element in {vector}. If {dest} is not null,
@@ -355,7 +328,7 @@ do {    									\
 /* Datatype specifics getters/setters. (Can be extended by each datatype created in the same way here) */
 
 /* -------------------------------------------------------------
- * {function: fl_vector_start}
+ * {function: fl_vector_begin}
  * -------------------------------------------------------------
  * Returns an {FlIterator} that points to the first element in {param: vector}
  * -------------------------------------------------------------
@@ -364,7 +337,7 @@ do {    									\
  * {return: FlIterator} Iterator pointing to the first element in {param: vector}
  * -------------------------------------------------------------
  */
-FlIterator fl_vector_start(const FlVector vector);
+FlIterator fl_vector_begin(const FlVector vector);
 
 /* -------------------------------------------------------------
  * {function: fl_vector_end}

@@ -181,10 +181,10 @@ void parse_derived_normalization_property(FlVector data, const char *buffer, Nor
         for (size_t j=0; j < codes_length; j++)
         {
             UnicodeData *ud = NULL;
-            UnicodeData **ptr = (UnicodeData**)fl_vector_bsearch(data, codes[j], &code_comparer);
+            UnicodeData **ptr = (UnicodeData**)bsearch(codes[j], fl_vector_get(data, 0), fl_vector_length(data), sizeof(UnicodeData*), &code_comparer);
             if (!ptr)
             {
-                ptr = (UnicodeData**)fl_vector_bsearch(newcodepoints, codes[j], &code_comparer);
+                ptr = (UnicodeData**)bsearch(codes[j], fl_vector_get(newcodepoints, 0), fl_vector_length(newcodepoints), sizeof(UnicodeData*), &code_comparer);
             }
             if (ptr) ud = *ptr;
 
@@ -224,7 +224,7 @@ void parse_derived_normalization_property(FlVector data, const char *buffer, Nor
 
     fl_vector_concat(data, newcodepoints);
     fl_vector_delete(newcodepoints);
-    fl_vector_qsort(data, &unicodedata_comparer);
+    qsort(fl_vector_get(data, 0), fl_vector_length(data), fl_vector_dtsize(data), &unicodedata_comparer);
 }
 
 // This function parses DerivedNormalizationProps and set some of these properties in {data}

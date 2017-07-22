@@ -20,8 +20,7 @@ struct FlVector {
     FlByte* data;
 };
 
-FlVector 
-fl_vector_new(size_t dtsize, size_t nelem) 
+FlVector fl_vector_new(size_t dtsize, size_t nelem) 
 {
     FlVector vector = fl_calloc(1, sizeof(struct FlVector));
     if (nelem == 0)
@@ -44,20 +43,17 @@ void* fl_vector_add(FlVector vector, const void *elem)
     return vector->data + sizet;
 }
 
-size_t
-fl_vector_length(FlVector vector)
+size_t fl_vector_length(FlVector vector)
 {
     return vector->length;
 }
 
-size_t
-fl_vector_dtsize(FlVector vector)
+size_t fl_vector_dtsize(FlVector vector)
 {
     return vector->dtsize;
 }
 
-size_t
-fl_vector_capacity(FlVector vector)
+size_t fl_vector_capacity(FlVector vector)
 {
     return vector->capacity;
 }
@@ -101,7 +97,8 @@ void* fl_vector_unshift(FlVector vector, const void *elem)
     return fl_vector_insert(vector, elem, 0);
 }
 
-void fl_vector_resize(FlVector vector, size_t nelem) {
+void fl_vector_resize(FlVector vector, size_t nelem)
+{
     vector->capacity = nelem;
     size_t new_size = vector->dtsize * vector->capacity;
     vector->data = fl_realloc(vector->data, new_size);
@@ -116,18 +113,7 @@ void* fl_vector_get(FlVector vector, size_t index)
     return (vector->data + sizet);
 }
 
-void fl_vector_qsort(FlVector vector, int (*comparer)(const void *, const void*))
-{
-    qsort(vector->data, vector->length, vector->dtsize, comparer);
-}
-
-void* fl_vector_bsearch(FlVector vector, const void *needle, int (*comparer)(const void *, const void*))
-{
-    return bsearch(needle, vector->data, vector->length, vector->dtsize, comparer);
-}
-
-bool
-fl_vector_shift(FlVector vector, void *dest)
+bool fl_vector_shift(FlVector vector, void *dest)
 {
     if (vector->length == 0)
         return false;
@@ -141,8 +127,7 @@ fl_vector_shift(FlVector vector, void *dest)
     return true;
 }
 
-bool
-fl_vector_pop(FlVector vector, void *dest)
+bool fl_vector_pop(FlVector vector, void *dest)
 {
     if (vector->length == 0)
         return false;
@@ -154,8 +139,7 @@ fl_vector_pop(FlVector vector, void *dest)
     return true;
 }
 
-bool 
-fl_vector_contains(FlVector vector, const void *needle)
+bool fl_vector_contains(FlVector vector, const void *needle)
 {
     size_t offset = vector->dtsize * vector->length;
     for (size_t i=0; i < vector->length; i++)
@@ -167,8 +151,7 @@ fl_vector_contains(FlVector vector, const void *needle)
     return false;
 }
 
-void
-fl_vector_concat(FlVector v, FlVector v2)
+void fl_vector_concat(FlVector v, FlVector v2)
 {
     size_t sizev = v->dtsize*v->length;
     size_t sizev2 = v2->dtsize*v2->length;
@@ -179,8 +162,7 @@ fl_vector_concat(FlVector v, FlVector v2)
     v->length += v2->length;
 }
 
-FlVector 
-fl_vector_merge(FlVector v, FlVector v2)
+FlVector fl_vector_merge(FlVector v, FlVector v2)
 {
     size_t totallength = v->length + v2->length;
     FlVector newone = fl_vector_new(v->dtsize, totallength);
@@ -192,8 +174,7 @@ fl_vector_merge(FlVector v, FlVector v2)
     return newone;
 }
 
-bool
-fl_vector_remove(FlVector vector, size_t pos, void *dest)
+bool fl_vector_remove(FlVector vector, size_t pos, void *dest)
 {
     if (vector->length == 0 || pos >= vector->length)
         return false;
@@ -207,8 +188,7 @@ fl_vector_remove(FlVector vector, size_t pos, void *dest)
     return true;
 }
 
-void
-fl_vector_clear(FlVector vector)
+void fl_vector_clear(FlVector vector)
 {
     if (vector->length == 0)
         return;
@@ -218,15 +198,13 @@ fl_vector_clear(FlVector vector)
 }
 
 /* Free the memory reserved for ar */
-void 
-fl_vector_delete(FlVector vector) 
+void fl_vector_delete(FlVector vector) 
 {
     fl_free(vector->data);
     fl_free(vector);
 }
 
-void 
-fl_vector_delete_ptrs(FlVector vector)
+void fl_vector_delete_ptrs(FlVector vector)
 {
     FlByte** data = (FlByte**)vector->data;
     size_t offset;
@@ -240,8 +218,7 @@ fl_vector_delete_ptrs(FlVector vector)
 }
 
 // TODO: data[i] is not valid when typeof is not a pointer
-void 
-fl_vector_delete_h(FlVector vector, void (*delete_handler)(FlByte*))
+void fl_vector_delete_h(FlVector vector, void (*delete_handler)(FlByte*))
 {
     FlByte** data = (FlByte**)vector->data;
     size_t offset;
@@ -310,7 +287,7 @@ static void it_delete(void *it)
     fl_free(it);
 }
 
-FlIterator fl_vector_start(const FlVector vector)
+FlIterator fl_vector_begin(const FlVector vector)
 {
     FlVectorIterator *vector_it = fl_calloc(1, sizeof(struct FlVectorIterator));
     vector_it->base = (FlByte*)vector->data;

@@ -1425,10 +1425,11 @@ NfaStepResult nfa_step (NfaState *state, CurrentState nextstates[], unsigned cha
 	if (state->to == NULL)
 		return stepresult;
 
+	NfaState **transitions = fl_vector_get(state->to, 0);
 	size_t l = fl_vector_length(state->to);
 	for (size_t i = 0; i < l; i++)
 	{
-		NfaState *t = flm_vector_get(state->to, NfaState*, i);
+		NfaState *t = transitions[i];
 	 	// If e-transition reach an state that already is in the next states, avoid it to prevent loops
 	 	// We can have e-transitions reaching each one to the other here.
 	 	if (nextstates[t->id].id != -1 && nextstates[t->id].e)

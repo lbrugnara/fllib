@@ -29,7 +29,7 @@ size_t fl_list_dtsize(FlList list);
  * {@elem} Element to add to the list.
  * Return a pointer to the inserted element
  */
-FlPointer fl_list_add(FlList list, const FlPointer elem);
+void* fl_list_add(FlList list, const void *elem);
 
 /**
  * {@list} Target list to insert a new value
@@ -37,12 +37,12 @@ FlPointer fl_list_add(FlList list, const FlPointer elem);
  * Insert {elem} in the position {pos} of {list}
  * Return a pointer to the inserted element
  */
-FlPointer fl_list_insert(FlList list, const FlPointer elem, size_t pos);
+void* fl_list_insert(FlList list, const void *elem, size_t pos);
 
 /**
  * Returns a pointer to the element in the {index} index of {list}
  */
-FlPointer fl_list_get(FlList list, size_t index);
+void* fl_list_get(FlList list, size_t index);
 
 /**
  * Returns a pointer to the FlListNode element in the {index} index of {list}
@@ -52,7 +52,7 @@ FlListNode fl_list_get_node(FlList list, size_t index);
 /**
  * If {elem} exists in {list}, returns a pointer to the element
  */
-FlPointer fl_list_find(FlList list, const FlPointer elem);
+void* fl_list_find(FlList list, const void *elem);
 
 /**
  * If {elem} exists in {list}, returns a pointer to the element.
@@ -60,27 +60,27 @@ FlPointer fl_list_find(FlList list, const FlPointer elem);
  *
  * {handler} receives a current element {ce}, an {elem} to look for and the size in bytes of each {ce}
  */
-FlPointer fl_list_find_h(FlList list, bool (*handler)(const FlPointer ce, const FlPointer elem, size_t dtsize), const FlPointer elem);
+void* fl_list_find_h(FlList list, bool (*handler)(const void *ce, const void *elem, size_t dtsize), const void *elem);
 
 /**
  * Remove from {list}, the first element in {list} copying it into {dest}
  */
-bool fl_list_shift(FlList list, FlPointer dest);
+bool fl_list_shift(FlList list, void *dest);
 
 /**
  * Insert {elem} in the first position of {list}
  */
-FlPointer fl_list_unshift(FlList list, const FlPointer elem);
+void* fl_list_unshift(FlList list, const void *elem);
 
 /**
  * Remove from {list}, the last element in {list} copying it into {dest}
  */
-bool fl_list_pop(FlList list, FlPointer dest);
+bool fl_list_pop(FlList list, void *dest);
 
 /**
  * Return true if {list} contains {elem}
  */
-bool fl_list_contains(FlList list, const FlPointer elem);
+bool fl_list_contains(FlList list, const void *elem);
 
 /**
  * Append {list2} elements at the end of {list}
@@ -97,13 +97,13 @@ FlList fl_list_merge(FlList list, FlList list2);
  * Removes the {pos}-th element {list}.
  * The removed element will be copied in {dest}
  */
-bool fl_list_remove(FlList list, size_t pos, FlPointer dest);
+bool fl_list_remove(FlList list, size_t pos, void *dest);
 
 /**
  * Removes from {list} the element that found with {comparer}.
  * The removed element will be copied in {dest}
  */
-bool fl_list_remove_h(FlList list, bool (*comparer)(const FlPointer celem, const FlPointer elem, size_t dtsize), const FlPointer elem, FlPointer dest);
+bool fl_list_remove_h(FlList list, bool (*comparer)(const void *celem, const void *elem, size_t dtsize), const void *elem, void *dest);
 
 /**
  * Remove all elements from the {list}
@@ -142,7 +142,7 @@ FlListNode fl_list_node_prev(FlListNode node);
 FlByte* fl_list_node_data(FlListNode node);
 
 /* -------------------------------------------------------------
- * {function: fl_list_start}
+ * {function: fl_list_begin}
  * -------------------------------------------------------------
  * Returns an {FlIterator} that points to the first element in {param: list}
  * -------------------------------------------------------------
@@ -151,7 +151,7 @@ FlByte* fl_list_node_data(FlListNode node);
  * {return: FlIterator} Iterator pointing to the first element in {param: list}
  * -------------------------------------------------------------
  */
-FlIterator fl_list_start(const FlList list);
+FlIterator fl_list_begin(const FlList list);
 
 /* -------------------------------------------------------------
  * {function: fl_list_end}

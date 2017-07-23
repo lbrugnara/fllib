@@ -9,6 +9,9 @@ FlThread fl_thread_create(FlThreadFunc routine, FlThreadArgs args)
         thread = (FlThread)((uintptr_t)_beginthreadex(NULL, 0, (unsigned(__stdcall*)(void*))routine, args, 0, NULL));
     #elif defined(FL_PTHREADS)
         pthread_create(&thread, NULL, (void*(*)(void*))routine, args);
+    #elif defined(FL_NO_THREADS)
+        routine(args);
+        thread = 1;
     #endif
     return thread;
 }
@@ -22,11 +25,13 @@ FlThreadId fl_thread_current_id()
         threadId = GetCurrentThreadId();
     #elif defined(FL_PTHREADS) && !defined(_WIN32)
         threadId = pthread_self();
+    #elif defined(FL_NO_THREADS)
+        threadId = 1;
     #endif
     return threadId;
 }
 
-void fl_thread_exit(FlPointer retval)
+void fl_thread_exit(void *retval)
 {
     #ifdef FL_WIN_THREADS
         _endthreadex(retval ? *(unsigned int*)retval : 0);

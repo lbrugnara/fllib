@@ -7,15 +7,15 @@
 
 typedef FILE FlFile;
 
-FlFile* fl_file_open(FlCstr filename, FlCstr mode);
+FlFile* fl_file_open(char *filename, char *mode);
 void fl_file_close(FlFile *fd);
-bool fl_file_exists(FlCstr filename);
+bool fl_file_exists(char *filename);
 long fl_file_size(FlFile *fd);
-size_t fl_file_read_bytes(FlFile *file, size_t bytesToRead, FlByteArray dst);
-void fl_file_write_all_bytes(FlCstr filename, FlByteArray content);
-FlByteArray fl_file_read_all_bytes(FlCstr filename);
+size_t fl_file_read_bytes(FlFile *file, size_t bytesToRead, FlByte* dst);
+void fl_file_write_all_bytes(char *filename, FlByte* content);
+FlByte* fl_file_read_all_bytes(char *filename);
 
-bool fl_file_create_dir(FlCstr pathname);
+bool fl_file_create_dir(char *pathname);
 
 
 #endif /* FL_FILE_H */

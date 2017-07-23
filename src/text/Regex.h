@@ -10,12 +10,12 @@ typedef struct FlRegex* FlRegex;
  * is not null, it will contain any information regarding to regex
  * compilation errors
  */
-FlRegex fl_regex_compile(FlCstr pattern);
+FlRegex fl_regex_compile(char *pattern);
 
 /**
  * Using {regex} check if {text} matches the pattern
  */
-bool fl_regex_match(FlRegex regex, FlCstr text);
+bool fl_regex_match(FlRegex regex, char *text);
 
 /**
  * Deletes the memory used by a compiled {FlRegex}

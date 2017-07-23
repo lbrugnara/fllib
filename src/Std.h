@@ -23,15 +23,57 @@
  * This is a memcpy-like function but it creates the destination
  * pointer.
  * -------------------------------------------------------------
- * {param: const FlPointer var} A pointer to the memory to be copied in the destination pointer
+ * {param: const void *var} A pointer to the memory to be copied in the destination pointer
  * {param: size_t nbytes} Number of bytes to copy from {var} in destination pointer
  * -------------------------------------------------------------
- * {return: FlPointer} A pointer to the allocated memory
+ * {return: void*} A pointer to the allocated memory
  * -------------------------------------------------------------
  */
-FlPointer fl_copy(const FlPointer var, size_t nbytes);
+void* fl_copy(const void *var, size_t nbytes);
 
-#define fl_equals(a,b,z) (memcmp((a),(b),(z)) == 0)
+/* -------------------------------------------------------------
+* {macro: fl_equals}
+* -------------------------------------------------------------
+* Returns true if {n} bytes of {a} and {b} are equals
+* -------------------------------------------------------------
+* {param: void *a} Pointer to block of memory
+* {param: void *b} Pointer to block of memory
+* {param: size_t n} Number of bytes to compare
+* -------------------------------------------------------------
+*/
+#define fl_equals(a,b,n) (memcmp((a),(b),(n)) == 0)
+
+/* -------------------------------------------------------------
+* {macro: fl_offset_of}
+* -------------------------------------------------------------
+* Returns the offset of a given member within a struct or union
+* -------------------------------------------------------------
+* {param: type_name type} The type of the struct or union
+* {param: member_name member} Name of member of the struct or union
+* -------------------------------------------------------------
+*/
+#define fl_offset_of(type, member) ((size_t)((char*)&((type*)0)->member-(char*)0))
+
+#ifndef offsetof
+#define offsetof fl_offset_of
+#endif
+
+/* -------------------------------------------------------------
+* {macro: fl_container_of}
+* -------------------------------------------------------------
+* Returns a pointer to a struct or union based on a member
+* of it.
+* -------------------------------------------------------------
+* {param: void* ptr} Pointer to the member
+* {param: type_name type} The type of the struct or union
+* {param: member_name member} Name of member of the struct or union
+* -------------------------------------------------------------
+*/
+#define fl_container_of(ptr, type, member) ((type *)((char *)(ptr) - fl_offset_of(type, member)))
+
+#ifndef container_of
+#define container_of fl_container_of
+#endif
 
 /* -------------------------------------------------------------
  * {macro: FLBIT}

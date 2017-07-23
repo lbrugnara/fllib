@@ -78,7 +78,7 @@ typedef unsigned char StateFlags;
  * Represents an state of an NFA
  * -------------------------------------------------------------
  * {member: int id} State ID (starts from 0). It us used as an array index to run the NFA 
- * {member: FlCstr value} Node value to be matched (or a pretty representation like in NfaStateCharClass)
+ * {member: char* value} Node value to be matched (or a pretty representation like in NfaStateCharClass)
  * {member: FlVector to*} Vector of states reachables from current state
  * {member: StateFlags flags} Set of flags to indicate initial and final states
  * {member: NfaStateType type} Type of state
@@ -86,7 +86,7 @@ typedef unsigned char StateFlags;
  */
 #define STATE_BASE_DEF() 	\
 int id;						\
-FlCstr value;				\
+char* value;				\
 FlVector to;				\
 StateFlags flags;			\
 NfaStateType type;
@@ -114,14 +114,14 @@ typedef struct
 /* -------------------------------------------------------------
  * {datatype: struct FlRegex}
  * -------------------------------------------------------------
- * {member: FlCstr pattern} Pattern used to compile the {FlRegex}
+ * {member: char* pattern} Pattern used to compile the {FlRegex}
  * {member: NfaState states} Array of {NfaState} pointers (represent the NFA)
  * {member: RegexFlags flags} Flags parsed during compilation
  * -------------------------------------------------------------
  */
 struct FlRegex
 {
-	FlCstr pattern;
+	char* pattern;
 	NfaState **states;
 	RegexFlags flags;
 };
@@ -204,14 +204,14 @@ typedef struct
 } RegexAnalysis;
 
 /* -------------------------------------------------------------
- * {variable: char[] OperatorsChars}
+ * {variable: char[] operators_chars}
  * -------------------------------------------------------------
  * Contains all the operators recognized by this regex engine. & is recognized
  * as an operator, by it is used explicitly in the code, so there is no need to
  * keep it here. (Commented out to make it notorious)
  * -------------------------------------------------------------
  */
-static char OperatorsChars[] = {
+static char operators_chars[] = {
 	'(', ')', 		/* Capturing group */
 	'[', ']', 		/* Character class */
 	'*', '+', '?',  /* Repetition */
@@ -220,31 +220,31 @@ static char OperatorsChars[] = {
 };
 
 /* -------------------------------------------------------------
- * {variable: char[] CompileOperators}
+ * {variable: char[] compile_operators}
  * -------------------------------------------------------------
  * Operators that need special attention while compiling the pattern
  * -------------------------------------------------------------
  */
-static char CompileOperators[] = {'&', '|', '*', '+', '?', '['};
+static char compile_operators[] = {'&', '|', '*', '+', '?', '['};
 
 /* -------------------------------------------------------------
- * {variable: char[] CharclassOperators}
+ * {variable: char[] char_class_operators}
  * -------------------------------------------------------------
  * Contains operators used for character class operators
  * -------------------------------------------------------------
  */
-static char CharclassOperators[] = {
+static char char_class_operators[] = {
 	'[', ']', '^', '-'
 };
 
 /* -------------------------------------------------------------
- * {variable: RegexOperator[] RgxOperators}
+ * {variable: RegexOperator[] regex_operators}
  * -------------------------------------------------------------
  * Contains the information of operators, used to parse the pattern and convert
  * it to postfix notation
  * -------------------------------------------------------------
  */
-RegexOperator RgxOperators[] = {
+RegexOperator regex_operators[] = {
 	// Op	Precedence 	Assoc 	Type
 	{ '*',  { 100, 		'r', 	'u' }},
 	{ '+',	{ 100, 		'r', 	'u' }},
@@ -254,28 +254,28 @@ RegexOperator RgxOperators[] = {
 };
 
 /* -------------------------------------------------------------
- * {variable: char[] ConcatAtRightOp}
+ * {variable: char[] concat_at_right_op}
  * -------------------------------------------------------------
  * Operators that allow a concatenation operator at its right side, but not at its left side
  * -------------------------------------------------------------
  */
-char ConcatAtRightOp[] = {')', ']', '*', '+', '?'};
+char concat_at_right_op[] = {')', ']', '*', '+', '?'};
 
 /* -------------------------------------------------------------
- * {variable: char[] ConcatAtLeftOp}
+ * {variable: char[] concat_at_left_op}
  * -------------------------------------------------------------
  * Operators that allow a concatenation operator at its left side, but not at its right side
  * -------------------------------------------------------------
  */
-char ConcatAtLeftOp[] = {'(', '['};
+char concat_at_left_op[] = {'(', '['};
 
 /* -------------------------------------------------------------
- * {variable: char[] EscapedChars}
+ * {variable: char[] escaped_chars}
  * -------------------------------------------------------------
  * Allowed escape sequences
  * -------------------------------------------------------------
  */
-char EscapedChars[] = {
+char escaped_chars[] = {
 	'(', ')', '\\',
 	// Operators
 	'[', ']', '*', '+', '?', '|', '^', '&', '$', '{', '}',
@@ -293,40 +293,47 @@ char EscapedChars[] = {
  */
 static inline bool is_operator(char c) 
 { 
-	return fl_array_contains_n(OperatorsChars, flm_array_length(OperatorsChars), &c, sizeof(char)); 
+	return fl_array_contains_n(operators_chars, flm_array_length(operators_chars), &c, sizeof(char)); 
 }
 
 static inline bool is_charclass_operator(char c) { 
-	return fl_array_contains_n(CharclassOperators, flm_array_length(CharclassOperators), &c, sizeof(char)); 
+	return fl_array_contains_n(char_class_operators, flm_array_length(char_class_operators), &c, sizeof(char)); 
 }
 
 static inline bool is_escape_seq(char c) 
 { 
-	return fl_array_contains_n(EscapedChars, flm_array_length(EscapedChars), &c, sizeof(char)); 
+	return fl_array_contains_n(escaped_chars, flm_array_length(escaped_chars), &c, sizeof(char)); 
+}
+
+static inline void* vector_add_cstr(FlVector vector, const char *src)
+{
+    char *copy = fl_cstr_dup(src);
+    return fl_vector_add(vector, &copy);
 }
 
 enum {	 
 	CONCAT_LEFT, 
 	CONCAT_RIGHT
 };
+
 static inline bool allow_concat(short t, char c) 
 {
 	if (t == CONCAT_LEFT) 
-		return fl_array_contains_n(ConcatAtLeftOp, flm_array_length(ConcatAtLeftOp), &c, sizeof(char)); 
-	return fl_array_contains_n(ConcatAtRightOp, flm_array_length(ConcatAtRightOp), &c, sizeof(char)); 
+		return fl_array_contains_n(concat_at_left_op, flm_array_length(concat_at_left_op), &c, sizeof(char)); 
+	return fl_array_contains_n(concat_at_right_op, flm_array_length(concat_at_right_op), &c, sizeof(char)); 
 }
 
 /* -------------------------------------------------------------
  * Helper functions to retrieve precedence, assocciativity, arity, etc.
  * -------------------------------------------------------------
  */
-static int RgxOpLength = flm_array_length(RgxOperators);
+static int regex_operators_length = flm_array_length(regex_operators);
 
 static inline bool regex_operator_exists(char op)
 {
-	for (int i=0; i < RgxOpLength; i++)
+	for (int i=0; i < regex_operators_length; i++)
 	{
-		if (RgxOperators[i].operator == op)
+		if (regex_operators[i].operator == op)
 			return true;
 	}
 	return false;
@@ -334,30 +341,30 @@ static inline bool regex_operator_exists(char op)
 
 static inline int regex_operator_get_precedence(char op)
 {
-	for (int i=0; i < RgxOpLength; i++)
+	for (int i=0; i < regex_operators_length; i++)
 	{
-		if (RgxOperators[i].operator == op)
-			return RgxOperators[i].data.precedence;
+		if (regex_operators[i].operator == op)
+			return regex_operators[i].data.precedence;
 	}
 	return -1;
 }
 
 static inline char regex_operator_get_assoc(char op)
 {
-	for (int i=0; i < RgxOpLength; i++)
+	for (int i=0; i < regex_operators_length; i++)
 	{
-		if (RgxOperators[i].operator == op)
-			return RgxOperators[i].data.assoc;
+		if (regex_operators[i].operator == op)
+			return regex_operators[i].data.assoc;
 	}
 	return FL_EOS;
 }
 
 static inline char regex_operator_get_arity(char op)
 {
-	for (int i=0; i < RgxOpLength; i++)
+	for (int i=0; i < regex_operators_length; i++)
 	{
-		if (RgxOperators[i].operator == op)
-			return RgxOperators[i].data.arity;
+		if (regex_operators[i].operator == op)
+			return regex_operators[i].data.arity;
 	}
 	return FL_EOS;
 }
@@ -366,17 +373,17 @@ static inline char regex_operator_get_arity(char op)
  * Private API used by Regex module
  * -------------------------------------------------------------
  */
-FlVector parse_regex (FlCstr regex, RegexFlags *flags);
+FlVector parse_regex (char* regex, RegexFlags *flags);
 
-FlVector regex_to_postfix (FlCstr regex, RegexFlags *flags);
+FlVector regex_to_postfix (char* regex, RegexFlags *flags);
 
 void print_nfa (NfaState **states);
 
 void print_nfa_state(NfaState *state);
 
-NfaState* create_nfa_state(int id, FlCstr value);
+NfaState* create_nfa_state(int id, char* value);
 
-NfaState* create_charclass_nfa_state(int id, FlCstr value, bool negated);
+NfaState* create_char_class_nfa_state(int id, char* value, bool negated);
 
 void delete_nfa(FlByte *statebytes);
 
@@ -388,9 +395,9 @@ void nfa_repeat (NfaState **states, short ls, short le);
 
 bool can_reach_state (NfaState *state, unsigned char value);
 
-NfaStepResult nfa_step (NfaState *state, CurrentState nextstates[], unsigned char value, const CurrentState currentstates[]);
+NfaStepResult nfa_step (NfaState *state, CurrentState nextstates[], unsigned char value, const CurrentState current_statestates[]);
 
-bool regex_match (FlRegex regex, FlCstr text);
+bool regex_match (FlRegex regex, char* text);
 
 int compare_states(const void* v1, const void* v2);
 
@@ -400,14 +407,14 @@ int compare_states(const void* v1, const void* v2);
  * Make an analysis of the pattern to determine flags like anchors.
  * (Intended to be used in the future when more features will be added)
  * -------------------------------------------------------------
- * {param: FlCstr regex} Pattern to analyze
+ * {param: char* regex} Pattern to analyze
  * {param: RegexFlags* flags} The function will change this when find certain flags like anchors
  * {param: RegexAnalysis* analysis} Will keep metainformation of the pattern
  * -------------------------------------------------------------
  * {return: void}
  * -------------------------------------------------------------
  */
-void analyze_regex(FlCstr regex, RegexFlags *flags, RegexAnalysis *analysis)
+void analyze_regex(char* regex, RegexFlags *flags, RegexAnalysis *analysis)
 {
 	flm_assert(analysis != NULL, "RegexAnalysis cannot be NULL");
 	size_t reglength = strlen(regex);
@@ -420,7 +427,7 @@ void analyze_regex(FlCstr regex, RegexFlags *flags, RegexAnalysis *analysis)
 		analysis->patternStart++; // Start from 1, 0 is the ^
 	}
 
-	if (regex[reglength-1] == '$' && regex[reglength-2] != '\\')
+	if (reglength >= 2 && regex[reglength-1] == '$' && regex[reglength-2] != '\\')
 	{
 		SET_FLAG_END(*flags);
 		analysis->patternEnd--; // End before $
@@ -435,17 +442,18 @@ void analyze_regex(FlCstr regex, RegexFlags *flags, RegexAnalysis *analysis)
  * {error} struct is populated with useful information
  * about the failure
  * -------------------------------------------------------------
- * {return: FlVector} Vector of FlCstr that contains the tokens of the parsed regex
+ * {return: FlVector} Vector of char* that contains the tokens of the parsed regex
  * -------------------------------------------------------------
  */
-FlVector parse_regex(FlCstr regex, RegexFlags *flags)
+FlVector parse_regex(char* regex, RegexFlags *flags)
 {
+	// To Clean: 
+	//	Always: tokens
+	// 	OnError: output
 	RegexAnalysis analysis;
 	analyze_regex(regex, flags, &analysis);
 
-	char *tokens = fl_cstr_to_array(regex);
-	// Function output (tokens)
-	FlVector output = fl_vector_new(sizeof(FlCstr), analysis.patternEnd+1);
+	FlVector output = fl_vector_new(sizeof(char*), analysis.patternEnd+1);
 	
 	// Contains the backslash for escaped characters
 	bool bslash = false;
@@ -455,9 +463,11 @@ FlVector parse_regex(FlCstr regex, RegexFlags *flags)
 	bool isCharClass = false;
 	
 	// Vars for tokens
+	char *tokens = fl_cstr_to_array(regex);
 	char cur = FL_EOS;
 	char nex = FL_EOS;
 	char prev = FL_EOS;
+	bool didError = false;
 	for (size_t i = analysis.patternStart; i <= analysis.patternEnd; i++)
 	{
 		bslash = false;
@@ -470,12 +480,14 @@ FlVector parse_regex(FlCstr regex, RegexFlags *flags)
 			if (nex == FL_EOS)
 			{
 				fl_error_push(-1, "Incomplete escaped value");
+				didError = true;
 				break;
 			}
 
 			if (!is_escape_seq(nex))
 			{
 				fl_error_push(-1, "Unknown escaped value %c%c", cur, nex);
+				didError = true;
 				break;
 			}
 			// Set bslash to \ and update cur and nex to i+1 (and i+2)
@@ -510,7 +522,7 @@ FlVector parse_regex(FlCstr regex, RegexFlags *flags)
 				// we need to add a concatenator operator, because now, the ] character, is a literal bracket
 				if (fl_vector_length(output) > 0)
 				{
-					fl_vector_add_cstr(output, "&");
+					vector_add_cstr(output, "&");
 				}
 				bslash = true;
 			}
@@ -523,7 +535,7 @@ FlVector parse_regex(FlCstr regex, RegexFlags *flags)
 			// because it was an operator, not an operand (e.g. [^^a])
 			if (prev != '^' && !prev_bslash)
 			{
-				fl_vector_add_cstr(output, "|");
+				//vector_add_cstr(output, "|");
 			}
 			bslash = true;
 		} 
@@ -543,6 +555,7 @@ FlVector parse_regex(FlCstr regex, RegexFlags *flags)
 					if (!lower && !upper)
 					{
 						fl_error_push(-1, "Invalid range %c%c%c", (prev == FL_EOS ? '-' : prev), cur, (nex == FL_EOS ? '-' : nex));
+						didError = true;
 						break;
 					}
 				} 
@@ -551,6 +564,7 @@ FlVector parse_regex(FlCstr regex, RegexFlags *flags)
 					if ((int)prev >= (int)nex)
 					{
 						fl_error_push(-1, "Invalid range %c%c%c", (prev == FL_EOS ? '-' : prev), cur, (nex == FL_EOS ? '-' : nex));
+						didError = true;
 						break;
 					}
 				} 
@@ -582,7 +596,7 @@ FlVector parse_regex(FlCstr regex, RegexFlags *flags)
 
 		// Prepare new token
 		int length = bslash ? 2 : 1;
-		FlCstr tmpstr = fl_cstr_new(length);
+		char* tmpstr = fl_cstr_new(length);
 		if (length == 2) {
 			tmpstr[0] = '\\';
 			tmpstr[1] = cur;
@@ -610,12 +624,18 @@ FlVector parse_regex(FlCstr regex, RegexFlags *flags)
 		bool nexAllowConcatLeft = nexIsOp && allow_concat(CONCAT_LEFT, nex);
 		if ((!curIsOperator || curAllowConcatRight) && (!nexIsOp || nexAllowConcatLeft))
 		{
-			fl_vector_add_cstr(output, "&");
+			vector_add_cstr(output, "&");
 		}
 	}
 
 	if (tokens)
 		fl_array_delete(tokens);
+
+	if (didError)
+	{
+		fl_vector_delete_ptrs(output);
+		return NULL;
+	}
 	return output;
 }
 
@@ -625,41 +645,42 @@ FlVector parse_regex(FlCstr regex, RegexFlags *flags)
  * Parses the pattern in {regex} and populates {flags}
  * with parsing information. 
  * -------------------------------------------------------------
- * {return: FlVector} Vector of FlCstr that contains the tokens 
+ * {return: FlVector} Vector of char* that contains the tokens 
  * 	of the parsed regex. The tokens are in a postfix notation
  * -------------------------------------------------------------
  */
-FlVector regex_to_postfix (FlCstr regex, RegexFlags *flags) 
+FlVector regex_to_postfix (char* regex, RegexFlags *flags) 
 {
-	//error = NULL;
-	if (!regex && !regex[0])
+	if (regex == NULL || regex[0] == 0x0)
 	{
 		fl_error_push(-1, "Empty pattern");
 		return NULL;
 	}
 
-	#if DEBUG
-		printf("regex: /%s/\r\n", regex);
-	#endif
+	// To Clean: 
+	//	Always: tokens, stack
+	// 	OnError: output
 
 	/* Parse, sanitize and get an array with the regex tokens */
 	FlVector tokens = parse_regex(regex, flags);
 	if (tokens == NULL)
 		return NULL;
 
-	int length = strlen(regex);
-	FlVector stack = flm_vector_new(FlCstr, fl_vector_length(tokens));
-	FlVector output = flm_vector_new(FlCstr, fl_vector_length(tokens));
+	FlVector stack = fl_vector_new(sizeof(char*), fl_vector_length(tokens));
+	FlVector output = fl_vector_new(sizeof(char*), fl_vector_length(tokens));
 
-	bool inCharClass = false;
-	int currentGroup = 0;
 	/* Use the shunting-yard algorithm, with the particularity of doesn't discard the
 	 * parentheses, instead use it as a unary operator. This way, we can implement
 	 * capturing groups easly walking the resultant tree. */
  	char c;
-	FlCstr token;
-	FlCstr stackedtoken; // Temp string to use when poping from stack
+	char* token = NULL;
+	char* stackedtoken = NULL; // Temp string to use when poping from stack
+	bool didError = false;
+	bool inCharClass = false;
+	int currentGroup = 0;
 	while (fl_vector_length(tokens)) {
+		// To Clean:
+		//	OnError: token if there is an error
 		fl_vector_shift(tokens, &token);
 		c = strlen(token) == 1 ? token[0] : FL_EOS; // FL_EOS makes 'c' fall in default: (escaped char => literal)
 
@@ -679,10 +700,11 @@ FlVector regex_to_postfix (FlCstr regex, RegexFlags *flags)
 					fl_vector_add(output, &stackedtoken);
 				}
 				// Prevent /[]/ and /[^]/
-				if ((fl_vector_length(output) == 1 && *flm_vector_get(output, FlCstr, 0) == '[')
-					|| (fl_vector_length(output) == 2 && *flm_vector_get(output, FlCstr, 0) == '[' && *flm_vector_get(output, FlCstr, 1) == '^'))
+				if ((fl_vector_length(output) == 1 && *flm_vector_get(output, char*, 0) == '[')
+					|| (fl_vector_length(output) == 2 && *flm_vector_get(output, char*, 0) == '[' && *flm_vector_get(output, char*, 1) == '^'))
 				{
 					fl_error_push(-1, "Empty character class is not allowed");
+					didError = true;
 					break;
 				}
 				// parse_regex escapes ] when no [ is found, so this does not need validation like capturing groups
@@ -695,7 +717,7 @@ FlVector regex_to_postfix (FlCstr regex, RegexFlags *flags)
 					break;
 				}
 				// If not we transform a range like [0-9] to [09-]
-				FlCstr next;
+				char* next;
 				fl_vector_shift(tokens, &next);
 				fl_vector_add(output, &next);
 				fl_vector_add(output, &token);
@@ -716,6 +738,7 @@ FlVector regex_to_postfix (FlCstr regex, RegexFlags *flags)
 				if (stackedtoken[0] != '(')
 				{
 					fl_error_push(-1, "Invalid regular expression: Found character ')' but starting '(' was not found");
+					didError = true;
 					break;
 				}
 				currentGroup--;
@@ -729,7 +752,7 @@ FlVector regex_to_postfix (FlCstr regex, RegexFlags *flags)
 			{
 				// When we obtain an operator, we need to check where we will send it (output or stack)
 				char o1 = c;
-				char o2 = fl_vector_length(stack) == 0 ? FL_EOS : flm_vector_get(stack, FlCstr, fl_vector_length(stack)-1)[0]; // First char
+				char o2 = fl_vector_length(stack) == 0 ? FL_EOS : flm_vector_get(stack, char*, fl_vector_length(stack)-1)[0]; // First char
 
 				// If in the stack there's NOT a previous operator, we send the current operator to the stack
 				if (o2 == FL_EOS || !regex_operator_exists(o2))
@@ -744,7 +767,7 @@ FlVector regex_to_postfix (FlCstr regex, RegexFlags *flags)
 
 
 				while (true) {
-					o2 = fl_vector_length(stack) == 0 ? FL_EOS : flm_vector_get(stack, FlCstr, fl_vector_length(stack)-1)[0]; // First char
+					o2 = fl_vector_length(stack) == 0 ? FL_EOS : flm_vector_get(stack, char*, fl_vector_length(stack)-1)[0]; // First char
 					
 					// Break the loop when we find the end of the stack or a grouping operator
 					if (o2 == FL_EOS || !regex_operator_exists(o2))
@@ -764,7 +787,7 @@ FlVector regex_to_postfix (FlCstr regex, RegexFlags *flags)
 					if (!needsToPopOp2)
 						break;
 					
-					FlCstr o2s;
+					char* o2s;
 					fl_vector_pop(stack, &o2s);
 					fl_vector_add(output, &o2s);
 				}
@@ -775,12 +798,18 @@ FlVector regex_to_postfix (FlCstr regex, RegexFlags *flags)
 				// Literal chars are sended directly to the output
 				fl_vector_add(output, &token);
 		}
+
+		if (didError)
+		{
+			fl_cstr_delete(token);
+			break;
+		}
 	}
 
 	// Finally, remove all the pending operators from the stack, and send it to the output
 	while (fl_vector_length(stack))
 	{
-		FlCstr sc;
+		char* sc;
 		fl_vector_pop(stack, &sc);
 		fl_vector_add(output, &sc);
 	}
@@ -788,18 +817,23 @@ FlVector regex_to_postfix (FlCstr regex, RegexFlags *flags)
 	if (inCharClass)
 	{
 		fl_error_push(-1, "Invalid regular expression: missing closing ']'");
+		didError = true;
 	}
 	else if (currentGroup != 0)
 	{
 		fl_error_push(-1, "Invalid regular expression: missing closing ')'");
+		didError = true;
 	}
-
-	#if DEBUG
-		printf("regex2postfix: /%s/\r\n", fl_cstr_join(output, " "));
-	#endif
 
 	fl_vector_delete_ptrs(stack);
 	fl_vector_delete_ptrs(tokens);
+
+	if (didError)
+	{
+		fl_vector_delete_ptrs(output);
+		return NULL;
+	}
+
 	return output;
 }
 
@@ -813,27 +847,25 @@ FlVector regex_to_postfix (FlCstr regex, RegexFlags *flags)
  * {return: FlRegex} NFA for the given pattern
  * -------------------------------------------------------------
  */
-FlRegex fl_regex_compile (FlCstr pattern)
+FlRegex fl_regex_compile (char* pattern)
 {
+	// To Clean:
+	//	Always: tokens
+	//	OnError: regex (all of it)
+
 	RegexFlags flags = 0;
 	FlVector tokens = regex_to_postfix(pattern, &flags);
 	if (tokens == NULL)
 		return NULL;
+		
 	size_t nstates = fl_vector_length(tokens) + 1;
 
-	#define PushState(s) do { *statesp++ = s; *stackp++ = operands_last_index++; } while (0)
-	#define PushOperandIndex(val) (*stackp++ = val)
-	#define PopOperandIndex() (*--stackp)
+	#define PUSH_STATE(s) do { *statesp++ = s; *stackp++ = operands_last_index++; } while (0)
+	#define PUSH_OPERAND_INDEX(val) (*stackp++ = val)
+	#define POP_OPERAND_INDEX() (*--stackp)
+	#define HAS_OPERANDS(n) ((stackp-(n)) >= (short*)&stack)
 	short stack[nstates];
 	short operands_last_index = 0, *stackp = stack, leftset, rightset;
-
-	#if DEBUG
-	{
-		FlCstr postfix = fl_cstr_join(tokens, " ");
-		printf("postfix: /%s/\r\n", postfix);
-		fl_cstr_delete(postfix);
-	}
-	#endif
 
 	FlRegex regex = fl_malloc(sizeof(struct FlRegex));
 	regex->pattern = fl_cstr_dup(pattern);
@@ -844,8 +876,8 @@ FlRegex fl_regex_compile (FlCstr pattern)
 	// Create the initial state and add a concatenation operator between S0 and the rest of the regex
 	int stateId = 0;
 	NfaState *s = create_nfa_state(stateId++, "S0");
-	fl_vector_add_cstr(tokens, "&");
-	PushState(s);
+	PUSH_STATE(s);
+	vector_add_cstr(tokens, "&");
 
 	// Variables to handle capturing groups indexes
 	short nextcapgroup = 1;
@@ -853,11 +885,15 @@ FlRegex fl_regex_compile (FlCstr pattern)
 
 	// Current token. Because token can be an escaped sequence, tokenval is used to keep the real value
 	// When token = "\[" => tokenval = '['
-	FlCstr token;
+	char* token;
 	char tokenval;
-
+	bool didError = false;
 	while(fl_vector_length(tokens))
 	{
+		// To Clean:
+		//	Always:
+		//	OnError: token
+
 		// Remove tokens from beginning
 		fl_vector_shift(tokens, &token);
 		tokenval = strlen(token) == 1 ? token[0] : token[1];
@@ -872,54 +908,74 @@ FlRegex fl_regex_compile (FlCstr pattern)
 			// {todo: Implement capturing groups}
 		} 
 		// If tokenval is not an operator, add a new state with {token} value
-		else if (!fl_array_contains_n(CompileOperators, flm_array_length(CompileOperators), token, strlen(token)))
+		else if (!fl_array_contains_n(compile_operators, flm_array_length(compile_operators), token, strlen(token)))
 		{
 			s = create_nfa_state(stateId++, token);
-			PushState(s);
+			PUSH_STATE(s);
 		}
 		else
 		{
+			if (!HAS_OPERANDS(1))
+			{
+				fl_error_push(-1, "Invalid regular expression: There is no operands for operator '%c'", tokenval);
+				didError = true;
+				goto clean_token;
+			}
 			switch (tokenval)
 			{
 				case '&':
-					rightset = PopOperandIndex();
-					leftset = PopOperandIndex();
+					if (!HAS_OPERANDS(2))
+					{
+						fl_error_push(-1, "Invalid regular expression: There is no operands for operator '%c'", tokenval);
+						didError = true;
+						goto clean_token;
+					}
+					rightset = POP_OPERAND_INDEX();
+					leftset = POP_OPERAND_INDEX();
 					#if DEBUG
 						nfa_print_operands("AND", regex->states, leftset, rightset, operands_last_index);
 					#endif
 					nfa_concat(regex->states, leftset, rightset, rightset, operands_last_index);
-					PushOperandIndex(leftset);
+					PUSH_OPERAND_INDEX(leftset);
 					break;
 				case '|':
-					rightset = PopOperandIndex();
-					leftset = PopOperandIndex();
+					if (!HAS_OPERANDS(2))
+					{
+						fl_error_push(-1, "Invalid regular expression: There is no operands for operator '%c'", tokenval);
+						didError = true;
+						goto clean_token;
+					}
+					rightset = POP_OPERAND_INDEX();
+					leftset = POP_OPERAND_INDEX();
 					#if DEBUG
 						nfa_print_operands("OR", regex->states, leftset, rightset, operands_last_index);
 					#endif
-					PushOperandIndex(leftset);
+					PUSH_OPERAND_INDEX(leftset);
 					break;
 				case '+':
-					leftset = PopOperandIndex();
-					if (leftset == 0) // S0 is an invalid regexp
+					if (!HAS_OPERANDS(1))
 					{
-						fl_error_push(-1, "Invalid regular expression: There is no operand for '%c'", tokenval);
-						break;
+						fl_error_push(-1, "Invalid regular expression: There is no operand for operator '%c'", tokenval);
+						didError = true;
+						goto clean_token;
 					}
+					leftset = POP_OPERAND_INDEX();
 					#if DEBUG
 						nfa_print_operands("+", regex->states, leftset, operands_last_index, -1);
 					#endif
 					nfa_repeat(regex->states, leftset, operands_last_index);
-					PushOperandIndex(leftset);
+					PUSH_OPERAND_INDEX(leftset);
 					break;
 				case '*':
 				case '?':
 				{
-					leftset = PopOperandIndex();
-					if (leftset == 0) // S0 is an invalid regexp
+					if (!HAS_OPERANDS(1))
 					{
-						fl_error_push(-1, "Invalid regular expression: There is no operand for '%c'", tokenval);
-						break;
+						fl_error_push(-1, "Invalid regular expression: There is no operand for operator '%c'", tokenval);
+						didError = true;
+						goto clean_token;
 					}
+					leftset = POP_OPERAND_INDEX();
 					#if DEBUG
 						nfa_print_operands(token, regex->states, leftset, operands_last_index, -1);
 					#endif
@@ -940,31 +996,31 @@ FlRegex fl_regex_compile (FlCstr pattern)
 					{
 						regex->states[i]->id++;
 					}
-					PushOperandIndex(leftset);
+					PUSH_OPERAND_INDEX(leftset);
 
 					NfaState* es = create_nfa_state(leftset, "Epsilon");
 					stateId++;
 					STATE_SET_INITIAL(es);
 					STATE_SET_FINAL(es);
-					PushState(es);
-					rightset = PopOperandIndex();
-					leftset = PopOperandIndex();
+					PUSH_STATE(es);
+					rightset = POP_OPERAND_INDEX();
+					leftset = POP_OPERAND_INDEX();
 					#if DEBUG
 						nfa_print_operands("AND", regex->states, leftset, rightset, operands_last_index);
 					#endif
 					nfa_concat(regex->states, rightset, operands_last_index, leftset, rightset);
-					PushOperandIndex(leftset);
+					PUSH_OPERAND_INDEX(leftset);
 					STATE_SET_FINAL(es);
 				
 					break;
 				}
 				case '[':
 				{
-					FlVector tmptokens = fl_vector_new(sizeof(FlCstr), 0);
+					FlVector tmptokens = fl_vector_new(sizeof(char*), 0);
 					FlVector ascii_codes = fl_vector_new(sizeof(int), 0);
-					FlVector display = fl_vector_new(sizeof(FlCstr), 0);
+					FlVector display = fl_vector_new(sizeof(char*), 0);
 					// Temporary variable to look ahead the next token
-					FlCstr nexttok;
+					char* nexttok;
 					// ASCII codes
 					int ord;
 
@@ -972,14 +1028,14 @@ FlRegex fl_regex_compile (FlCstr pattern)
 					fl_vector_shift(tokens, &nexttok);
 					if (flm_cstr_equals(nexttok, "^")) 
 					{
-						fl_vector_add_cstr(display, "^");
-						s = create_charclass_nfa_state(stateId++, NULL, true); // negated capturing group = true
+						vector_add_cstr(display, "^");
+						s = create_char_class_nfa_state(stateId++, NULL, true); // negated capturing group = true
 					} 
 					else 
 					{
 						if (!flm_cstr_equals(nexttok, "]"))
-							fl_vector_add_cstr(tmptokens, nexttok);
-						s = create_charclass_nfa_state(stateId++, NULL, false); // negated capturing group = false
+							vector_add_cstr(tmptokens, nexttok);
+						s = create_char_class_nfa_state(stateId++, NULL, false); // negated capturing group = false
 					}
 
 					STATE_SET_INITIAL(s);
@@ -988,7 +1044,7 @@ FlRegex fl_regex_compile (FlCstr pattern)
 					if (!flm_cstr_equals(nexttok, "]")) 
 					{
 						// Consume the tokens until reach the ending ]
-						FlCstr tmptoken;
+						char* tmptoken;
 						while (fl_vector_shift(tokens, &tmptoken)) 
 						{
 							if (flm_cstr_equals(tmptoken, "]"))
@@ -1001,7 +1057,7 @@ FlRegex fl_regex_compile (FlCstr pattern)
 					size_t l = fl_vector_length(tmptokens);
 					for (size_t i = 0; i < l; i++)
 					{
-						FlCstr tmptoken = flm_vector_get(tmptokens, FlCstr, i);
+						char* tmptoken = flm_vector_get(tmptokens, char*, i);
 						if (flm_cstr_equals(tmptoken, "-"))
 						{
 							int endindex;
@@ -1011,9 +1067,9 @@ FlRegex fl_regex_compile (FlCstr pattern)
 							for (int i=startindex; i <= endindex; i++)
 								((NfaStateCharClass*)s)->map[i] = 1;
 							
-							FlCstr endchar;
+							char* endchar;
 							fl_vector_pop(display, &endchar);
-							fl_vector_add_cstr(display, "-");
+							vector_add_cstr(display, "-");
 							fl_vector_add(display, &endchar);
 						}
 						else 
@@ -1028,7 +1084,7 @@ FlRegex fl_regex_compile (FlCstr pattern)
 								ord = tmptoken[0];
 								flm_vector_addl(ascii_codes, int, ord);
 							}
-							fl_vector_add_cstr(display, tmptoken);
+							vector_add_cstr(display, tmptoken);
 						}
 					}
 
@@ -1037,12 +1093,14 @@ FlRegex fl_regex_compile (FlCstr pattern)
 						((NfaStateCharClass*)s)->map[ord] = 1;
 					}
 
-					fl_vector_unshift_cstr(display, "/[");
-					fl_vector_add_cstr(display, "]/");
+					char *tmp = fl_cstr_dup("/[");
+    				fl_vector_unshift(display, &tmp);  
+
+					vector_add_cstr(display, "]/");
 					((NfaStateCharClass*)s)->value = fl_cstr_join(display, "");
 
 					// Add the new charclass state
-					PushState(s);
+					PUSH_STATE(s);
 
 					// Delete nexttok, ascii_codes already mapped, display vector and tmptokens vector
 					fl_cstr_delete(nexttok);
@@ -1053,17 +1111,25 @@ FlRegex fl_regex_compile (FlCstr pattern)
 			}
 
 		}
+
+clean_token:
 		// Delete consumed token
 		fl_cstr_delete(token);
+		if (didError)
+			break;
 	}
-	// Sort the regex to retrieve States by its ID like array indexes
-	// regex->states[n] is the State->id == n
-	qsort(regex->states, fl_array_length(regex->states), sizeof(NfaState*), compare_states);
-	#if DEBUG
-	print_nfa(regex->states);
-	#endif
-			
-	fl_vector_delete(tokens);
+
+	if (!didError)
+	{
+		// Sort the regex to retrieve States by its ID like array indexes
+		// regex->states[n] is the State->id == n
+		qsort(regex->states, fl_array_length(regex->states), sizeof(NfaState*), compare_states);
+		#if DEBUG
+		print_nfa(regex->states);
+		#endif
+	}
+
+	fl_vector_delete_ptrs(tokens);
 	return regex;
 }
 
@@ -1097,12 +1163,12 @@ void delete_nfa(FlByte *statebytes)
  * to reach the state
  * -------------------------------------------------------------
  * {param: int id} ID to be assigned to the new state
- * {param: FlCstr value} Value needed to reach the new state
+ * {param: char* value} Value needed to reach the new state
  * -------------------------------------------------------------
  * {return: NfaState*} The created NfaState
  * -------------------------------------------------------------
  */
-NfaState* create_nfa_state(int id, FlCstr value)
+NfaState* create_nfa_state(int id, char* value)
 {
 	NfaState *s = fl_malloc(sizeof(NfaState));
 	s->value = fl_cstr_dup(value);
@@ -1115,18 +1181,18 @@ NfaState* create_nfa_state(int id, FlCstr value)
 }
 
 /* -------------------------------------------------------------
- * {function: create_charclass_nfa_state}
+ * {function: create_char_class_nfa_state}
  * -------------------------------------------------------------
  * Creates an NFA state that represents a character class operator
  * -------------------------------------------------------------
  * {param: int id} ID of the state
- * {param: FlCstr value} Representation of the character class (it is NOT used to run the NFA)
+ * {param: char* value} Representation of the character class (it is NOT used to run the NFA)
  * {param: bool negated} When the character class contains is a negated one
  * -------------------------------------------------------------
  * {return: NfaState*} Created state
  * ------------------------------------------------------------- 
  */
-NfaState* create_charclass_nfa_state(int id, FlCstr value, bool negated)
+NfaState* create_char_class_nfa_state(int id, char* value, bool negated)
 {
 	NfaStateCharClass *s = fl_malloc(sizeof(NfaStateCharClass));
 	s->value = value != NULL ? fl_cstr_dup(value) : NULL;
@@ -1344,7 +1410,7 @@ void print_nfa_state(NfaState *state)
  * {param: NfaState* state} Current state
  * {param: CurrentState[] nextstates} Reached states from {state}
  * {param: unsigned char value} Input value for the current step
- * {param: const CurrentState[] currentstates} Already reached states in this step
+ * {param: const CurrentState[] current_statestates} Already reached states in this step
  * -------------------------------------------------------------
  * {return: NfaStepResult} Contains info of the step result.
  * 	If at least one state was reached, result.anyMatch will be true.
@@ -1352,17 +1418,18 @@ void print_nfa_state(NfaState *state)
  * 	true.
  * -------------------------------------------------------------
  */
-NfaStepResult nfa_step (NfaState *state, CurrentState nextstates[], unsigned char value, const CurrentState currentstates[])
+NfaStepResult nfa_step (NfaState *state, CurrentState nextstates[], unsigned char value, const CurrentState current_statestates[])
 {
 	NfaStepResult stepresult = {false, false};
 
 	if (state->to == NULL)
 		return stepresult;
 
+	NfaState **transitions = fl_vector_get(state->to, 0);
 	size_t l = fl_vector_length(state->to);
 	for (size_t i = 0; i < l; i++)
 	{
-		NfaState *t = flm_vector_get(state->to, NfaState*, i);
+		NfaState *t = transitions[i];
 	 	// If e-transition reach an state that already is in the next states, avoid it to prevent loops
 	 	// We can have e-transitions reaching each one to the other here.
 	 	if (nextstates[t->id].id != -1 && nextstates[t->id].e)
@@ -1372,7 +1439,7 @@ NfaStepResult nfa_step (NfaState *state, CurrentState nextstates[], unsigned cha
 
 		// If e-transition reach an state that already is in the current states, avoid it.
 		// This result in a cleaner representation of the current step and reduce the time complexity
-	 	if (currentstates != NULL && (currentstates[t->id].id != -1 && currentstates[t->id].e))
+	 	if (current_statestates != NULL && (current_statestates[t->id].id != -1 && current_statestates[t->id].e))
 	 	{
 	 		continue;
 	 	}
@@ -1434,31 +1501,35 @@ bool can_reach_state (NfaState *state, unsigned char value)
  * the input matches the pattern
  * -------------------------------------------------------------
  * {param: FlRegex regex} Regular expression
- * {param: FlCstr text} Input string to check against pattern
+ * {param: char* text} Input string to check against pattern
  * -------------------------------------------------------------
  * {return: bool} True if text matches the pattern
  * -------------------------------------------------------------
  */
-bool regex_match (FlRegex regex, FlCstr text)
+bool regex_match (FlRegex regex, char* text)
 {
-	size_t currentsl = fl_array_length(regex->states);
-	CurrentState currents[currentsl];
-	memset(currents, -1, sizeof(CurrentState) * currentsl);
-	CurrentState nexts[currentsl];
-	memset(nexts, -1, sizeof(CurrentState) * currentsl);
+	size_t current_states_length = fl_array_length(regex->states);
+	
+	// Variable to keep the NFA's states
+	CurrentState current_states[current_states_length];
+	memset(current_states, -1, sizeof(CurrentState) * current_states_length);
+	
+	// While transitioning between states, next_states will contain the next states to transition to
+	CurrentState next_states[current_states_length];
+	memset(next_states, -1, sizeof(CurrentState) * current_states_length);
 
-	// Previous to run the nfa we've only one state, the initial state
-	NfaState *s0 = regex->states[0];//
-	currents[s0->id] = (CurrentState){ s0->id, false };
+	// Previous to run the nfa we've only one state, the initial state S0
+	NfaState *s0 = regex->states[0];
+	current_states[s0->id] = (CurrentState){ s0->id, false };
 
 	FlVector input = fl_cstr_split(text);
 
 	// Run the first step without input to reach all possible states we can reach with e-transitions
-	// nfa_step returns an array as result with
-	// Index 0 -> True if there is a match (a transition from one of the current states to another)
-	// Index 1 -> If one of the reached states is Final, this value is true
+	// nfa_step returns an NfaStepResult:
+	// member .anyMatch -> true if there is a match (a transition from one of the current states to another)
+	// member .anyFinal -> If any of the reached states is final, this will be true
 	NfaStepResult result;
-	NfaStepResult stepresult = nfa_step(s0, currents, FL_EOS, NULL);
+	NfaStepResult stepresult = nfa_step(s0, current_states, '\0', NULL);
 
 	// stepresult.anyMatch will contain the partial result of a nfa_step when a new state is reached
 	result.anyMatch = stepresult.anyMatch;
@@ -1476,13 +1547,13 @@ bool regex_match (FlRegex regex, FlCstr text)
 		// Clean result.anyMatch for the new iteration
 	 	result.anyMatch = false;
 
-		// nexts will contain all the reached states after a nfa_step
-	 	for (size_t i=0; i < currentsl; i++)
+		// next_states will contain all the reached states after a nfa_step
+	 	for (size_t i=0; i < current_states_length; i++)
 	 	{
-	 		if (currents[i].id == -1)
+	 		if (current_states[i].id == -1)
 	 			continue;
 	 		NfaState *state = regex->states[i];
-	 		stepresult = nfa_step(state, nexts, in, currents);
+	 		stepresult = nfa_step(state, next_states, in, current_states);
 	 		// If we reached any new state, set result.anyMatch to true
 	 		if (!result.anyMatch && stepresult.anyMatch)
 	 			result.anyMatch = true;
@@ -1495,14 +1566,14 @@ bool regex_match (FlRegex regex, FlCstr text)
 		// If we matched something, update the current set of states
 	 	if (result.anyMatch)
 	 	{
-	 		for (size_t j=0; j < currentsl; j++)
+	 		for (size_t j=0; j < current_states_length; j++)
 	 		{
-	 			currents[j] = nexts[j];
+	 			current_states[j] = next_states[j];
 	 		}
-	 		memset(nexts, -1, sizeof(CurrentState)*currentsl);
+	 		memset(next_states, -1, sizeof(CurrentState)*current_states_length);
 	 	}
 
-		// When full match is not necessary, short-circuit the execution when match is successful
+		// When full match is not necessary, short-circuit the execution if match is successful
 	 	if (result.anyFinal && !HAS_FLAG_END(regex->flags))
 	 		break;
 
@@ -1526,7 +1597,7 @@ bool regex_match (FlRegex regex, FlCstr text)
  * Public API functions
  * -------------------------------------------------------------
  */
-bool fl_regex_match(FlRegex regex, FlCstr text)
+bool fl_regex_match(FlRegex regex, char* text)
 {
 	return regex_match(regex, text);
 }

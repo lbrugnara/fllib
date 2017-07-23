@@ -46,48 +46,48 @@ typedef enum {
 } FlIteratorType;
 
 /* -------------------------------------------------------------
- * {datatype: void (*)(FlPointer) FlIteratorMove}
+ * {datatype: void (*)(void*) FlIteratorMove}
  * -------------------------------------------------------------
  * Represents a function that moves the current iterator to 
  * another element in the collection.
  * -------------------------------------------------------------
  */
-typedef void (*FlIteratorMove)(FlPointer it);
+typedef void (*FlIteratorMove)(void *it);
 
 /* -------------------------------------------------------------
- * {datatype: FlPointer (*)(FlPointer) FlIteratorValue}
+ * {datatype: void* (*)(void*) FlIteratorValue}
  * -------------------------------------------------------------
  * Represents a function that retrieves the value of an element
  * -------------------------------------------------------------
  */
-typedef FlPointer (*FlIteratorValue)(FlPointer it);
+typedef void* (*FlIteratorValue)(void *it);
 
 /* -------------------------------------------------------------
- * {datatype: bool (*)(FlPointer, FlPointer) FlIteratorEquals}
+ * {datatype: bool (*)(void*, void*) FlIteratorEquals}
  * -------------------------------------------------------------
  * Compares two iterators to check if both are pointing to the
  * same element in the collection,
  * -------------------------------------------------------------
  */
-typedef bool (*FlIteratorEquals)(FlPointer it1, FlPointer it2);
+typedef bool (*FlIteratorEquals)(void *it1, void *it2);
 
 /* -------------------------------------------------------------
- * {datatype: void (*)(FlPointer) FlIteratorDelete}
+ * {datatype: void (*)(void*) FlIteratorDelete}
  * -------------------------------------------------------------
  * It is the routine called to free the memory used by the
  * specific implementation made by a container module
  * -------------------------------------------------------------
  */
-typedef void (*FlIteratorDelete)(FlPointer it);
+typedef void (*FlIteratorDelete)(void *it);
 
 /* -------------------------------------------------------------
- * {datatype: bool (*)(FlPointer, FlPointer) FlIteratorPosition}
+ * {datatype: bool (*)(void*, void*) FlIteratorPosition}
  * -------------------------------------------------------------
  * Is a function that check the position of the element pointed
  * by {it} in {container}
  * -------------------------------------------------------------
  */
-typedef bool (*FlIteratorPosition)(FlPointer it, FlPointer container);
+typedef bool (*FlIteratorPosition)(void *it, void *container);
 
 
 /* -------------------------------------------------------------
@@ -98,7 +98,7 @@ typedef bool (*FlIteratorPosition)(FlPointer it, FlPointer container);
  * that are necessary to instantaite and use an {FlIterator}
  * -------------------------------------------------------------
  * {param: FlIteratorType type} Type of {FlIterator}
- * {param: FlPointer itdata} Is the data that the container module uses to manipulate the iteration process.
+ * {param: void *itdata} Is the data that the container module uses to manipulate the iteration process.
  *	It contains all the information necessary to move the iterator, retrieve its value, compare and check it.
  * {param: FlIteratorMove next} Moves the iterator to the next element in the collection
  * {param: FlIteratorMove prev} Moves the iterator to the previous element in the collection
@@ -113,7 +113,7 @@ typedef bool (*FlIteratorPosition)(FlPointer it, FlPointer container);
  */
 FlIterator fl_iterator_new(
 	FlIteratorType type, 
-	FlPointer itdata, 
+	void *itdata, 
 	FlIteratorMove next, 
 	FlIteratorMove prev, 
 	FlIteratorValue value, 
@@ -166,10 +166,10 @@ FlIterator fl_iterator_prev(FlIterator it);
  * -------------------------------------------------------------
  * {param: FlIterator it} Target iterator
  * -------------------------------------------------------------
- * {return: FlPointer} Pointer to the element data
+ * {return: void*} Pointer to the element data
  * -------------------------------------------------------------
  */
-FlPointer fl_iterator_value(FlIterator it);
+void* fl_iterator_value(FlIterator it);
 
 /* -------------------------------------------------------------
  * {macro: flm_iterator_value}
@@ -192,12 +192,12 @@ FlPointer fl_iterator_value(FlIterator it);
  * element (actually, not an element)
  * -------------------------------------------------------------
  * {param: FlIterator it} Target iterator
- * {param: FlPointer container} Collection of elements
+ * {param: void *container} Collection of elements
  * -------------------------------------------------------------
  * {return: bool}
  * -------------------------------------------------------------
  */
-bool fl_iterator_is_end(FlIterator it, FlPointer container);
+bool fl_iterator_is_end(FlIterator it, void *container);
 
 /* -------------------------------------------------------------
  * {function: fl_iterator_equals}

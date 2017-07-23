@@ -9,9 +9,9 @@
  * do not do much, only simple assertions and checks for bad (re)allocation.
  */
 
-FlPointer fl_malloc(size_t size);
-void  fl_free(FlPointer ptr);
-FlPointer fl_calloc(size_t nmemb, size_t size);
-FlPointer fl_realloc(FlPointer ptr, size_t size);
+void* fl_malloc(size_t size);
+void  fl_free(void *ptr);
+void* fl_calloc(size_t nmemb, size_t size);
+void* fl_realloc(void *ptr, size_t size);
 
 #endif /* FL_MEM_H */

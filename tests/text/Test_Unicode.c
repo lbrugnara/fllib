@@ -7,7 +7,7 @@
 void test_fl_unicode_codepoint_at()
 {
     // All the code points size in this string is two-bytes
-    FlString str = "ĀāĂăĄąĆćĈĉĊċČčĎďĐđĒēĔĕĖėĘęĚěĜĝĞğĠġĢģĤĥĦħĨĩĪīĬĭĮįİıĲĳĴĵĶķĸĹĺĻļĽľĿŀŁłŃńŅņŇňŉŊŋŌōŎŏŐőŒœŔŕŖŗŘřŚśŜŝŞşŠšŢţŤťŦŧŨũŪūŬŭŮůŰűŲųŴŵŶŷŸŹźŻżŽž\x00";
+    char *str = "ĀāĂăĄąĆćĈĉĊċČčĎďĐđĒēĔĕĖėĘęĚěĜĝĞğĠġĢģĤĥĦħĨĩĪīĬĭĮįİıĲĳĴĵĶķĸĹĺĻļĽľĿŀŁłŃńŅņŇňŉŊŋŌōŎŏŐőŒœŔŕŖŗŘřŚśŜŝŞşŠšŢţŤťŦŧŨũŪūŬŭŮůŰűŲųŴŵŶŷŸŹźŻżŽž\x00";
     fl_expect("str is 127 code points long and it is composed of 256 code units", 
         fl_unicode_codepoint_sequence_length(FL_ENCODING_UTF8, (FlByte*)str, 0x00)
         && fl_unicode_codeunit_sequence_size(FL_ENCODING_UTF8, (FlByte*)str, 0x00)
@@ -658,4 +658,87 @@ void test_fl_unicode_codepoint_sequence_validate()
     fl_expect("UTF-8: Validated form of <E0 9F 80 C0 AF F1 80 80> has 6 code points", fl_unicode_codepoint_sequence_length(FL_ENCODING_UTF8, validstr, validstr+size) == 6);
     fl_expect("UTF-8: Validated form of <E0 9F 80 C0 AF F1 80 80> is <EF BF BD EF BF BD EF BF BD EF BF BD EF BF BD EF BF BD>", fl_equals((const FlByte*)"\xEF\xBF\xBD\xEF\xBF\xBD\xEF\xBF\xBD\xEF\xBF\xBD\xEF\xBF\xBD\xEF\xBF\xBD", validstr, 18));
     free(validstr);   
+}
+
+void test_fl_unicode_data()
+{
+    uint32_t destination[10] = {0};
+    size_t mappingsize = fl_unicode_get_decomposition_mapping(0x0005, true, destination);
+    fl_expect("Code point U+0005 <control> Canonical Decomposition_Mapping is its default value 0x0005", mappingsize == 1 && destination[0] == 0x0005);
+    
+    memset(destination, 0, sizeof(uint32_t) * 10);
+    mappingsize = fl_unicode_get_decomposition_mapping(0x0005, false, destination);
+    fl_expect("Code point U+0005 <control> Compatibility Decomposition_Mapping is its default value 0x0005", mappingsize == 1 && destination[0] == 0x0005);
+
+    //
+    memset(destination, 0, sizeof(uint32_t) * 10);
+    mappingsize = fl_unicode_get_decomposition_mapping(0x1DA07, true, destination);
+    fl_expect("Code point U+1DA07 SIGNWRITING FACE DIRECTION POSITION NOSE FORWARD TILTING Canonical Decomposition_Mapping is its default value 0x1DA07", mappingsize == 1 && destination[0] == 0x1DA07);
+
+    memset(destination, 0, sizeof(uint32_t) * 10);
+    mappingsize = fl_unicode_get_decomposition_mapping(0x1DA07, false, destination);
+    fl_expect("Code point U+1DA07 SIGNWRITING FACE DIRECTION POSITION NOSE FORWARD TILTING Compatibility Decomposition_Mapping is its default value 0x1DA07", mappingsize == 1 && destination[0] == 0x1DA07);
+
+    //
+    memset(destination, 0, sizeof(uint32_t) * 10);
+    mappingsize = fl_unicode_get_decomposition_mapping(0x3060, true, destination);
+    fl_expect("Code point U+3060 HIRAGANA LETTER DA Canonical Decomposition_Mapping is {U+305F, U+3099}", mappingsize == 2 && fl_equals(destination, ((const uint32_t[]){0x305F, 0x3099}), mappingsize));
+
+    memset(destination, 0, sizeof(uint32_t) * 10);
+    mappingsize = fl_unicode_get_decomposition_mapping(0x3060, false, destination);
+    fl_expect("Code point U+3060 HIRAGANA LETTER DA Compatiblity Decomposition_Mapping is its default value 0x3060", mappingsize == 1 && destination[0] == 0x3060);
+
+    //
+    memset(destination, 0, sizeof(uint32_t) * 10);
+    mappingsize = fl_unicode_get_decomposition_mapping(0x3200, false, destination);
+    fl_expect("Code point U+3200 PARENTHESIZED HANGUL KIYEOK Compatibility Decomposition_Mapping is {U+0028, U+1100, U+0029}", mappingsize == 3 && fl_equals(destination, ((const uint32_t[]){0x0028, 0x1100, 0x0029}), mappingsize));
+
+    memset(destination, 0, sizeof(uint32_t) * 10);
+    mappingsize = fl_unicode_get_decomposition_mapping(0x3200, true, destination);
+    fl_expect("Code point U+3200 PARENTHESIZED HANGUL KIYEOK Canonical Decomposition_Mapping is its default value 0x3200", mappingsize == 1 && destination[0] == 0x3200);
+
+    //
+    memset(destination, 0, sizeof(uint32_t) * 10);
+    mappingsize = fl_unicode_get_decomposition_mapping(0x2057, false, destination);
+    fl_expect("Code point U+2057 QUADRUPLE PRIME Compatibility Decomposition_Mapping is {U+2032, U+2032, U+2032, U+2032}", mappingsize == 4 && fl_equals(destination, ((const uint32_t[]){0x2032, 0x2032, 0x2032, 0x2032}), mappingsize));
+
+    memset(destination, 0, sizeof(uint32_t) * 10);
+    mappingsize = fl_unicode_get_decomposition_mapping(0x2057, true, destination);
+    fl_expect("Code point U+2057 QUADRUPLE PRIME Canonical Decomposition_Mapping is its default value 0x2057", mappingsize == 1 && destination[0] == 0x2057);
+
+    //
+    memset(destination, 0, sizeof(uint32_t) * 10);
+    mappingsize = fl_unicode_get_decomposition_mapping(0x321D, false, destination);
+    fl_expect("Code point U+321D PARENTHESIZED KOREAN CHARACTER OJEON Compatibility Decomposition_Mapping is {U+0028, U+110B, U+1169, U+110C, U+1165, U+11AB, U+0029}", mappingsize == 7 && fl_equals(destination, ((const uint32_t[]){0x0028, 0x110B, 0x1169, 0x110C, 0x1165, 0x11AB, 0x0029}), mappingsize));
+
+    memset(destination, 0, sizeof(uint32_t) * 10);
+    mappingsize = fl_unicode_get_decomposition_mapping(0x321D, true, destination);
+    fl_expect("Code point U+321D PARENTHESIZED KOREAN CHARACTER OJEON Canonical Decomposition_Mapping is its default value 0x321D", mappingsize == 1 && destination[0] == 0x321D);
+
+    //
+    memset(destination, 0, sizeof(uint32_t) * 10);
+    mappingsize = fl_unicode_get_decomposition_mapping(0x321E, false, destination);
+    fl_expect("Code point U+321E PARENTHESIZED KOREAN CHARACTER O HU Compatibility Decomposition_Mapping is {U+0028, U+110B, U+1169, U+1112, U+116E, U+0029}", mappingsize == 6 && fl_equals(destination, ((const uint32_t[]){0x0028, 0x110B, 0x1169, 0x1112, 0x116E, 0x0029}), mappingsize));
+
+    memset(destination, 0, sizeof(uint32_t) * 10);
+    mappingsize = fl_unicode_get_decomposition_mapping(0x321E, true, destination);
+    fl_expect("Code point U+321E PARENTHESIZED KOREAN CHARACTER O HU Canonical Decomposition_Mapping is its default value 0x321E", mappingsize == 1 && destination[0] == 0x321E);
+
+    //
+    memset(destination, 0, sizeof(uint32_t) * 10);
+    mappingsize = fl_unicode_get_decomposition_mapping(0xFDFA, false, destination);
+    fl_expect("Code point U+FDFA ARABIC LIGATURE SALLALLAHOU ALAYHE WASALLAM Compatibility Decomposition_Mapping is {U+0635, U+0644, U+0649, U+0020, U+0627, U+0644, U+0644, U+0647, U+0020, U+0639, U+0644, U+064A, U+0647, U+0020, U+0648, U+0633, U+0644, U+0645}", mappingsize == 18 && fl_equals(destination, ((const uint32_t[]){0x0635, 0x0644, 0x0649, 0x0020, 0x0627, 0x0644, 0x0644, 0x0647, 0x0020, 0x0639, 0x0644, 0x064A, 0x0647, 0x0020, 0x0648, 0x0633, 0x0644, 0x0645}), mappingsize));
+
+    memset(destination, 0, sizeof(uint32_t) * 10);
+    mappingsize = fl_unicode_get_decomposition_mapping(0xFDFA, true, destination);
+    fl_expect("Code point U+FDFA ARABIC LIGATURE SALLALLAHOU ALAYHE WASALLAM Canonical Decomposition_Mapping is its default value 0xFDFA", mappingsize == 1 && destination[0] == 0xFDFA);
+
+    //
+    memset(destination, 0, sizeof(uint32_t) * 10);
+    mappingsize = fl_unicode_get_decomposition_mapping(0xFDFB, false, destination);
+    fl_expect("Code point U+FDFB ARABIC LIGATURE JALLAJALALOUHOU Compatibility Decomposition_Mapping is {U+062C, U+0644, U+0020, U+062C, U+0644, U+0627, U+0644, U+0647}", mappingsize == 8 && fl_equals(destination, ((const uint32_t[]){0x062C, 0x0644, 0x0020, 0x062C, 0x0644, 0x0627, 0x0644, 0x0647}), mappingsize));
+
+    memset(destination, 0, sizeof(uint32_t) * 10);
+    mappingsize = fl_unicode_get_decomposition_mapping(0xFDFB, true, destination);
+    fl_expect("Code point U+FDFB ARABIC LIGATURE JALLAJALALOUHOU Canonical Decomposition_Mapping is its default value 0xFDFB", mappingsize == 1 && destination[0] == 0xFDFB);
 }

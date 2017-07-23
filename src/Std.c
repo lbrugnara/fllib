@@ -4,11 +4,10 @@
 #include "Std.h"
 #include "Cstr.h"
 
-FlPointer
-fl_copy(const FlPointer var, size_t nbytes)
+void* fl_copy(const void *var, size_t nbytes)
 {
-	flm_assert(var != NULL, "const FlPointer var cannot be NULL");
-	FlPointer dest = fl_calloc(1, nbytes);
+	flm_assert(var != NULL, "const void *var cannot be NULL");
+	void *dest = fl_calloc(1, nbytes);
 	memcpy(dest, var, nbytes);
 	return dest;
 }

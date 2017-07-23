@@ -6,6 +6,7 @@
 #include "File.h"
 #include "text/Test_Unicode.h"
 #include "text/Test_String.h"
+#include "text/Test_Regex.h"
 
 #include <fllib.h>
 #include <stdio.h>
@@ -38,12 +39,17 @@ int main(void)
             { "test_fl_unicode_codepoint_validity", &test_fl_unicode_codepoint_validity },
             { "test_fl_unicode_unichar_sequence_validate", &test_fl_unicode_unichar_sequence_validate },
             { "test_fl_unicode_codepoint_convert", &test_fl_unicode_codepoint_convert },
-            { "test_fl_unicode_codepoint_sequence_validate", &test_fl_unicode_codepoint_sequence_validate }
+            { "test_fl_unicode_codepoint_sequence_validate", &test_fl_unicode_codepoint_sequence_validate },
+            { "test_fl_unicode_data", &test_fl_unicode_data }
         ),
         fl_test_suite("Module String", 
             { "fl_string_length", &test_fl_string_length },
             { "fl_string_size", &test_fl_string_size },
             { "fl_string_char_at", &test_fl_string_char_at }
+        ),
+        fl_test_suite("Module Regex",
+            { "fl_regex_tokenize", &test_fl_regex_tokenize },
+            { "fl_regex_match", &test_fl_regex_match }
         )
     );
 }

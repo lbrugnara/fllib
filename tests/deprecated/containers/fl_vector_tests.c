@@ -80,7 +80,7 @@ fl_vector_tests()
 	    myInt = 10;
 	    fl_vector_insert(fv, &myInt, 10);
 
-	    FlIterator 	*it = fl_vector_start(fv);
+	    FlIterator 	*it = fl_vector_begin(fv);
 	    for (; !fl_iterator_is_end(it, fv); fl_iterator_next(it))
 	    {
 	    	printf("FlVectorIterator value=%d\n", flm_iterator_value(it, int));
@@ -349,7 +349,7 @@ fl_vector_tests()
 		num = 123;
 		flm_test(num == 123 && !fl_list_contains(list, &num));
 
-		FlIterator 	*it = fl_list_start(list);
+		FlIterator 	*it = fl_list_begin(list);
 	    for (; !fl_iterator_is_end(it, list); fl_iterator_next(it))
 	    {
 	    	printf("FlListIterator value=%d\n", flm_iterator_value(it, int));
@@ -519,7 +519,7 @@ fl_vector_tests()
 		fl_dictionary_concat(dict, dict2);
 		flm_test(fl_dictionary_length(dict) == 6);
 
-		FlIterator 	*it = fl_dictionary_start(dict);
+		FlIterator 	*it = fl_dictionary_begin(dict);
 	    for (; !fl_iterator_is_end(it, dict); fl_iterator_next(it))
 	    {
 	    	FlKeyValuePair *kvp = flm_iterator_value(it, FlKeyValuePair*);

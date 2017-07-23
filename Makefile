@@ -14,10 +14,14 @@ override CFLAGS += -Wall \
 # Macros for target tests
 TESTS=
 
+ifneq ($(wildcard src/text/resources/UnicodeDataDb.h),) 
+    override CFLAGS += -DFL_UNICODE_DB
+endif
+
 ifneq ($(OS),Windows_NT)
 	override CFLAGS += -fPIC
-	ifeq (,$(findstring pthread,$(CFLAGS)))
-		override LIBS += -lpthread
+	ifeq (,$(findstring -pthread,$(CFLAGS)))
+		override LIBS += -pthread
 	endif
 endif
 
@@ -52,6 +56,7 @@ FL_OBJECTS=\
 	obj/$(TARGET)/src/Std.o 						\
 	obj/$(TARGET)/src/Error.o 						\
 	obj/$(TARGET)/src/Mem.o 						\
+	obj/$(TARGET)/src/text/resources/UnicodeData.o 	\
 	obj/$(TARGET)/src/text/Unicode.o 				\
 	obj/$(TARGET)/src/text/String.o 				\
 	obj/$(TARGET)/src/Cstr.o 						\
@@ -78,7 +83,8 @@ FL_TEST_OBJECTS=\
 	obj/$(TARGET)/tests/File.o \
 	obj/$(TARGET)/tests/Cstr.o \
 	obj/$(TARGET)/tests/text/Test_Unicode.o \
-	obj/$(TARGET)/tests/text/Test_String.o 
+	obj/$(TARGET)/tests/text/Test_String.o 	\
+	obj/$(TARGET)/tests/text/Test_Regex.o 
 
 ifeq ($(LINKAGE),static)
 	# Creates the .a file
@@ -106,13 +112,24 @@ fllib: folders $(FL_OBJECTS)
 tests: fllib $(FL_TEST_OBJECTS)
 	$(COMMAND_COMPILE_TEST)
 
+unicode: fllib
+	$(CC) $(CFLAGS) $(LIBS) -I./include src/text/resources/Main.c build/$(TARGET)/$(FL_STATIC_LIB) -o src/text/resources/gen
+
+unicode-db: fllib unicode
+	./src/text/resources/gen || ./src/text/resources/gen.exe
+
+# Specific target for UnicodeData module to recompile if UnicodeDataDb.txt has changed
+obj/$(TARGET)/src/text/resources/UnicodeData.o: src/text/resources/UnicodeData.c src/text/resources/UnicodeDataDb.h
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) $(LIBS) -c $< -o $@
+
 obj/$(TARGET)/src/%.o: src/%.c
 	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) $(LIBS) -c $< -o $@
 
 obj/$(TARGET)/tests/%.o: tests/%.c
 	@mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) $(LIBS) $(TESTS) -c $< -o $@ -I./include -I./src
+	$(CC) $(CFLAGS) $(LIBS) $(TESTS) -c $< -o $@ -I./include
 
 .PHONY: clean folders
 clean:	

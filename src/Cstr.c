@@ -7,31 +7,27 @@
 #include "containers/Vector.h"
 #include "containers/Dictionary.h"
 
-FlCstr
-fl_cstr_new (size_t length) {
-	FlCstr str = fl_calloc(length+1, sizeof(char));
+char* fl_cstr_new (size_t length) {
+	char *str = fl_calloc(length+1, sizeof(char));
 	str[length] = FL_EOS;
 	return str;
 }
 
-void
-fl_cstr_delete (FlCstr str)
+void fl_cstr_delete (char *str)
 {
-    flm_assert(str != NULL, "FlCstr argument to free cannot be NULL");
+    flm_assert(str != NULL, "char* argument to free cannot be NULL");
 	fl_free(str);
 }
 
-void
-fl_cstr_resize (FlCstr *dst, size_t length) 
+void fl_cstr_resize (char **dst, size_t length) 
 {
-    flm_assert(*dst != NULL, "FlCstr argument to resize cannot be NULL");
+    flm_assert(*dst != NULL, "char* argument to resize cannot be NULL");
 	*dst = fl_realloc(*dst, length + 1);
 }
 
-FlVector 
-fl_cstr_split (const FlCstr str) 
+FlVector fl_cstr_split (const char *str) 
 {
-	flm_assert(str != NULL, "FlCstr argument to split cannot be NULL");
+	flm_assert(str != NULL, "char* argument to split cannot be NULL");
 
 	size_t l = strlen(str);
 	FlVector ovector = fl_vector_new(sizeof(char), l);
@@ -43,13 +39,12 @@ fl_cstr_split (const FlCstr str)
 	return ovector;
 }
 
-char* 
-fl_cstr_to_array (const FlCstr str) 
+char* fl_cstr_to_array (const char *str) 
 {
-    flm_assert(str != NULL, "FlCstr argument to split cannot be NULL");
+    flm_assert(str != NULL, "char* argument to split cannot be NULL");
 
     size_t l = strlen(str);
-    FlPointer array = fl_array_new(sizeof(char), l);
+    void* array = fl_array_new(sizeof(char), l);
     if (l == 0)
         return array;
 
@@ -57,24 +52,28 @@ fl_cstr_to_array (const FlCstr str)
     return array;
 }
 
-FlCstr 
-fl_cstr_dup (const FlCstr s) 
+char* fl_cstr_dup (const char *s) 
 {
-    flm_assert(s != NULL, "FlCstr argument to duplicate cannot be NULL");
+    flm_assert(s != NULL, "char* argument to duplicate cannot be NULL");
     size_t l = strlen(s);
-    FlCstr sd = fl_cstr_new(l+1);
-    memcpy(sd, s, l);
-    sd[l] = '\0';
+    return fl_cstr_dup_n(s, l);
+}
+
+char* fl_cstr_dup_n(const char *s, size_t n)
+{
+    flm_assert(s != NULL, "char* argument to duplicate cannot be NULL");
+    char* sd = fl_cstr_new(n+1);
+    memcpy(sd, s, n);
+    sd[n] = '\0';
     return sd;
 }
 
-FlCstr
-fl_cstr_vdup(const FlCstr s, ...)
+char* fl_cstr_vdup(const char *s, ...)
 {
-    flm_assert(s != NULL, "FlCstr argument to duplicate cannot be NULL");
+    flm_assert(s != NULL, "char* argument to duplicate cannot be NULL");
     va_list args;
     va_start(args, s);
-    FlCstr str = fl_cstr_vadup(s, args);
+    char* str = fl_cstr_vadup(s, args);
     va_end(args);
     return str;
 }
@@ -98,10 +97,9 @@ size_t uinteger_length(unsigned long long i)
     return l;
 }
 
-FlCstr
-fl_cstr_vadup (const FlCstr s, va_list args)
+char* fl_cstr_vadup (const char *s, va_list args)
 {
-    flm_assert(s != NULL, "FlCstr argument to duplicate cannot be NULL");
+    flm_assert(s != NULL, "char* argument to duplicate cannot be NULL");
     size_t length = strlen(s);
     FlVector parts = fl_vector_new(sizeof(char), length);
     char sc;
@@ -135,7 +133,7 @@ fl_cstr_vadup (const FlCstr s, va_list args)
                 }
                 case 's':
                 {
-                    FlCstr str = va_arg(args, FlCstr);
+                    char* str = va_arg(args, char*);
                     size_t strlength = strlen(str);
                     for (size_t j=0; j < strlength; j++)
                         fl_vector_add(parts, str+j);
@@ -149,19 +147,18 @@ fl_cstr_vadup (const FlCstr s, va_list args)
             }
         }
     }
-    FlCstr sd = fl_char_join(parts, "");
+    char* sd = fl_char_join(parts, "");
     fl_vector_delete(parts);
     return sd;
 }
 
-FlCstr 
-fl_cstr_copy (FlCstr dest, const FlCstr source) 
+char* fl_cstr_copy (char *dest, const char *source) 
 {
     flm_assert(dest != NULL, "Destination cannot be NULL");
     flm_assert(source != NULL, "Source cannot be NULL");
 
-    FlCstr d = dest;
-    FlCstr ss = source;
+    char* d = dest;
+    const char* ss = source;
     while(*ss)
     {
     	*d = *ss;
@@ -171,14 +168,13 @@ fl_cstr_copy (FlCstr dest, const FlCstr source)
     return dest;
 }
 
-FlCstr 
-fl_cstr_copy_n (FlCstr dest, const char *source, size_t n)
+char* fl_cstr_copy_n (char *dest, const char *source, size_t n)
 {
     flm_assert(dest != NULL, "Destination cannot be NULL");
     flm_assert(source != NULL, "Source cannot be NULL");
 
-    FlCstr d = dest;
-    FlCstr ss = (FlCstr)source;
+    char* d = dest;
+    const char* ss = source;
     while(n--)
     {
     	*d = *ss;
@@ -188,8 +184,7 @@ fl_cstr_copy_n (FlCstr dest, const char *source, size_t n)
     return dest;
 }
 
-FlCstr
-fl_cstr_replace_char(const FlCstr src, const char chr, const FlCstr rplc)
+char* fl_cstr_replace_char(const char *src, const char chr, const char *rplc)
 {
     flm_assert(src != NULL, "Source cannot be NULL");
     flm_assert(rplc != NULL, "Replacement cannot be NULL");
@@ -197,7 +192,7 @@ fl_cstr_replace_char(const FlCstr src, const char chr, const FlCstr rplc)
 	size_t src_size = strlen(src);
 	size_t rplc_size = strlen(rplc);
 	size_t dst_size = src_size;
-	FlCstr dst = fl_cstr_new(src_size);
+	char *dst = fl_cstr_new(src_size);
 	char cchr;
 	size_t i = 0, j = 0;
 	
@@ -232,7 +227,7 @@ fl_cstr_replace_char(const FlCstr src, const char chr, const FlCstr rplc)
 }
 
 bool
-cstr_match_backw(const FlCstr str1, const FlCstr str2, size_t n)
+cstr_match_backw(const char *str1, const char *str2, size_t n)
 {
     flm_assert(str1 != NULL, "Input str1 cannot be NULL");
     flm_assert(str2 != NULL, "Input str2 cannot be NULL");
@@ -250,11 +245,10 @@ cstr_match_backw(const FlCstr str1, const FlCstr str2, size_t n)
 /**
  * Uses the Boyer-Moore-Horspool algorithm to search for occurrences of {needle} in {str}.
  * When a match is found the starting index of the match in src is used to set the same 
- * index in {map} to 1. Finally, iterating over {src} and {map}, the new FlCstr {dst} is built
+ * index in {map} to 1. Finally, iterating over {src} and {map}, the new char* {dst} is built
  * replacing all the {needle} occurrences by {rplc}
  */
-FlCstr
-fl_cstr_replace(const FlCstr src, const FlCstr needle, const FlCstr rplc)
+char* fl_cstr_replace(const char *src, const char *needle, const char *rplc)
 {
     flm_assert(src != NULL, "Source cannot be NULL");
     flm_assert(rplc != NULL, "Replacement cannot be NULL");
@@ -263,12 +257,12 @@ fl_cstr_replace(const FlCstr src, const FlCstr needle, const FlCstr rplc)
     size_t needle_size = needle == NULL ? 0 : strlen(needle);
     size_t rplc_size = strlen(rplc);
 
-    FlCstr dst;
+    char* dst;
     size_t newlength = fl_cstr_replace_n(src, src_size, needle, needle_size, rplc, rplc_size, &dst);
     return dst;
 }
 
-size_t fl_cstr_replace_n(const FlCstr src, size_t src_size, const FlCstr needle, size_t needle_size, const FlCstr rplc, size_t rplc_size, FlCstr *dst)
+size_t fl_cstr_replace_n(const char *src, size_t src_size, const char *needle, size_t needle_size, const char *rplc, size_t rplc_size, char* *dst)
 {
     flm_assert(src != NULL, "Source cannot be NULL");
     flm_assert(rplc != NULL, "Replacement cannot be NULL");
@@ -290,11 +284,11 @@ size_t fl_cstr_replace_n(const FlCstr src, size_t src_size, const FlCstr needle,
     FlDictionary table = fl_dictionary_new(sizeof(char), sizeof(size_t));
     for (size_t i=0; i < needle_size-1; i++)
         flm_dictionary_set(table, char, needle[i], size_t, needle_size - i - 1);
-    if (!fl_dictionary_contains_key(table, needle + (needle_size-1)))
+    if (!fl_dictionary_contains_key(table, (const void*)(needle + (needle_size-1))))
         flm_dictionary_set(table, char, needle[needle_size-1], size_t, needle_size);
 
-    FlCstr strptr = src;
-    FlCstr result = NULL;
+    const char* strptr = src;
+    char* result = NULL;
     short map[src_size];
     memset(map, 0, src_size * sizeof(short));
     size_t newlength = src_size;
@@ -342,7 +336,7 @@ size_t fl_cstr_replace_n(const FlCstr src, size_t src_size, const FlCstr needle,
 }
 
 bool
-fl_cstr_contains(const FlCstr str, const FlCstr needle)
+fl_cstr_contains(const char *str, const char *needle)
 {
     return fl_cstr_find(str, needle) != NULL;
 }
@@ -350,8 +344,7 @@ fl_cstr_contains(const FlCstr str, const FlCstr needle)
 /**
  * Uses the Boyer-Moore-Horspool algorithm to search for occurrences of {needle} in {str}
  */
-FlCstr
-fl_cstr_find(const FlCstr str, const FlCstr needle)
+char* fl_cstr_find(const char *str, const char *needle)
 {
     flm_assert(str != NULL, "Source cannot be NULL");
 
@@ -362,7 +355,7 @@ fl_cstr_find(const FlCstr str, const FlCstr needle)
         return NULL;
 
     if (needle_size == 0)
-        return str;
+        return (char*)str;
 
     FlDictionary table = fl_dictionary_new(sizeof(char), sizeof(size_t));
     for (size_t i=0; i < needle_size; i++)
@@ -370,8 +363,8 @@ fl_cstr_find(const FlCstr str, const FlCstr needle)
     if (!fl_dictionary_contains_key(table, needle + (needle_size-1)))
         flm_dictionary_set(table, char, needle[needle_size-1], size_t, needle_size);
 
-    FlCstr strptr = str;
-    FlCstr result = NULL;
+    const char* strptr = str;
+    const char* result = NULL;
     for(size_t i = needle_size-1; i < str_size;)
     {
         size_t k = i - (needle_size-1);
@@ -385,11 +378,11 @@ fl_cstr_find(const FlCstr str, const FlCstr needle)
         break;
     }
     fl_dictionary_delete(table);
-    return result;
+    return (char*)result;
 }
 
-FlCstr*
-fl_cstr_append(FlCstr *dst, const FlCstr str)
+char**
+fl_cstr_append(char **dst, const char *str)
 {
 	size_t length_dst = strlen(*dst);
 	size_t length_str = strlen(str);
@@ -399,8 +392,8 @@ fl_cstr_append(FlCstr *dst, const FlCstr str)
 	return dst;
 }
 
-FlCstr*
-fl_cstr_append_char(FlCstr *dst, char c)
+char**
+fl_cstr_append_char(char **dst, char c)
 {
 	size_t length = strlen((*dst));
 	fl_cstr_resize(dst, length + 1);
@@ -409,16 +402,15 @@ fl_cstr_append_char(FlCstr *dst, char c)
 	return dst;	
 }
 
-FlCstr
-fl_cstr_join(FlVector vector, FlCstr glue)
+char* fl_cstr_join(FlVector vector, char* glue)
 {
     size_t glue_length = strlen(glue);
-    FlCstr str = fl_cstr_new(0);
+    char* str = fl_cstr_new(0);
     size_t i=0, end = fl_vector_length(vector);
     while (i < end)
     {
     	// Current element and its length
-    	FlCstr el = flm_vector_get(vector, FlCstr, i);
+    	char *el = flm_vector_get(vector, char*, i);
     	size_t el_length = strlen(el);
     	// Str current length
     	size_t str_length = strlen(str);
@@ -438,11 +430,10 @@ fl_cstr_join(FlVector vector, FlCstr glue)
     return str;
 }
 
-FlCstr
-fl_char_join(FlVector vector, FlCstr glue)
+char* fl_char_join(FlVector vector, char* glue)
 {
     size_t glue_length = strlen(glue);
-    FlCstr str = fl_cstr_new(0);
+    char* str = fl_cstr_new(0);
     size_t i=0, end = fl_vector_length(vector);
     while (i < end)
     {
@@ -466,13 +457,13 @@ fl_char_join(FlVector vector, FlCstr glue)
     return str;
 }
 
-FlCstr fl_cstr_concat(FlCstr *strings)
+char* fl_cstr_concat(char **strings)
 {
-    FlCstr result = fl_cstr_new(0);
+    char* result = fl_cstr_new(0);
     int i=0;
     while (strings[i])
     {
-        FlCstr string = strings[i++];
+        char* string = strings[i++];
         fl_cstr_append(&result, string);
     }
     return result;

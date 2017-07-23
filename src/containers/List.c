@@ -32,7 +32,7 @@ struct FlList
  * Creates a new {FlListNode} copying {elem} into {FlListNode->data} member
  */
 FlListNode
-new_list_node (size_t dtsize, const FlPointer elem)
+new_list_node (size_t dtsize, const void *elem)
 {
 	FlListNode node = fl_calloc(1, sizeof(struct FlListNode));
 	node->data = fl_calloc(1, dtsize);
@@ -125,8 +125,7 @@ fl_list_dtsize(FlList list)
  * {@elem} Element to add to the list. (will be copied {list->dtsize} bytes of elem)
  * Return a pointer to the inserted element
  */
-FlPointer 
-fl_list_add(FlList list, const FlPointer elem)
+void* fl_list_add(FlList list, const void *elem)
 {
 	FlListNode node = new_list_node(list->dtsize, elem);
 	if (list->length == 0)
@@ -152,8 +151,7 @@ fl_list_add(FlList list, const FlPointer elem)
  * Insert {elem} in the position {pos} of {list}
  * Return a pointer to the inserted element
  */
-FlPointer 
-fl_list_insert(FlList list, const FlPointer elem, size_t pos)
+void* fl_list_insert(FlList list, const void *elem, size_t pos)
 {
 	if (pos > list->length)	
 	{
@@ -193,8 +191,7 @@ fl_list_insert(FlList list, const FlPointer elem, size_t pos)
 /**
  * Returns a pointer to the element in the {index} of {list->data}
  */
-FlPointer
-fl_list_get(FlList list, size_t index)
+void* fl_list_get(FlList list, size_t index)
 {
 	if (index >= list->length)	
 	{
@@ -231,8 +228,7 @@ fl_list_get_node(FlList list, size_t index)
 /**
  * Return true if {list} contains {elem}
  */
-FlPointer
-fl_list_find(FlList list, const FlPointer elem)
+void* fl_list_find(FlList list, const void *elem)
 {
 	if (list->length == 0)
 		return NULL;
@@ -246,8 +242,7 @@ fl_list_find(FlList list, const FlPointer elem)
 	return NULL;
 }
 
-FlPointer
-fl_list_find_h(FlList list, bool (*handler)(const FlPointer celem, const FlPointer elem, size_t dtsize), const FlPointer elem)
+void* fl_list_find_h(FlList list, bool (*handler)(const void *celem, const void *elem, size_t dtsize), const void *elem)
 {
 	if (list->length == 0)
 		return NULL;
@@ -265,7 +260,7 @@ fl_list_find_h(FlList list, bool (*handler)(const FlPointer celem, const FlPoint
  * Remove from {list}, the first element in {list->data} copying it into {dest}
  */
 bool 
-fl_list_shift(FlList list, FlPointer dest)
+fl_list_shift(FlList list, void *dest)
 {
 	if (list->length == 0)
 	{
@@ -288,8 +283,7 @@ fl_list_shift(FlList list, FlPointer dest)
 /**
  * Insert {elem} in the first position of {list}
  */
-FlPointer
-fl_list_unshift(FlList list, const FlPointer elem)
+void* fl_list_unshift(FlList list, const void *elem)
 {
 	FlListNode node = new_list_node(list->dtsize, elem);
 	if (list->length == 0)
@@ -312,7 +306,7 @@ fl_list_unshift(FlList list, const FlPointer elem)
  * Remove from {list}, the last element in {list->data} copying it into {dest}
  */
 bool 
-fl_list_pop(FlList list, FlPointer dest)
+fl_list_pop(FlList list, void *dest)
 {
 	if (list->length == 0)
 	{
@@ -347,7 +341,7 @@ fl_list_pop(FlList list, FlPointer dest)
  * Return true if {list} contains {elem}
  */
 bool
-fl_list_contains(FlList list, const FlPointer elem)
+fl_list_contains(FlList list, const void *elem)
 {
 	if (list->length == 0)
 		return false;
@@ -403,7 +397,7 @@ fl_list_merge(FlList list, FlList list2)
  * The removed element will be copied in {dest}
  */
 bool
-fl_list_remove(FlList list, size_t pos, FlPointer dest)
+fl_list_remove(FlList list, size_t pos, void *dest)
 {
 	if (pos >= list->length)
 	{
@@ -435,7 +429,7 @@ fl_list_remove(FlList list, size_t pos, FlPointer dest)
 }
 
 bool
-fl_list_remove_h(FlList list, bool (*comparer)(const FlPointer celem, const FlPointer elem, size_t dtsize), const FlPointer elem, FlPointer dest)
+fl_list_remove_h(FlList list, bool (*comparer)(const void *celem, const void *elem, size_t dtsize), const void *elem, void *dest)
 {
 	FlListNode node = list->head;
 	while (node != NULL)
@@ -554,7 +548,7 @@ typedef struct FlListIterator {
     FlListNode prev;
 } FlListIterator;
 
-static void it_next(FlPointer it)
+static void it_next(void *it)
 {
     FlListIterator *lit = (FlListIterator*)it;
     lit->prev = lit->current;
@@ -562,7 +556,7 @@ static void it_next(FlPointer it)
     lit->next = lit->current != NULL ? lit->current->next : NULL;
 }
 
-static void it_prev(FlPointer it)
+static void it_prev(void *it)
 {
     FlListIterator *lit = (FlListIterator*)it;
     lit->next = lit->current;
@@ -570,39 +564,39 @@ static void it_prev(FlPointer it)
     lit->prev = lit->current != NULL ? lit->current->prev : NULL;
 }
 
-static FlPointer it_value(FlPointer it)
+static void *it_value(void *it)
 {
     FlListIterator *lit = (FlListIterator*)it;
     return lit->current->data;
 }
 
-static bool it_equals(FlPointer it1, FlPointer it2)
+static bool it_equals(void *it1, void *it2)
 {
     FlListIterator *lit1 = (FlListIterator*)it1;
     FlListIterator *lit2 = (FlListIterator*)it2;
     return lit1->current == lit2->current;
 }
 
-static bool it_start(FlPointer it, FlPointer container)
+static bool it_start(void *it, void *container)
 {
     FlListIterator *lit = it;
     FlList list = container;
     return list->head != NULL && lit->current == list->head;
 }
 
-static bool it_end(FlPointer it, FlPointer container)
+static bool it_end(void *it, void *container)
 {
     FlListIterator *lit = it;
     FlList list = container;
     return list->tail != NULL && lit->prev == list->tail;
 }
 
-static void it_delete(FlPointer it)
+static void it_delete(void *it)
 {
     fl_free(it);
 }
 
-FlIterator fl_list_start(const FlList list)
+FlIterator fl_list_begin(const FlList list)
 {
     FlListIterator *list_it = fl_calloc(1, sizeof(struct FlListIterator));
     list_it->prev = NULL;

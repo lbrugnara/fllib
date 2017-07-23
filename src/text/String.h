@@ -16,7 +16,7 @@
 * Creates an FlString from c string. It accepts ASCII, ANSI and
 * UTF-8 multybytes strings.
 * -------------------------------------------------------------
-* {param: FlCstr str} An string that could be ASCII, ANSI or UTF-8 (multibyte)
+* {param: FlString str} An string that could be ASCII, ANSI or UTF-8 (multibyte)
 * -------------------------------------------------------------
 * {return: FlString} A new instance of an FlString that represents
 * an UTF-8 string

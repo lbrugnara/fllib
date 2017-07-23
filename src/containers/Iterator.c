@@ -22,7 +22,7 @@
  * a container module.
  * -------------------------------------------------------------
  * {member: FlIteratorType type} The type of iterator.
- * {member: FlPointer itdata} The container needs to implement a data structure to keep track of the state of the iterator
+ * {member: void *itdata} The container needs to implement a data structure to keep track of the state of the iterator
  * {member: FlIteratorMove next} Moves the iterator to the next element in the collection
  * {member: FlIteratorMove prev} Moves the iterator to the previous element in the collection
  * {member: FlIteratorValue value} Retrieves the value of the current elment
@@ -34,7 +34,7 @@
  */
 struct FlIterator {
     FlIteratorType type;
-    FlPointer target;
+    void *target;
     FlIteratorMove next;
     FlIteratorMove prev;
     FlIteratorValue value;
@@ -46,7 +46,7 @@ struct FlIterator {
 
 FlIterator fl_iterator_new(
     FlIteratorType type, 
-    FlPointer itdata, 
+    void *itdata, 
     FlIteratorMove next, 
     FlIteratorMove prev, 
     FlIteratorValue value, 
@@ -100,7 +100,7 @@ FlIterator fl_iterator_prev(FlIterator it)
     return it;
 }
 
-FlPointer fl_iterator_value(FlIterator it)
+void* fl_iterator_value(FlIterator it)
 {
     return it->value(it->target);
 }
@@ -110,12 +110,12 @@ bool fl_iterator_equals(FlIterator it1, FlIterator it2)
     return it1->type == it2->type && it1->equals(it1->target, it2->target);
 }
 
-bool fl_iterator_is_start(FlIterator it, FlPointer container)
+bool fl_iterator_is_start(FlIterator it, void *container)
 {
     return it->isstart(it->target, container);
 }
 
-bool fl_iterator_is_end(FlIterator it, FlPointer container)
+bool fl_iterator_is_end(FlIterator it, void *container)
 {
     return it->isend(it->target, container);
 }

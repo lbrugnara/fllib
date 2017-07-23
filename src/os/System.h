@@ -4,9 +4,9 @@
 #include "../Types.h"
 #include "../Std.h"
 
-bool fl_system_set_working_dir(FlCstr path);
+bool fl_system_set_working_dir(char *path);
 
-FlCstr fl_system_get_working_dir();
+char* fl_system_get_working_dir();
 
 static bool fl_system_is_little_endian ()
 {

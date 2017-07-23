@@ -232,8 +232,10 @@ void parse_derived_normalization_property(FlVector data, const char *buffer, Nor
 void parse_derived_normalization_properties(FlVector data)
 {
     flm_assert(data != NULL && fl_vector_length(data) > 0, "Vector with UnicodeData.txt information must be populated before calling this function");
-    FlByte *buffer = fl_file_read_all_bytes("src/text/resources/DerivedNormalizationProps-9.0.0.txt");
-    size_t size = fl_array_length(buffer);
+    FlByte *tmpbuffer = fl_file_read_all_bytes("src/text/resources/DerivedNormalizationProps-9.0.0.txt");
+    char *buffer = NULL;
+    size_t size = fl_cstr_replace_n((char*)tmpbuffer, fl_array_length(tmpbuffer), "\r\n", 2, "\n", 1, &buffer);
+    fl_array_delete(tmpbuffer);    
 
     // Full_Composition_Exclusion
     parse_derived_normalization_property(data, (const char*)buffer, NORM_PROP_FCE);
@@ -255,16 +257,18 @@ void parse_derived_normalization_properties(FlVector data)
 
     // NFKC_Quick_Check=Maybe
     parse_derived_normalization_property(data, (const char*)buffer, NORM_PROP_NFKC_QC_MAYBE);
-
-    fl_array_delete(buffer);
+    fl_cstr_delete(buffer);
 }
 
 // This function parses the UnicodeData.txt file. It is expected to be called before
 // any other parsing function to populate {data} with the UCD
 void parse_unicode_data(FlVector data)
 {
-    FlByte *buffer = fl_file_read_all_bytes("src/text/resources/UnicodeData-9.0.0.txt");
-    size_t size = fl_array_length(buffer);
+    FlByte *tmpbuffer = fl_file_read_all_bytes("src/text/resources/UnicodeData-9.0.0.txt");
+    //FlByte *buffer = (FlByte*)fl_cstr_replace((char*)tmpbuffer, "\r\n", "\n");
+    char *buffer = NULL;
+    size_t size = fl_cstr_replace_n((char*)tmpbuffer, fl_array_length(tmpbuffer), "\r\n", 2, "\n", 1, &buffer);
+    fl_array_delete(tmpbuffer);
     const char *base = (const char*)buffer;
     do
     {
@@ -300,6 +304,10 @@ void parse_unicode_data(FlVector data)
         int lengthField3 = (endField4-1-endField3);
         
         ud->code = fl_cstr_dup_n((const char*)base, lengthField0);
+        if (fl_equals(ud->code, "10FFFD", min(strlen(ud->code), 6)))
+        {
+            int i=0;
+        }
         ud->name = fl_cstr_dup_n((const char*)endField1+1, lengthField1);
 
         if (lengthField8 > 0)
@@ -375,7 +383,7 @@ void parse_unicode_data(FlVector data)
         fl_vector_add(data, &ud);
         base = endField15 + 1;
     } while (base < (const char*)buffer+size);
-    fl_array_delete(buffer);
+    fl_cstr_delete(buffer);
 }
 
 void delete_data_handler(FlByte *ptr)

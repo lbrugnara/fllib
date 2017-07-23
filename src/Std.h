@@ -75,6 +75,10 @@ void* fl_copy(const void *var, size_t nbytes);
 #define container_of fl_container_of
 #endif
 
+#ifndef min
+#define min(a,b) (((a)<(b))?(a):(b))
+#endif
+
 /* -------------------------------------------------------------
  * {macro: FLBIT}
  * -------------------------------------------------------------

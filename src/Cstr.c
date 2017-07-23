@@ -289,8 +289,8 @@ size_t fl_cstr_replace_n(const char *src, size_t src_size, const char *needle, s
 
     const char* strptr = src;
     char* result = NULL;
-    short map[src_size];
-    memset(map, 0, src_size * sizeof(short));
+    size_t *map = fl_array_new(sizeof(size_t), src_size);
+    memset(map, 0, src_size * sizeof(size_t));
     size_t newlength = src_size;
     size_t i = 0;
     for(i = needle_size-1; i < src_size;)
@@ -307,7 +307,7 @@ size_t fl_cstr_replace_n(const char *src, size_t src_size, const char *needle, s
         else
         {
             map[k] = 1;
-            newlength += abs((int)rplc_size - (int)needle_size);           
+            newlength += (int)rplc_size - (int)needle_size;
         }
         i += d;
     }
@@ -332,6 +332,7 @@ size_t fl_cstr_replace_n(const char *src, size_t src_size, const char *needle, s
             mpi++;
         }
     }
+    fl_array_delete(map);
     return newlength;
 }
 

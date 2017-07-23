@@ -9,10 +9,6 @@
 
 #include "containers/Dictionary.h"
 
-#ifndef min
-#define min(a,b) (((a)<(b))?(a):(b))
-#endif
-
 #ifndef FL_ERROR_QUEUE
     #define FL_ERROR_QUEUE 1
 #endif

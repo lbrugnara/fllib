@@ -7,6 +7,7 @@
 #include "text/Test_Unicode.h"
 #include "text/Test_String.h"
 #include "text/Test_Regex.h"
+#include "containers/Test_Hashtable.h"
 
 #include <fllib.h>
 #include <stdio.h>
@@ -50,6 +51,11 @@ int main(void)
         fl_test_suite("Module Regex",
             { "fl_regex_tokenize", &test_fl_regex_tokenize },
             { "fl_regex_match", &test_fl_regex_match }
+        ),
+        fl_test_suite("Module Hashtable",
+            { "fl_hashtable_add", &test_fl_hashtable_add },
+            { "fl_hashtable_add_fhash", &test_fl_hashtable_add_fhash },
+            { "fl_hashtable_get", &test_fl_hashtable_get }
         )
     );
 }

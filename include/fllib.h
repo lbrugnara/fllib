@@ -15,6 +15,7 @@
 #include "../src/containers/Iterator.h"
 #include "../src/containers/KeyValuePair.h"
 #include "../src/containers/Dictionary.h"
+#include "../src/containers/Hashtable.h"
 #include "../src/containers/List.h"
 #include "../src/containers/Vector.h"
 #include "../src/os/System.h"

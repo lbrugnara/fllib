@@ -7,7 +7,7 @@
 #include "threading/Thread.h"
 #include "Cstr.h"
 
-#include "containers/Dictionary.h"
+#include "containers/Hashtable.h"
 
 #ifndef FL_ERROR_QUEUE
     #define FL_ERROR_QUEUE 1
@@ -26,11 +26,11 @@ typedef struct FlErrQueue {
 } FlErrQueue;
 
 /* -------------------------------------------------------------
-* Errors is an FlDictionary<FlThreadId, FlErrQueue> that will contains
+* Errors is an FlHashtable<FlThreadId, FlErrQueue> that will contains
 * up to FL_ERROR_QUEUE errors for each thread.
 * -------------------------------------------------------------
 */
-FlDictionary Errors;
+FlHashtable Errors;
 
 FlMutex ErrMutex = FL_MUTEX_INIT_STATIC;
 
@@ -47,23 +47,20 @@ struct FlError last_error(FlErrQueue *queue)
     return queue->errors[queue->last-1];
 }
 
-/* -------------------------------------------------------------
-* Function to release the memory used by FlErrQueue in the Errors
-* dictionary
-* -------------------------------------------------------------
-*/
-void delete_errors_h(FlByte* ptr)
+void cleanup_errors(void *k, size_t ks, void *v, size_t vs)
 {
-    FlKeyValuePair kvp = *(FlKeyValuePair*)ptr;
-    FlErrQueue** queueptr = fl_kvp_get_val(kvp);
-    free(*queueptr);
-    fl_kvp_delete(kvp);
-    free(ptr);
+    if (k) fl_free(k);
+    if (v)
+    {
+        if (*(FlErrQueue**)v)
+            fl_free(*(FlErrQueue**)v);
+        fl_free(v);
+    }
 }
 
 void delete_errors(void)
 {
-    fl_dictionary_delete_h(Errors, delete_errors_h);
+    fl_hashtable_delete(Errors);
 }
 
 void fl_error_push(int id, const char *format, ...)
@@ -81,12 +78,16 @@ void fl_error_push(int id, const char *format, ...)
     error.message[length-1] = FL_EOS;
     fl_cstr_delete(str);
 
-    // Sync access to Errors dictionary
+    // Sync access to Errors hashtable
     fl_mutex_lock(&ErrMutex);
     if (Errors == NULL)
     {
         // Create the Dict if it doesn't exist
-        Errors = fl_dictionary_new(sizeof(FlThreadId), sizeof(FlErrQueue*));
+        Errors = fl_hashtable_new_args((struct FlHashtableArgs){
+            .key_size = sizeof(FlThreadId),
+            .value_size = sizeof(FlErrQueue*),
+            .cleanup_function = &cleanup_errors
+        });
         // Register the cleaning function
         atexit(delete_errors);
     }
@@ -94,14 +95,14 @@ void fl_error_push(int id, const char *format, ...)
     // Get the current ID
     FlThreadId currentid = fl_thread_current_id();
     // If there is no FlErrQueue registered for this thread, create it
-    if (!fl_dictionary_contains_key(Errors, &currentid))
+    if (!fl_hashtable_has_key(Errors, &currentid))
     {
         FlErrQueue *q = fl_malloc(sizeof(FlErrQueue));
-        fl_dictionary_add(Errors, &currentid, &q);
+        fl_hashtable_set(Errors, &currentid, &q);
     }
 
     // Get the thread's FlErrQueue
-    FlErrQueue *queue = *(FlErrQueue**)fl_dictionary_get_val(Errors, &currentid);
+    FlErrQueue *queue = *(FlErrQueue**)fl_hashtable_get(Errors, &currentid);
 
     // Push the error
     push_error(queue, error);
@@ -117,11 +118,11 @@ void fl_error_push(int id, const char *format, ...)
 FlError fl_error_last()
 {
     FlThreadId currentid = fl_thread_current_id();
-    if (!fl_dictionary_contains_key(Errors, &currentid))
+    if (!fl_hashtable_has_key(Errors, &currentid))
     {
         return (FlError){ 0 };
     }
-    FlErrQueue *queue = *(FlErrQueue**)fl_dictionary_get_val(Errors, &currentid);    
+    FlErrQueue *queue = *(FlErrQueue**)fl_hashtable_get(Errors, &currentid);    
     return last_error(queue);
 }
 

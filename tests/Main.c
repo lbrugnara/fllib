@@ -55,7 +55,11 @@ int main(void)
         fl_test_suite("Module Hashtable",
             { "fl_hashtable_add", &test_fl_hashtable_add },
             { "fl_hashtable_add_fhash", &test_fl_hashtable_add_fhash },
-            { "fl_hashtable_get", &test_fl_hashtable_get }
+            { "fl_hashtable_get", &test_fl_hashtable_get },
+            { "fl_hashtable_set", &test_fl_hashtable_set },
+            { "fl_hashtable_clear", &test_fl_hashtable_clear },
+            { "fl_hashtable_keys_and_values", &test_fl_hashtable_keys_and_values },
+            { "fl_hashtable_remove", &test_fl_hashtable_remove },
         )
     );
 }

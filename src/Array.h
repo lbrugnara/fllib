@@ -16,6 +16,9 @@
 #include "Types.h"
 #include "containers/Vector.h"
 
+#define FlArray void*
+#define arrayof(type) (type*)
+
 /* -------------------------------------------------------------
  * {macro: flm_array_length}
  * -------------------------------------------------------------

@@ -31,11 +31,14 @@ typedef void(*FlHashtableDeleteKvpFunc)(void *key, size_t kdtsize, void *value, 
 * are used to track the size of both of them, they are mandatory. {hash_function}
 * and {cleanup_function} can be NULL, and in that case, both will use a default version
 * of a hash and clean up function.
+* {buckets_count} is used to set the starting number of buckets to allocate. By default
+* it is 103
 * -------------------------------------------------------------
 */
 struct FlHashtableArgs {
     size_t key_size;
     size_t value_size;
+    size_t buckets_count;
     FlHashtableHashFunc hash_function;
     FlHashtableDeleteKvpFunc cleanup_function;
 };
@@ -249,5 +252,30 @@ FlArray fl_hashtable_values(FlHashtable ht);
 * -------------------------------------------------------------
 */
 bool fl_hashtable_has_key(FlHashtable ht, void *key);
+
+/* -------------------------------------------------------------
+* {function: fl_hashtable_resize}
+* -------------------------------------------------------------
+* Resizes hashtable to contain {nbuckets} buckets
+* -------------------------------------------------------------
+* {param: FlHashtable ht} Hashtable to be resized
+* {param: size_t nbuckets} Number of buckets to use in {ht}
+* -------------------------------------------------------------
+* {return: void}
+* -------------------------------------------------------------
+*/
+void fl_hashtable_resize(FlHashtable ht, size_t nbuckets);
+
+/* -------------------------------------------------------------
+* {function: fl_hashtable_buckets_count}
+* -------------------------------------------------------------
+* Returns the number of buckets allocated by {ht}
+* -------------------------------------------------------------
+* {param: FlHashtable ht} Hashtable to retrieve its buckets count 
+* -------------------------------------------------------------
+* {return: size_t} Number of buckets allocated into {ht}
+* -------------------------------------------------------------
+*/
+size_t fl_hashtable_buckets_count(FlHashtable ht);
 
 #endif /* FL_HASHTABLE_H */

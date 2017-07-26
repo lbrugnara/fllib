@@ -60,6 +60,7 @@ int main(void)
             { "fl_hashtable_clear", &test_fl_hashtable_clear },
             { "fl_hashtable_keys_and_values", &test_fl_hashtable_keys_and_values },
             { "fl_hashtable_remove", &test_fl_hashtable_remove },
+            { "fl_hashtable_resize", &test_fl_hashtable_resize }
         )
     );
 }

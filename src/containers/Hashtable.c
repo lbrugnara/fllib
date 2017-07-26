@@ -6,7 +6,7 @@
 #include "../Array.h"
 #include "Hashtable.h"
 
-#define NBUCKETS 20
+#define NBUCKETS 103
 
 // {todo: 
 //    - Resize and rehash, prime numbers for NBUCKETS
@@ -73,7 +73,7 @@ FlHashtable fl_hashtable_new_args(struct FlHashtableArgs args)
     struct FlHashtable *ht = fl_malloc(sizeof(struct FlHashtable));
     ht->kdtsize = args.key_size;
     ht->vdtsize = args.value_size;
-    ht->buckets = fl_array_new(sizeof(struct FlBucket*), NBUCKETS);
+    ht->buckets = fl_array_new(sizeof(struct FlBucket*), args.buckets_count != 0 ? args.buckets_count : NBUCKETS);
     ht->hashf = args.hash_function != NULL ? args.hash_function : fl_hashtable_hash;
     ht->cleanup = args.cleanup_function != NULL ? args.cleanup_function : fl_hashtable_delete_kvp;
     return ht;
@@ -205,53 +205,21 @@ struct FlBucket* lookup_bucket(FlHashtable ht, void *key, enum BucketLookupOpera
     return target_bucket;
 }
 
-void* fl_hashtable_add(FlHashtable ht, void *key, void *value)
-{
-    flm_assert(ht != NULL, "Hashtable must not be null");
-
-    // Find the target bucket
-    struct FlBucket *target_bucket = lookup_bucket(ht, key, BUCKET_LOOKUP_UNUSED);
-
-    // If target_bucket is NULL, it means the key already exists (UNUSED returns NULL if the key is in the hash table)
-    if (target_bucket == NULL)
-        return NULL;
-    
-    // Increment the number of entries
-    ht->length++;
-
-    // Set key and value
-    target_bucket->key = fl_malloc(ht->kdtsize);
-    memcpy(target_bucket->key, key, ht->kdtsize);
-    target_bucket->value = fl_malloc(ht->vdtsize);
-    memcpy(target_bucket->value, value, ht->vdtsize);
-    
-    // Mark the bucket as used
-    target_bucket->free = 0;
-
-    // Return a reference to the newly created value
-    return target_bucket->value;
-}
-
-void* fl_hashtable_get(FlHashtable ht, void *key)
-{
-    flm_assert(ht != NULL, "Hashtable must not be null");
-    
-    // Try to get an EXISTENT bucket
-    struct FlBucket *target_bucket = lookup_bucket(ht, key, BUCKET_LOOKUP_EXISTENT);
-    return target_bucket != NULL ? target_bucket->value : NULL;
-}
-
-
-void* fl_hashtable_set(FlHashtable ht, void *key, void *value)
+void* ht_internal_add(FlHashtable ht, void *key, void *value, enum BucketLookupOperation lookup_type, bool allowResize)
 {
     flm_assert(ht != NULL, "Hashtable must not be null");
 
     // Find the target bucket. Because of LOOKUP_ANY, the target backet can already
     // exist, in that case
-    struct FlBucket *target_bucket = lookup_bucket(ht, key, BUCKET_LOOKUP_ANY);
+    struct FlBucket *target_bucket = lookup_bucket(ht, key, lookup_type);
     
+    if (target_bucket == NULL && lookup_type == BUCKET_LOOKUP_UNUSED)
+    {
+        return NULL;
+    }
+
     // Set key (if the bucket is free) and value
-    if (target_bucket->free)
+    if (lookup_type == BUCKET_LOOKUP_UNUSED || target_bucket->free)
     {
         target_bucket->key = fl_malloc(ht->kdtsize);
         memcpy(target_bucket->key, key, ht->kdtsize);
@@ -263,9 +231,39 @@ void* fl_hashtable_set(FlHashtable ht, void *key, void *value)
 
     // Mark bucket as in use
     target_bucket->free = 0;
-    
+
+    if (allowResize)
+    {
+        size_t nbuckets = fl_array_length(ht->buckets);
+        double load_factor = ht->length / (double)nbuckets;
+        if (load_factor >= 0.75)
+        {
+            fl_hashtable_resize(ht, nbuckets * 2);
+            target_bucket = lookup_bucket(ht, key, BUCKET_LOOKUP_EXISTENT);
+            flm_assert(target_bucket != NULL, "Retrieving the key after rehashing MUST return a target_bucket");
+        }   
+    }
     // Return a reference to the inserted value
     return target_bucket->value;
+}
+
+void* fl_hashtable_add(FlHashtable ht, void *key, void *value)
+{
+    return ht_internal_add(ht, key, value, BUCKET_LOOKUP_UNUSED, true);
+}
+
+void* fl_hashtable_set(FlHashtable ht, void *key, void *value)
+{
+    return ht_internal_add(ht, key, value, BUCKET_LOOKUP_ANY, true);
+}
+
+void* fl_hashtable_get(FlHashtable ht, void *key)
+{
+    flm_assert(ht != NULL, "Hashtable must not be null");
+    
+    // Try to get an EXISTENT bucket
+    struct FlBucket *target_bucket = lookup_bucket(ht, key, BUCKET_LOOKUP_EXISTENT);
+    return target_bucket != NULL ? target_bucket->value : NULL;
 }
 
 bool fl_hashtable_remove(FlHashtable ht, void *key)
@@ -299,6 +297,8 @@ void fl_hashtable_clear(FlHashtable ht)
                 if ((ht->buckets[i]+j))
                 {
                     struct FlBucket *b = ht->buckets[i]+j;
+                    if (b->free)
+                        continue;
                     ht->cleanup(b->key, ht->kdtsize, b->value, ht->vdtsize);
                     ht->length--;
                 }
@@ -315,7 +315,7 @@ enum HashtableContent {
     HT_VALUES
 };
 
-FlArray get_content(FlHashtable ht, enum HashtableContent content_type)
+FlArray ht_get_content(FlHashtable ht, enum HashtableContent content_type)
 {
     FlByte *content;
     if (content_type == HT_KEYS)
@@ -353,12 +353,12 @@ FlArray get_content(FlHashtable ht, enum HashtableContent content_type)
 
 FlArray fl_hashtable_keys(FlHashtable ht)
 {
-    return get_content(ht, HT_KEYS);
+    return ht_get_content(ht, HT_KEYS);
 }
 
 FlArray fl_hashtable_values(FlHashtable ht)
 {
-    return get_content(ht, HT_VALUES);
+    return ht_get_content(ht, HT_VALUES);
 }
 
 bool fl_hashtable_has_key(FlHashtable ht, void *key)
@@ -376,6 +376,49 @@ double fl_hashtable_load_factor(FlHashtable ht)
 {
     flm_assert(ht != NULL, "Hashtable must not be null");
     return ht->length / (double)fl_array_length(ht->buckets);
+}
+
+size_t fl_hashtable_buckets_count(FlHashtable ht)
+{
+    return fl_array_length(ht->buckets);
+}
+
+void fl_hashtable_resize(FlHashtable ht, size_t nbuckets)
+{
+    flm_assert(nbuckets > 0, "Number of buckets must be greater than 0");
+
+    struct FlHashtable newht = {
+        .kdtsize = ht->kdtsize,
+        .vdtsize = ht->vdtsize,
+        .buckets = fl_array_new(sizeof(struct FlBucket*), nbuckets),
+        .hashf = ht->hashf,
+        .cleanup = ht->cleanup
+    };
+
+    if (ht->buckets)
+    {
+        size_t l = fl_array_length(ht->buckets);
+        for (size_t i=0; i < l ; i++)
+        {
+            if (!ht->buckets[i])
+                continue;
+            size_t l = fl_array_length(ht->buckets[i]);
+            for (size_t j=0; j < l; j++)
+            {
+                if ((ht->buckets[i]+j))
+                {
+                    struct FlBucket *b = ht->buckets[i]+j;
+                    if (b->free)
+                        continue;
+                    ht_internal_add(&newht, b->key, b->value, BUCKET_LOOKUP_UNUSED, false);
+                }
+            }
+        }
+        fl_hashtable_clear(ht);
+        fl_array_delete(ht->buckets);
+        ht->buckets = newht.buckets;
+        ht->length = newht.length;
+    }
 }
 
 void fl_hashtable_delete(FlHashtable ht)

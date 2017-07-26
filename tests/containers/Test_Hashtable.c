@@ -1,3 +1,4 @@
+#include <time.h>
 #include <fllib.h>
 #include "../Test.h"
 #include "Test_Hashtable.h"
@@ -53,6 +54,11 @@ void test_fl_hashtable_add()
         val = &v;
         vp = (int**)fl_hashtable_add(ht2, &key, &val);
         fl_expect("Call to hashtable_add(NULL, 95) must return 95", v == **vp);
+
+        double d = fl_hashtable_load_factor(ht2);
+        fl_hashtable_resize(ht2, fl_hashtable_buckets_count(ht2) * 2);
+        double d2 = fl_hashtable_load_factor(ht2);
+        fl_expect("Hashtable load factor after resize should be lesser", d2 < d);
 
         fl_hashtable_delete(ht2);
     }
@@ -255,5 +261,18 @@ void test_fl_hashtable_remove()
     fl_expect("Current length after removing all the elements by key must be 0", fl_hashtable_length(ht) == 0);
 
     fl_array_delete(keys);
+    fl_hashtable_delete(ht);
+}
+
+void test_fl_hashtable_resize()
+{
+    FlHashtable ht = fl_hashtable_new(sizeof(size_t), sizeof(int));
+    srand(time(NULL));
+    for (size_t i=0; i < 52736; i++)
+    {
+        int r = rand();
+        fl_hashtable_add(ht, &i, &r);
+    }
+
     fl_hashtable_delete(ht);
 }

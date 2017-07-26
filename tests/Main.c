@@ -2,7 +2,7 @@
 
 // Tests
 #include "Std.h"
-#include "Cstr.h"
+#include "Test_Cstr.h"
 #include "File.h"
 #include "text/Test_Unicode.h"
 #include "text/Test_String.h"

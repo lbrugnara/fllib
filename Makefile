@@ -82,7 +82,7 @@ FL_TEST_OBJECTS=\
 	obj/$(TARGET)/tests/Test.o \
 	obj/$(TARGET)/tests/Std.o \
 	obj/$(TARGET)/tests/File.o \
-	obj/$(TARGET)/tests/Cstr.o \
+	obj/$(TARGET)/tests/Test_Cstr.o \
 	obj/$(TARGET)/tests/text/Test_Unicode.o \
 	obj/$(TARGET)/tests/text/Test_String.o 	\
 	obj/$(TARGET)/tests/text/Test_Regex.o 	\

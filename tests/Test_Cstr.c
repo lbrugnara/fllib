@@ -1,7 +1,7 @@
 #include <fllib.h>
 
-#include "Cstr.h"
 #include "Test.h"
+#include "Test_Cstr.h"
 
 void test_cstr_new()
 {

@@ -13,7 +13,7 @@ typedef struct FlHashtable* FlHashtable;
 * an unsigned integer.
 * -------------------------------------------------------------
 */
-typedef size_t(*FlHashtableHashFunc)(FlByte *key, size_t kdtsize) ;
+typedef size_t(*FlHashtableHashFunc)(const FlByte *key, size_t kdtsize) ;
 
 /* -------------------------------------------------------------
 * {datatype: void(*)(void*,size_t,void*,size_t) FlHashtableDeleteKvpFunc}
@@ -136,7 +136,7 @@ double fl_hashtable_load_factor(FlHashtable ht);
 * NULL instead.
 * -------------------------------------------------------------
 */
-void* fl_hashtable_add(FlHashtable ht, void *key, void *value);
+void* fl_hashtable_add(FlHashtable ht, const void *key, const void *value);
 
 /* -------------------------------------------------------------
 * {function: fl_hashtable_get}
@@ -151,7 +151,7 @@ void* fl_hashtable_add(FlHashtable ht, void *key, void *value);
 * {return: void*} Pointer to the element mapped from the key value {key}
 * -------------------------------------------------------------
 */
-void* fl_hashtable_get(FlHashtable ht, void *key);
+void* fl_hashtable_get(FlHashtable ht, const void *key);
 
 /* -------------------------------------------------------------
 * {function: fl_hashtable_set}
@@ -169,7 +169,7 @@ void* fl_hashtable_get(FlHashtable ht, void *key);
 * {return: void*} Pointer to the inserted value
 * -------------------------------------------------------------
 */
-void* fl_hashtable_set(FlHashtable ht, void *key, void *value);
+void* fl_hashtable_set(FlHashtable ht, const void *key, const void *value);
 
 /* -------------------------------------------------------------
 * {function: fl_hashtable_remove}
@@ -186,7 +186,7 @@ void* fl_hashtable_set(FlHashtable ht, void *key, void *value);
 * false if key does not exist or there is an error removing the element.
 * -------------------------------------------------------------
 */
-bool fl_hashtable_remove(FlHashtable ht, void *key);
+bool fl_hashtable_remove(FlHashtable ht, const void *key);
 
 /* -------------------------------------------------------------
 * {function: fl_hashtable_clear}
@@ -251,7 +251,7 @@ FlArray fl_hashtable_values(FlHashtable ht);
 * {return: bool} true if {key} is present in hashtable, otherwise false.
 * -------------------------------------------------------------
 */
-bool fl_hashtable_has_key(FlHashtable ht, void *key);
+bool fl_hashtable_has_key(FlHashtable ht, const void *key);
 
 /* -------------------------------------------------------------
 * {function: fl_hashtable_resize}

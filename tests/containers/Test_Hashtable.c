@@ -64,7 +64,7 @@ void test_fl_hashtable_add()
     }
 }
 
-size_t hash_func(FlByte *key, size_t ksize)
+size_t hash_func(const FlByte *key, size_t ksize)
 {
     return 1;
 }

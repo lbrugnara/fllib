@@ -33,7 +33,7 @@ struct FlBucket {
 * -------------------------------------------------------------
 */
 struct FlHashtable {
-    size_t (*hashf)(FlByte *key, size_t kdtsize);
+    size_t (*hashf)(const FlByte *key, size_t kdtsize);
     void (*cleanup)(void *key, size_t kdtsize, void *value, size_t vdtsize);
     struct FlBucket **buckets; // fl_array
     size_t kdtsize;
@@ -43,7 +43,7 @@ struct FlHashtable {
 
 // djb2 hash function. It is used by default if the user
 // does not provide its own hash function
-size_t fl_hashtable_hash(FlByte *key, size_t kdtsize)
+size_t fl_hashtable_hash(const FlByte *key, size_t kdtsize)
 {
     size_t hash = 5381;
     FlByte c;
@@ -90,7 +90,7 @@ enum BucketLookupOperation {
 };
 
 // This functions returns a bucket for the hashed key based on the lookup operation
-struct FlBucket* lookup_bucket(FlHashtable ht, void *key, enum BucketLookupOperation lookup_op)
+struct FlBucket* lookup_bucket(FlHashtable ht, const void *key, enum BucketLookupOperation lookup_op)
 {
     // Get the key hash and the bucket (hash_bucket is an element in ht->buckets, that points to a dynamic array of
     // points to struct FlBucket)
@@ -205,7 +205,7 @@ struct FlBucket* lookup_bucket(FlHashtable ht, void *key, enum BucketLookupOpera
     return target_bucket;
 }
 
-void* ht_internal_add(FlHashtable ht, void *key, void *value, enum BucketLookupOperation lookup_type, bool allowResize)
+void* ht_internal_add(FlHashtable ht, const void *key, const void *value, enum BucketLookupOperation lookup_type, bool allowResize)
 {
     flm_assert(ht != NULL, "Hashtable must not be null");
 
@@ -247,17 +247,17 @@ void* ht_internal_add(FlHashtable ht, void *key, void *value, enum BucketLookupO
     return target_bucket->value;
 }
 
-void* fl_hashtable_add(FlHashtable ht, void *key, void *value)
+void* fl_hashtable_add(FlHashtable ht, const void *key, const void *value)
 {
     return ht_internal_add(ht, key, value, BUCKET_LOOKUP_UNUSED, true);
 }
 
-void* fl_hashtable_set(FlHashtable ht, void *key, void *value)
+void* fl_hashtable_set(FlHashtable ht, const void *key, const void *value)
 {
     return ht_internal_add(ht, key, value, BUCKET_LOOKUP_ANY, true);
 }
 
-void* fl_hashtable_get(FlHashtable ht, void *key)
+void* fl_hashtable_get(FlHashtable ht, const void *key)
 {
     flm_assert(ht != NULL, "Hashtable must not be null");
     
@@ -266,7 +266,7 @@ void* fl_hashtable_get(FlHashtable ht, void *key)
     return target_bucket != NULL ? target_bucket->value : NULL;
 }
 
-bool fl_hashtable_remove(FlHashtable ht, void *key)
+bool fl_hashtable_remove(FlHashtable ht, const void *key)
 {
     flm_assert(ht != NULL, "Hashtable must not be null");
     struct FlBucket *target_bucket = lookup_bucket(ht, key, BUCKET_LOOKUP_EXISTENT);
@@ -361,7 +361,7 @@ FlArray fl_hashtable_values(FlHashtable ht)
     return ht_get_content(ht, HT_VALUES);
 }
 
-bool fl_hashtable_has_key(FlHashtable ht, void *key)
+bool fl_hashtable_has_key(FlHashtable ht, const void *key)
 {
     return fl_hashtable_get(ht, key) != NULL;
 }

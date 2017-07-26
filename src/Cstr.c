@@ -5,7 +5,7 @@
 #include "Mem.h"
 #include "Array.h"
 #include "containers/Vector.h"
-#include "containers/Dictionary.h"
+#include "containers/Hashtable.h"
 
 char* fl_cstr_new (size_t length) {
 	char *str = fl_calloc(length+1, sizeof(char));
@@ -262,7 +262,7 @@ char* fl_cstr_replace(const char *src, const char *needle, const char *rplc)
     return dst;
 }
 
-size_t fl_cstr_replace_n(const char *src, size_t src_size, const char *needle, size_t needle_size, const char *rplc, size_t rplc_size, char* *dst)
+size_t fl_cstr_replace_n(const char *src, size_t src_size, const char *needle, size_t needle_size, const char *rplc, size_t rplc_size, char **dst)
 {
     flm_assert(src != NULL, "Source cannot be NULL");
     flm_assert(rplc != NULL, "Replacement cannot be NULL");
@@ -281,11 +281,15 @@ size_t fl_cstr_replace_n(const char *src, size_t src_size, const char *needle, s
         return rplc_size + src_size;
     }
 
-    FlDictionary table = fl_dictionary_new(sizeof(char), sizeof(size_t));
+    FlHashtable table = fl_hashtable_new(sizeof(char), sizeof(size_t));
     for (size_t i=0; i < needle_size-1; i++)
-        flm_dictionary_set(table, char, needle[i], size_t, needle_size - i - 1);
-    if (!fl_dictionary_contains_key(table, (const void*)(needle + (needle_size-1))))
-        flm_dictionary_set(table, char, needle[needle_size-1], size_t, needle_size);
+    {
+        size_t n = needle_size - i - 1;
+        fl_hashtable_set(table, needle + i, &n);
+    }
+
+    if (!fl_hashtable_has_key(table, needle + (needle_size-1)))
+        fl_hashtable_set(table, needle + (needle_size-1), &needle_size);
 
     const char* strptr = src;
     char* result = NULL;
@@ -300,7 +304,7 @@ size_t fl_cstr_replace_n(const char *src, size_t src_size, const char *needle, s
         size_t k = i - (needle_size-1);
         if (strptr[i] != needle[needle_size-1] || (needle_size > 1 && !cstr_match_backw(strptr+k, needle, needle_size-1)))
         {
-            size_t *pi = (size_t*)fl_dictionary_get_val(table, strptr+i);
+            size_t *pi = (size_t*)fl_hashtable_get(table, strptr+i);
             if (pi != NULL)
                 d = *pi;
         }
@@ -311,7 +315,7 @@ size_t fl_cstr_replace_n(const char *src, size_t src_size, const char *needle, s
         }
         i += d;
     }
-    fl_dictionary_delete(table);
+    fl_hashtable_delete(table);
 
     *dst = fl_cstr_new(newlength);
     // spi = source pointer index
@@ -358,11 +362,15 @@ char* fl_cstr_find(const char *str, const char *needle)
     if (needle_size == 0)
         return (char*)str;
 
-    FlDictionary table = fl_dictionary_new(sizeof(char), sizeof(size_t));
+    FlHashtable table = fl_hashtable_new(sizeof(char), sizeof(size_t));
     for (size_t i=0; i < needle_size; i++)
-        flm_dictionary_set(table, char, needle[i], size_t, needle_size - i - 1);
-    if (!fl_dictionary_contains_key(table, needle + (needle_size-1)))
-        flm_dictionary_set(table, char, needle[needle_size-1], size_t, needle_size);
+    {
+        size_t n = needle_size - i - 1;
+        fl_hashtable_set(table, needle + i, &n);
+    }
+
+    if (!fl_hashtable_has_key(table, needle + (needle_size-1)))
+        fl_hashtable_set(table, needle + (needle_size-1), &needle_size);
 
     const char* strptr = str;
     const char* result = NULL;
@@ -371,14 +379,14 @@ char* fl_cstr_find(const char *str, const char *needle)
         size_t k = i - (needle_size-1);
         if (strptr[i] != needle[needle_size-1] || (needle_size > 1 && !cstr_match_backw(strptr+k, needle, needle_size-1)))
         {
-            size_t *pi = (size_t*)fl_dictionary_get_val(table, strptr+i);
+            size_t *pi = (size_t*)fl_hashtable_get(table, strptr+i);
             i += (pi == NULL ? needle_size : *pi);
             continue;
         }
         result = strptr+k;
         break;
     }
-    fl_dictionary_delete(table);
+    fl_hashtable_delete(table);
     return (char*)result;
 }
 

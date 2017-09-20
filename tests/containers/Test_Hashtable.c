@@ -268,11 +268,15 @@ void test_fl_hashtable_resize()
 {
     FlHashtable ht = fl_hashtable_new(sizeof(size_t), sizeof(int));
     srand(time(NULL));
+    FlTimer timer = fl_timer_create();
+    fl_timer_start(timer);
     for (size_t i=0; i < 52736; i++)
     {
         int r = rand();
         fl_hashtable_add(ht, &i, &r);
     }
-
+    fl_timer_end(timer);
+    printf("Elapsed MS: %ld\n", fl_timer_elapsed_ms(timer));
+    fl_timer_delete(timer);
     fl_hashtable_delete(ht);
 }

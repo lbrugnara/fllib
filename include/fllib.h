@@ -19,6 +19,7 @@
 #include "../src/containers/List.h"
 #include "../src/containers/Vector.h"
 #include "../src/os/System.h"
+#include "../src/os/Timer.h"
 #include "../src/os/Signal.h"
 
 

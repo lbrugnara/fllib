@@ -6,7 +6,7 @@ override CFLAGS += -Wall \
 					-Wno-unused-parameter \
 					-Wno-unused-variable \
 					-Wno-unused-function \
-					-std=c99 \
+					-std=gnu99 \
 					-pedantic \
 					-fstrict-aliasing \
 					-finput-charset=UTF-8 \
@@ -44,6 +44,8 @@ FL_SHARED_LIB=libfl.so
 
 ifeq ($(OS),Windows_NT)
 	override FL_SHARED_LIB=libfl.dll
+	# MinGW: Allow usage of %z format specifier in printf functions family 
+	override CFLAGS += -D__USE_MINGW_ANSI_STDIO=1
 endif
 
 ifeq ($(filter $(LINKAGE), $(VALID_LINKAGES)),)
@@ -70,6 +72,7 @@ FL_OBJECTS=\
 	obj/$(TARGET)/src/containers/Hashtable.o 		\
 	obj/$(TARGET)/src/text/Regex.o 					\
 	obj/$(TARGET)/src/os/System.o 					\
+	obj/$(TARGET)/src/os/Timer.o 					\
 	obj/$(TARGET)/src/os/Signal.o
 
 ifeq ($(OS),Windows_NT)

@@ -6,20 +6,22 @@
 #include "../Array.h"
 #include "Hashtable.h"
 
-#define NBUCKETS 103
 
-// {todo: 
-//    - Resize and rehash, prime numbers for NBUCKETS
+// TODO: 
+//    - Prime numbers for NBUCKETS. On resize it currently multiplies by 2, it is not efficient
 //    - Iterator
-// }
 
-// free is used to mark removed bucket's entries as vacant
-// entry to save new values
-struct FlBucket {
+// It represents a bucket's entry, it can be free or used
+struct FlBucketEntry {
     void *key;
     void *value;
     unsigned short free : 1;
 };
+
+// Number of buckets to be allocated
+#define NBUCKETS 83
+// Number of entries to allocate inside each bucket
+#define NBUCKETENTRIES 5
 
 /* -------------------------------------------------------------
 * {datatype: struct FlHashtable}
@@ -35,7 +37,7 @@ struct FlBucket {
 struct FlHashtable {
     size_t (*hashf)(const FlByte *key, size_t kdtsize);
     void (*cleanup)(void *key, size_t kdtsize, void *value, size_t vdtsize);
-    struct FlBucket **buckets; // fl_array
+    struct FlBucketEntry **buckets; // fl_array
     size_t kdtsize;
     size_t vdtsize;
     size_t length;
@@ -73,7 +75,7 @@ FlHashtable fl_hashtable_new_args(struct FlHashtableArgs args)
     struct FlHashtable *ht = fl_malloc(sizeof(struct FlHashtable));
     ht->kdtsize = args.key_size;
     ht->vdtsize = args.value_size;
-    ht->buckets = fl_array_new(sizeof(struct FlBucket*), args.buckets_count != 0 ? args.buckets_count : NBUCKETS);
+    ht->buckets = fl_array_new(sizeof(struct FlBucketEntry*), args.buckets_count != 0 ? args.buckets_count : NBUCKETS);
     ht->hashf = args.hash_function != NULL ? args.hash_function : fl_hashtable_hash;
     ht->cleanup = args.cleanup_function != NULL ? args.cleanup_function : fl_hashtable_delete_kvp;
     return ht;
@@ -90,12 +92,12 @@ enum BucketLookupOperation {
 };
 
 // This functions returns a bucket for the hashed key based on the lookup operation
-struct FlBucket* lookup_bucket(FlHashtable ht, const void *key, enum BucketLookupOperation lookup_op)
+struct FlBucketEntry* lookup_bucket(FlHashtable ht, const void *key, enum BucketLookupOperation lookup_op)
 {
     // Get the key hash and the bucket (hash_bucket is an element in ht->buckets, that points to a dynamic array of
-    // points to struct FlBucket)
+    // points to struct FlBucketEntry)
     size_t hash = ht->hashf(key, ht->kdtsize);
-    struct FlBucket **hash_bucket = ht->buckets + (hash % fl_array_length(ht->buckets));
+    struct FlBucketEntry **hash_bucket = ht->buckets + (hash % fl_array_length(ht->buckets));
     
     // Find the target_bucket (or target entry). If hash_bucket points to nothing, we need
     // to allocate a dynamic array for our bucket.
@@ -111,7 +113,7 @@ struct FlBucket* lookup_bucket(FlHashtable ht, const void *key, enum BucketLooku
     //                               [target_bucket] --> This is the entry we are looking for
     //                               [...]
     //                               [ M ] -> dynamic, it grows for each new entry (if there is not an empty (free) bucket present)
-    struct FlBucket *target_bucket = NULL;
+    struct FlBucketEntry *target_bucket = NULL;
     if (*hash_bucket == NULL)
     {
         // If the bucket is NULL (not used) and we are looking for an EXISTENT 
@@ -122,10 +124,15 @@ struct FlBucket* lookup_bucket(FlHashtable ht, const void *key, enum BucketLooku
 
         // If the bucket is empty, and we are looking an UNUSED or ANY type
         // of bucket, it is secure to create a new entry space for this bucket
-        *hash_bucket = fl_array_new(sizeof(struct FlBucket), 1);
+        *hash_bucket = fl_array_new(sizeof(struct FlBucketEntry), NBUCKETENTRIES);
+        for (int i=0; i < NBUCKETENTRIES; i++)
+        {
+            target_bucket = *hash_bucket + i;
+            target_bucket->key = NULL;
+            target_bucket->value = NULL;
+            target_bucket->free = 1; // New bucket's entry is free
+        }
         target_bucket = *hash_bucket + 0;
-        memset(target_bucket, 0, sizeof(struct FlBucket));
-        target_bucket->free = 1; // New bucket's entry is free
     }
     else
     {
@@ -147,7 +154,7 @@ struct FlBucket* lookup_bucket(FlHashtable ht, const void *key, enum BucketLooku
         {
             if ((*hash_bucket+i))
             {
-                struct FlBucket *b = (*hash_bucket+i);
+                struct FlBucketEntry *b = (*hash_bucket+i);
                 if (b->free)
                 {
                     // If the bucket is free, mark it as a possible target on UNUSED or ANY.
@@ -198,7 +205,7 @@ struct FlBucket* lookup_bucket(FlHashtable ht, const void *key, enum BucketLooku
                 return NULL;
             *hash_bucket = fl_array_resize((void*)*hash_bucket, l+1);
             target_bucket = *hash_bucket + l;
-            memset(target_bucket, 0, sizeof(struct FlBucket));
+            memset(target_bucket, 0, sizeof(struct FlBucketEntry));
             target_bucket->free = 1; // New bucket's entry is free
         }
     }
@@ -211,7 +218,7 @@ void* ht_internal_add(FlHashtable ht, const void *key, const void *value, enum B
 
     // Find the target bucket. Because of LOOKUP_ANY, the target backet can already
     // exist, in that case
-    struct FlBucket *target_bucket = lookup_bucket(ht, key, lookup_type);
+    struct FlBucketEntry *target_bucket = lookup_bucket(ht, key, lookup_type);
     
     if (target_bucket == NULL && lookup_type == BUCKET_LOOKUP_UNUSED)
     {
@@ -262,14 +269,14 @@ void* fl_hashtable_get(FlHashtable ht, const void *key)
     flm_assert(ht != NULL, "Hashtable must not be null");
     
     // Try to get an EXISTENT bucket
-    struct FlBucket *target_bucket = lookup_bucket(ht, key, BUCKET_LOOKUP_EXISTENT);
+    struct FlBucketEntry *target_bucket = lookup_bucket(ht, key, BUCKET_LOOKUP_EXISTENT);
     return target_bucket != NULL ? target_bucket->value : NULL;
 }
 
 bool fl_hashtable_remove(FlHashtable ht, const void *key)
 {
     flm_assert(ht != NULL, "Hashtable must not be null");
-    struct FlBucket *target_bucket = lookup_bucket(ht, key, BUCKET_LOOKUP_EXISTENT);
+    struct FlBucketEntry *target_bucket = lookup_bucket(ht, key, BUCKET_LOOKUP_EXISTENT);
     if (!target_bucket)
         return false;
     ht->cleanup(target_bucket->key, ht->kdtsize, target_bucket->value, ht->vdtsize);
@@ -296,7 +303,7 @@ void fl_hashtable_clear(FlHashtable ht)
             {
                 if ((ht->buckets[i]+j))
                 {
-                    struct FlBucket *b = ht->buckets[i]+j;
+                    struct FlBucketEntry *b = ht->buckets[i]+j;
                     if (b->free)
                         continue;
                     ht->cleanup(b->key, ht->kdtsize, b->value, ht->vdtsize);
@@ -336,7 +343,7 @@ FlArray ht_get_content(FlHashtable ht, enum HashtableContent content_type)
             {
                 if ((ht->buckets[i]+j))
                 {
-                    struct FlBucket *b = ht->buckets[i]+j;
+                    struct FlBucketEntry *b = ht->buckets[i]+j;
                     if (b->free)
                         continue;
                     if (content_type == HT_KEYS)
@@ -390,7 +397,7 @@ void fl_hashtable_resize(FlHashtable ht, size_t nbuckets)
     struct FlHashtable newht = {
         .kdtsize = ht->kdtsize,
         .vdtsize = ht->vdtsize,
-        .buckets = fl_array_new(sizeof(struct FlBucket*), nbuckets),
+        .buckets = fl_array_new(sizeof(struct FlBucketEntry*), nbuckets),
         .hashf = ht->hashf,
         .cleanup = ht->cleanup
     };
@@ -407,7 +414,7 @@ void fl_hashtable_resize(FlHashtable ht, size_t nbuckets)
             {
                 if ((ht->buckets[i]+j))
                 {
-                    struct FlBucket *b = ht->buckets[i]+j;
+                    struct FlBucketEntry *b = ht->buckets[i]+j;
                     if (b->free)
                         continue;
                     ht_internal_add(&newht, b->key, b->value, BUCKET_LOOKUP_UNUSED, false);
@@ -436,7 +443,7 @@ void fl_hashtable_delete(FlHashtable ht)
             {
                 if ((ht->buckets[i]+j))
                 {
-                    struct FlBucket *b = ht->buckets[i]+j;
+                    struct FlBucketEntry *b = ht->buckets[i]+j;
                     if (b->free)
                         continue;
                     ht->cleanup(b->key, ht->kdtsize, b->value, ht->vdtsize);

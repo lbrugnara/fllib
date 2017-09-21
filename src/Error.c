@@ -97,7 +97,7 @@ void fl_error_push(int id, const char *format, ...)
     // If there is no FlErrQueue registered for this thread, create it
     if (!fl_hashtable_has_key(Errors, &currentid))
     {
-        FlErrQueue *q = fl_malloc(sizeof(FlErrQueue));
+        FlErrQueue *q = fl_calloc(1, sizeof(FlErrQueue));
         fl_hashtable_set(Errors, &currentid, &q);
     }
 

@@ -73,7 +73,7 @@ FlHashtable fl_hashtable_new_args(struct FlHashtableArgs args)
     flm_assert(args.key_size > 0, "Key data type size must be greater than 0");
     flm_assert(args.value_size > 0, "Key data type size must be greater than 0");
 
-    struct FlHashtable *ht = fl_malloc(sizeof(struct FlHashtable));
+    struct FlHashtable *ht = fl_calloc(1, sizeof(struct FlHashtable));
     ht->kdtsize = args.key_size;
     ht->vdtsize = args.value_size;
     ht->load_factor = args.load_factor != 0 ? args.load_factor : 0.75;
@@ -230,12 +230,12 @@ void* ht_internal_add(FlHashtable ht, const void *key, const void *value, enum B
     // Set key (if the bucket is free) and value
     if (lookup_type == BUCKET_LOOKUP_UNUSED || target_bucket->free)
     {
-        target_bucket->key = fl_malloc(ht->kdtsize);
+        target_bucket->key = fl_calloc(1, ht->kdtsize);
         memcpy(target_bucket->key, key, ht->kdtsize);
         // Increment the number of entries just if it is a new bucket in use
         ht->length++;
     }
-    target_bucket->value = fl_malloc(ht->vdtsize);
+    target_bucket->value = fl_calloc(1, ht->vdtsize);
     memcpy(target_bucket->value, value, ht->vdtsize);
 
     // Mark bucket as in use

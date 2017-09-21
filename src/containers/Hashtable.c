@@ -38,6 +38,7 @@ struct FlHashtable {
     size_t (*hashf)(const FlByte *key, size_t kdtsize);
     void (*cleanup)(void *key, size_t kdtsize, void *value, size_t vdtsize);
     struct FlBucketEntry **buckets; // fl_array
+    double load_factor;
     size_t kdtsize;
     size_t vdtsize;
     size_t length;
@@ -75,6 +76,7 @@ FlHashtable fl_hashtable_new_args(struct FlHashtableArgs args)
     struct FlHashtable *ht = fl_malloc(sizeof(struct FlHashtable));
     ht->kdtsize = args.key_size;
     ht->vdtsize = args.value_size;
+    ht->load_factor = args.load_factor != 0 ? args.load_factor : 0.75;
     ht->buckets = fl_array_new(sizeof(struct FlBucketEntry*), args.buckets_count != 0 ? args.buckets_count : NBUCKETS);
     ht->hashf = args.hash_function != NULL ? args.hash_function : fl_hashtable_hash;
     ht->cleanup = args.cleanup_function != NULL ? args.cleanup_function : fl_hashtable_delete_kvp;
@@ -243,7 +245,7 @@ void* ht_internal_add(FlHashtable ht, const void *key, const void *value, enum B
     {
         size_t nbuckets = fl_array_length(ht->buckets);
         double load_factor = ht->length / (double)nbuckets;
-        if (load_factor >= 0.75)
+        if (load_factor > ht->load_factor)
         {
             fl_hashtable_resize(ht, nbuckets * 2);
             target_bucket = lookup_bucket(ht, key, BUCKET_LOOKUP_EXISTENT);

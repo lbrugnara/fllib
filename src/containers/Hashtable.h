@@ -36,6 +36,7 @@ typedef void(*FlHashtableDeleteKvpFunc)(void *key, size_t kdtsize, void *value, 
 * -------------------------------------------------------------
 */
 struct FlHashtableArgs {
+    double load_factor;
     size_t key_size;
     size_t value_size;
     size_t buckets_count;

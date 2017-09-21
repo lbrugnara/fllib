@@ -155,11 +155,10 @@ void* fl_list_insert(FlList list, const void *elem, size_t pos)
 {
 	if (pos > list->length)	
 	{
-		char msg[50];
-		sprintf(msg, "Index %zd out of bound in ["__FILE__":"FL_LINE":fl_list_insert] (length %zd)\n", pos, list->length);
-		fputs(msg, stderr);
-		exit(-1);
+		fl_error_push(-1, "Index %zd out of bound in ["__FILE__":"FL_LINE":fl_list_insert] (length %zd)\n", pos, list->length);
+		return NULL;
 	}
+
 	FlListNode node = new_list_node(list->dtsize, elem);
 	if (list->length == 0)
 	{
@@ -195,10 +194,8 @@ void* fl_list_get(FlList list, size_t index)
 {
 	if (index >= list->length)	
 	{
-		char msg[50];
-		sprintf(msg, "Index %zd out of bound in ["__FILE__":"FL_LINE":fl_list_get] (length %zd)\n", index, list->length);
-		fputs(msg, stderr);
-		exit(-1);
+		fl_error_push(-1, "Index %zd out of bound in ["__FILE__":"FL_LINE":fl_list_get] (length %zd)\n", index, list->length);
+		return NULL;
 	}
 	FlListNode targetIndex = list->head;
 	while(index-- > 0)
@@ -214,10 +211,8 @@ fl_list_get_node(FlList list, size_t index)
 {
 	if (index >= list->length)	
 	{
-		char msg[50];
-		sprintf(msg, "Index %zd out of bound in ["__FILE__":"FL_LINE":fl_list_get] (length %zd)\n", index, list->length);
-		fputs(msg, stderr);
-		exit(-1);
+		fl_error_push(-1, "Index %zd out of bound in ["__FILE__":"FL_LINE":fl_list_get] (length %zd)\n", index, list->length);
+		return NULL;
 	}
 	FlListNode targetIndex = list->head;
 	while(index-- > 0)
@@ -264,10 +259,8 @@ fl_list_shift(FlList list, void *dest)
 {
 	if (list->length == 0)
 	{
-		char msg[50];
-		sprintf(msg, "List is empty in ["__FILE__":"FL_LINE"] (length %zd)\n", list->length);
-		fputs(msg, stderr);
-		exit(-1);
+		fl_error_push(-1, "List is empty in ["__FILE__":"FL_LINE"] (length %zd)\n", list->length);
+		return false;
 	}
 
 	if (dest != NULL)
@@ -401,10 +394,8 @@ fl_list_remove(FlList list, size_t pos, void *dest)
 {
 	if (pos >= list->length)
 	{
-		char msg[50];
-		sprintf(msg, "Index %zd out of bound in ["__FILE__":"FL_LINE":fl_list_remove] (length %zd)\n", pos, list->length);
-		fputs(msg, stderr);
-		exit(-1);
+		fl_error_push(-1, "Index %zd out of bound in ["__FILE__":"FL_LINE":fl_list_remove] (length %zd)\n", pos, list->length);
+		return false;
 	}
 	FlListNode target = list->head;
 	while(pos-- > 0)

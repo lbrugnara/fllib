@@ -264,19 +264,28 @@ void test_fl_hashtable_remove()
     fl_hashtable_delete(ht);
 }
 
+size_t hash_func2(const FlByte *key, size_t ksize)
+{
+    return *(size_t*)key;
+}
+
 void test_fl_hashtable_resize()
 {
-    FlHashtable ht = fl_hashtable_new(sizeof(size_t), sizeof(int));
-    srand(time(NULL));
+    FlHashtable ht = fl_hashtable_new_args((struct FlHashtableArgs){
+        .key_size = sizeof(size_t), 
+        .value_size = sizeof(int), 
+        .hash_function = &hash_func2,
+        .buckets_count = 52736,
+        .load_factor = 1.0
+    });
     FlTimer timer = fl_timer_create();
     fl_timer_start(timer);
     for (size_t i=0; i < 52736; i++)
     {
-        int r = rand();
-        fl_hashtable_add(ht, &i, &r);
+        fl_hashtable_add(ht, &i, (int*)&i);
     }
     fl_timer_end(timer);
-    printf("Elapsed MS: %ld\n", fl_timer_elapsed_ms(timer));
+    printf("Elapsed milliseconds: %ld\n", fl_timer_elapsed_ms(timer));
     fl_timer_delete(timer);
     fl_hashtable_delete(ht);
 }

@@ -28,7 +28,8 @@ int main(void)
             { "fl_cstr_replace_char",   &test_cstr_replace_char },
             { "fl_cstr_replace",        &test_cstr_replace      },
             { "fl_cstr_append{_char}",  &test_cstr_append       },
-            { "fl_cstr_join",           &test_cstr_join         }        
+            { "fl_cstr_join",           &test_cstr_join         },
+            { "cstr_misc_functions",    &test_cstr_misc         }
         ),
         fl_test_suite("Module File", 
             { "fl_file_write_all_bytes and fl_file_read_all_bytes", &test_file_rw_all_bytes }
@@ -36,12 +37,12 @@ int main(void)
         fl_test_suite("Module Unicode",
             { "fl_unicode_codepoint_at", &test_fl_unicode_codepoint_at },
             { "fl_unicode_codeunit_sequence_size", &test_fl_unicode_codeunit_sequence_size},
-            { "test_fl_unicode_unichar_validity", &test_fl_unicode_unichar_validity },
-            { "test_fl_unicode_codepoint_validity", &test_fl_unicode_codepoint_validity },
-            { "test_fl_unicode_unichar_sequence_validate", &test_fl_unicode_unichar_sequence_validate },
-            { "test_fl_unicode_codepoint_convert", &test_fl_unicode_codepoint_convert },
-            { "test_fl_unicode_codepoint_sequence_validate", &test_fl_unicode_codepoint_sequence_validate },
-            { "test_fl_unicode_data", &test_fl_unicode_data }
+            { "fl_unicode_unichar_validity", &test_fl_unicode_unichar_validity },
+            { "fl_unicode_codepoint_validity", &test_fl_unicode_codepoint_validity },
+            { "fl_unicode_unichar_sequence_validate", &test_fl_unicode_unichar_sequence_validate },
+            { "fl_unicode_codepoint_convert", &test_fl_unicode_codepoint_convert },
+            { "fl_unicode_codepoint_sequence_validate", &test_fl_unicode_codepoint_sequence_validate },
+            { "fl_unicode_data", &test_fl_unicode_data }
         ),
         fl_test_suite("Module String", 
             { "fl_string_length", &test_fl_string_length },

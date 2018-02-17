@@ -79,7 +79,7 @@ FlError fl_error_last();
 * -------------------------------------------------------------
 * {param: int errnum} Errno
 * {param: char* buf} Destination buffer
-* {param: size_t len} Max number of bytes to be write  in {buf}
+* {param: size_t len} Max number of bytes to write in {buf}
 * -------------------------------------------------------------
 * {return: char*} String containing the error message represented by errno
 * -------------------------------------------------------------
@@ -92,7 +92,7 @@ char* fl_errno_str(int errnum, char* buf, size_t len);
  * Writes a message to {stderr} and call exit(-1)
  * -------------------------------------------------------------
  * {param: FlErrorType errtype} Type of error to show in the message
- * {param: const char *format} Contains the text to be write to {stderr}
+ * {param: const char *format} Contains the text to write to {stderr}
  * {param: ... arguments} Additional arguments used to replace format specifiers in {format}
  * -------------------------------------------------------------
  * {return: void}
@@ -159,7 +159,7 @@ void fl_exit(FlErrorType errtype, const char *format, ...);
  * -------------------------------------------------------------
  * Has a jmp_buf member to save and restore the state of the
  * program using setjmp and longjmp. It is not opaque because
- * we need to access jmp_buf directly
+ * we need to directly access jmp_buf
  * -------------------------------------------------------------
  * {member: jmp_buf env} State of the program
  * -------------------------------------------------------------
@@ -201,7 +201,7 @@ typedef struct {
  * -------------------------------------------------------------
  * Contains information about the context (using jmp_buf through FlContext)
  * and information about the "exception". It is not opaque because
- * we need to access jmp_buf directly through FlContext
+ * we need to directly access jmp_buf through FlContext
  * -------------------------------------------------------------
  * {member: FlContext ctx} Saves the info to restore the program state 
  * {member: int exception} Value to be passed to longjmp. Represents an exception (General purpouse usage)
@@ -253,7 +253,7 @@ do                                                              \
 //          to close the switch, and the opening  brace
 //          to match the "}" in EndTry.
 //          Closing the switch makes this piece of code 
-//          to run always, either after the normal execution
+//          to always run, either after the normal execution
 //          or after the exception handling process
 //      }
 #define EndTry                                                  \

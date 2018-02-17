@@ -48,12 +48,12 @@
 * and exec-charset are UTF-8
 * -------------------------------------------------------------
 */
-static inline void swap_representations(const FlByte *src, FlByte *dst, size_t nbytes);
 static inline bool utf8_mb_str_is_bigendian();
-static inline size_t utf8_codepoint_size(const FlByte* src, const FlByte *end);
+static inline void swap_representations(const FlByte *src, FlByte *dst, size_t nbytes);
 static inline size_t utf32_codepoint_size(const FlByte* src);
-static inline bool utf8_to_utf32(const FlByte *src, const FlByte *end, FlByte *dst);
+static inline size_t utf8_codepoint_size(const FlByte* src, const FlByte *end);
 static inline size_t utf32_to_utf8(const FlByte *src, FlByte *dst);
+static inline bool utf8_to_utf32(const FlByte *src, const FlByte *end, FlByte *dst);
 
 /* -------------------------------------------------------------
 * Checks if a multibyte character is stored as big-endiann. It
@@ -376,6 +376,17 @@ static inline bool utf8_to_utf32(const FlByte *src, const FlByte *end, FlByte *d
 
 size_t fl_unicode_codepoint_convert(FlEncoding srcencoding, const FlByte *src, const FlByte *end, FlEncoding dstencoding, FlByte *dst)
 {
+    if (srcencoding == dstencoding)
+    {
+        size_t size = fl_unicode_codepoint_size(srcencoding, src, end);
+
+        if (size == FL_UNICODE_INVALID_SIZE)
+            return FL_UNICODE_INVALID_SIZE;
+
+        memcpy(dst, src, size);
+        return size;
+    }
+
     if (srcencoding == FL_ENCODING_UTF8)
     {
         if (dstencoding == FL_ENCODING_UTF32)
@@ -427,20 +438,21 @@ size_t fl_unicode_codeunit_sequence_size(FlEncoding encoding, const FlByte* sequ
 {
     flm_assert(sequence != NULL, "Code unit sequence cannot be NULL.");
     
-    size_t size = 0;
+    size_t size = 0, i = 0;
+    bool keepCounting = true;
     if (encoding == FL_ENCODING_UTF32)
     {
-        // {todo: This needs to be tested}
-        size_t i=0;
-        bool isValid = true;
-        while (isValid)
+        // {todo: This needs to be tested}        
+        while (keepCounting)
         {
             if (end == NULL && sequence[i] == 0x00)
                 break;
             if (end != NULL && sequence+i >= end)
                 break;
+
             if (!fl_unicode_codepoint_is_valid(encoding, sequence+i, end))
                 break;
+
             size += UTF32_BYTES_SIZE;
             size_t tmp = UTF32_BYTES_SIZE;
             while (tmp-- > 0)
@@ -448,17 +460,15 @@ size_t fl_unicode_codeunit_sequence_size(FlEncoding encoding, const FlByte* sequ
                 i++;
                 if (end == NULL && sequence[i] == 0x00)
                 {
-                    isValid = false;
+                    keepCounting = false;
                     break;
                 }
             }
         }
     }
     else if (encoding == FL_ENCODING_UTF8)
-    {
-        size_t i=0;
-        bool isValid = true;
-        while (isValid)
+    {        
+        while (keepCounting)
         {
             if (end == NULL && sequence[i] == 0x00)
                 break;
@@ -466,15 +476,17 @@ size_t fl_unicode_codeunit_sequence_size(FlEncoding encoding, const FlByte* sequ
                 break;
 
             size_t tmp = utf8_codepoint_size(sequence+i, end);
+
             if (tmp == FL_UNICODE_INVALID_SIZE)
                 break; // truncated string
+
             size += tmp;
             while (tmp-- > 0)
             {
                 i++;
                 if (end == NULL && sequence[i] == 0x00)
                 {
-                    isValid = false;
+                    keepCounting = false;
                     break;
                 }
             }
@@ -493,20 +505,21 @@ size_t fl_unicode_codepoint_sequence_length(FlEncoding encoding, const FlByte* s
 {
     flm_assert(sequence != NULL, "Code unit sequence cannot be NULL.");
     
-    size_t size = 0;
+    size_t size = 0, i = 0;
+    bool keepCounting = true;
     if (encoding == FL_ENCODING_UTF32)
     {
         // {todo: This needs to be tested}
-        size_t i=0;
-        bool isValid = true;
-        while (isValid)
+        while (keepCounting)
         {
             if (end == NULL && sequence[i] == 0x00)
                 break;
             if (end != NULL && sequence+i >= end)
                 break;
+
             if (!fl_unicode_codepoint_is_valid(encoding, sequence+i, end))
                 break;
+
             size++;
             size_t tmp = UTF32_BYTES_SIZE;
             while (tmp-- > 0)
@@ -514,7 +527,7 @@ size_t fl_unicode_codepoint_sequence_length(FlEncoding encoding, const FlByte* s
                 i++;
                 if (end == NULL && sequence[i] == 0x00)
                 {
-                    isValid = false;
+                    keepCounting = false;
                     break;
                 }
             }
@@ -522,9 +535,7 @@ size_t fl_unicode_codepoint_sequence_length(FlEncoding encoding, const FlByte* s
     }
     else if (encoding == FL_ENCODING_UTF8)
     {
-        size_t i=0;
-        bool isValid = true;
-        while (isValid)
+        while (keepCounting)
         {
             if (end == NULL && sequence[i] == 0x00)
                 break;
@@ -532,15 +543,17 @@ size_t fl_unicode_codepoint_sequence_length(FlEncoding encoding, const FlByte* s
                 break;
 
             size_t tmp = utf8_codepoint_size(sequence+i, end);
+
             if (tmp == FL_UNICODE_INVALID_SIZE)
                 break; // truncated string
+
             size++;
             while (tmp-- > 0)
             {
                 i++;
                 if (end == NULL && sequence[i] == 0x00)
                 {
-                    isValid = false;
+                    keepCounting = false;
                     break;
                 }
             }
@@ -586,7 +599,7 @@ bool fl_unicode_codepoint_is_valid(FlEncoding encoding, const FlByte *src, const
     return fl_unicode_codepoint_size(encoding, src, end) != FL_UNICODE_INVALID_SIZE;
 }
 
-bool fl_unicode_codeunit_sequence_is_valid(FlEncoding encoding, const FlByte* src, const FlByte* end)
+bool fl_unicode_codepoint_sequence_is_valid(FlEncoding encoding, const FlByte* src, const FlByte* end)
 {
     flm_assert(src != NULL, "Source src cannot be NULL.");
 
@@ -619,7 +632,7 @@ size_t fl_unicode_codepoint_sequence_validate(FlEncoding encoding, const FlByte 
             if (minsize <= i)
             {                
                 size_t remainingsize = fl_unicode_codeunit_sequence_size(encoding, sequence+i, end);
-                // If starting offset returns FL_UNICODE_INVALID_SIZE, we will replace with U+FFFD, so at least add 4 bytes,
+                // If starting offset returns 0, we will replace with U+FFFD, so at least add 4 bytes,
                 // if not, the remaining
                 minsize += remainingsize == 0 ? UTF32_BYTES_SIZE : remainingsize;
                 *destination = fl_realloc(*destination, minsize);

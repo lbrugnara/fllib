@@ -9,25 +9,25 @@
 
 #include "containers/Hashtable.h"
 
-#ifndef FL_ERROR_QUEUE
-    #define FL_ERROR_QUEUE 1
+#ifndef FL_ERROR_QUEUE_MAX
+    #define FL_ERROR_QUEUE_MAX 1
 #endif
 
 /* -------------------------------------------------------------
-* The FlErrQueue struct is used as a circular queue, through FL_ERROR_QUEUE
+* The FlErrQueue struct is used as a circular queue, through FL_ERROR_QUEUE_MAX
 * the user can se the maximum number of errors to "save".
 * This module is intended to be used in a multi-threaded environment, in that
-* case, each thread has its own FL_ERROR_QUEUE restriction.
+* case, each thread has its own FL_ERROR_QUEUE_MAX restriction.
 * -------------------------------------------------------------
 */
 typedef struct FlErrQueue {
     int last;
-    FlError errors[FL_ERROR_QUEUE];
+    FlError errors[FL_ERROR_QUEUE_MAX];
 } FlErrQueue;
 
 /* -------------------------------------------------------------
 * Errors is an FlHashtable<FlThreadId, FlErrQueue> that will contains
-* up to FL_ERROR_QUEUE errors for each thread.
+* up to FL_ERROR_QUEUE_MAX errors for each thread.
 * -------------------------------------------------------------
 */
 FlHashtable Errors;
@@ -37,7 +37,7 @@ FlMutex ErrMutex = FL_MUTEX_INIT_STATIC;
 void push_error(FlErrQueue *queue, struct FlError error)
 {
     flm_assert(queue != NULL, "FlErrQueue must not be NULL");
-    if (queue->last == FL_ERROR_QUEUE)
+    if (queue->last == FL_ERROR_QUEUE_MAX)
         queue->last = 0;
     queue->errors[queue->last++] = error;
 }

@@ -1,8 +1,6 @@
 #ifndef FL_TYPES_H
 #define FL_TYPES_H
 
-//#include <string.h>
-
 /* -------------------------------------------------------------
 * {datatype: unsigned char FlByte}
 * -------------------------------------------------------------

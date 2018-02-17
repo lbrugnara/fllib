@@ -169,7 +169,7 @@ size_t fl_unicode_codepoint_at(FlEncoding encoding, const FlByte *str, const FlB
 bool fl_unicode_codepoint_is_valid(FlEncoding encoding, const FlByte *src, const FlByte *end);
 
 /* -------------------------------------------------------------
-* {function: fl_unicode_codeunit_sequence_is_valid}
+* {function: fl_unicode_codepoint_sequence_is_valid}
 * -------------------------------------------------------------
 * Returns true if {src} is a valid sequence of code points under encoding
 * {encoding}.
@@ -183,7 +183,7 @@ bool fl_unicode_codepoint_is_valid(FlEncoding encoding, const FlByte *src, const
 * encoding {encoding}
 * -------------------------------------------------------------
 */
-bool fl_unicode_codeunit_sequence_is_valid(FlEncoding encoding, const FlByte* src, const FlByte* end);
+bool fl_unicode_codepoint_sequence_is_valid(FlEncoding encoding, const FlByte* src, const FlByte* end);
 
 /* -------------------------------------------------------------
 * {function: fl_unicode_codepoint_sequence_validate}

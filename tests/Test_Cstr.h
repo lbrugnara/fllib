@@ -8,5 +8,6 @@ void test_cstr_replace_char();
 void test_cstr_replace();
 void test_cstr_append();
 void test_cstr_join();
+void test_cstr_misc();
 
 #endif

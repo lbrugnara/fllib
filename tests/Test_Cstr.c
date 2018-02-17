@@ -1,7 +1,10 @@
+#include <limits.h>
 #include <fllib.h>
 
 #include "Test.h"
 #include "Test_Cstr.h"
+
+#include "../src/Cstr.c"
 
 void test_cstr_new()
 {
@@ -83,65 +86,73 @@ void test_cstr_replace_char()
 void test_cstr_replace()
 {
     char *replaced = fl_cstr_replace("", "abc", "123");
-    fl_expect("Some test here", flm_cstr_equals(replaced, ""));
+    fl_expect("Replace 'abc' with '123' on empty string returns empty string", flm_cstr_equals(replaced, ""));
     fl_cstr_delete(replaced);
 
     replaced = fl_cstr_replace("abc", "", "123");
-    fl_expect("Some test here", flm_cstr_equals(replaced, "123abc"));
+    fl_expect("Replace empty string with '123' on 'abc' returns '123abc'", flm_cstr_equals(replaced, "123abc"));
     fl_cstr_delete(replaced);
 
     replaced = fl_cstr_replace("", "", "123");
-    fl_expect("Some test here", flm_cstr_equals(replaced, "123"));
+    fl_expect("Replace empty string with '123' on empty string returns '123", flm_cstr_equals(replaced, "123"));
     fl_cstr_delete(replaced);
 
     replaced = fl_cstr_replace("Remove my Es", "e", "");
-    fl_expect("Some test here", flm_cstr_equals(replaced, "Rmov my Es"));
+    fl_expect("Replace 'e' with empty string in 'Remove my Es' returns 'Remov my Es'", flm_cstr_equals(replaced, "Rmov my Es"));
     fl_cstr_delete(replaced);
 
     replaced = fl_cstr_replace("hello", "k", "z");
-    fl_expect("Some test here", flm_cstr_equals(replaced, "hello"));
+    fl_expect("Replace 'k' with 'z' on 'hello' returns 'hello'", flm_cstr_equals(replaced, "hello"));
     fl_cstr_delete(replaced);
 
     replaced = fl_cstr_replace("hello", "nhelloz", "z");
-    fl_expect("Some test here", flm_cstr_equals(replaced, "hello"));
+    fl_expect("Replace 'nhelloz' with 'z' on 'hello' returns 'hello'", flm_cstr_equals(replaced, "hello"));
     fl_cstr_delete(replaced);
 
     replaced = fl_cstr_replace("hello", "e", "a");
-    fl_expect("Some test here", flm_cstr_equals(replaced, "hallo"));
+    fl_expect("Replace 'e' with 'a' in 'hello' returns 'hallo'", flm_cstr_equals(replaced, "hallo"));
     fl_cstr_delete(replaced);
 
     replaced = fl_cstr_replace("hello", "ll", "l");
-    fl_expect("Some test here", flm_cstr_equals(replaced, "helo"));
+    fl_expect("Replace 'll' with 'l' on 'hello' returns 'helo'", flm_cstr_equals(replaced, "helo"));
     fl_cstr_delete(replaced);
 
     replaced = fl_cstr_replace("hello", "ll", "lll");
-    fl_expect("Some test here", flm_cstr_equals(replaced, "helllo"));
+    fl_expect("Replace 'll' with 'lll' on 'hello' returns 'helllo'", flm_cstr_equals(replaced, "helllo"));
+    fl_cstr_delete(replaced);
+
+    replaced = fl_cstr_replace("hello", "l", "ll");
+    fl_expect("Replace 'l' with 'll' on 'hello' returns 'hellllo'", flm_cstr_equals(replaced, "hellllo"));
+    fl_cstr_delete(replaced);
+
+    replaced = fl_cstr_replace("hello", "l", "zz");
+    fl_expect("Replace 'l' with 'zz' on 'hello' returns 'hezzzzo'", flm_cstr_equals(replaced, "hezzzzo"));
     fl_cstr_delete(replaced);
 
     replaced = fl_cstr_replace("hello", "hello", "");
-    fl_expect("Some test here", flm_cstr_equals(replaced, ""));
+    fl_expect("Replace 'hello' with empty string on 'hello' returns empty string", flm_cstr_equals(replaced, ""));
     fl_cstr_delete(replaced);
 
     replaced = fl_cstr_replace("hellobye", "hellox", "");
-    fl_expect("Some test here", flm_cstr_equals(replaced, "hellobye"));
+    fl_expect("Replace 'hellox' with empty string in 'hellobye' returns 'hellobye'", flm_cstr_equals(replaced, "hellobye"));
     fl_cstr_delete(replaced);
 
     replaced = fl_cstr_replace("Hello world!", "o w", "O W");
-    fl_expect("Some test here", flm_cstr_equals(replaced, "HellO World!"));
+    fl_expect("Replace 'o w' with 'O W' on 'Hello world!' returns 'HellO World!'", flm_cstr_equals(replaced, "HellO World!"));
     fl_cstr_delete(replaced);
 
     replaced = fl_cstr_replace("hellohello", "jello", "zello");
-    fl_expect("Some test here", flm_cstr_equals(replaced, "hellohello"));
+    fl_expect("Replace 'jello' with 'zello' on 'hellohello' returns 'hellohello'", flm_cstr_equals(replaced, "hellohello"));
     fl_cstr_delete(replaced);
 
     const char *msg = "Actually, we are changing all the text by a larger one";
     replaced = fl_cstr_replace("none", "none", msg);
-    fl_expect("Some test here", flm_cstr_equals(replaced, msg));
+    fl_expect("Replace 'none' with 'Actually, we are changing all the text by a larger one' on 'none' returns 'Actually, we are changing all the text by a larger one'", flm_cstr_equals(replaced, msg));
     fl_cstr_delete(replaced);
 
     const char *shortermsg = "Now, a shorter one";
     replaced = fl_cstr_replace(msg, msg, shortermsg);
-    fl_expect("Some test here", flm_cstr_equals(replaced, shortermsg));
+    fl_expect("Replace 'Actually, we are changing all the text by a larger one' with 'Now, a shorter one' on 'Actually, we are changing all the text by a larger one' returns 'Now, a shorter one'", flm_cstr_equals(replaced, shortermsg));
     fl_cstr_delete(replaced);
 }
 
@@ -175,4 +186,40 @@ void test_cstr_join()
     fl_expect("Length of previous joined string is 15 characters", strlen(str) == 15);
     fl_cstr_delete(str);
     fl_vector_delete_ptrs(str_vector);
+}
+
+void test_cstr_misc()
+{
+    size_t length;
+    long long number;
+
+    number = 1;
+    length = integer_length(number);
+    fl_vexpect(1 == length, "Integer %lld to string contains %d chars (length = %d)", number, 1, length);
+
+    number = -1;
+    length = integer_length(number);
+    fl_vexpect(2 == length, "Integer %lld to string contains %d chars (length = %d)", number, 2, length);
+
+    number = LLONG_MAX;
+    length = integer_length(number);
+    fl_vexpect(19 >= length, "Integer %lld (LLONG_MAX) to string is at least %d chars (Min 64 bits) (length = %d)", number, 19, length);
+
+    number = LLONG_MIN;
+    length = integer_length(number);
+    fl_vexpect(20 >= length, "Integer %lld (LLONG_MAX) to string is at least %d chars (Min 64 bits) (length = %d)", number, 20, length);
+
+    //
+    unsigned long long unumber;
+    unumber = 1;
+    length = uinteger_length(unumber);
+    fl_vexpect(1 == length, "Integer %llu to string contains %d chars (length = %d)", unumber, 1, length);
+
+    unumber = ULLONG_MAX;
+    length = uinteger_length(unumber);
+    fl_vexpect(20 >= length, "Integer %llu (ULLONG_MAX) to string is at least %d chars (Min 64 bits) (length = %d)", unumber, 20, length);
+
+    unumber = 0;
+    length = uinteger_length(unumber);
+    fl_vexpect(1 == length, "Integer %llu (ULLONG_MIN) to string is %d chars (length = %d)", unumber, 1, length);
 }

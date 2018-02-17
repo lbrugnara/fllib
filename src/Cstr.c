@@ -80,18 +80,13 @@ char* fl_cstr_vdup(const char *s, ...)
 
 size_t integer_length(long long i)
 {
-    if (i == 0)
-        return 1;
-    size_t l = i > 0 ? 1 : 2;
+    size_t l = i >= 0 ? 1 : 2;
     while(i /= 10)l++;
     return l;
 }
 
 size_t uinteger_length(unsigned long long i)
 {
-    flm_assert(i > 0, "uinteger_length does not accept signed values");
-    if (i == 0)
-        return 1;
     size_t l = 1;
     while(i /= 10)l++;
     return l;

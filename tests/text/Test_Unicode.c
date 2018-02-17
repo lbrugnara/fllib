@@ -26,27 +26,27 @@ void test_fl_unicode_codepoint_at()
     // 
     memset(dst, 0, 4);
     nbytes = fl_unicode_codepoint_at(FL_ENCODING_UTF8, (FlByte*)str, 0x00, 40, dst);
-    fl_expect("40 = Ĩ and it is 2 bytes long", memcmp(str+40*2, dst, nbytes) == 0 && nbytes == 2); // Char 28 multiplied by 2 bytes each one
+    fl_expect("40 = Ĩ and it is 2 bytes long", memcmp(str+40*2, dst, nbytes) == 0 && nbytes == 2); // Char 40 multiplied by 2 bytes each one
 
     // 
     memset(dst, 0, 4);
     nbytes = fl_unicode_codepoint_at(FL_ENCODING_UTF8, (FlByte*)str, 0x00, 60, dst);
-    fl_expect("60 = ļ and it is 2 bytes long", memcmp(str+60*2, dst, nbytes) == 0 && nbytes == 2); // Char 28 multiplied by 2 bytes each one
+    fl_expect("60 = ļ and it is 2 bytes long", memcmp(str+60*2, dst, nbytes) == 0 && nbytes == 2); // Char 60 multiplied by 2 bytes each one
 
     // 
     memset(dst, 0, 4);
     nbytes = fl_unicode_codepoint_at(FL_ENCODING_UTF8, (FlByte*)str, 0x00, 40, dst);
-    fl_expect("40 = Ĩ and it is 2 bytes long", memcmp(str+40*2, dst, nbytes) == 0 && nbytes == 2); // Char 28 multiplied by 2 bytes each one
+    fl_expect("40 = Ĩ and it is 2 bytes long", memcmp(str+40*2, dst, nbytes) == 0 && nbytes == 2); // Char 40 multiplied by 2 bytes each one
 
     // 
     memset(dst, 0, 4);
     nbytes = fl_unicode_codepoint_at(FL_ENCODING_UTF8, (FlByte*)str, 0x00, 92, dst);
-    fl_expect("92 = Ŝ and it is 2 bytes long", memcmp(str+92*2, dst, nbytes) == 0 && nbytes == 2); // Char 28 multiplied by 2 bytes each one
+    fl_expect("92 = Ŝ and it is 2 bytes long", memcmp(str+92*2, dst, nbytes) == 0 && nbytes == 2); // Char 92 multiplied by 2 bytes each one
 
     // 
     memset(dst, 0, 4);
     nbytes = fl_unicode_codepoint_at(FL_ENCODING_UTF8, (FlByte*)str, 0x00, 126, dst);
-    fl_expect("126 = ž and it is 2 bytes long", memcmp(str+126*2, dst, nbytes) == 0 && nbytes == 2); // Char 28 multiplied by 2 bytes each one
+    fl_expect("126 = ž and it is 2 bytes long", memcmp(str+126*2, dst, nbytes) == 0 && nbytes == 2); // Char 126 multiplied by 2 bytes each one
 
     // 
     str = "\x00\x00\x00\x41\x00\x00\x00\x42";
@@ -57,22 +57,22 @@ void test_fl_unicode_codepoint_at()
     // 
     memset(dst, 0, 4);
     nbytes = fl_unicode_codepoint_at(FL_ENCODING_UTF32, (FlByte*)str, 0x00, 1, dst);
-    fl_expect("AB in 1 should be A", memcmp(str+1*4, dst, nbytes) == 0 && nbytes == 4);
+    fl_expect("AB in 1 should be B", memcmp(str+1*4, dst, nbytes) == 0 && nbytes == 4);
 
     //
-    fl_expect("Size of U+D800 is FL_UNICODE_INVALID_SIZE because it is a High Surrogate", fl_unicode_codepoint_size(FL_ENCODING_UTF32, (FlByte*)"\x00\xD8\x00\x00\x00", NULL) == FL_UNICODE_INVALID_SIZE);
-    fl_expect("Size of U+DFFF is FL_UNICODE_INVALID_SIZE because it is a Low Surrogate", fl_unicode_codepoint_size(FL_ENCODING_UTF32, (FlByte*)"\x00\xDF\xFF\xFF\x00", NULL) == FL_UNICODE_INVALID_SIZE);
+    fl_expect("Size of U+D800 is FL_UNICODE_INVALID_SIZE because it is a High Surrogate", fl_unicode_codepoint_size(FL_ENCODING_UTF32, (FlByte*)"\x00\xD8\x00\x00\x00", 0x00) == FL_UNICODE_INVALID_SIZE);
+    fl_expect("Size of U+DFFF is FL_UNICODE_INVALID_SIZE because it is a Low Surrogate", fl_unicode_codepoint_size(FL_ENCODING_UTF32, (FlByte*)"\x00\xDF\xFF\xFF\x00", 0x00) == FL_UNICODE_INVALID_SIZE);
 }
 
 void test_fl_unicode_codeunit_sequence_size()
 {
-    fl_expect("abc123 has 6 bytes", fl_unicode_codeunit_sequence_size(FL_ENCODING_UTF8, (const FlByte*)"abc123", NULL) == 6);
-    fl_expect("aƁc123 has 7 bytes", fl_unicode_codeunit_sequence_size(FL_ENCODING_UTF8, (const FlByte*)"aƁc123", NULL) == 7);
-    fl_expect("a兔c123 has 9 bytes", fl_unicode_codeunit_sequence_size(FL_ENCODING_UTF8, (const FlByte*)"a兔c123", NULL) == 9);
-    fl_expect("兔 has 4 bytes", fl_unicode_codeunit_sequence_size(FL_ENCODING_UTF8, (const FlByte*)"兔", NULL) == 4);
-    fl_expect("ԱԲ has 4 bytes", fl_unicode_codeunit_sequence_size(FL_ENCODING_UTF8, (const FlByte*)"ԱԲ", NULL) == 4);
-    fl_expect("Code Point size is the same as the Code Unit sequence size (of length 4) for 兔", fl_unicode_codeunit_sequence_size(FL_ENCODING_UTF8, (const FlByte*)"兔", NULL) == fl_unicode_codepoint_size(FL_ENCODING_UTF8, (const FlByte*)"兔", NULL));
-    fl_expect("Code Point size is the same as the Code Unit sequence size (of length 2) for Ɓ", fl_unicode_codeunit_sequence_size(FL_ENCODING_UTF8, (const FlByte*)"Ɓ", NULL) == fl_unicode_codepoint_size(FL_ENCODING_UTF8, (const FlByte*)"Ɓ", NULL));
+    fl_expect("'abc123' has 6 bytes", fl_unicode_codeunit_sequence_size(FL_ENCODING_UTF8, (const FlByte*)"abc123", 0x00) == 6);
+    fl_expect("'aƁc123' has 7 bytes", fl_unicode_codeunit_sequence_size(FL_ENCODING_UTF8, (const FlByte*)"aƁc123", 0x00) == 7);
+    fl_expect("'a兔c123' has 9 bytes", fl_unicode_codeunit_sequence_size(FL_ENCODING_UTF8, (const FlByte*)"a兔c123", 0x00) == 9);
+    fl_expect("'兔' has 4 bytes", fl_unicode_codeunit_sequence_size(FL_ENCODING_UTF8, (const FlByte*)"兔", 0x00) == 4);
+    fl_expect("'ԱԲ' has 4 bytes", fl_unicode_codeunit_sequence_size(FL_ENCODING_UTF8, (const FlByte*)"ԱԲ", 0x00) == 4);
+    fl_expect("Code Point size is the same as the Code Unit sequence size (of length 4) for '兔'", fl_unicode_codeunit_sequence_size(FL_ENCODING_UTF8, (const FlByte*)"兔", 0x00) == fl_unicode_codepoint_size(FL_ENCODING_UTF8, (const FlByte*)"兔", 0x00));
+    fl_expect("Code Point size is the same as the Code Unit sequence size (of length 2) for 'Ɓ'", fl_unicode_codeunit_sequence_size(FL_ENCODING_UTF8, (const FlByte*)"Ɓ", 0x00) == fl_unicode_codepoint_size(FL_ENCODING_UTF8, (const FlByte*)"Ɓ", 0x00));
 }
 
 void test_fl_unicode_unichar_validity()
@@ -242,22 +242,22 @@ void test_fl_unicode_codepoint_validity()
     // Sequences
     
     // Last byte missing
-    fl_expect("Sequence xC0 is not valid UTF-8", !fl_unicode_codeunit_sequence_is_valid(FL_ENCODING_UTF8, (FlByte*)"\xC0\x00", NULL)); // x00 == NULL terminated
-    fl_expect("Sequence xDF is not valid UTF-8", !fl_unicode_codeunit_sequence_is_valid(FL_ENCODING_UTF8, (FlByte*)"\xDF\x00", NULL)); // x00 == NULL terminated
-    fl_expect("Sequence xE0x80 is not valid UTF-8", !fl_unicode_codeunit_sequence_is_valid(FL_ENCODING_UTF8, (FlByte*)"\xE0\x80\x00", NULL)); // x00 == NULL terminated
-    fl_expect("Sequence xEFxBF is not valid UTF-8", !fl_unicode_codeunit_sequence_is_valid(FL_ENCODING_UTF8, (FlByte*)"\xEF\xBF\x00", NULL)); // x00 == NULL terminated
-    fl_expect("Sequence xF0x80x80 is not valid UTF-8", !fl_unicode_codeunit_sequence_is_valid(FL_ENCODING_UTF8, (FlByte*)"\xF0\x80\x80\x00", NULL)); // x00 == NULL terminated
-    fl_expect("Sequence xF7xBFxBF is not valid UTF-8", !fl_unicode_codeunit_sequence_is_valid(FL_ENCODING_UTF8, (FlByte*)"\xF7\xBF\xBF\x00", NULL)); // x00 == NULL terminated
+    fl_expect("Sequence xC0 is not valid UTF-8", !fl_unicode_codepoint_sequence_is_valid(FL_ENCODING_UTF8, (FlByte*)"\xC0\x00", NULL)); // x00 == NULL terminated
+    fl_expect("Sequence xDF is not valid UTF-8", !fl_unicode_codepoint_sequence_is_valid(FL_ENCODING_UTF8, (FlByte*)"\xDF\x00", NULL)); // x00 == NULL terminated
+    fl_expect("Sequence xE0x80 is not valid UTF-8", !fl_unicode_codepoint_sequence_is_valid(FL_ENCODING_UTF8, (FlByte*)"\xE0\x80\x00", NULL)); // x00 == NULL terminated
+    fl_expect("Sequence xEFxBF is not valid UTF-8", !fl_unicode_codepoint_sequence_is_valid(FL_ENCODING_UTF8, (FlByte*)"\xEF\xBF\x00", NULL)); // x00 == NULL terminated
+    fl_expect("Sequence xF0x80x80 is not valid UTF-8", !fl_unicode_codepoint_sequence_is_valid(FL_ENCODING_UTF8, (FlByte*)"\xF0\x80\x80\x00", NULL)); // x00 == NULL terminated
+    fl_expect("Sequence xF7xBFxBF is not valid UTF-8", !fl_unicode_codepoint_sequence_is_valid(FL_ENCODING_UTF8, (FlByte*)"\xF7\xBF\xBF\x00", NULL)); // x00 == NULL terminated
 
     // Surrogates
-    fl_expect("Surrogates sequence U+D800 U+DC00 is not valid UTF-8", !fl_unicode_codeunit_sequence_is_valid(FL_ENCODING_UTF8, (FlByte*) "\xed\xa0\x80\xed\xb0\x80\x00", NULL)); // x00 == NULL terminated
-    fl_expect("Surrogates sequence U+D800 U+DFFF is not valid UTF-8", !fl_unicode_codeunit_sequence_is_valid(FL_ENCODING_UTF8, (FlByte*) "\xed\xa0\x80\xed\xbf\xbf\x00", NULL)); // x00 == NULL terminated
-    fl_expect("Surrogates sequence U+DB7F U+DC00 is not valid UTF-8", !fl_unicode_codeunit_sequence_is_valid(FL_ENCODING_UTF8, (FlByte*) "\xed\xad\xbf\xed\xb0\x80\x00", NULL)); // x00 == NULL terminated
-    fl_expect("Surrogates sequence U+DB7F U+DFFF is not valid UTF-8", !fl_unicode_codeunit_sequence_is_valid(FL_ENCODING_UTF8, (FlByte*) "\xed\xad\xbf\xed\xbf\xbf\x00", NULL)); // x00 == NULL terminated
-    fl_expect("Surrogates sequence U+DB80 U+DC00 is not valid UTF-8", !fl_unicode_codeunit_sequence_is_valid(FL_ENCODING_UTF8, (FlByte*) "\xed\xae\x80\xed\xb0\x80\x00", NULL)); // x00 == NULL terminated
-    fl_expect("Surrogates sequence U+DB80 U+DFFF is not valid UTF-8", !fl_unicode_codeunit_sequence_is_valid(FL_ENCODING_UTF8, (FlByte*) "\xed\xae\x80\xed\xbf\xbf\x00", NULL)); // x00 == NULL terminated
-    fl_expect("Surrogates sequence U+DBFF U+DC00 is not valid UTF-8", !fl_unicode_codeunit_sequence_is_valid(FL_ENCODING_UTF8, (FlByte*) "\xed\xaf\xbf\xed\xb0\x80\x00", NULL)); // x00 == NULL terminated
-    fl_expect("Surrogates sequence U+DBFF U+DFFF is not valid UTF-8", !fl_unicode_codeunit_sequence_is_valid(FL_ENCODING_UTF8, (FlByte*) "\xed\xaf\xbf\xed\xbf\xbf\x00", NULL)); // x00 == NULL terminated
+    fl_expect("Surrogates sequence U+D800 U+DC00 is not valid UTF-8", !fl_unicode_codepoint_sequence_is_valid(FL_ENCODING_UTF8, (FlByte*) "\xed\xa0\x80\xed\xb0\x80\x00", NULL)); // x00 == NULL terminated
+    fl_expect("Surrogates sequence U+D800 U+DFFF is not valid UTF-8", !fl_unicode_codepoint_sequence_is_valid(FL_ENCODING_UTF8, (FlByte*) "\xed\xa0\x80\xed\xbf\xbf\x00", NULL)); // x00 == NULL terminated
+    fl_expect("Surrogates sequence U+DB7F U+DC00 is not valid UTF-8", !fl_unicode_codepoint_sequence_is_valid(FL_ENCODING_UTF8, (FlByte*) "\xed\xad\xbf\xed\xb0\x80\x00", NULL)); // x00 == NULL terminated
+    fl_expect("Surrogates sequence U+DB7F U+DFFF is not valid UTF-8", !fl_unicode_codepoint_sequence_is_valid(FL_ENCODING_UTF8, (FlByte*) "\xed\xad\xbf\xed\xbf\xbf\x00", NULL)); // x00 == NULL terminated
+    fl_expect("Surrogates sequence U+DB80 U+DC00 is not valid UTF-8", !fl_unicode_codepoint_sequence_is_valid(FL_ENCODING_UTF8, (FlByte*) "\xed\xae\x80\xed\xb0\x80\x00", NULL)); // x00 == NULL terminated
+    fl_expect("Surrogates sequence U+DB80 U+DFFF is not valid UTF-8", !fl_unicode_codepoint_sequence_is_valid(FL_ENCODING_UTF8, (FlByte*) "\xed\xae\x80\xed\xbf\xbf\x00", NULL)); // x00 == NULL terminated
+    fl_expect("Surrogates sequence U+DBFF U+DC00 is not valid UTF-8", !fl_unicode_codepoint_sequence_is_valid(FL_ENCODING_UTF8, (FlByte*) "\xed\xaf\xbf\xed\xb0\x80\x00", NULL)); // x00 == NULL terminated
+    fl_expect("Surrogates sequence U+DBFF U+DFFF is not valid UTF-8", !fl_unicode_codepoint_sequence_is_valid(FL_ENCODING_UTF8, (FlByte*) "\xed\xaf\xbf\xed\xbf\xbf\x00", NULL)); // x00 == NULL terminated
 }
 
 void test_fl_unicode_unichar_sequence_validate()
@@ -285,7 +285,14 @@ void test_fl_unicode_codepoint_convert()
 {
     FlByte dst[4] = {0,0,0,0};
     size_t bytes = 0;
+
+    bytes = fl_unicode_codepoint_convert(FL_ENCODING_UTF32, (FlByte*)"\x00\x00\x00\x41\x00", NULL, FL_ENCODING_UTF32, dst);
+    fl_expect("UTF-32 U+0041 encoded to UTF-32 should return the same sequence of bytes", bytes == 4 && fl_equals(dst, "\x00\x00\x00\x41\x00", bytes));
     
+    memset(dst, 0, 4);
+    bytes = fl_unicode_codepoint_convert(FL_ENCODING_UTF8, (FlByte*)"\x41\x00", NULL, FL_ENCODING_UTF8, dst);
+    fl_expect("UTF-8 0x41 encoded to UTF-8 should return the same sequence of bytes", bytes == 1 && fl_equals(dst, "\x41", bytes));
+
     //
     bytes = fl_unicode_codepoint_convert(FL_ENCODING_UTF32, (FlByte*)"\x00\x00\x00\x41\x00", NULL, FL_ENCODING_UTF8, dst);
     fl_expect("UTF-32 U+0041 encoded to UTF-8 is equals to 0x41 and occupies 1 byte", bytes == 1 && fl_equals(dst, "\x41", bytes));

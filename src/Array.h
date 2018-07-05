@@ -57,12 +57,12 @@ void* fl_array_new(size_t size, size_t n);
  * -------------------------------------------------------------
  * Releases the memory allocated with {fl_array_new}
  * -------------------------------------------------------------
- * {param: void* array} A pointer to the memory to be released
+ * {param: void *array} A pointer to the memory to be released
  * -------------------------------------------------------------
  * {return: void}
  * -------------------------------------------------------------
  */
-void fl_array_delete(void* array);
+void fl_array_delete(void *array);
 
 /* -------------------------------------------------------------
  * {function: fl_array_delete_h}
@@ -72,13 +72,13 @@ void fl_array_delete(void* array);
  * The handler function MUST free all the memory used by each
  * element.
  * -------------------------------------------------------------
- * {param: void* array} A pointer to the memory to be realeased
+ * {param: void *array} A pointer to the memory to be realeased
  * {param: void (*)(FlByte*) delete_handler} Handler function to release the memory for each element of array
  * -------------------------------------------------------------
  * {return: void}
  * -------------------------------------------------------------
  */
-void fl_array_delete_h(void* array, void (*delete_handler)(FlByte*));
+void fl_array_delete_h(void *array, void (*delete_handler)(FlByte*));
 
 /* -------------------------------------------------------------
  * {function: fl_array_resize}
@@ -87,25 +87,25 @@ void fl_array_delete_h(void* array, void (*delete_handler)(FlByte*));
  * in {array}. The new size will be {n} * sizeof(type) where
  * type is the data type used to allocate the {array}
  * -------------------------------------------------------------
- * {param: void* array} A pointer to the memory to be reallocated
+ * {param: void *array} A pointer to the memory to be reallocated
  * {param: size_t n} Number of elements to allocate in {array}
  * -------------------------------------------------------------
  * {return: void*} A pointer to the new allocated memory
  * -------------------------------------------------------------
  */
-void* fl_array_resize(void* array, size_t n);
+void* fl_array_resize(void *array, size_t n);
 
 /* -------------------------------------------------------------
  * {function: fl_array_length}
  * -------------------------------------------------------------
  * Returns the number of elements allocated in array
  * -------------------------------------------------------------
- * {param: void* array} Target array
+ * {param: void *array} Target array
  * -------------------------------------------------------------
  * {return: size_t} Number of elements array can contain
  * -------------------------------------------------------------
  */
-size_t fl_array_length(const void* array);
+size_t fl_array_length(const void *array);
 
 /* -------------------------------------------------------------
  * {function: fl_array_contains}
@@ -113,13 +113,13 @@ size_t fl_array_length(const void* array);
  * Search for {needle} in {array}. This function MUST be used
  * only with arrays allocated with {fl_array_new}.
  * -------------------------------------------------------------
- * {param: const void* array} Target array to look for {needle}
+ * {param: const void *array} Target array to look for {needle}
  * {param: const void *needle} Pointer to the memory to search in {array}
  * -------------------------------------------------------------
  * {return: bool} True if needle is in array
  * -------------------------------------------------------------
  */
-bool fl_array_contains(const void* array, const void *needle);
+bool fl_array_contains(const void *array, const void *needle);
 
 /* -------------------------------------------------------------
  * {function: fl_array_contains_n}
@@ -127,7 +127,7 @@ bool fl_array_contains(const void* array, const void *needle);
  * Search for {needle} (of {needlesize} bytes) in the {nelems}
  * elements of {array}.
  * -------------------------------------------------------------
- * {param: const void* array} Target array to look for {needle}
+ * {param: const void *array} Target array to look for {needle}
  * {param: size_t nelems} Number of elements of {array}
  * {param: const void *needle} Pointer to the memory to search in {array}
  * {param: size_t needlesize} Size of {needle}
@@ -135,19 +135,19 @@ bool fl_array_contains(const void* array, const void *needle);
  * {return: bool} True if needle is in array
  * -------------------------------------------------------------
  */
-bool fl_array_contains_n(const void* array, size_t nelems, const void *needle, size_t needlesize);
+bool fl_array_contains_n(const void *array, size_t nelems, const void *needle, size_t needlesize);
 
 /* -------------------------------------------------------------
  * {function: fl_array_to_vector}
  * -------------------------------------------------------------
  * Creates an {FlVector} using as source of elements {array}
  * -------------------------------------------------------------
- * {param: const void* array} Array of elements
+ * {param: const void *array} Array of elements
  * -------------------------------------------------------------
  * {return: FlVector`} Pointer to a new vector with the array 
  * elements on it
  * -------------------------------------------------------------
  */
-FlVector fl_array_to_vector(const void* array);
+FlVector fl_array_to_vector(const void *array);
 
 #endif /* FL_ARRAY_H */

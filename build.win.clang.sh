@@ -18,7 +18,7 @@ clang $CFLAGS -c ./src/text/Unicode.c  -o obj/debug/text/Unicode.o
 clang $CFLAGS -c ./src/text/String.c  -o obj/debug/text/String.o
 clang $CFLAGS -c ./src/Cstr.c  -o obj/debug/Cstr.o
 clang $CFLAGS -c ./src/Array.c  -o obj/debug/Array.o
-clang $CFLAGS -c ./src/File.c  -o obj/debug/File.o
+clang $CFLAGS -c ./src/IO.c  -o obj/debug/IO.o
 clang $CFLAGS -c ./src/containers/Iterator.c  -o obj/debug/containers/Iterator.o
 clang $CFLAGS -c ./src/containers/Vector.c  -o obj/debug/containers/Vector.o
 clang $CFLAGS -c ./src/containers/List.c  -o obj/debug/containers/List.o
@@ -40,7 +40,7 @@ lib -NOLOGO -VERBOSE                        \
     obj/debug/text/String.o                 \
     obj/debug/Cstr.o                        \
     obj/debug/Array.o                       \
-    obj/debug/File.o                        \
+    obj/debug/IO.o                          \
     obj/debug/containers/Iterator.o         \
     obj/debug/containers/Vector.o           \
     obj/debug/containers/List.o             \
@@ -59,7 +59,7 @@ mkdir -p ./tests/obj/debug/{threading,text}
 clang $CFLAGS -I./include -I./src -c tests/Main.c -o tests/obj/debug/Main.o
 clang $CFLAGS -I./include -I./src -c tests/Test.c -o tests/obj/debug/Test.o
 clang $CFLAGS -I./include -I./src -c tests/Std.c -o tests/obj/debug/Std.o
-clang $CFLAGS -I./include -I./src -c tests/File.c -o tests/obj/debug/File.o
+clang $CFLAGS -I./include -I./src -c tests/IO.c -o tests/obj/debug/IO.o
 clang $CFLAGS -I./include -I./src -c tests/Cstr.c -o tests/obj/debug/Cstr.o
 clang $CFLAGS -I./include -I./src -c tests/text/Test_Unicode.c -o tests/obj/debug/text/Test_Unicode.o
 clang $CFLAGS -I./include -I./src -c tests/text/Test_String.c -o tests/obj/debug/text/Test_String.o
@@ -71,7 +71,7 @@ clang $CFLAGS -I./include -I./src -o tests/build/debug/tests.exe \
     tests/obj/debug/Main.o  \
     tests/obj/debug/Test.o  \
     tests/obj/debug/Std.o   \
-    tests/obj/debug/File.o  \
+    tests/obj/debug/IO.o  \
     tests/obj/debug/text/Test_Unicode.o  \
     tests/obj/debug/text/Test_String.o  \
     tests/obj/debug/Cstr.o

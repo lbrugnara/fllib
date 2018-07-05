@@ -116,6 +116,32 @@ void fl_vector_resize(FlVector vector, size_t nelem);
 void* fl_vector_get(FlVector vector, size_t index);
 
 /* -------------------------------------------------------------
+* {function: fl_vector_first}
+* -------------------------------------------------------------
+* Returns a pointer to the first element in the {vector}
+* -------------------------------------------------------------
+* {param: FlVector vector} Target vector
+* -------------------------------------------------------------
+* {return: void*} Pointer to the first element stored in the vector.
+* If vector is empty, this function returns NULL
+* -------------------------------------------------------------
+*/
+void *fl_vector_first(FlVector vector);
+
+/* -------------------------------------------------------------
+* {function: fl_vector_last}
+* -------------------------------------------------------------
+* Returns a pointer to the last element in the {vector}
+* -------------------------------------------------------------
+* {param: FlVector vector} Target vector
+* -------------------------------------------------------------
+* {return: void*} Pointer to the last element stored in the vector.
+* If vector is empty, this function returns NULL
+* -------------------------------------------------------------
+*/
+void *fl_vector_last(FlVector vector);
+
+/* -------------------------------------------------------------
 * {function: fl_vector_shift}
 * -------------------------------------------------------------
 * Removes the first element in {vector}. If {dest} is not null,
@@ -274,10 +300,6 @@ void fl_vector_delete(FlVector vector);
 */
 void fl_vector_delete_h(FlVector vector, void (*delete_handler)(FlByte*));
 
-/** 
- * Release the memory used by each element in {vector} and also the memory used
- * by {FlVector} struct
- */
 /* -------------------------------------------------------------
 * {function: fl_vector_delete_ptrs}
 * -------------------------------------------------------------

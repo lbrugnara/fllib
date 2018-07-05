@@ -232,7 +232,7 @@ void parse_derived_normalization_property(FlVector data, const char *buffer, Nor
 void parse_derived_normalization_properties(FlVector data)
 {
     flm_assert(data != NULL && fl_vector_length(data) > 0, "Vector with UnicodeData.txt information must be populated before calling this function");
-    FlByte *tmpbuffer = fl_file_read_all_bytes("src/text/resources/DerivedNormalizationProps-9.0.0.txt");
+    FlByte *tmpbuffer = fl_io_file_read_all_bytes("src/text/resources/DerivedNormalizationProps-9.0.0.txt");
     char *buffer = NULL;
     size_t size = fl_cstr_replace_n((char*)tmpbuffer, fl_array_length(tmpbuffer), "\r\n", 2, "\n", 1, &buffer);
     fl_array_delete(tmpbuffer);    
@@ -264,7 +264,7 @@ void parse_derived_normalization_properties(FlVector data)
 // any other parsing function to populate {data} with the UCD
 void parse_unicode_data(FlVector data)
 {
-    FlByte *tmpbuffer = fl_file_read_all_bytes("src/text/resources/UnicodeData-9.0.0.txt");
+    FlByte *tmpbuffer = fl_io_file_read_all_bytes("src/text/resources/UnicodeData-9.0.0.txt");
     //FlByte *buffer = (FlByte*)fl_cstr_replace((char*)tmpbuffer, "\r\n", "\n");
     char *buffer = NULL;
     size_t size = fl_cstr_replace_n((char*)tmpbuffer, fl_array_length(tmpbuffer), "\r\n", 2, "\n", 1, &buffer);
@@ -413,7 +413,7 @@ void delete_data_handler(FlByte *ptr)
 
 void create_unicode_database_file(FlVector data)
 {
-    FlFile *outfd = fl_file_open("src/text/resources/UnicodeDataDb.h", "w");
+    FlFile *outfd = fl_io_file_open("src/text/resources/UnicodeDataDb.h", "w");
     size_t data_length = fl_vector_length(data);
     UnicodeData *prevud = NULL;
     for (size_t i=0; i < data_length; i++)
@@ -501,7 +501,8 @@ void create_unicode_database_file(FlVector data)
             fprintf(outfd, "\n");
         }
     }
-    fl_file_close(outfd);
+    fprintf(outfd, "\n");
+    fl_io_file_close(outfd);
 }
 
 int main(void)

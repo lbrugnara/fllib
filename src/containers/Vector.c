@@ -113,6 +113,20 @@ void* fl_vector_get(FlVector vector, size_t index)
     return (vector->data + sizet);
 }
 
+void *fl_vector_first(FlVector vector)
+{
+    if (vector->length == 0)
+        return NULL;
+    return vector->data;
+}
+
+void *fl_vector_last(FlVector vector)
+{
+    if (vector->length == 0)
+        return NULL;
+    return (vector->data + (vector->length-1) * vector->dtsize);
+}
+
 bool fl_vector_shift(FlVector vector, void *dest)
 {
     if (vector->length == 0)

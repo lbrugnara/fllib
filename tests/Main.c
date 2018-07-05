@@ -3,7 +3,7 @@
 // Tests
 #include "Std.h"
 #include "Test_Cstr.h"
-#include "File.h"
+#include "IO.h"
 #include "text/Test_Unicode.h"
 #include "text/Test_String.h"
 #include "text/Test_Regex.h"
@@ -31,8 +31,8 @@ int main(void)
             { "fl_cstr_join",           &test_cstr_join         },
             { "cstr_misc_functions",    &test_cstr_misc         }
         ),
-        fl_test_suite("Module File", 
-            { "fl_file_write_all_bytes and fl_file_read_all_bytes", &test_file_rw_all_bytes }
+        fl_test_suite("Module IO", 
+            { "fl_io_file_write_all_bytes and fl_io_file_read_all_bytes", &test_file_rw_all_bytes }
         ),
         fl_test_suite("Module Unicode",
             { "fl_unicode_codepoint_at", &test_fl_unicode_codepoint_at },

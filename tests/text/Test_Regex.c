@@ -59,11 +59,11 @@ void test_fl_regex_tokenize()
     
     tokenize("[3-1]", NULL);
     FlError err = fl_error_last();
-    fl_expect("Regex [3-1] must not compile because it is an invalid range", err.message != NULL && fl_equals(err.message, "Invalid range", 13));
+    fl_expect("Regex [3-1] must not compile because it is an invalid range", fl_equals(err.message, "Invalid range", 13));
 
     tokenize("[x-j]", NULL);
 	err = fl_error_last();
-    fl_expect("Regex [x-j] must not compile because it is an invalid range", err.message != NULL && fl_equals(err.message, "Invalid range", 13));
+    fl_expect("Regex [x-j] must not compile because it is an invalid range", fl_equals(err.message, "Invalid range", 13));
 
     tokenize("[j-x]", expect("[", "j", "-", "x", "]"));
     tokenize("[9-ao-zqwe]", expect("[", "9", "-", "a", "o", "-", "z", "q", "w", "e", "]"));

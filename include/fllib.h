@@ -11,7 +11,7 @@
 #include "../src/Mem.h"
 #include "../src/Cstr.h"
 #include "../src/Array.h"
-#include "../src/File.h"
+#include "../src/IO.h"
 #include "../src/containers/Iterator.h"
 #include "../src/containers/KeyValuePair.h"
 #include "../src/containers/Dictionary.h"

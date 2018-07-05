@@ -58,9 +58,10 @@ void cleanup_errors(void *k, size_t ks, void *v, size_t vs)
     }
 }
 
-void delete_errors(void)
+void cleanup(void)
 {
     fl_hashtable_delete(Errors);
+    fl_mutex_destroy(&ErrMutex);
 }
 
 void fl_error_push(int id, const char *format, ...)
@@ -89,7 +90,7 @@ void fl_error_push(int id, const char *format, ...)
             .cleanup_function = &cleanup_errors
         });
         // Register the cleaning function
-        atexit(delete_errors);
+        atexit(cleanup);
     }
 
     // Get the current ID

@@ -45,6 +45,9 @@ char* fl_cstr_copy_n(char *dest, const char *source, size_t n);
  */
 char* fl_cstr_dup(const char *s);
 
+/**
+ * Create a duplicate of {n} characters of {s}
+ */
 char* fl_cstr_dup_n(const char *s, size_t n);
 
 /**
@@ -64,6 +67,8 @@ char* fl_cstr_vadup (const char *s, va_list args);
  * Returns a {FlVector} containing all the chars of the input at each index
  */
 FlVector fl_cstr_split(const char *input);
+
+FlVector fl_cstr_split_by(const char *input, const char *separator);
 
 /**
  * {input} Source string

@@ -146,7 +146,7 @@ bool fl_expect(const char* descr, bool conditionResult)
     if (!conditionResult)
     {
         printf(" |-- Failed: %s\n", descr);
-        fl_cstr_copy_n(testctx.message, descr, FL_ERROR_TRYCONTEXT_MAX_MSG_SIZE);
+        fl_cstring_copy_n(testctx.message, descr, FL_ERROR_TRYCONTEXT_MAX_MSG_SIZE);
         Throw(&testctx, TEST_FAILURE);
     }
     printf(" |-- Passed: %s\n", descr);
@@ -176,7 +176,7 @@ bool fl_vexpect(bool conditionResult, const char* format, ...)
     if (!conditionResult)
     {
         printf(" |-- Failed: %s\n", descr);
-        fl_cstr_copy_n(testctx.message, descr, FL_ERROR_TRYCONTEXT_MAX_MSG_SIZE);
+        fl_cstring_copy_n(testctx.message, descr, FL_ERROR_TRYCONTEXT_MAX_MSG_SIZE);
         Throw(&testctx, TEST_FAILURE);
     }
     printf(" |-- Passed: %s\n", descr);

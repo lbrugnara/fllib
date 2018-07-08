@@ -5,7 +5,7 @@
 #include "../fl_test_utils.h"
 #include "../../src/text/Regex.h"
 #include "../../src/text/Regex.c"
-#include "../../src/Cstr.h"
+#include "../../src/Cstring.h"
 
 bool fl_regex_match_test(FlCstr pattern, FlCstr input)
 {
@@ -36,16 +36,16 @@ fl_regex_test_tokenize(const FlCstr regex, FlCstr expect[])
 		return;
 	}
 
-	FlCstr result = fl_cstr_join(tokens, ", ");
+	FlCstr result = fl_cstring_join(tokens, ", ");
 	printf("%s\n", result);
 	for(int i=0; i < fl_vector_length(tokens); i++)
 	{
 		FlCstr c = flm_vector_get(tokens, FlCstr, i);
 		if (expect != NULL)
-			flm_test(flm_cstr_equals(expect[i], c));
+			flm_test(flm_cstring_equals(expect[i], c));
 	}
 	printf("\n");
-	fl_cstr_delete(result);
+	fl_cstring_delete(result);
 	fl_vector_delete_ptrs(tokens);
 }
 

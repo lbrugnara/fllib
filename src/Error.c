@@ -5,7 +5,7 @@
 #include "Mem.h"
 #include "Std.h"
 #include "threading/Thread.h"
-#include "Cstr.h"
+#include "Cstring.h"
 
 #include "containers/Hashtable.h"
 
@@ -71,13 +71,13 @@ void fl_error_push(int id, const char *format, ...)
     error.id = id;
     va_list args;
     va_start(args, format);
-    char *str = fl_cstr_vadup(format, args);
+    char *str = fl_cstring_vadup(format, args);
     va_end(args);
     // Cap the message to FL_ERROR_MAX_MSG_SIZE
     size_t length = min(FL_ERROR_MAX_MSG_SIZE, strlen(str) + 1);
     memcpy(error.message, str, length);
     error.message[length-1] = FL_EOS;
-    fl_cstr_delete(str);
+    fl_cstring_delete(str);
 
     // Sync access to Errors hashtable
     fl_mutex_lock(&ErrMutex);
@@ -165,23 +165,23 @@ void fl_exit(FlErrorType errtype, const char *format, ...)
     switch(errtype)
     {
         case ERR_FATAL:
-            errtypemsg = fl_cstr_dup("FATAL ERROR: ");
+            errtypemsg = fl_cstring_dup("FATAL ERROR: ");
             break;
         case ERR_UNIMPLEMENTED:
-            errtypemsg = fl_cstr_dup("UNIMPLEMENTED ERROR: ");
+            errtypemsg = fl_cstring_dup("UNIMPLEMENTED ERROR: ");
             break;
         default:
-            errtypemsg = fl_cstr_dup("UNKNOWN ERROR: ");
+            errtypemsg = fl_cstring_dup("UNKNOWN ERROR: ");
     }
 
     va_list args;
     va_start(args, format);
-    char *msg = fl_cstr_dup(format);
-    fl_cstr_append(&msg, "\n");
-    fl_cstr_append(&errtypemsg, msg);
+    char *msg = fl_cstring_dup(format);
+    fl_cstring_append(&msg, "\n");
+    fl_cstring_append(&errtypemsg, msg);
     vfprintf(stderr, errtypemsg, args);
     va_end(args);
-    fl_cstr_delete(msg);
-    fl_cstr_delete(errtypemsg);
+    fl_cstring_delete(msg);
+    fl_cstring_delete(errtypemsg);
     exit(-1);
 }

@@ -7,7 +7,7 @@ target=debug
 linkage=static
 name=test
 
-FL_OBJECTS=obj/$(target)/main.o	obj/$(target)/fl_cstr_tests.o
+FL_OBJECTS=obj/$(target)/main.o	obj/$(target)/fl_cstring_tests.o
 
 
 

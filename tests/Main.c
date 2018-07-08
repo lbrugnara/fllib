@@ -2,7 +2,7 @@
 
 // Tests
 #include "Std.h"
-#include "Test_Cstr.h"
+#include "Test_Cstring.h"
 #include "IO.h"
 #include "text/Test_Unicode.h"
 #include "text/Test_String.h"
@@ -22,14 +22,14 @@ int main(void)
             { "Global error handling thread safety", &test_errors }
         ),
         fl_test_suite("Module Cstr", 
-            { "fl_cstr_new",            &test_cstr_new          }, 
-            { "fl_cstr_dup",            &test_cstr_dup          },
-            { "fl_cstr_split",          &test_cstr_split        },
-            { "fl_cstr_replace_char",   &test_cstr_replace_char },
-            { "fl_cstr_replace",        &test_cstr_replace      },
-            { "fl_cstr_append{_char}",  &test_cstr_append       },
-            { "fl_cstr_join",           &test_cstr_join         },
-            { "cstr_misc_functions",    &test_cstr_misc         }
+            { "fl_cstring_new",            &test_cstring_new          }, 
+            { "fl_cstring_dup",            &test_cstring_dup          },
+            { "fl_cstring_split",          &test_cstring_split        },
+            { "fl_cstring_replace_char",   &test_cstring_replace_char },
+            { "fl_cstring_replace",        &test_cstring_replace      },
+            { "fl_cstring_append{_char}",  &test_cstring_append       },
+            { "fl_cstring_join",           &test_cstring_join         },
+            { "cstr_misc_functions",    &test_cstring_misc         }
         ),
         fl_test_suite("Module IO", 
             { "fl_io_file_write_all_bytes and fl_io_file_read_all_bytes", &test_file_rw_all_bytes }

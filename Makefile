@@ -61,7 +61,7 @@ FL_OBJECTS=\
 	obj/$(TARGET)/src/text/resources/UnicodeData.o 	\
 	obj/$(TARGET)/src/text/Unicode.o 				\
 	obj/$(TARGET)/src/text/String.o 				\
-	obj/$(TARGET)/src/Cstr.o 						\
+	obj/$(TARGET)/src/Cstring.o 						\
 	obj/$(TARGET)/src/Array.o 						\
 	obj/$(TARGET)/src/IO.o 							\
 	obj/$(TARGET)/src/containers/Iterator.o 		\
@@ -85,7 +85,7 @@ FL_TEST_OBJECTS=\
 	obj/$(TARGET)/tests/Test.o \
 	obj/$(TARGET)/tests/Std.o \
 	obj/$(TARGET)/tests/IO.o \
-	obj/$(TARGET)/tests/Test_Cstr.o \
+	obj/$(TARGET)/tests/Test_Cstring.o \
 	obj/$(TARGET)/tests/text/Test_Unicode.o \
 	obj/$(TARGET)/tests/text/Test_String.o 	\
 	obj/$(TARGET)/tests/text/Test_Regex.o 	\

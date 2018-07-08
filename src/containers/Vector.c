@@ -4,7 +4,7 @@
 
 #include "Vector.h"
 #include "../Mem.h"
-#include "../Cstr.h"
+#include "../Cstring.h"
 
 /**
  * {@type} Container type

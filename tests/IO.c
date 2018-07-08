@@ -19,10 +19,10 @@ void test_file_rw_all_bytes()
     // Change the working dir to the tmp path
     fl_system_set_working_dir(path);
 
-    // fl_cstr_to_array returns an array of characters, cast it to an array of FlByte, that is syntactic sugar
+    // fl_cstring_to_array returns an array of characters, cast it to an array of FlByte, that is syntactic sugar
     // for unsiged char
     char *str = "Hello world.\nBye.\n";
-    FlByte *arr = (FlByte*)fl_cstr_to_array(str);
+    FlByte *arr = (FlByte*)fl_cstring_to_array(str);
 
     // Write all thebytes to the test_file.txt file and check if it exists
     fl_io_file_write_all_bytes("test_file.txt", arr);
@@ -35,14 +35,14 @@ void test_file_rw_all_bytes()
     // Read all the bytes back, and check if the contet is the same as the str variable
     FlByte *bytes = fl_io_file_read_all_bytes("test_file.txt");
     fl_expect("Amount of bytes written are the same amount of bytes read", strlen(str) == fl_array_length(bytes));
-    fl_expect("File content equals to 'Hello world.\\nBye.\\n'", flm_cstr_nequals(str, (char*)bytes, strlen(str)));
+    fl_expect("File content equals to 'Hello world.\\nBye.\\n'", flm_cstring_nequals(str, (char*)bytes, strlen(str)));
 
     // Cleanup
     // Restore working dir
     if (wdir != NULL)
     {
         fl_system_set_working_dir(wdir);
-        fl_cstr_delete(wdir);
+        fl_cstring_delete(wdir);
     }
     fl_array_delete(arr);
     fl_array_delete(bytes);

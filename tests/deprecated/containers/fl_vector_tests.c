@@ -6,7 +6,7 @@
 #include "../../src/containers/Vector.h"
 #include "../../src/containers/List.h"
 #include "../../src/containers/Dictionary.h"
-#include "../../src/Cstr.h"
+#include "../../src/Cstring.h"
 #include "../../src/Array.h"
 
 void
@@ -212,7 +212,7 @@ fl_vector_tests()
 	    const FlCstr str2 = " with pointers ";
 	    const FlCstr str3 = " to chars.";
 
-	    FlVector *strv = fl_cstr_split(str1);
+	    FlVector *strv = fl_cstring_split(str1);
 	    for (int i=0; i < fl_vector_length(strv); i++)
 	    {
 	    	printf("Char c = %c\n", flm_vector_get(strv, char, i));
@@ -252,7 +252,7 @@ fl_vector_tests()
 	    // 3- Copy one of the strings in our new FlCstr
 	    fl_vector_add_cstr(fv3, str1);
 
-		FlCstr strpos2 = fl_cstr_dup(str2);
+		FlCstr strpos2 = fl_cstring_dup(str2);
 	    fl_vector_add(fv3, &strpos2);
 
 		/* Capacity should be 5 and length 5 */
@@ -469,7 +469,7 @@ fl_vector_tests()
 		flm_test(fl_dictionary_length(dict) == 1);
 		flm_test(fl_dictionary_get_val(dict, &k) != NULL);
 		flm_test(*(int*)fl_dictionary_get_val(dict, &k) == 1);
-		flm_test(flm_cstr_equals(*(FlCstr*)fl_dictionary_get_key(dict, &n), "one"));
+		flm_test(flm_cstring_equals(*(FlCstr*)fl_dictionary_get_key(dict, &n), "one"));
 
 		k = "two";
 		n = 2;
@@ -487,13 +487,13 @@ fl_vector_tests()
 		flm_test(fl_dictionary_length(dict) == 4);
 		flm_test(fl_dictionary_get_val(dict, &k) != NULL);
 		flm_test(*(int*)fl_dictionary_get_val(dict, &k) == 4);
-		flm_test(flm_cstr_equals(*(FlCstr*)fl_dictionary_get_key(dict, &n), "four"));
+		flm_test(flm_cstring_equals(*(FlCstr*)fl_dictionary_get_key(dict, &n), "four"));
 
 		flm_test(fl_dictionary_contains_key(dict, &k) == true);
 		flm_test(fl_dictionary_contains_val(dict, &n) == true);
 
 		FlKeyValuePair *kvp = fl_dictionary_get_kvp(dict, &k);
-		flm_test(flm_cstr_equals(*(FlCstr*)fl_kvp_get_key(kvp), "four"));
+		flm_test(flm_cstring_equals(*(FlCstr*)fl_kvp_get_key(kvp), "four"));
 		flm_test(*(int*)fl_kvp_get_val(kvp) == 4);
 
 		FlCstr *keys = fl_dictionary_keys(dict);

@@ -17,7 +17,7 @@
 #include <ctype.h>
 
 #include "Regex.h"
-#include "../Cstr.h"
+#include "../Cstring.h"
 #include "../Array.h"
 #include "../Mem.h"
 #include "../containers/Vector.h"
@@ -307,7 +307,7 @@ static inline bool is_escape_seq(char c)
 
 static inline void* vector_add_cstr(FlVector vector, const char *src)
 {
-    char *copy = fl_cstr_dup(src);
+    char *copy = fl_cstring_dup(src);
     return fl_vector_add(vector, &copy);
 }
 
@@ -463,7 +463,7 @@ FlVector parse_regex(char* regex, RegexFlags *flags)
 	bool isCharClass = false;
 	
 	// Vars for tokens
-	char *tokens = fl_cstr_to_array(regex);
+	char *tokens = fl_cstring_to_array(regex);
 	char cur = FL_EOS;
 	char nex = FL_EOS;
 	char prev = FL_EOS;
@@ -596,7 +596,7 @@ FlVector parse_regex(char* regex, RegexFlags *flags)
 
 		// Prepare new token
 		int length = bslash ? 2 : 1;
-		char* tmpstr = fl_cstr_new(length);
+		char* tmpstr = fl_cstring_new(length);
 		if (length == 2) {
 			tmpstr[0] = '\\';
 			tmpstr[1] = cur;
@@ -801,7 +801,7 @@ FlVector regex_to_postfix (char* regex, RegexFlags *flags)
 
 		if (didError)
 		{
-			fl_cstr_delete(token);
+			fl_cstring_delete(token);
 			break;
 		}
 	}
@@ -868,7 +868,7 @@ FlRegex fl_regex_compile (char* pattern)
 	short operands_last_index = 0, *stackp = stack, leftset, rightset;
 
 	FlRegex regex = fl_malloc(sizeof(struct FlRegex));
-	regex->pattern = fl_cstr_dup(pattern);
+	regex->pattern = fl_cstring_dup(pattern);
 	regex->flags = flags;
 	regex->states = fl_array_new(sizeof(NfaState*), nstates);
 	NfaState **statesp = regex->states;
@@ -1026,14 +1026,14 @@ FlRegex fl_regex_compile (char* pattern)
 
 					// Look ahead
 					fl_vector_shift(tokens, &nexttok);
-					if (flm_cstr_equals(nexttok, "^")) 
+					if (flm_cstring_equals(nexttok, "^")) 
 					{
 						vector_add_cstr(display, "^");
 						s = create_char_class_nfa_state(stateId++, NULL, true); // negated capturing group = true
 					} 
 					else 
 					{
-						if (!flm_cstr_equals(nexttok, "]"))
+						if (!flm_cstring_equals(nexttok, "]"))
 							vector_add_cstr(tmptokens, nexttok);
 						s = create_char_class_nfa_state(stateId++, NULL, false); // negated capturing group = false
 					}
@@ -1041,24 +1041,24 @@ FlRegex fl_regex_compile (char* pattern)
 					STATE_SET_INITIAL(s);
 					STATE_SET_FINAL(s);
 
-					if (!flm_cstr_equals(nexttok, "]")) 
+					if (!flm_cstring_equals(nexttok, "]")) 
 					{
 						// Consume the tokens until reach the ending ]
 						char* tmptoken;
 						while (fl_vector_shift(tokens, &tmptoken)) 
 						{
-							if (flm_cstr_equals(tmptoken, "]"))
+							if (flm_cstring_equals(tmptoken, "]"))
 								break;
 							fl_vector_add(tmptokens, &tmptoken);
 						}
-						fl_cstr_delete(tmptoken);
+						fl_cstring_delete(tmptoken);
 					}
 
 					size_t l = fl_vector_length(tmptokens);
 					for (size_t i = 0; i < l; i++)
 					{
 						char* tmptoken = flm_vector_get(tmptokens, char*, i);
-						if (flm_cstr_equals(tmptoken, "-"))
+						if (flm_cstring_equals(tmptoken, "-"))
 						{
 							int endindex;
 							int startindex;
@@ -1093,17 +1093,17 @@ FlRegex fl_regex_compile (char* pattern)
 						((NfaStateCharClass*)s)->map[ord] = 1;
 					}
 
-					char *tmp = fl_cstr_dup("/[");
+					char *tmp = fl_cstring_dup("/[");
     				fl_vector_unshift(display, &tmp);  
 
 					vector_add_cstr(display, "]/");
-					((NfaStateCharClass*)s)->value = fl_cstr_join(display, "");
+					((NfaStateCharClass*)s)->value = fl_cstring_join(display, "");
 
 					// Add the new charclass state
 					PUSH_STATE(s);
 
 					// Delete nexttok, ascii_codes already mapped, display vector and tmptokens vector
-					fl_cstr_delete(nexttok);
+					fl_cstring_delete(nexttok);
 					fl_vector_delete(ascii_codes);
 					fl_vector_delete_ptrs(display);
 					fl_vector_delete_ptrs(tmptokens);
@@ -1114,7 +1114,7 @@ FlRegex fl_regex_compile (char* pattern)
 
 clean_token:
 		// Delete consumed token
-		fl_cstr_delete(token);
+		fl_cstring_delete(token);
 		if (didError)
 			break;
 	}
@@ -1172,7 +1172,7 @@ void delete_nfa(FlByte *statebytes)
 NfaState* create_nfa_state(int id, char* value)
 {
 	NfaState *s = fl_malloc(sizeof(NfaState));
-	s->value = fl_cstr_dup(value);
+	s->value = fl_cstring_dup(value);
 	s->id = id;
 	STATE_SET_INITIAL(s);
 	STATE_SET_FINAL(s);
@@ -1196,7 +1196,7 @@ NfaState* create_nfa_state(int id, char* value)
 NfaState* create_char_class_nfa_state(int id, char* value, bool negated)
 {
 	NfaStateCharClass *s = fl_malloc(sizeof(NfaStateCharClass));
-	s->value = value != NULL ? fl_cstr_dup(value) : NULL;
+	s->value = value != NULL ? fl_cstring_dup(value) : NULL;
 	s->id = id;
 	STATE_SET_INITIAL(s);
 	STATE_SET_FINAL(s);
@@ -1453,7 +1453,7 @@ NfaStepResult nfa_step (NfaState *state, CurrentState nextstates[], unsigned cha
 	 			stepresult.anyFinal = true;
 	 	}
 
-	 	if (flm_cstr_equals(t->value, "Epsilon"))
+	 	if (flm_cstring_equals(t->value, "Epsilon"))
 	 	{
 	 		nextstates[t->id] = (CurrentState){ t->id, true };
 	 		stepresult.anyMatch = true;
@@ -1478,7 +1478,7 @@ NfaStepResult nfa_step (NfaState *state, CurrentState nextstates[], unsigned cha
  */
 bool can_reach_state (NfaState *state, unsigned char value)
 {
-	if (value == FL_EOS || state == NULL || flm_cstr_equals(state->value, "Epsilon"))
+	if (value == FL_EOS || state == NULL || flm_cstring_equals(state->value, "Epsilon"))
 		return false;
 	
 	// Common states with a single value
@@ -1523,7 +1523,7 @@ bool regex_match (FlRegex regex, char* text)
 	NfaState *s0 = regex->states[0];
 	current_states[s0->id] = (CurrentState){ s0->id, false };
 
-	FlVector input = fl_cstr_split(text);
+	FlVector input = fl_cstring_split(text);
 
 	// Run the first step without input to reach all possible states we can reach with e-transitions
 	// nfa_step returns an NfaStepResult:

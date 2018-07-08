@@ -9,7 +9,7 @@
 #include "../src/text/String.h"
 #include "../src/text/Regex.h"
 #include "../src/Mem.h"
-#include "../src/Cstr.h"
+#include "../src/Cstring.h"
 #include "../src/Array.h"
 #include "../src/IO.h"
 #include "../src/containers/Iterator.h"

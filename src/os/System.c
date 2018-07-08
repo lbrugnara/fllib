@@ -3,7 +3,7 @@
 
 #include "System.h"
 #include "../Error.h"
-#include "../Cstr.h"
+#include "../Cstring.h"
 
 #ifdef _WIN32
     #include <windows.h>
@@ -27,7 +27,7 @@ bool fl_system_set_working_dir(char *path)
 char* fl_system_get_working_dir()
 {
     size_t max_path_length = 255;
-    char *cwd = fl_cstr_new(max_path_length);
+    char *cwd = fl_cstring_new(max_path_length);
     if (getcwd(cwd, max_path_length) == NULL)
         return NULL;
     return cwd;

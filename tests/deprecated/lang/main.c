@@ -17,11 +17,11 @@
  * MA 02110-1301, USA.
  */
 
-extern void fl_cstr_tests();
+extern void fl_cstring_tests();
 
 int main(int argc, char **argv)
 {
-    fl_cstr_tests();
+    fl_cstring_tests();
 	return 0;
 }
 

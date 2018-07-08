@@ -26,21 +26,21 @@ void tokenize(char *regex, char *expect[])
         }
 	}
 
-    char *tokensstr = fl_cstr_join(tokens, "");
+    char *tokensstr = fl_cstring_join(tokens, "");
     if (expect != NULL)
     {
-        char *expectstr = fl_cstr_dup("");
+        char *expectstr = fl_cstring_dup("");
         for(size_t i=0; expect[i] != 0x0; i++)
-            fl_cstr_append(&expectstr, expect[i]);
+            fl_cstring_append(&expectstr, expect[i]);
         fl_vexpect(pass, "Expected tokens '%s', received '%s'", expectstr, tokensstr);
         
-        fl_cstr_delete(expectstr);
+        fl_cstring_delete(expectstr);
     }
     else
     {
         fl_vexpect(pass, "No expectations still received '%s'", tokensstr);
     }
-    fl_cstr_delete(tokensstr);
+    fl_cstring_delete(tokensstr);
 	fl_vector_delete_ptrs(tokens);
 }
 

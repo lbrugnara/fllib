@@ -2,7 +2,7 @@
 #include <stdarg.h>
 #include "Mem.h"
 #include "Std.h"
-#include "Cstr.h"
+#include "Cstring.h"
 
 void* fl_copy(const void *var, size_t nbytes)
 {

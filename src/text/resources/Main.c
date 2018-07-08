@@ -49,7 +49,7 @@ size_t get_decomp_type(const char *udata, char *dest)
     size_t length = flm_array_length(types);
     for (size_t i=0; i < length; i++)
     {
-        if (!flm_cstr_nequals(udata, types[i], strlen(types[i])))
+        if (!flm_cstring_nequals(udata, types[i], strlen(types[i])))
             continue;
         size_t size = strlen(ctypes[i]);
         memcpy(dest, ctypes[i], size);
@@ -91,7 +91,7 @@ FlStringVector split_text(const char *source, size_t length, char chr)
         size_t nb = i-s;
         if (nb > 0 && source[s] != '#')
         {
-            tmp = fl_cstr_dup_n((char*)source+s, nb);
+            tmp = fl_cstring_dup_n((char*)source+s, nb);
             fl_vector_add(lines, &tmp);
         }
         s = i+1;
@@ -110,7 +110,7 @@ FlStringArray get_codes_from_dnp(char *line)
     {
         FlStringArray out = (FlStringArray)fl_array_new(sizeof(char*), 1);
         char *p2 = strchr(line, ' ');
-        char *code = fl_cstr_dup_n(line, p2-line);
+        char *code = fl_cstring_dup_n(line, p2-line);
         out[0] = code;
         return out;
     }
@@ -124,7 +124,7 @@ FlStringArray get_codes_from_dnp(char *line)
         {
             char tmp[11];
             sprintf(tmp, "%lX", i);
-            out[index++] = fl_cstr_dup(tmp);
+            out[index++] = fl_cstring_dup(tmp);
         }
         return out;
     }
@@ -191,11 +191,11 @@ void parse_derived_normalization_property(FlVector data, const char *buffer, Nor
             if (ud == NULL)
             {
                 ud = fl_malloc(sizeof(UnicodeData));
-                ud->code = fl_cstr_dup(codes[j]);
+                ud->code = fl_cstring_dup(codes[j]);
                 fl_vector_add(newcodepoints, &ud);
             }
 
-            char *propval = fl_cstr_dup((const char*)value);
+            char *propval = fl_cstring_dup((const char*)value);
             switch (property)
             {
                 case NORM_PROP_FCE:
@@ -216,7 +216,7 @@ void parse_derived_normalization_property(FlVector data, const char *buffer, Nor
                     ud->nfkc_quick_check = propval;
                     break;
             }
-            fl_cstr_delete(codes[j]);
+            fl_cstring_delete(codes[j]);
         }
         fl_array_delete(codes);
     }
@@ -234,7 +234,7 @@ void parse_derived_normalization_properties(FlVector data)
     flm_assert(data != NULL && fl_vector_length(data) > 0, "Vector with UnicodeData.txt information must be populated before calling this function");
     FlByte *tmpbuffer = fl_io_file_read_all_bytes("src/text/resources/DerivedNormalizationProps-9.0.0.txt");
     char *buffer = NULL;
-    size_t size = fl_cstr_replace_n((char*)tmpbuffer, fl_array_length(tmpbuffer), "\r\n", 2, "\n", 1, &buffer);
+    size_t size = fl_cstring_replace_n((char*)tmpbuffer, fl_array_length(tmpbuffer), "\r\n", 2, "\n", 1, &buffer);
     fl_array_delete(tmpbuffer);    
 
     // Full_Composition_Exclusion
@@ -257,7 +257,7 @@ void parse_derived_normalization_properties(FlVector data)
 
     // NFKC_Quick_Check=Maybe
     parse_derived_normalization_property(data, (const char*)buffer, NORM_PROP_NFKC_QC_MAYBE);
-    fl_cstr_delete(buffer);
+    fl_cstring_delete(buffer);
 }
 
 // This function parses the UnicodeData.txt file. It is expected to be called before
@@ -265,9 +265,9 @@ void parse_derived_normalization_properties(FlVector data)
 void parse_unicode_data(FlVector data)
 {
     FlByte *tmpbuffer = fl_io_file_read_all_bytes("src/text/resources/UnicodeData-9.0.0.txt");
-    //FlByte *buffer = (FlByte*)fl_cstr_replace((char*)tmpbuffer, "\r\n", "\n");
+    //FlByte *buffer = (FlByte*)fl_cstring_replace((char*)tmpbuffer, "\r\n", "\n");
     char *buffer = NULL;
-    size_t size = fl_cstr_replace_n((char*)tmpbuffer, fl_array_length(tmpbuffer), "\r\n", 2, "\n", 1, &buffer);
+    size_t size = fl_cstring_replace_n((char*)tmpbuffer, fl_array_length(tmpbuffer), "\r\n", 2, "\n", 1, &buffer);
     fl_array_delete(tmpbuffer);
     const char *base = (const char*)buffer;
     do
@@ -303,21 +303,21 @@ void parse_unicode_data(FlVector data)
         int lengthField9 = (endField10-1-endField9);
         int lengthField3 = (endField4-1-endField3);
         
-        ud->code = fl_cstr_dup_n((const char*)base, lengthField0);
+        ud->code = fl_cstring_dup_n((const char*)base, lengthField0);
         if (fl_equals(ud->code, "10FFFD", min(strlen(ud->code), 6)))
         {
             int i=0;
         }
-        ud->name = fl_cstr_dup_n((const char*)endField1+1, lengthField1);
+        ud->name = fl_cstring_dup_n((const char*)endField1+1, lengthField1);
 
         if (lengthField8 > 0)
-            ud->numerical_value_3 = fl_cstr_dup_n((const char*)endField8+1, lengthField8);
+            ud->numerical_value_3 = fl_cstring_dup_n((const char*)endField8+1, lengthField8);
         
         if (lengthField6)
-            ud->numerical_value_1 = fl_cstr_dup_n((const char*)endField6+1, lengthField6);
+            ud->numerical_value_1 = fl_cstring_dup_n((const char*)endField6+1, lengthField6);
 
         if (lengthField7)
-            ud->numerical_value_2 = fl_cstr_dup_n((const char*)endField7+1, lengthField7);
+            ud->numerical_value_2 = fl_cstring_dup_n((const char*)endField7+1, lengthField7);
 
 
         // Decomposition_Mapping
@@ -331,7 +331,7 @@ void parse_unicode_data(FlVector data)
                 int length = (int)get_decomp_type(value, buffer);
                 if (length > 0)
                 {
-                    ud->decomposition_type = fl_cstr_dup_n(buffer, length);
+                    ud->decomposition_type = fl_cstring_dup_n(buffer, length);
                 }
                 size_t toremove = length - 12 + 2 +1; // DECOMP_TYPE_xxx - strlen(DECOMP_TYPE_) + '<' and '>' + ' '
                 lengthField5 = lengthField5 - toremove;
@@ -342,28 +342,28 @@ void parse_unicode_data(FlVector data)
             memset(buf, 0, bufsize);
             buf[0] = '0';
             buf[1] = 'x';
-            fl_cstr_copy_n(buf+2, start, lengthField5);
+            fl_cstring_copy_n(buf+2, start, lengthField5);
 
             char *str;
-            int strsize = (int)fl_cstr_replace_n(buf, bufsize, " ", 1, ", 0x", 4, &str);
-            ud->decomposition_mapping = fl_cstr_dup_n(str, strsize);
-            fl_cstr_delete(str);
+            int strsize = (int)fl_cstring_replace_n(buf, bufsize, " ", 1, ", 0x", 4, &str);
+            ud->decomposition_mapping = fl_cstring_dup_n(str, strsize);
+            fl_cstring_delete(str);
         }
 
         // General_Category
         if (lengthField2 != 0)
         {
-            ud->general_category = fl_cstr_dup_n((const char*)endField2+1, lengthField2);
+            ud->general_category = fl_cstring_dup_n((const char*)endField2+1, lengthField2);
         }
 
-        ud->bidi_class = fl_cstr_dup_n((const char*)endField4+1, lengthField4);
+        ud->bidi_class = fl_cstring_dup_n((const char*)endField4+1, lengthField4);
 
         if (lengthField12 != 0)
-            ud->simple_uppercase_mapping = fl_cstr_dup_n((const char*)endField12+1, lengthField12);
+            ud->simple_uppercase_mapping = fl_cstring_dup_n((const char*)endField12+1, lengthField12);
         if (lengthField13 != 0)
-            ud->simple_lowercase_mapping = fl_cstr_dup_n((const char*)endField13+1, lengthField13);
+            ud->simple_lowercase_mapping = fl_cstring_dup_n((const char*)endField13+1, lengthField13);
         if (lengthField14 != 0)
-            ud->simple_titlecase_mapping = fl_cstr_dup_n((const char*)endField14+1, lengthField14);
+            ud->simple_titlecase_mapping = fl_cstring_dup_n((const char*)endField14+1, lengthField14);
         
         if (lengthField3 > 1 || (lengthField3 == 1 && (endField3+1)[0] != '0'))
         {
@@ -372,42 +372,42 @@ void parse_unicode_data(FlVector data)
             memset(str, 0, s);
             memcpy(str, endField3+1, lengthField3);
             str[s] = FL_EOS;
-            ud->canonical_combining_class = fl_cstr_dup_n(str, s);
+            ud->canonical_combining_class = fl_cstring_dup_n(str, s);
         }
         
         if (lengthField9 != 0 && (endField9+1)[0] == 'Y')
         {
-            ud->bidi_mirrored = fl_cstr_dup("true");
+            ud->bidi_mirrored = fl_cstring_dup("true");
         }
 
         fl_vector_add(data, &ud);
         base = endField15 + 1;
     } while (base < (const char*)buffer+size);
-    fl_cstr_delete(buffer);
+    fl_cstring_delete(buffer);
 }
 
 void delete_data_handler(FlByte *ptr)
 {
     UnicodeData *ud = (UnicodeData*)ptr;
-    if (ud->code) fl_cstr_delete(ud->code);
-    if (ud->name) fl_cstr_delete(ud->name);
-    if (ud->numerical_value_1) fl_cstr_delete(ud->numerical_value_1);
-    if (ud->numerical_value_2) fl_cstr_delete(ud->numerical_value_2);
-    if (ud->numerical_value_3) fl_cstr_delete(ud->numerical_value_3);
-    if (ud->decomposition_type) fl_cstr_delete(ud->decomposition_type);
-    if (ud->decomposition_mapping) fl_cstr_delete(ud->decomposition_mapping);
-    if (ud->general_category) fl_cstr_delete(ud->general_category);
-    if (ud->simple_uppercase_mapping) fl_cstr_delete(ud->simple_uppercase_mapping);
-    if (ud->simple_lowercase_mapping) fl_cstr_delete(ud->simple_lowercase_mapping);
-    if (ud->simple_titlecase_mapping) fl_cstr_delete(ud->simple_titlecase_mapping);
-    if (ud->canonical_combining_class) fl_cstr_delete(ud->canonical_combining_class);
-    if (ud->bidi_class) fl_cstr_delete(ud->bidi_class);
-    if (ud->bidi_mirrored) fl_cstr_delete(ud->bidi_mirrored);
-    if (ud->full_composition_exclusion) fl_cstr_delete(ud->full_composition_exclusion);
-    if (ud->nfd_quick_check) fl_cstr_delete(ud->nfd_quick_check);
-    if (ud->nfc_quick_check) fl_cstr_delete(ud->nfc_quick_check);
-    if (ud->nfkd_quick_check) fl_cstr_delete(ud->nfkd_quick_check);
-    if (ud->nfkc_quick_check) fl_cstr_delete(ud->nfkc_quick_check);
+    if (ud->code) fl_cstring_delete(ud->code);
+    if (ud->name) fl_cstring_delete(ud->name);
+    if (ud->numerical_value_1) fl_cstring_delete(ud->numerical_value_1);
+    if (ud->numerical_value_2) fl_cstring_delete(ud->numerical_value_2);
+    if (ud->numerical_value_3) fl_cstring_delete(ud->numerical_value_3);
+    if (ud->decomposition_type) fl_cstring_delete(ud->decomposition_type);
+    if (ud->decomposition_mapping) fl_cstring_delete(ud->decomposition_mapping);
+    if (ud->general_category) fl_cstring_delete(ud->general_category);
+    if (ud->simple_uppercase_mapping) fl_cstring_delete(ud->simple_uppercase_mapping);
+    if (ud->simple_lowercase_mapping) fl_cstring_delete(ud->simple_lowercase_mapping);
+    if (ud->simple_titlecase_mapping) fl_cstring_delete(ud->simple_titlecase_mapping);
+    if (ud->canonical_combining_class) fl_cstring_delete(ud->canonical_combining_class);
+    if (ud->bidi_class) fl_cstring_delete(ud->bidi_class);
+    if (ud->bidi_mirrored) fl_cstring_delete(ud->bidi_mirrored);
+    if (ud->full_composition_exclusion) fl_cstring_delete(ud->full_composition_exclusion);
+    if (ud->nfd_quick_check) fl_cstring_delete(ud->nfd_quick_check);
+    if (ud->nfc_quick_check) fl_cstring_delete(ud->nfc_quick_check);
+    if (ud->nfkd_quick_check) fl_cstring_delete(ud->nfkd_quick_check);
+    if (ud->nfkc_quick_check) fl_cstring_delete(ud->nfkc_quick_check);
     fl_free(ud);
 }
 

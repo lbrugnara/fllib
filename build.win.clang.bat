@@ -1,3 +1,8 @@
+rd /s /q "obj\"
+rd /s /q "build\"
+rd /s /q "tests\obj\"
+rd /s /q "tests\build\"
+
 md .\obj\debug
 md .\obj\debug\threading
 md .\obj\debug\containers
@@ -12,6 +17,7 @@ clang.exe -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-f
 clang.exe -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -std=gnu99 -pedantic -fstrict-aliasing -finput-charset=UTF-8 -fexec-charset=UTF-8 -DFL_UNICODE_DB -ggdb -DFL_DEBUG -c .\src\text\Unicode.c  -o .\obj\debug\text\Unicode.o
 clang.exe -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -std=gnu99 -pedantic -fstrict-aliasing -finput-charset=UTF-8 -fexec-charset=UTF-8 -DFL_UNICODE_DB -ggdb -DFL_DEBUG -c .\src\text\String.c  -o .\obj\debug\text\String.o
 clang.exe -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -std=gnu99 -pedantic -fstrict-aliasing -finput-charset=UTF-8 -fexec-charset=UTF-8 -DFL_UNICODE_DB -ggdb -DFL_DEBUG -c .\src\Cstring.c  -o .\obj\debug\Cstring.o
+clang.exe -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -std=gnu99 -pedantic -fstrict-aliasing -finput-charset=UTF-8 -fexec-charset=UTF-8 -DFL_UNICODE_DB -ggdb -DFL_DEBUG -c .\src\Span.c  -o .\obj\debug\Span.o
 clang.exe -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -std=gnu99 -pedantic -fstrict-aliasing -finput-charset=UTF-8 -fexec-charset=UTF-8 -DFL_UNICODE_DB -ggdb -DFL_DEBUG -c .\src\Array.c  -o .\obj\debug\Array.o
 clang.exe -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -std=gnu99 -pedantic -fstrict-aliasing -finput-charset=UTF-8 -fexec-charset=UTF-8 -DFL_UNICODE_DB -ggdb -DFL_DEBUG -c .\src\IO.c  -o .\obj\debug\IO.o
 clang.exe -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -std=gnu99 -pedantic -fstrict-aliasing -finput-charset=UTF-8 -fexec-charset=UTF-8 -DFL_UNICODE_DB -ggdb -DFL_DEBUG -c .\src\containers\Iterator.c  -o .\obj\debug\containers\Iterator.o
@@ -36,7 +42,8 @@ lib -NOLOGO -VERBOSE                        ^
     obj\debug\text\resources\UnicodeData.o  ^
     obj\debug\text\Unicode.o                ^
     obj\debug\text\String.o                 ^
-    obj\debug\Cstring.o                        ^
+    obj\debug\Cstring.o                     ^
+    obj\debug\Span.o                        ^
     obj\debug\Array.o                       ^
     obj\debug\IO.o                          ^
     obj\debug\containers\Iterator.o         ^
@@ -62,6 +69,7 @@ md .\tests\obj\debug\containers
 clang.exe -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -std=gnu99 -pedantic -fstrict-aliasing -finput-charset=UTF-8 -fexec-charset=UTF-8 -DFL_UNICODE_DB -ggdb -DFL_DEBUG -c -I.\include -I.\src tests\Main.c -o .\tests\obj\debug\Main.o
 clang.exe -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -std=gnu99 -pedantic -fstrict-aliasing -finput-charset=UTF-8 -fexec-charset=UTF-8 -DFL_UNICODE_DB -ggdb -DFL_DEBUG -c -I.\include -I.\src tests\Test.c -o .\tests\obj\debug\Test.o
 clang.exe -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -std=gnu99 -pedantic -fstrict-aliasing -finput-charset=UTF-8 -fexec-charset=UTF-8 -DFL_UNICODE_DB -ggdb -DFL_DEBUG -c -I.\include -I.\src tests\Std.c -o .\tests\obj\debug\Std.o
+clang.exe -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -std=gnu99 -pedantic -fstrict-aliasing -finput-charset=UTF-8 -fexec-charset=UTF-8 -DFL_UNICODE_DB -ggdb -DFL_DEBUG -c -I.\include -I.\src tests\Test_Span.c -o .\tests\obj\debug\Test_Span.o
 clang.exe -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -std=gnu99 -pedantic -fstrict-aliasing -finput-charset=UTF-8 -fexec-charset=UTF-8 -DFL_UNICODE_DB -ggdb -DFL_DEBUG -c -I.\include -I.\src tests\IO.c -o .\tests\obj\debug\IO.o
 clang.exe -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -std=gnu99 -pedantic -fstrict-aliasing -finput-charset=UTF-8 -fexec-charset=UTF-8 -DFL_UNICODE_DB -ggdb -DFL_DEBUG -c -I.\include -I.\src tests\Test_Cstring.c -o .\tests\obj\debug\Test_Cstring.o
 clang.exe -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -std=gnu99 -pedantic -fstrict-aliasing -finput-charset=UTF-8 -fexec-charset=UTF-8 -DFL_UNICODE_DB -ggdb -DFL_DEBUG -c -I.\include -I.\src tests\text\Test_Unicode.c -o .\tests\obj\debug\text\Test_Unicode.o
@@ -89,6 +97,7 @@ link.exe /out:tests\\build\\debug\\tests.exe ^
     tests\\obj\\debug\\Main.o ^
     tests\\obj\\debug\\Test.o ^
     tests\\obj\\debug\\Std.o ^
+    tests\\obj\\debug\\Test_Span.o ^
     tests\\obj\\debug\\IO.o ^
     tests\\obj\\debug\\Test_Cstring.o ^
     tests\\obj\\debug\\text\\Test_Unicode.o ^

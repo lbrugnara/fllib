@@ -119,11 +119,12 @@ void fl_error_push(int id, const char *format, ...)
 FlError fl_error_last()
 {
     FlThreadId currentid = fl_thread_current_id();
-    if (!fl_hashtable_has_key(Errors, &currentid))
-    {
+
+    if (Errors == NULL || !fl_hashtable_has_key(Errors, &currentid))
         return (FlError){ 0 };
-    }
+
     FlErrQueue *queue = *(FlErrQueue**)fl_hashtable_get(Errors, &currentid);    
+
     return last_error(queue);
 }
 

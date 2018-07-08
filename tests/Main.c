@@ -2,6 +2,7 @@
 
 // Tests
 #include "Std.h"
+#include "Test_Span.h"
 #include "Test_Cstring.h"
 #include "IO.h"
 #include "text/Test_Unicode.h"
@@ -20,6 +21,10 @@ int main(void)
         fl_test_suite("Module Std", 
             { "Exception handling", &test_std_exception },
             { "Global error handling thread safety", &test_errors }
+        ),
+        fl_test_suite("Module Span", 
+            { "Span allocation", &test_span },
+            { "Span iterator", &test_span_iterator }
         ),
         fl_test_suite("Module Cstr", 
             { "fl_cstring_new",            &test_cstring_new          }, 

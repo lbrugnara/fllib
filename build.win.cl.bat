@@ -1,3 +1,8 @@
+rd /s /q "obj\"
+rd /s /q "build\"
+rd /s /q "tests\obj\"
+rd /s /q "tests\build\"
+
 md .\obj\debug
 md .\obj\debug\threading
 md .\obj\debug\containers
@@ -12,6 +17,7 @@ cl.exe /Zi /DEBUG:FULL /W1 /DFL_UNICODE_DB /DFL_DEBUG /c .\src\text\resources\Un
 cl.exe /Zi /DEBUG:FULL /W1 /DFL_UNICODE_DB /DFL_DEBUG /c .\src\text\Unicode.c  /Fo.\obj\debug\text\Unicode.o
 cl.exe /Zi /DEBUG:FULL /W1 /DFL_UNICODE_DB /DFL_DEBUG /c .\src\text\String.c  /Fo.\obj\debug\text\String.o
 cl.exe /Zi /DEBUG:FULL /W1 /DFL_UNICODE_DB /DFL_DEBUG /c .\src\Cstring.c  /Fo.\obj\debug\Cstring.o
+cl.exe /Zi /DEBUG:FULL /W1 /DFL_UNICODE_DB /DFL_DEBUG /c .\src\Span.c  /Fo.\obj\debug\Span.o
 cl.exe /Zi /DEBUG:FULL /W1 /DFL_UNICODE_DB /DFL_DEBUG /c .\src\Array.c  /Fo.\obj\debug\Array.o
 cl.exe /Zi /DEBUG:FULL /W1 /DFL_UNICODE_DB /DFL_DEBUG /c .\src\IO.c  /Fo.\obj\debug\IO.o
 cl.exe /Zi /DEBUG:FULL /W1 /DFL_UNICODE_DB /DFL_DEBUG /c .\src\containers\Iterator.c  /Fo.\obj\debug\containers\Iterator.o
@@ -31,12 +37,13 @@ md .\build\debug
 lib -NOLOGO -VERBOSE                        ^
     obj\debug\threading\Thread.o            ^
     obj\debug\Std.o                         ^
+    obj\debug\Span.o                        ^
     obj\debug\Error.o                       ^
     obj\debug\Mem.o                         ^
     obj\debug\text\resources\UnicodeData.o  ^
     obj\debug\text\Unicode.o                ^
     obj\debug\text\String.o                 ^
-    obj\debug\Cstring.o                        ^
+    obj\debug\Cstring.o                     ^
     obj\debug\Array.o                       ^
     obj\debug\IO.o                          ^
     obj\debug\containers\Iterator.o         ^
@@ -62,6 +69,7 @@ md .\tests\obj\debug\containers
 cl.exe /Zi /DEBUG:FULL /W1 /DFL_UNICODE_DB /DFL_DEBUG /c -I.\include -I.\src tests\Main.c /Fo.\tests\obj\debug\Main.o
 cl.exe /Zi /DEBUG:FULL /W1 /DFL_UNICODE_DB /DFL_DEBUG /c -I.\include -I.\src tests\Test.c /Fo.\tests\obj\debug\Test.o
 cl.exe /Zi /DEBUG:FULL /W1 /DFL_UNICODE_DB /DFL_DEBUG /c -I.\include -I.\src tests\Std.c /Fo.\tests\obj\debug\Std.o
+cl.exe /Zi /DEBUG:FULL /W1 /DFL_UNICODE_DB /DFL_DEBUG /c -I.\include -I.\src tests\Test_Span.c /Fo.\tests\obj\debug\Test_Span.o
 cl.exe /Zi /DEBUG:FULL /W1 /DFL_UNICODE_DB /DFL_DEBUG /c -I.\include -I.\src tests\IO.c /Fo.\tests\obj\debug\IO.o
 cl.exe /Zi /DEBUG:FULL /W1 /DFL_UNICODE_DB /DFL_DEBUG /c -I.\include -I.\src tests\Test_Cstring.c /Fo.\tests\obj\debug\Test_Cstring.o
 cl.exe /Zi /DEBUG:FULL /W1 /DFL_UNICODE_DB /DFL_DEBUG /c -I.\include -I.\src tests\text\Test_Unicode.c /Fo.\tests\obj\debug\text\Test_Unicode.o
@@ -89,6 +97,7 @@ link.exe /out:tests\\build\\debug\\tests.exe ^
     tests\\obj\\debug\\Main.o ^
     tests\\obj\\debug\\Test.o ^
     tests\\obj\\debug\\Std.o ^
+    tests\\obj\\debug\\Test_Span.o ^
     tests\\obj\\debug\\IO.o ^
     tests\\obj\\debug\\Test_Cstring.o ^
     tests\\obj\\debug\\text\\Test_Unicode.o ^

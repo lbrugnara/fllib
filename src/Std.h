@@ -12,6 +12,7 @@
  * -------------------------------------------------------------
  */
 
+#include <string.h>
 #include "Types.h"
 #include "Error.h"
 

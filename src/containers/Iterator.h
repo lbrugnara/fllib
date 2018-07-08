@@ -40,9 +40,10 @@ typedef struct FlIterator* FlIterator;
  * -------------------------------------------------------------
  */
 typedef enum {
-    IT_VECTOR,
-    IT_LIST,
-    IT_DICTIONARY
+	IT_SPAN,
+	IT_VECTOR,
+	IT_LIST,
+	IT_DICTIONARY
 } FlIteratorType;
 
 /* -------------------------------------------------------------
@@ -186,15 +187,27 @@ void* fl_iterator_value(FlIterator it);
 #define flm_iterator_value(it, type) *(type*)fl_iterator_value(it)
 
 /* -------------------------------------------------------------
- * {function: fl_iterator_is_end}
+ * {function: fl_iterator_is_start}
  * -------------------------------------------------------------
- * Check if the iterator is pointing 1 element beyond the last
- * element (actually, not an element)
+ * Check if the iterator is pointing 1 element
  * -------------------------------------------------------------
  * {param: FlIterator it} Target iterator
  * {param: void *container} Collection of elements
  * -------------------------------------------------------------
- * {return: bool}
+ * {return: bool} True if iterator points to the 1 element in the container
+ * -------------------------------------------------------------
+ */
+bool fl_iterator_is_start(FlIterator it, void *container);
+
+/* -------------------------------------------------------------
+ * {function: fl_iterator_is_end}
+ * -------------------------------------------------------------
+ * Check if the iterator is pointing to the nth+1 element (actually, not an element)
+ * -------------------------------------------------------------
+ * {param: FlIterator it} Target iterator
+ * {param: void *container} Collection of elements
+ * -------------------------------------------------------------
+ * {return: bool} True if iterator points to the nth+1 element in the container
  * -------------------------------------------------------------
  */
 bool fl_iterator_is_end(FlIterator it, void *container);

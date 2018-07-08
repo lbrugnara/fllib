@@ -44,7 +44,7 @@ struct FlTestSuite
  * {return: FlTestSuite} Suite pointer
  * -------------------------------------------------------------
  */
-FlTestSuite fl_test_suite_new(const char *name, const FlTest tests[], size_t ntests)
+FlTestSuite fl_test_suite_new(const char *name, const FlTest *tests, size_t ntests)
 {
     FlTestSuite t = calloc(1, sizeof(struct FlTestSuite));
     t->name = name;
@@ -235,9 +235,12 @@ struct FlSuiteResult {
     size_t passedTests;
 };
 
-void fl_test_run_all(FlTestSuite *suites, size_t number_of_suites)
+void fl_test_run_all(FlTestSuite *suites)
 {
-    struct FlSuiteResult results[number_of_suites];
+    size_t number_of_suites = 0;
+    for (;number_of_suites < SIZE_MAX && suites[number_of_suites]; number_of_suites++);
+
+    struct FlSuiteResult *results = fl_array_new(sizeof(struct FlSuiteResult), number_of_suites);
     for (size_t i=0; i < number_of_suites; i++)
     {
         results[i].suite = &suites[i];
@@ -259,4 +262,5 @@ void fl_test_run_all(FlTestSuite *suites, size_t number_of_suites)
     printf("+--------------------------+--------------+------------+\n");
     printf("| %-25s| %6zu/%-5zu | %-2s%3.2f%%%-1s |\n", "Total", nptests, ntests, "", (nptests/(float)ntests)*100, "");
     printf("+--------------------------+--------------+------------+\n");
+    fl_array_delete(results);
 }

@@ -18,7 +18,6 @@ void test_fl_string_length()
     FlString eos2 = "\0";
     fl_expect("'\\0' is an empty string", fl_string_length(eos, NULL) == 0);
 
-    setlocale(LC_ALL, "");
     FlString unistr = "兔¡¢£¤¥¦§¨©ª«¬­®";
     fl_expect("Length of string '兔¡¢£¤¥¦§¨©ª«¬­®' is 15 characters", fl_string_length(unistr, NULL) == 15);    
 }
@@ -37,7 +36,6 @@ void test_fl_string_size()
     FlString eos2 = "\0";
     fl_expect("'\\0' is an empty string (0 bytes)", fl_string_size(eos, NULL) == 0);
 
-    setlocale(LC_ALL, "");
     FlString unistr = "兔¡¢£¤¥¦§¨©ª«¬­®";
     fl_expect("size of string '兔¡¢£¤¥¦§¨©ª«¬­®' uses 32 bytes", fl_string_size(unistr, NULL) == 32);
 

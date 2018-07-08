@@ -154,10 +154,11 @@ char *fl_cstr_vadup(const char *s, va_list args)
             {
                 int i = va_arg(args, int);
                 size_t t = integer_length(i);
-                char dst[t];
-                sprintf(dst, "%d", i);
+                char *dst = fl_array_new(sizeof(char), t);
+                snprintf(dst, t, "%d", i);
                 for (size_t j = 0; j < t; j++)
                     fl_vector_add(parts, dst + j);
+                fl_array_delete(dst);
                 break;
             }
             case 's':

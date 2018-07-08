@@ -2,6 +2,7 @@
 
 #include "../src/Std.h"
 #include "../src/Cstr.h"
+#include "../src/Array.h"
 #include "../src/threading/Thread.h"
 #include "Std.h"
 
@@ -46,12 +47,13 @@ void thread_error()
 void test_errors()
 {
     int nthreads = 5;
-    FlThread threads[nthreads];
+    FlThread *threads = fl_array_new(sizeof(FlThread), nthreads);
     for (int i=0; i < nthreads; i++)
     {
         threads[i] = fl_thread_create(thread_error, NULL);
     }
     fl_thread_join_all(threads, nthreads);
+    fl_array_delete(threads);
 }
 
 static FlTryContext simpletest;

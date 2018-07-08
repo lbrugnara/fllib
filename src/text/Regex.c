@@ -864,7 +864,7 @@ FlRegex fl_regex_compile (char* pattern)
 	#define PUSH_OPERAND_INDEX(val) (*stackp++ = val)
 	#define POP_OPERAND_INDEX() (*--stackp)
 	#define HAS_OPERANDS(n) ((stackp-(n)) >= (short*)&stack)
-	short stack[nstates];
+	short *stack = fl_array_new(sizeof(short), nstates); //[nstates];
 	short operands_last_index = 0, *stackp = stack, leftset, rightset;
 
 	FlRegex regex = fl_malloc(sizeof(struct FlRegex));
@@ -1129,6 +1129,7 @@ clean_token:
 		#endif
 	}
 
+	fl_array_delete(stack);
 	fl_vector_delete_ptrs(tokens);
 	return regex;
 }
@@ -1511,11 +1512,11 @@ bool regex_match (FlRegex regex, char* text)
 	size_t current_states_length = fl_array_length(regex->states);
 	
 	// Variable to keep the NFA's states
-	CurrentState current_states[current_states_length];
+	CurrentState *current_states = fl_array_new(sizeof(CurrentState), current_states_length);
 	memset(current_states, -1, sizeof(CurrentState) * current_states_length);
 	
 	// While transitioning between states, next_states will contain the next states to transition to
-	CurrentState next_states[current_states_length];
+	CurrentState *next_states = fl_array_new(sizeof(CurrentState), current_states_length);
 	memset(next_states, -1, sizeof(CurrentState) * current_states_length);
 
 	// Previous to run the nfa we've only one state, the initial state S0
@@ -1590,6 +1591,8 @@ bool regex_match (FlRegex regex, char* text)
 	 	result.anyFinal = false;
 
 	fl_vector_delete(input);
+	fl_array_delete(next_states);
+	fl_array_delete(current_states);
 	return result.anyFinal;
 }
 

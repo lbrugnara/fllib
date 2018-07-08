@@ -53,7 +53,7 @@
  *  CTRL_SHUTDOWN_EVENT
  */
 
-typedef LONG WINAPI(*FlWinExceptionHandler)(EXCEPTION_POINTERS * ExceptionInfo);
+typedef LONG (WINAPI *FlWinExceptionHandler)(EXCEPTION_POINTERS * ExceptionInfo);
 typedef BOOL (*FlWinCmdControlHandler)( DWORD ctrlType );
 
  /* -------------------------------------------------------------

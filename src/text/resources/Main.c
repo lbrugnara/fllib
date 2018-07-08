@@ -338,7 +338,7 @@ void parse_unicode_data(FlVector data)
                 start = value + toremove;
             }
             int bufsize = (int)2+lengthField5+1;
-            char buf[bufsize];
+            char *buf = fl_array_new(sizeof(char), bufsize);
             memset(buf, 0, bufsize);
             buf[0] = '0';
             buf[1] = 'x';
@@ -348,6 +348,7 @@ void parse_unicode_data(FlVector data)
             int strsize = (int)fl_cstring_replace_n(buf, bufsize, " ", 1, ", 0x", 4, &str);
             ud->decomposition_mapping = fl_cstring_dup_n(str, strsize);
             fl_cstring_delete(str);
+            fl_array_delete(buf);
         }
 
         // General_Category
@@ -368,11 +369,12 @@ void parse_unicode_data(FlVector data)
         if (lengthField3 > 1 || (lengthField3 == 1 && (endField3+1)[0] != '0'))
         {
             size_t s = lengthField3+1;
-            char str[s];
+            char *str = fl_array_new(sizeof(char), s);
             memset(str, 0, s);
             memcpy(str, endField3+1, lengthField3);
-            str[s] = FL_EOS;
+            str[s-1] = FL_EOS;
             ud->canonical_combining_class = fl_cstring_dup_n(str, s);
+            fl_array_delete(str);
         }
         
         if (lengthField9 != 0 && (endField9+1)[0] == 'Y')

@@ -863,7 +863,7 @@ FlRegex fl_regex_compile (char* pattern)
 	#define PUSH_STATE(s) do { *statesp++ = s; *stackp++ = operands_last_index++; } while (0)
 	#define PUSH_OPERAND_INDEX(val) (*stackp++ = val)
 	#define POP_OPERAND_INDEX() (*--stackp)
-	#define HAS_OPERANDS(n) ((stackp-(n)) >= (short*)&stack)
+	#define HAS_OPERANDS(n) ((stackp-(n)) >= stack)
 	short *stack = fl_array_new(sizeof(short), nstates); //[nstates];
 	short operands_last_index = 0, *stackp = stack, leftset, rightset;
 

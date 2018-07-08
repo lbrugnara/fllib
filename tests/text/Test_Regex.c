@@ -75,9 +75,10 @@ void test_fl_regex_tokenize()
 bool fl_regex_match_test(char *pattern, char *input)
 {
 	FlRegex regex = fl_regex_compile(pattern);
+
 	if (regex == NULL)
 		return false;
-    FlError err = fl_error_last();
+
 	bool res = fl_regex_match(regex, input);
 	fl_regex_delete(regex);
 	return res;

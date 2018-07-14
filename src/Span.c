@@ -10,14 +10,14 @@ struct FlSpan fl_span_new(const FlByte * const sequence, size_t dtsize, size_t o
     };
 }
 
-bool fl_span_equals(struct FlSpan *span1, struct FlSpan *span2)
+bool fl_span_equals(const struct FlSpan *span1, const struct FlSpan *span2)
 {
     return span1->sequence == span2->sequence 
             && span1->dtsize == span2->dtsize
             && span1->length == span2->length;
 }
 
-bool fl_span_equals_sequence(struct FlSpan *span, const FlByte * const sequence)
+bool fl_span_equals_sequence(const struct FlSpan *span, const FlByte * const sequence)
 {
     return fl_equals(span->sequence, sequence, span->length * span->dtsize);
 }
@@ -85,9 +85,7 @@ FlIterator fl_span_begin(const struct FlSpan *span)
         .current = 0,
         .dtsize = span->dtsize
     }, sizeof(*spanIterator));
-    //spanIterator->sequence = span->sequence;
-    //spanIterator->current = 0;
-    //spanIterator->dtsize = span->dtsize;
+
     return fl_iterator_new(IT_SPAN, spanIterator, &it_next, &it_prev, &it_value, &it_equals, &it_is_start, &it_is_end, &it_delete);
 }
 
@@ -101,8 +99,5 @@ FlIterator fl_span_end(const struct FlSpan *span)
         .dtsize = span->dtsize
     }, sizeof(*spanIterator));
 
-    //spanIterator->sequence = span->sequence;
-    //spanIterator->current = span->dtsize * span->length;
-    //spanIterator->dtsize = span->dtsize;
     return fl_iterator_new(IT_SPAN, spanIterator, &it_next, &it_prev, &it_value, &it_equals, &it_is_start, &it_is_end, &it_delete);
 }

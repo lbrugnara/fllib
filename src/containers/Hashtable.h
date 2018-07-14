@@ -5,61 +5,28 @@
 
 typedef struct FlHashtable* FlHashtable;
 
-/* -------------------------------------------------------------
-* {datatype: size_t (*)(FlByte*,size_t) FlHashtableHashFunc}
-* -------------------------------------------------------------
-* Hash function used by FlHashtable to hash they keys.
-* It receives a pointer to a key element and its size, and return
-* an unsigned integer.
-* -------------------------------------------------------------
-*/
-typedef size_t(*FlHashtableHashFunc)(const FlByte *key, size_t kdtsize) ;
+#define FlHashtableOf(keyType, valueType) FlHashtable
 
-/* -------------------------------------------------------------
-* {datatype: void(*)(void*,size_t,void*,size_t) FlHashtableDeleteKvpFunc}
-* -------------------------------------------------------------
-* Function used by FlHashtable to clean up entries on remove, clear or delete.
-* It receives the key and value to be cleaned up and its respectives sizes.
-* -------------------------------------------------------------
-*/
-typedef void(*FlHashtableDeleteKvpFunc)(void *key, size_t kdtsize, void *value, size_t vdtsize) ;
+typedef unsigned long(*FlHashtableHashFunc)(const FlByte *key);
 
-/* -------------------------------------------------------------
-* {datatype: struct FlHashtableArgs}
-* -------------------------------------------------------------
-* Used to build a new FlHashtable. {key_size} and {value_size} members
-* are used to track the size of both of them, they are mandatory. {hash_function}
-* and {cleanup_function} can be NULL, and in that case, both will use a default version
-* of a hash and clean up function.
-* {buckets_count} is used to set the starting number of buckets to allocate. By default
-* it is 103
-* -------------------------------------------------------------
-*/
+typedef bool(*FlHashtableKeyComparerFunc)(const FlByte *key1, const FlByte *key2);
+
+typedef void(*FlHashtableWriter)(FlByte **dest, const FlByte *src);
+
+typedef void(*FlHashtableCleanupFunc)(void *key);
+
 struct FlHashtableArgs {
-    double load_factor;
-    size_t key_size;
-    size_t value_size;
-    size_t buckets_count;
     FlHashtableHashFunc hash_function;
-    FlHashtableDeleteKvpFunc cleanup_function;
+    FlHashtableKeyComparerFunc key_comparer;
+    FlHashtableCleanupFunc key_cleaner;
+    FlHashtableCleanupFunc value_cleaner;
+    FlHashtableWriter key_writer;
+    FlHashtableWriter value_writer;
+    double load_factor;
+    size_t buckets_count;
 };
 
-/* -------------------------------------------------------------
-* {function: fl_hashtable_new}
-* -------------------------------------------------------------
-* Creates a new hashtable that will handle entries with key
-* of size {kdtsize} and values of size {vdtsize}. The hashtable will use
-* a default {hash_function} (djb2 hash function) and a default {cleanup_function}
-* (check {fl_hashtable_delete_kvp}).
-* -------------------------------------------------------------
-* {param: size_t kdtsize} Size of the keys
-* {param: size_t vdtsize} Size of the values
-* {param: size_t (*)(FlByte*,size_t) hashfunc} Function to hash the key
-* -------------------------------------------------------------
-* {return: FlHashtable} Newly created hashtable
-* -------------------------------------------------------------
-*/
-FlHashtable fl_hashtable_new(size_t kdtsize, size_t vdtsize);
+FlHashtable fl_hashtable_new(FlHashtableHashFunc hash_func, FlHashtableKeyComparerFunc key_comparer);
 
 /* -------------------------------------------------------------
 * {function: fl_hashtable_new_args}
@@ -74,27 +41,6 @@ FlHashtable fl_hashtable_new(size_t kdtsize, size_t vdtsize);
 * -------------------------------------------------------------
 */
 FlHashtable fl_hashtable_new_args(struct FlHashtableArgs args);
-
-/* -------------------------------------------------------------
-* {function: fl_hashtable_delete_kvp}
-* -------------------------------------------------------------
-* Default function used by the Hashtable to release the memory
-* used by a key-value pair when no {cleanup_function} is provided.
-* If the user provides its own function to clean up elements,
-* the function MUST check for NULL values on both key and value,
-* sometimes hashtable will call it passing just the key or the value
-* pointer. When key or value are not passed to the {cleanup_function},
-* its size will be 0, it can be used as a flag.
-* -------------------------------------------------------------
-* {param: void* key} Pointer to a key element to be cleaned up
-* {param: size_t kdtsize} Size of the key element
-* {param: void* value} Pointer to a value element to be cleaned up
-* {param: size_t vdtsize} Size of the value element
-* -------------------------------------------------------------
-* {return: void}
-* -------------------------------------------------------------
-*/
-void fl_hashtable_delete_kvp(void *key, size_t kdtsize, void *value, size_t vdtsize);
 
 /* -------------------------------------------------------------
 * {function: fl_hashtable_delete}
@@ -278,5 +224,24 @@ void fl_hashtable_resize(FlHashtable ht, size_t nbuckets);
 * -------------------------------------------------------------
 */
 size_t fl_hashtable_buckets_count(FlHashtable ht);
+
+void fl_hashtable_cleaner_pointer(void *obj);
+
+void fl_hashtable_writer_string(FlByte **dest, const FlByte *src);
+void fl_hashtable_writer_int(FlByte **dest, const FlByte *src);
+void fl_hashtable_writer_char(FlByte **dest, const FlByte *src);
+void fl_hashtable_writer_sizet(FlByte **dest, const FlByte *src);
+
+unsigned long fl_hashtable_hash_pointer(const FlByte *key);
+unsigned long fl_hashtable_hash_string(const FlByte *key);
+unsigned long fl_hashtable_hash_int(const FlByte *key);
+unsigned long fl_hashtable_hash_char(const FlByte *key);
+unsigned long fl_hashtable_hash_sizet(const FlByte *key);
+
+bool fl_hashtable_compare_pointer(const FlByte *key1, const FlByte *key2);
+bool fl_hashtable_compare_string(const FlByte *key1, const FlByte *key2);
+bool fl_hashtable_compare_int(const FlByte *key1, const FlByte *key2);
+bool fl_hashtable_compare_char(const FlByte *key1, const FlByte *key2);
+bool fl_hashtable_compare_sizet(const FlByte *key1, const FlByte *key2);
 
 #endif /* FL_HASHTABLE_H */

@@ -6,6 +6,8 @@
 
 typedef struct FlVector* FlVector;
 
+#define FlVectorOf(type)    FlVector
+
 /* -------------------------------------------------------------
 * {function: fl_vector_new}
 * -------------------------------------------------------------
@@ -314,6 +316,8 @@ void fl_vector_delete_h(FlVector vector, void (*delete_handler)(FlByte*));
 * -------------------------------------------------------------
 */
 void fl_vector_delete_ptrs(FlVector vector);
+
+void* fl_vector_to_array(FlVector vector);
 
 /* -------------------------------------------------------------
 * {macro: flm_vector_get}

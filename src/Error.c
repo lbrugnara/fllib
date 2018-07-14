@@ -47,15 +47,21 @@ struct FlError last_error(FlErrQueue *queue)
     return queue->errors[queue->last-1];
 }
 
-void cleanup_errors(void *k, size_t ks, void *v, size_t vs)
+unsigned long thread_id_hash(const FlByte *key)
 {
-    if (k) fl_free(k);
-    if (v)
-    {
-        if (*(FlErrQueue**)v)
-            fl_free(*(FlErrQueue**)v);
-        fl_free(v);
-    }
+    return *(const FlThreadId*)key;
+}
+
+bool thread_id_comparer(const FlByte *key1, const FlByte *key2)
+{
+    return *(const FlThreadId*)key1 == *(const FlThreadId*)key2;
+}
+
+FlThreadId* ttop(FlThreadId tid)
+{
+    FlThreadId *p = fl_malloc(sizeof(FlThreadId));
+    *p = tid;
+    return p;
 }
 
 void cleanup(void)
@@ -85,9 +91,10 @@ void fl_error_push(int id, const char *format, ...)
     {
         // Create the Dict if it doesn't exist
         Errors = fl_hashtable_new_args((struct FlHashtableArgs){
-            .key_size = sizeof(FlThreadId),
-            .value_size = sizeof(FlErrQueue*),
-            .cleanup_function = &cleanup_errors
+            .hash_function = thread_id_hash,
+            .key_comparer = thread_id_comparer,
+            .key_cleaner = fl_hashtable_cleaner_pointer,
+            .value_cleaner = fl_hashtable_cleaner_pointer
         });
         // Register the cleaning function
         atexit(cleanup);
@@ -99,11 +106,11 @@ void fl_error_push(int id, const char *format, ...)
     if (!fl_hashtable_has_key(Errors, &currentid))
     {
         FlErrQueue *q = fl_calloc(1, sizeof(FlErrQueue));
-        fl_hashtable_set(Errors, &currentid, &q);
+        fl_hashtable_set(Errors, ttop(currentid), q);
     }
 
     // Get the thread's FlErrQueue
-    FlErrQueue *queue = *(FlErrQueue**)fl_hashtable_get(Errors, &currentid);
+    FlErrQueue *queue = (FlErrQueue*)fl_hashtable_get(Errors, &currentid);
 
     // Push the error
     push_error(queue, error);
@@ -123,7 +130,7 @@ FlError fl_error_last()
     if (Errors == NULL || !fl_hashtable_has_key(Errors, &currentid))
         return (FlError){ 0 };
 
-    FlErrQueue *queue = *(FlErrQueue**)fl_hashtable_get(Errors, &currentid);    
+    FlErrQueue *queue = (FlErrQueue*)fl_hashtable_get(Errors, &currentid);    
 
     return last_error(queue);
 }

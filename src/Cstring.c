@@ -310,7 +310,15 @@ size_t fl_cstring_replace_n(const char *src, size_t src_size, const char *needle
         return rplc_size + src_size;
     }
 
-    FlHashtable table = fl_hashtable_new(sizeof(char), sizeof(size_t));
+    FlHashtable table = fl_hashtable_new_args((struct FlHashtableArgs){
+        .hash_function = fl_hashtable_hash_char,
+        .key_comparer = fl_hashtable_compare_char,
+        .key_cleaner = fl_hashtable_cleaner_pointer,
+        .value_cleaner = fl_hashtable_cleaner_pointer,
+        .key_writer = fl_hashtable_writer_char,
+        .value_writer = fl_hashtable_writer_sizet
+    });
+
     for (size_t i = 0; i < needle_size - 1; i++)
     {
         size_t n = needle_size - i - 1;
@@ -390,7 +398,15 @@ char *fl_cstring_find(const char *str, const char *needle)
     if (needle_size == 0)
         return (char *)str;
 
-    FlHashtable table = fl_hashtable_new(sizeof(char), sizeof(size_t));
+    FlHashtable table = fl_hashtable_new_args((struct FlHashtableArgs){
+        .hash_function = fl_hashtable_hash_char,
+        .key_comparer = fl_hashtable_compare_char,
+        .key_cleaner = fl_hashtable_cleaner_pointer,
+        .value_cleaner = fl_hashtable_cleaner_pointer,
+        .key_writer = fl_hashtable_writer_char,
+        .value_writer = fl_hashtable_writer_sizet
+    });
+
     for (size_t i = 0; i < needle_size; i++)
     {
         size_t n = needle_size - i - 1;

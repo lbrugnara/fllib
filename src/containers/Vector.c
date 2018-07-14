@@ -5,6 +5,7 @@
 #include "Vector.h"
 #include "../Mem.h"
 #include "../Cstring.h"
+#include "../Array.h"
 
 /**
  * {@type} Container type
@@ -245,6 +246,13 @@ void fl_vector_delete_h(FlVector vector, void (*delete_handler)(FlByte*))
     }
     fl_free(vector->data);
     fl_free(vector);
+}
+
+void* fl_vector_to_array(FlVector vector)
+{
+	void * array = fl_array_new(vector->dtsize, vector->length);
+    memcpy(array, vector->data, vector->dtsize * vector->length);
+    return array;
 }
 
 /* -------------------------------------------------------------

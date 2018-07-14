@@ -51,7 +51,7 @@ struct FlSpan fl_span_new(const FlByte * const sequence, size_t dtsize, size_t o
 * and have the same length. False otherwise
 * -------------------------------------------------------------
 */
-bool fl_span_equals(struct FlSpan *span1, struct FlSpan *span2);
+bool fl_span_equals(const struct FlSpan *span1, const struct FlSpan *span2);
 
 /* -------------------------------------------------------------
 * {function: fl_span_equals_sequence}
@@ -64,7 +64,7 @@ bool fl_span_equals(struct FlSpan *span1, struct FlSpan *span2);
 * {return: bool} True if the span is within the sequence of bytes
 * -------------------------------------------------------------
 */
-bool fl_span_equals_sequence(struct FlSpan *span, const FlByte * const sequence);
+bool fl_span_equals_sequence(const struct FlSpan *span, const FlByte * const sequence);
 
 /* -------------------------------------------------------------
  * {function: fl_span_begin}

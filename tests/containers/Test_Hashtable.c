@@ -7,7 +7,15 @@ void test_fl_hashtable_add()
 {
     // Common use cases
     {
-        FlHashtable ht = fl_hashtable_new(sizeof(char), sizeof(int));
+        FlHashtable ht = fl_hashtable_new_args((struct FlHashtableArgs) {
+            .hash_function = fl_hashtable_hash_char,
+            .key_comparer = fl_hashtable_compare_char,
+            .key_cleaner = fl_hashtable_cleaner_pointer,
+            .value_cleaner = fl_hashtable_cleaner_pointer,
+            .key_writer = fl_hashtable_writer_char,
+            .value_writer = fl_hashtable_writer_int
+        });
+
         char k='a';
         int v=97;
         void* vp = fl_hashtable_add(ht, &k, &v);
@@ -43,7 +51,7 @@ void test_fl_hashtable_add()
 
     // Using NULL as key or value
     {
-        FlHashtable ht2 = fl_hashtable_new(sizeof(char*), sizeof(int*));
+        FlHashtable ht2 = fl_hashtable_new(fl_hashtable_hash_string, fl_hashtable_compare_string);
         char *key = "one";
         int *val = NULL;
         int **vp = (int**)fl_hashtable_add(ht2, &key, &val);
@@ -64,18 +72,14 @@ void test_fl_hashtable_add()
     }
 }
 
-size_t hash_func(const FlByte *key, size_t ksize)
+unsigned long hash_func(const FlByte *key)
 {
     return 1;
 }
 
 void test_fl_hashtable_add_fhash()
 {
-    FlHashtable ht = fl_hashtable_new_args((struct FlHashtableArgs){
-        .key_size = sizeof(char), 
-        .value_size = sizeof(int), 
-        .hash_function = &hash_func
-    });
+    FlHashtable ht = fl_hashtable_new(hash_func, fl_hashtable_compare_char);
     
     char k='a';
     int v=97;
@@ -89,14 +93,14 @@ void test_fl_hashtable_add_fhash()
     double d = fl_hashtable_load_factor(ht);
 
     //
-    k='b';
+    char k3='b';
     v=98;
-    vp = fl_hashtable_add(ht, &k, &v);
+    vp = fl_hashtable_add(ht, &k3, &v);
     fl_expect("hashtable_add('b', 98) result must be equals to 98", v == *(int*)vp);
 
-    k2='b';
+    char k4='b';
     v2 = 98;
-    vp = fl_hashtable_add(ht, &k2, &v2);
+    vp = fl_hashtable_add(ht, &k4, &v2);
     fl_expect("Call to hashtable_add('b', 98) by second time must return NULL", NULL == vp);
     double d2 = fl_hashtable_load_factor(ht);
 
@@ -109,7 +113,14 @@ void test_fl_hashtable_get()
 {
     // Normal usage
     {
-        FlHashtable ht = fl_hashtable_new(sizeof(char), sizeof(int));
+        FlHashtable ht = fl_hashtable_new_args((struct FlHashtableArgs) {
+            .hash_function = fl_hashtable_hash_char,
+            .key_comparer = fl_hashtable_compare_char,
+            .key_cleaner = fl_hashtable_cleaner_pointer,
+            .value_cleaner = fl_hashtable_cleaner_pointer,
+            .key_writer = fl_hashtable_writer_char,
+            .value_writer = fl_hashtable_writer_int
+        });
         
         int i = 65;
         for (char c = 'A'; c <= 'Z'; c++, i++)
@@ -147,13 +158,23 @@ void test_fl_hashtable_get()
 
 void test_fl_hashtable_set()
 {
-    FlHashtable ht = fl_hashtable_new(sizeof(char), sizeof(int));
+    FlHashtable ht = fl_hashtable_new_args((struct FlHashtableArgs) {
+        .hash_function = fl_hashtable_hash_char,
+        .key_comparer = fl_hashtable_compare_char,
+        .key_cleaner = fl_hashtable_cleaner_pointer,
+        .value_cleaner = fl_hashtable_cleaner_pointer,
+        .key_writer = fl_hashtable_writer_char,
+        .value_writer = fl_hashtable_writer_int
+    });
+
     char chr;
 
     // Add A-Z with its codes
     int i = 65;
     for (char c = 'A'; c <= 'Z'; c++, i++)
+    {
         fl_hashtable_add(ht, &c, &i);
+    }
 
     fl_expect("Current length after adding the alphabet letters A to Z with codes 65-90 must be 26", fl_hashtable_length(ht) == 26);
 
@@ -165,14 +186,18 @@ void test_fl_hashtable_set()
     // Replace A-Z by its lowercase codes
     i = 97;
     for (char c = 'A'; c <= 'Z'; c++, i++)        
+    {
         fl_hashtable_set(ht, &c, &i);
+    }
 
     fl_expect("Current length after replacing the alphabet letters A to Z with codes 97-122 must be 26", fl_hashtable_length(ht) == 26);
 
     // Add a-z with its codes
     i = 97;
-    for (char c = 'a'; c <= 'z'; c++, i++)        
+    for (char c = 'a'; c <= 'z'; c++, i++)
+    {
         fl_hashtable_set(ht, &c, &i);
+    }
 
     fl_expect("Current length after adding the alphabet letters a to z with codes 97-122 must be 52", fl_hashtable_length(ht) == 52);
 
@@ -183,8 +208,10 @@ void test_fl_hashtable_set()
 
     // Replace a-z by its uppercase codes
     i = 65;
-    for (char c = 'a'; c <= 'z'; c++, i++)        
+    for (char c = 'a'; c <= 'z'; c++, i++)
+    {
         fl_hashtable_set(ht, &c, &i);
+    }
 
     fl_expect("Current length after replacing the alphabet letters a to z with codes 65-90 must be 52", fl_hashtable_length(ht) == 52);
 
@@ -204,7 +231,14 @@ void test_fl_hashtable_set()
 
 void test_fl_hashtable_clear()
 {
-    FlHashtable ht = fl_hashtable_new(sizeof(char), sizeof(int));
+    FlHashtable ht = fl_hashtable_new_args((struct FlHashtableArgs) {
+            .hash_function = fl_hashtable_hash_char,
+            .key_comparer = fl_hashtable_compare_char,
+            .key_cleaner = fl_hashtable_cleaner_pointer,
+            .value_cleaner = fl_hashtable_cleaner_pointer,
+            .key_writer = fl_hashtable_writer_char,
+            .value_writer = fl_hashtable_writer_int
+        });
 
     // Add A-Z with its codes
     int i = 65;
@@ -221,7 +255,15 @@ void test_fl_hashtable_clear()
 
 void test_fl_hashtable_keys_and_values()
 {
-    FlHashtable ht = fl_hashtable_new(sizeof(char), sizeof(int));
+    FlHashtable ht = fl_hashtable_new_args((struct FlHashtableArgs) {
+        .hash_function = fl_hashtable_hash_char,
+        .key_comparer = fl_hashtable_compare_char,
+        .key_cleaner = fl_hashtable_cleaner_pointer,
+        .value_cleaner = fl_hashtable_cleaner_pointer,
+        .key_writer = fl_hashtable_writer_char,
+        .value_writer = fl_hashtable_writer_int
+    });
+
     // Add A-Z with its codes
     int i = 65;
     for (char c = 'A'; c <= 'Z'; c++, i++)
@@ -229,10 +271,10 @@ void test_fl_hashtable_keys_and_values()
     
     fl_expect("Current length after adding the alphabet letters A to Z with codes 65-90 must be 26", fl_hashtable_length(ht) == 26);
     
-    char *keys = fl_hashtable_keys(ht);
+    char **keys = fl_hashtable_keys(ht);
     fl_expect("Keys array must contain 26 elements", fl_array_length(keys) == 26);
 
-    char *values = fl_hashtable_values(ht);
+    char **values = fl_hashtable_values(ht);
     fl_expect("Values array must contain 26 elements", fl_array_length(values) == 26);
 
     fl_array_delete(keys);
@@ -242,7 +284,15 @@ void test_fl_hashtable_keys_and_values()
 
 void test_fl_hashtable_remove()
 {
-    FlHashtable ht = fl_hashtable_new(sizeof(char), sizeof(int));
+    FlHashtable ht = fl_hashtable_new_args((struct FlHashtableArgs) {
+        .hash_function = fl_hashtable_hash_char,
+        .key_comparer = fl_hashtable_compare_char,
+        .key_cleaner = fl_hashtable_cleaner_pointer,
+        .value_cleaner = fl_hashtable_cleaner_pointer,
+        .key_writer = fl_hashtable_writer_char,
+        .value_writer = fl_hashtable_writer_int
+    });
+
     // Add A-Z with its codes
     int i = 65;
     for (char c = 'A'; c <= 'Z'; c++, i++)
@@ -250,12 +300,12 @@ void test_fl_hashtable_remove()
     
     fl_expect("Current length after adding the alphabet letters A to Z with codes 65-90 must be 26", fl_hashtable_length(ht) == 26);
     
-    char *keys = fl_hashtable_keys(ht);
+    char **keys = fl_hashtable_keys(ht);
     size_t keys_length = fl_array_length(keys);
 
     for (size_t i=0; i < keys_length; i++)
     {
-        fl_hashtable_remove(ht, keys+i);
+        fl_hashtable_remove(ht, keys[i]);
     }
 
     fl_expect("Current length after removing all the elements by key must be 0", fl_hashtable_length(ht) == 0);
@@ -264,25 +314,40 @@ void test_fl_hashtable_remove()
     fl_hashtable_delete(ht);
 }
 
-size_t hash_func2(const FlByte *key, size_t ksize)
+unsigned long hash_func2(const FlByte *key)
 {
     return *(size_t*)key;
+}
+
+bool key_comparer2(const FlByte *key1, const FlByte *key2)
+{
+    return *(size_t*)key1 == *(size_t*)key2;
+}
+
+void size_t_writer(FlByte **dest, const FlByte *src)
+{
+    *dest = fl_malloc(sizeof(size_t));
+    memcpy(*dest, src, sizeof(size_t));
 }
 
 void test_fl_hashtable_resize()
 {
     FlHashtable ht = fl_hashtable_new_args((struct FlHashtableArgs){
-        .key_size = sizeof(size_t), 
-        .value_size = sizeof(int), 
-        .hash_function = &hash_func2,
+        .hash_function = hash_func2,
+        .key_comparer = key_comparer2,
+        .key_cleaner = fl_hashtable_cleaner_pointer,
+        .value_cleaner = fl_hashtable_cleaner_pointer,
+        .key_writer = size_t_writer,
+        .value_writer = size_t_writer,
         .buckets_count = 52736,
         .load_factor = 1.0
     });
+
     FlTimer timer = fl_timer_create();
     fl_timer_start(timer);
     for (size_t i=0; i < 52736; i++)
     {
-        fl_hashtable_add(ht, &i, (int*)&i);
+        fl_hashtable_add(ht, &i, &i);
     }
     fl_timer_end(timer);
     printf("Elapsed milliseconds: %ld\n", fl_timer_elapsed_ms(timer));

@@ -26,7 +26,7 @@ struct FlBucketEntry {
 /* -------------------------------------------------------------
 * {datatype: struct FlHashtable}
 * -------------------------------------------------------------
-* Each hashtable uses its own hash (hashf) and clean up (cleanup) functions
+* Each hashtable uses its own hash (hash_func) and clean up (cleanup) functions
 * to generate the key hash and to free the memory used by a key-value pair.
 * {buckets} will contain NBUCKETS that points to dynamic arrays that will 
 * keep the entries of the hashtable.
@@ -35,51 +35,134 @@ struct FlBucketEntry {
 * -------------------------------------------------------------
 */
 struct FlHashtable {
-    size_t (*hashf)(const FlByte *key, size_t kdtsize);
-    void (*cleanup)(void *key, size_t kdtsize, void *value, size_t vdtsize);
+    FlHashtableHashFunc key_hasher;
+    FlHashtableKeyComparerFunc key_comparer;
+    FlHashtableCleanupFunc key_cleaner;
+    FlHashtableCleanupFunc value_cleaner;
+    FlHashtableWriter key_writer;
+    FlHashtableWriter value_writer;
     struct FlBucketEntry **buckets; // fl_array
     double load_factor;
-    size_t kdtsize;
-    size_t vdtsize;
     size_t length;
 };
 
-// djb2 hash function. It is used by default if the user
-// does not provide its own hash function
-size_t fl_hashtable_hash(const FlByte *key, size_t kdtsize)
+unsigned long djb2_hash(const FlByte *key, size_t size)
 {
-    size_t hash = 5381;
+    unsigned long hash = 5381;
     FlByte c;
 
-    for (size_t i=0; i < kdtsize; i++)
+    for (size_t i=0; i < size; i++)
         hash = ((hash << 5) + hash) + key[i];
     return hash;
 }
 
-// This function is used by default when the user does not provide its own clean up function
-void fl_hashtable_delete_kvp(void *key, size_t kdtsize, void *value, size_t vdtsize)
+// djb2 hash function. It is used by default if the user
+// does not provide its own hash function
+unsigned long fl_hashtable_hash_pointer(const FlByte *key)
 {
-    if (key) fl_free(key);
-    if (value) fl_free(value);
+    return djb2_hash(key, sizeof key);
 }
 
-FlHashtable fl_hashtable_new(size_t kdtsize, size_t vdtsize)
+unsigned long fl_hashtable_hash_string(const FlByte *key)
 {
-    return fl_hashtable_new_args((struct FlHashtableArgs){ .key_size = kdtsize, .value_size = vdtsize });
+    return djb2_hash(key, strlen((const char *)key));
+}
+
+unsigned long fl_hashtable_hash_int(const FlByte *key)
+{
+    return *((const int*)key);
+}
+
+unsigned long fl_hashtable_hash_char(const FlByte *key)
+{
+    return *((const char*)key);
+}
+
+unsigned long fl_hashtable_hash_sizet(const FlByte *key)
+{
+    return *(size_t*)key;
+}
+
+bool fl_hashtable_compare_pointer(const FlByte *key1, const FlByte *key2)
+{
+    return key1 == key2;
+}
+
+bool fl_hashtable_compare_string(const FlByte *key1, const FlByte *key2)
+{
+    return strcmp((const char*)key1, (const char*)key2) == 0;
+}
+
+bool fl_hashtable_compare_int(const FlByte *key1, const FlByte *key2)
+{
+    return *(const int*)key1 == *(const int*)key2;
+}
+
+bool fl_hashtable_compare_char(const FlByte *key1, const FlByte *key2)
+{
+    return *(const char*)key1 == *(const char*)key2;
+}
+
+bool fl_hashtable_compare_sizet(const FlByte *key1, const FlByte *key2)
+{
+    return *(size_t*)key1 == *(size_t*)key2;
+}
+
+void fl_hashtable_writer_string(FlByte **dest, const FlByte *src)
+{
+    size_t size = strlen((const char*)src) + 1;
+    *dest = fl_malloc(size);
+    memcpy(*dest, src, size-1);
+    (*dest)[size-1] = '\0';
+}
+
+void fl_hashtable_writer_int(FlByte **dest, const FlByte *src)
+{
+    *dest = fl_malloc(sizeof(int));
+    memcpy(*dest, src, sizeof(int));
+}
+
+void fl_hashtable_writer_char(FlByte **dest, const FlByte *src)
+{
+    *dest = fl_malloc(sizeof(char));
+    memcpy(*dest, src, sizeof(char));
+}
+
+void fl_hashtable_writer_sizet(FlByte **dest, const FlByte *src)
+{
+    *dest = fl_malloc(sizeof(size_t));
+    memcpy(*dest, src, sizeof(size_t));
+}
+
+void fl_hashtable_cleaner_pointer(void *obj)
+{
+    if (obj)
+        fl_free(obj);
+}
+
+FlHashtable fl_hashtable_new(FlHashtableHashFunc hash_func, FlHashtableKeyComparerFunc key_comparer)
+{
+    return fl_hashtable_new_args((struct FlHashtableArgs){ 
+        .hash_function = hash_func,
+        .key_comparer = key_comparer
+    });
 }
 
 FlHashtable fl_hashtable_new_args(struct FlHashtableArgs args)
-{
-    flm_assert(args.key_size > 0, "Key data type size must be greater than 0");
-    flm_assert(args.value_size > 0, "Key data type size must be greater than 0");
-
+{    
     struct FlHashtable *ht = fl_calloc(1, sizeof(struct FlHashtable));
-    ht->kdtsize = args.key_size;
-    ht->vdtsize = args.value_size;
+
     ht->load_factor = args.load_factor != 0 ? args.load_factor : 0.75;
     ht->buckets = fl_array_new(sizeof(struct FlBucketEntry*), args.buckets_count != 0 ? args.buckets_count : NBUCKETS);
-    ht->hashf = args.hash_function != NULL ? args.hash_function : fl_hashtable_hash;
-    ht->cleanup = args.cleanup_function != NULL ? args.cleanup_function : fl_hashtable_delete_kvp;
+    
+    ht->key_hasher = args.hash_function != NULL ? args.hash_function : fl_hashtable_hash_pointer;
+    ht->key_comparer = args.key_comparer != NULL ? args.key_comparer : fl_hashtable_compare_pointer;
+    ht->key_writer = args.key_writer != NULL ? args.key_writer : NULL;
+    ht->value_writer = args.value_writer != NULL ? args.value_writer : NULL;
+
+    ht->key_cleaner = args.key_cleaner;
+    ht->value_cleaner = args.value_cleaner;
+    
     return ht;
 }
 
@@ -97,8 +180,8 @@ enum BucketLookupOperation {
 struct FlBucketEntry* lookup_bucket(FlHashtable ht, const void *key, enum BucketLookupOperation lookup_op)
 {
     // Get the key hash and the bucket (hash_bucket is an element in ht->buckets, that points to a dynamic array of
-    // points to struct FlBucketEntry)
-    size_t hash = ht->hashf(key, ht->kdtsize);
+    // pointers to struct FlBucketEntry)
+    size_t hash = ht->key_hasher(key);
     struct FlBucketEntry **hash_bucket = ht->buckets + (hash % fl_array_length(ht->buckets));
     
     // Find the target_bucket (or target entry). If hash_bucket points to nothing, we need
@@ -161,13 +244,13 @@ struct FlBucketEntry* lookup_bucket(FlHashtable ht, const void *key, enum Bucket
                 {
                     // If the bucket is free, mark it as a possible target on UNUSED or ANY.
                     // Continue searching for a (better) match.
-                    if (lookup_op == BUCKET_LOOKUP_UNUSED ||lookup_op == BUCKET_LOOKUP_ANY)
+                    if (lookup_op == BUCKET_LOOKUP_UNUSED || lookup_op == BUCKET_LOOKUP_ANY)
                         target_bucket = (*hash_bucket+i);
                     continue;
                 }
 
                 // Bucket is not free and the entry is not equal to our key, keep iterating.
-                if (!fl_equals(b->key, key, ht->kdtsize))
+                if (!ht->key_comparer(b->key, key))
                     continue;
 
                 // Equals but we want UNUSED, return NULL
@@ -177,8 +260,11 @@ struct FlBucketEntry* lookup_bucket(FlHashtable ht, const void *key, enum Bucket
                 // Equals and we want ANY, that means we need to clean up the pair
                 if (lookup_op == BUCKET_LOOKUP_ANY)
                 {
-                    // Keep the key
-                    ht->cleanup(NULL, 0, b->value, ht->vdtsize);
+                    if (ht->key_cleaner)
+                        ht->key_cleaner(b->key);
+
+                    if (ht->value_cleaner)
+                        ht->value_cleaner(b->value);
                 }
 
                 // If we are here, there is an entry with our same key,
@@ -230,13 +316,25 @@ void* ht_internal_add(FlHashtable ht, const void *key, const void *value, enum B
     // Set key (if the bucket is free) and value
     if (lookup_type == BUCKET_LOOKUP_UNUSED || target_bucket->free)
     {
-        target_bucket->key = fl_calloc(1, ht->kdtsize);
-        memcpy(target_bucket->key, key, ht->kdtsize);
+        if (ht->key_writer)
+            ht->key_writer((FlByte**)&target_bucket->key, key);
+        else 
+            target_bucket->key = (void*) key;
         // Increment the number of entries just if it is a new bucket in use
         ht->length++;
     }
-    target_bucket->value = fl_calloc(1, ht->vdtsize);
-    memcpy(target_bucket->value, value, ht->vdtsize);
+    else if (lookup_type == BUCKET_LOOKUP_ANY)
+    {
+        if (ht->key_writer)
+            ht->key_writer((FlByte**)&target_bucket->key, key);
+        else 
+            target_bucket->key = (void*) key;
+    }
+
+    if (ht->value_writer)
+        ht->value_writer((FlByte**)&target_bucket->value, value);
+    else
+        target_bucket->value = (void*) value;
 
     // Mark bucket as in use
     target_bucket->free = 0;
@@ -278,10 +376,18 @@ void* fl_hashtable_get(FlHashtable ht, const void *key)
 bool fl_hashtable_remove(FlHashtable ht, const void *key)
 {
     flm_assert(ht != NULL, "Hashtable must not be null");
+
     struct FlBucketEntry *target_bucket = lookup_bucket(ht, key, BUCKET_LOOKUP_EXISTENT);
+
     if (!target_bucket)
         return false;
-    ht->cleanup(target_bucket->key, ht->kdtsize, target_bucket->value, ht->vdtsize);
+
+    if (ht->key_cleaner)
+        ht->key_cleaner(target_bucket->key);
+
+    if (ht->value_cleaner)
+        ht->value_cleaner(target_bucket->value);
+
     // Mark this bucket as free
     target_bucket->free = 1;
 
@@ -308,7 +414,13 @@ void fl_hashtable_clear(FlHashtable ht)
                     struct FlBucketEntry *b = ht->buckets[i]+j;
                     if (b->free)
                         continue;
-                    ht->cleanup(b->key, ht->kdtsize, b->value, ht->vdtsize);
+
+                    if (ht->key_cleaner)
+                        ht->key_cleaner(b->key);
+
+                    if (ht->value_cleaner)
+                        ht->value_cleaner(b->value);                    
+
                     ht->length--;
                 }
             }
@@ -327,10 +439,12 @@ enum HashtableContent {
 FlArray ht_get_content(FlHashtable ht, enum HashtableContent content_type)
 {
     FlByte *content;
+    size_t size = sizeof(void*);
+
     if (content_type == HT_KEYS)
-        content = fl_array_new(ht->kdtsize, ht->length);
+        content = fl_array_new(size, ht->length);
     else
-        content = fl_array_new(ht->vdtsize, ht->length);
+        content = fl_array_new(size, ht->length);
 
     size_t k = 0;
     if (ht->buckets)
@@ -348,10 +462,11 @@ FlArray ht_get_content(FlHashtable ht, enum HashtableContent content_type)
                     struct FlBucketEntry *b = ht->buckets[i]+j;
                     if (b->free)
                         continue;
+
                     if (content_type == HT_KEYS)
-                        memcpy(content+(k * ht->kdtsize), b->key, ht->kdtsize);
+                        memcpy(content+(k * size), &b->key, size);
                     else
-                        memcpy(content+(k * ht->vdtsize), b->value, ht->vdtsize);
+                        memcpy(content+(k * size), &b->value, size);
                     k++;
                 }
             }
@@ -397,11 +512,11 @@ void fl_hashtable_resize(FlHashtable ht, size_t nbuckets)
     flm_assert(nbuckets > 0, "Number of buckets must be greater than 0");
 
     struct FlHashtable newht = {
-        .kdtsize = ht->kdtsize,
-        .vdtsize = ht->vdtsize,
         .buckets = fl_array_new(sizeof(struct FlBucketEntry*), nbuckets),
-        .hashf = ht->hashf,
-        .cleanup = ht->cleanup
+        .key_hasher = ht->key_hasher,
+        .key_comparer = ht->key_comparer,
+        .key_cleaner = ht->key_cleaner,
+        .value_cleaner = ht->value_cleaner
     };
 
     if (ht->buckets)
@@ -448,7 +563,12 @@ void fl_hashtable_delete(FlHashtable ht)
                     struct FlBucketEntry *b = ht->buckets[i]+j;
                     if (b->free)
                         continue;
-                    ht->cleanup(b->key, ht->kdtsize, b->value, ht->vdtsize);
+
+                    if (ht->key_cleaner)
+                        ht->key_cleaner(b->key);
+
+                    if (ht->value_cleaner)
+                        ht->value_cleaner(b->value);
                 }
             }
             fl_array_delete(ht->buckets[i]);

@@ -206,22 +206,41 @@ size_t fl_test_suite_run(FlTestSuite suite)
     for (size_t i=0; i < suite->ntests; i++)
     {
         printf(" # Test Case: %s\n", suite->tests[i].name);
+        
+        bool failed = false;
+
+        FlTimer timer = fl_timer_create();
+        fl_timer_start(timer);
+
         Try (&testctx)
         {
             suite->tests[i].run();
-            printf(" [Result] success\n\n");
         }
         Catch(TEST_EXCEPTION)
         {
             failedTests++;
-            printf(" [Result] fail: %s\n\n", testctx.message);
+            failed = true;
         }
         Rest
         {
             failedTests++;
-            printf(" [Result] fail: %s\n\n", testctx.message);
+            failed = true;
         }
         EndTry;
+        
+        fl_timer_end(timer);
+        printf(" [Elapsed ms]: %ld\n", fl_timer_elapsed_ms(timer));
+
+        if (failed)
+        {
+            printf(" [Result] fail: %s\n\n", testctx.message);
+        }
+        else
+        {
+            printf(" [Result] success\n\n");
+        }
+
+        fl_timer_delete(timer);
     }
     printf("\n");
     #ifdef _WIN32

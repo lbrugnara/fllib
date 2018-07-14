@@ -8,7 +8,9 @@
 
 
 // TODO: 
-//    - Prime numbers for NBUCKETS. On resize it currently multiplies by 2, it is not efficient
+//    - Prime numbers for NBUCKETS. On resize it currently multiplies by 2, but we should use
+//      a precomputed array of prime numbers to increase capacity based on the next prime number
+//      that will give us a good load factor
 //    - Iterator
 
 // It represents a bucket's entry, it can be free or used
@@ -140,11 +142,22 @@ void fl_hashtable_cleaner_pointer(void *obj)
         fl_free(obj);
 }
 
-FlHashtable fl_hashtable_new(FlHashtableHashFunc hash_func, FlHashtableKeyComparerFunc key_comparer)
+FlHashtable fl_hashtable_new(
+    FlHashtableHashFunc hash_func, 
+    FlHashtableKeyComparerFunc key_comparer, 
+    FlHashtableCleanupFunc key_cleaner, 
+    FlHashtableCleanupFunc value_cleaner, 
+    FlHashtableWriter key_writer, 
+    FlHashtableWriter value_writer
+)
 {
-    return fl_hashtable_new_args((struct FlHashtableArgs){ 
+    return fl_hashtable_new_args((struct FlHashtableArgs){
         .hash_function = hash_func,
-        .key_comparer = key_comparer
+        .key_comparer = key_comparer,
+        .key_cleaner = key_cleaner,
+        .value_cleaner = value_cleaner,
+        .key_writer = key_writer,
+        .value_writer = value_writer,
     });
 }
 

@@ -51,7 +51,7 @@ void test_fl_hashtable_add()
 
     // Using NULL as key or value
     {
-        FlHashtable ht2 = fl_hashtable_new(fl_hashtable_hash_string, fl_hashtable_compare_string);
+        FlHashtable ht2 = fl_hashtable_new(fl_hashtable_hash_string, fl_hashtable_compare_string, NULL, NULL, NULL, NULL);
         char *key = "one";
         int *val = NULL;
         int **vp = (int**)fl_hashtable_add(ht2, &key, &val);
@@ -79,7 +79,7 @@ unsigned long hash_func(const FlByte *key)
 
 void test_fl_hashtable_add_fhash()
 {
-    FlHashtable ht = fl_hashtable_new(hash_func, fl_hashtable_compare_char);
+    FlHashtable ht = fl_hashtable_new(hash_func, fl_hashtable_compare_char, NULL, NULL, NULL, NULL);
     
     char k='a';
     int v=97;

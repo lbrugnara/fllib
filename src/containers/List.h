@@ -2,6 +2,7 @@
 #define FL_LIST_H
 
 #include "../Types.h"
+#include "Container.h"
 #include "Iterator.h"
 
 typedef struct FlListNode* FlListNode;

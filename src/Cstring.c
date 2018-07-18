@@ -312,11 +312,11 @@ size_t fl_cstring_replace_n(const char *src, size_t src_size, const char *needle
 
     FlHashtable table = fl_hashtable_new_args((struct FlHashtableArgs){
         .hash_function = fl_hashtable_hash_char,
-        .key_comparer = fl_hashtable_compare_char,
-        .key_cleaner = fl_hashtable_cleaner_pointer,
-        .value_cleaner = fl_hashtable_cleaner_pointer,
-        .key_writer = fl_hashtable_writer_char,
-        .value_writer = fl_hashtable_writer_sizet
+        .key_comparer = fl_container_equals_char,
+        .key_cleaner = fl_container_cleaner_pointer,
+        .value_cleaner = fl_container_cleaner_pointer,
+        .key_writer = fl_container_writer_char,
+        .value_writer = fl_container_writer_sizet
     });
 
     for (size_t i = 0; i < needle_size - 1; i++)
@@ -400,11 +400,11 @@ char *fl_cstring_find(const char *str, const char *needle)
 
     FlHashtable table = fl_hashtable_new_args((struct FlHashtableArgs){
         .hash_function = fl_hashtable_hash_char,
-        .key_comparer = fl_hashtable_compare_char,
-        .key_cleaner = fl_hashtable_cleaner_pointer,
-        .value_cleaner = fl_hashtable_cleaner_pointer,
-        .key_writer = fl_hashtable_writer_char,
-        .value_writer = fl_hashtable_writer_sizet
+        .key_comparer = fl_container_equals_char,
+        .key_cleaner = fl_container_cleaner_pointer,
+        .value_cleaner = fl_container_cleaner_pointer,
+        .key_writer = fl_container_writer_char,
+        .value_writer = fl_container_writer_sizet
     });
 
     for (size_t i = 0; i < needle_size; i++)

@@ -13,6 +13,7 @@
 #include "../src/Cstring.h"
 #include "../src/Array.h"
 #include "../src/IO.h"
+#include "../src/containers/Container.h"
 #include "../src/containers/Iterator.h"
 #include "../src/containers/KeyValuePair.h"
 #include "../src/containers/Dictionary.h"

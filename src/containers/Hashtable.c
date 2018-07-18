@@ -4,6 +4,7 @@
 #include "../Std.h"
 #include "../Mem.h"
 #include "../Array.h"
+#include "Container.h"
 #include "Hashtable.h"
 
 
@@ -38,11 +39,11 @@ struct FlBucketEntry {
 */
 struct FlHashtable {
     FlHashtableHashFunc key_hasher;
-    FlHashtableKeyComparerFunc key_comparer;
-    FlHashtableCleanupFunc key_cleaner;
-    FlHashtableCleanupFunc value_cleaner;
-    FlHashtableWriter key_writer;
-    FlHashtableWriter value_writer;
+    FlContainerEqualsFunc key_comparer;
+    FlContainerCleanupFunc key_cleaner;
+    FlContainerCleanupFunc value_cleaner;
+    FlContainerWriterFunc key_writer;
+    FlContainerWriterFunc value_writer;
     struct FlBucketEntry **buckets; // fl_array
     double load_factor;
     size_t length;
@@ -85,70 +86,13 @@ unsigned long fl_hashtable_hash_sizet(const FlByte *key)
     return *(size_t*)key;
 }
 
-bool fl_hashtable_compare_pointer(const FlByte *key1, const FlByte *key2)
-{
-    return key1 == key2;
-}
-
-bool fl_hashtable_compare_string(const FlByte *key1, const FlByte *key2)
-{
-    return strcmp((const char*)key1, (const char*)key2) == 0;
-}
-
-bool fl_hashtable_compare_int(const FlByte *key1, const FlByte *key2)
-{
-    return *(const int*)key1 == *(const int*)key2;
-}
-
-bool fl_hashtable_compare_char(const FlByte *key1, const FlByte *key2)
-{
-    return *(const char*)key1 == *(const char*)key2;
-}
-
-bool fl_hashtable_compare_sizet(const FlByte *key1, const FlByte *key2)
-{
-    return *(size_t*)key1 == *(size_t*)key2;
-}
-
-void fl_hashtable_writer_string(FlByte **dest, const FlByte *src)
-{
-    size_t size = strlen((const char*)src) + 1;
-    *dest = fl_malloc(size);
-    memcpy(*dest, src, size-1);
-    (*dest)[size-1] = '\0';
-}
-
-void fl_hashtable_writer_int(FlByte **dest, const FlByte *src)
-{
-    *dest = fl_malloc(sizeof(int));
-    memcpy(*dest, src, sizeof(int));
-}
-
-void fl_hashtable_writer_char(FlByte **dest, const FlByte *src)
-{
-    *dest = fl_malloc(sizeof(char));
-    memcpy(*dest, src, sizeof(char));
-}
-
-void fl_hashtable_writer_sizet(FlByte **dest, const FlByte *src)
-{
-    *dest = fl_malloc(sizeof(size_t));
-    memcpy(*dest, src, sizeof(size_t));
-}
-
-void fl_hashtable_cleaner_pointer(void *obj)
-{
-    if (obj)
-        fl_free(obj);
-}
-
 FlHashtable fl_hashtable_new(
     FlHashtableHashFunc hash_func, 
-    FlHashtableKeyComparerFunc key_comparer, 
-    FlHashtableCleanupFunc key_cleaner, 
-    FlHashtableCleanupFunc value_cleaner, 
-    FlHashtableWriter key_writer, 
-    FlHashtableWriter value_writer
+    FlContainerEqualsFunc key_comparer, 
+    FlContainerCleanupFunc key_cleaner, 
+    FlContainerCleanupFunc value_cleaner, 
+    FlContainerWriterFunc key_writer, 
+    FlContainerWriterFunc value_writer
 )
 {
     return fl_hashtable_new_args((struct FlHashtableArgs){
@@ -169,7 +113,7 @@ FlHashtable fl_hashtable_new_args(struct FlHashtableArgs args)
     ht->buckets = fl_array_new(sizeof(struct FlBucketEntry*), args.buckets_count != 0 ? args.buckets_count : NBUCKETS);
     
     ht->key_hasher = args.hash_function != NULL ? args.hash_function : fl_hashtable_hash_pointer;
-    ht->key_comparer = args.key_comparer != NULL ? args.key_comparer : fl_hashtable_compare_pointer;
+    ht->key_comparer = args.key_comparer != NULL ? args.key_comparer : fl_container_equals_pointer;
     ht->key_writer = args.key_writer != NULL ? args.key_writer : NULL;
     ht->value_writer = args.value_writer != NULL ? args.value_writer : NULL;
 

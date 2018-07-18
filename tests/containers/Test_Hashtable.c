@@ -9,11 +9,11 @@ void test_fl_hashtable_add()
     {
         FlHashtable ht = fl_hashtable_new_args((struct FlHashtableArgs) {
             .hash_function = fl_hashtable_hash_char,
-            .key_comparer = fl_hashtable_compare_char,
-            .key_cleaner = fl_hashtable_cleaner_pointer,
-            .value_cleaner = fl_hashtable_cleaner_pointer,
-            .key_writer = fl_hashtable_writer_char,
-            .value_writer = fl_hashtable_writer_int
+            .key_comparer = fl_container_equals_char,
+            .key_cleaner = fl_container_cleaner_pointer,
+            .value_cleaner = fl_container_cleaner_pointer,
+            .key_writer = fl_container_writer_char,
+            .value_writer = fl_container_writer_int
         });
 
         char k='a';
@@ -51,7 +51,7 @@ void test_fl_hashtable_add()
 
     // Using NULL as key or value
     {
-        FlHashtable ht2 = fl_hashtable_new(fl_hashtable_hash_string, fl_hashtable_compare_string, NULL, NULL, NULL, NULL);
+        FlHashtable ht2 = fl_hashtable_new(fl_hashtable_hash_string, fl_container_equals_string, NULL, NULL, NULL, NULL);
         char *key = "one";
         int *val = NULL;
         int **vp = (int**)fl_hashtable_add(ht2, &key, &val);
@@ -79,7 +79,7 @@ unsigned long hash_func(const FlByte *key)
 
 void test_fl_hashtable_add_fhash()
 {
-    FlHashtable ht = fl_hashtable_new(hash_func, fl_hashtable_compare_char, NULL, NULL, NULL, NULL);
+    FlHashtable ht = fl_hashtable_new(hash_func, fl_container_equals_char, NULL, NULL, NULL, NULL);
     
     char k='a';
     int v=97;
@@ -115,11 +115,11 @@ void test_fl_hashtable_get()
     {
         FlHashtable ht = fl_hashtable_new_args((struct FlHashtableArgs) {
             .hash_function = fl_hashtable_hash_char,
-            .key_comparer = fl_hashtable_compare_char,
-            .key_cleaner = fl_hashtable_cleaner_pointer,
-            .value_cleaner = fl_hashtable_cleaner_pointer,
-            .key_writer = fl_hashtable_writer_char,
-            .value_writer = fl_hashtable_writer_int
+            .key_comparer = fl_container_equals_char,
+            .key_cleaner = fl_container_cleaner_pointer,
+            .value_cleaner = fl_container_cleaner_pointer,
+            .key_writer = fl_container_writer_char,
+            .value_writer = fl_container_writer_int
         });
         
         int i = 65;
@@ -160,11 +160,11 @@ void test_fl_hashtable_set()
 {
     FlHashtable ht = fl_hashtable_new_args((struct FlHashtableArgs) {
         .hash_function = fl_hashtable_hash_char,
-        .key_comparer = fl_hashtable_compare_char,
-        .key_cleaner = fl_hashtable_cleaner_pointer,
-        .value_cleaner = fl_hashtable_cleaner_pointer,
-        .key_writer = fl_hashtable_writer_char,
-        .value_writer = fl_hashtable_writer_int
+        .key_comparer = fl_container_equals_char,
+        .key_cleaner = fl_container_cleaner_pointer,
+        .value_cleaner = fl_container_cleaner_pointer,
+        .key_writer = fl_container_writer_char,
+        .value_writer = fl_container_writer_int
     });
 
     char chr;
@@ -233,11 +233,11 @@ void test_fl_hashtable_clear()
 {
     FlHashtable ht = fl_hashtable_new_args((struct FlHashtableArgs) {
             .hash_function = fl_hashtable_hash_char,
-            .key_comparer = fl_hashtable_compare_char,
-            .key_cleaner = fl_hashtable_cleaner_pointer,
-            .value_cleaner = fl_hashtable_cleaner_pointer,
-            .key_writer = fl_hashtable_writer_char,
-            .value_writer = fl_hashtable_writer_int
+            .key_comparer = fl_container_equals_char,
+            .key_cleaner = fl_container_cleaner_pointer,
+            .value_cleaner = fl_container_cleaner_pointer,
+            .key_writer = fl_container_writer_char,
+            .value_writer = fl_container_writer_int
         });
 
     // Add A-Z with its codes
@@ -257,11 +257,11 @@ void test_fl_hashtable_keys_and_values()
 {
     FlHashtable ht = fl_hashtable_new_args((struct FlHashtableArgs) {
         .hash_function = fl_hashtable_hash_char,
-        .key_comparer = fl_hashtable_compare_char,
-        .key_cleaner = fl_hashtable_cleaner_pointer,
-        .value_cleaner = fl_hashtable_cleaner_pointer,
-        .key_writer = fl_hashtable_writer_char,
-        .value_writer = fl_hashtable_writer_int
+        .key_comparer = fl_container_equals_char,
+        .key_cleaner = fl_container_cleaner_pointer,
+        .value_cleaner = fl_container_cleaner_pointer,
+        .key_writer = fl_container_writer_char,
+        .value_writer = fl_container_writer_int
     });
 
     // Add A-Z with its codes
@@ -286,11 +286,11 @@ void test_fl_hashtable_remove()
 {
     FlHashtable ht = fl_hashtable_new_args((struct FlHashtableArgs) {
         .hash_function = fl_hashtable_hash_char,
-        .key_comparer = fl_hashtable_compare_char,
-        .key_cleaner = fl_hashtable_cleaner_pointer,
-        .value_cleaner = fl_hashtable_cleaner_pointer,
-        .key_writer = fl_hashtable_writer_char,
-        .value_writer = fl_hashtable_writer_int
+        .key_comparer = fl_container_equals_char,
+        .key_cleaner = fl_container_cleaner_pointer,
+        .value_cleaner = fl_container_cleaner_pointer,
+        .key_writer = fl_container_writer_char,
+        .value_writer = fl_container_writer_int
     });
 
     // Add A-Z with its codes
@@ -335,8 +335,8 @@ void test_fl_hashtable_resize()
     FlHashtable ht = fl_hashtable_new_args((struct FlHashtableArgs){
         .hash_function = hash_func2,
         .key_comparer = key_comparer2,
-        .key_cleaner = fl_hashtable_cleaner_pointer,
-        .value_cleaner = fl_hashtable_cleaner_pointer,
+        .key_cleaner = fl_container_cleaner_pointer,
+        .value_cleaner = fl_container_cleaner_pointer,
         .key_writer = size_t_writer,
         .value_writer = size_t_writer,
         .buckets_count = 52736,

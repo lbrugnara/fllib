@@ -8,7 +8,7 @@
 
 #include "Test.h"
 
-void thread_error()
+void thread_error(void *args)
 {
     FlError error;
     char *str;
@@ -42,6 +42,8 @@ void thread_error()
     str = fl_cstring_vdup("ID=%d | Testing error 5", id);
     fl_expect(str, error.id == 5 && flm_cstring_equals(error.message, str));
     fl_cstring_delete(str);
+
+    fl_thread_exit(NULL);
 }
 
 void test_errors()
@@ -53,6 +55,10 @@ void test_errors()
         threads[i] = fl_thread_create(thread_error, NULL);
     }
     fl_thread_join_all(threads, nthreads);
+    
+    for (int i=0; i < nthreads; i++)
+        fl_thread_delete(threads[i]);
+
     fl_array_delete(threads);
 }
 

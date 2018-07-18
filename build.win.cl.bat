@@ -20,6 +20,7 @@ cl.exe /Zi /DEBUG:FULL /W1 /DFL_UNICODE_DB /DFL_DEBUG /c .\src\Cstring.c  /Fo.\o
 cl.exe /Zi /DEBUG:FULL /W1 /DFL_UNICODE_DB /DFL_DEBUG /c .\src\Span.c  /Fo.\obj\debug\Span.o
 cl.exe /Zi /DEBUG:FULL /W1 /DFL_UNICODE_DB /DFL_DEBUG /c .\src\Array.c  /Fo.\obj\debug\Array.o
 cl.exe /Zi /DEBUG:FULL /W1 /DFL_UNICODE_DB /DFL_DEBUG /c .\src\IO.c  /Fo.\obj\debug\IO.o
+cl.exe /Zi /DEBUG:FULL /W1 /DFL_UNICODE_DB /DFL_DEBUG /c .\src\containers\Container.c  /Fo.\obj\debug\containers\Container.o
 cl.exe /Zi /DEBUG:FULL /W1 /DFL_UNICODE_DB /DFL_DEBUG /c .\src\containers\Iterator.c  /Fo.\obj\debug\containers\Iterator.o
 cl.exe /Zi /DEBUG:FULL /W1 /DFL_UNICODE_DB /DFL_DEBUG /c .\src\containers\Vector.c  /Fo.\obj\debug\containers\Vector.o
 cl.exe /Zi /DEBUG:FULL /W1 /DFL_UNICODE_DB /DFL_DEBUG /c .\src\containers\List.c  /Fo.\obj\debug\containers\List.o
@@ -46,6 +47,7 @@ lib -NOLOGO -VERBOSE                        ^
     obj\debug\Cstring.o                     ^
     obj\debug\Array.o                       ^
     obj\debug\IO.o                          ^
+    obj\debug\containers\Container.o        ^
     obj\debug\containers\Iterator.o         ^
     obj\debug\containers\Vector.o           ^
     obj\debug\containers\List.o             ^

@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "../Types.h"
 #include "../Mem.h"
 #include "Thread.h"
@@ -14,6 +15,14 @@ FlThread fl_thread_create(FlThreadFunc routine, FlThreadArgs args)
         thread = 1;
     #endif
     return thread;
+}
+
+void fl_thread_delete(FlThread thread)
+{
+    #ifdef _WIN32
+        if (!CloseHandle((HANDLE)(uintptr_t)thread))
+            fprintf(stderr, "Cannot destroy handle");
+    #endif
 }
 
 FlThreadId fl_thread_current_id()

@@ -20,6 +20,7 @@ clang.exe -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-f
 clang.exe -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -std=gnu99 -pedantic -fstrict-aliasing -finput-charset=UTF-8 -fexec-charset=UTF-8 -DFL_UNICODE_DB -ggdb -DFL_DEBUG -c .\src\Span.c  -o .\obj\debug\Span.o
 clang.exe -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -std=gnu99 -pedantic -fstrict-aliasing -finput-charset=UTF-8 -fexec-charset=UTF-8 -DFL_UNICODE_DB -ggdb -DFL_DEBUG -c .\src\Array.c  -o .\obj\debug\Array.o
 clang.exe -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -std=gnu99 -pedantic -fstrict-aliasing -finput-charset=UTF-8 -fexec-charset=UTF-8 -DFL_UNICODE_DB -ggdb -DFL_DEBUG -c .\src\IO.c  -o .\obj\debug\IO.o
+clang.exe -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -std=gnu99 -pedantic -fstrict-aliasing -finput-charset=UTF-8 -fexec-charset=UTF-8 -DFL_UNICODE_DB -ggdb -DFL_DEBUG -c .\src\containers\Container.c  -o .\obj\debug\containers\Container.o
 clang.exe -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -std=gnu99 -pedantic -fstrict-aliasing -finput-charset=UTF-8 -fexec-charset=UTF-8 -DFL_UNICODE_DB -ggdb -DFL_DEBUG -c .\src\containers\Iterator.c  -o .\obj\debug\containers\Iterator.o
 clang.exe -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -std=gnu99 -pedantic -fstrict-aliasing -finput-charset=UTF-8 -fexec-charset=UTF-8 -DFL_UNICODE_DB -ggdb -DFL_DEBUG -c .\src\containers\Vector.c  -o .\obj\debug\containers\Vector.o
 clang.exe -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -std=gnu99 -pedantic -fstrict-aliasing -finput-charset=UTF-8 -fexec-charset=UTF-8 -DFL_UNICODE_DB -ggdb -DFL_DEBUG -c .\src\containers\List.c  -o .\obj\debug\containers\List.o
@@ -46,6 +47,7 @@ lib -NOLOGO -VERBOSE                        ^
     obj\debug\Span.o                        ^
     obj\debug\Array.o                       ^
     obj\debug\IO.o                          ^
+    obj\debug\containers\Container.o        ^
     obj\debug\containers\Iterator.o         ^
     obj\debug\containers\Vector.o           ^
     obj\debug\containers\List.o             ^

@@ -93,8 +93,8 @@ void fl_error_push(int id, const char *format, ...)
         Errors = fl_hashtable_new_args((struct FlHashtableArgs){
             .hash_function = thread_id_hash,
             .key_comparer = thread_id_comparer,
-            .key_cleaner = fl_hashtable_cleaner_pointer,
-            .value_cleaner = fl_hashtable_cleaner_pointer
+            .key_cleaner = fl_container_cleaner_pointer,
+            .value_cleaner = fl_container_cleaner_pointer
         });
         // Register the cleaning function
         atexit(cleanup);

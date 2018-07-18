@@ -207,7 +207,7 @@ size_t fl_test_suite_run(FlTestSuite suite)
     {
         printf(" # Test Case: %s\n", suite->tests[i].name);
         
-        bool failed = false;
+        volatile bool failed = false;
 
         FlTimer timer = fl_timer_create();
         fl_timer_start(timer);

@@ -65,6 +65,7 @@ FL_OBJECTS=\
 	obj/$(TARGET)/src/Cstring.o 					\
 	obj/$(TARGET)/src/Array.o 						\
 	obj/$(TARGET)/src/IO.o 							\
+	obj/$(TARGET)/src/containers/Container.o 		\
 	obj/$(TARGET)/src/containers/Iterator.o 		\
 	obj/$(TARGET)/src/containers/Vector.o 			\
 	obj/$(TARGET)/src/containers/List.o 			\

@@ -20,6 +20,7 @@ typedef struct FlArrayHeader
 
 void* fl_array_new(size_t size, size_t n)
 {
+	flm_assert(n > 0, "Number of elements must be greater than 0");
 	void *array = fl_calloc(1, sizeof(FlArrayHeader) + size * n);
 	FlArrayHeader *h = ((FlArrayHeader*)array)+0;
 	h->s = size;

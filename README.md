@@ -77,6 +77,7 @@ make tests CC=[gcc|clang]
 - MinGW, Cygwin, WSL
 
 #### Build
+To compile on Windows using MSVC or Clang you can run one the following `.bat` files in the [x86 or x64 Native Tools Command Prompt](https://docs.microsoft.com/en-us/cpp/build/walkthrough-compiling-a-native-cpp-program-on-the-command-line?view=vs-2017). If you want to compile it in an existing command window, you will need to load the environment variables for the particular architecture. For more information check this Microsoft page: [Build C/C++ code on the command line](https://docs.microsoft.com/en-us/cpp/build/building-on-the-command-line?view=vs-2017).
 
 MSVC:
 ```
@@ -86,7 +87,8 @@ Clang:
 ```
 build.win.clang.bat
 ```
-MinGW, Cygwin or WSL:
+
+If you want to use any other alternative under Windows, like MinGW, Cygwin or WSL, it should be as easy as running the following on each specific env:
 ```
 make tests CC=[gcc|clang]
 ```

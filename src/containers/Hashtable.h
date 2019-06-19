@@ -6,341 +6,341 @@
 
 typedef struct FlHashtable* FlHashtable;
 
-/* -------------------------------------------------------------
-* {datatype: unsigned long(*FlHashtableHashFunc)(const FlByte *key)}
-* -------------------------------------------------------------
-* Hash function that receives a key and returns an unsigned long.
-* By default if FlHashtableArgs.hash_function is not present, the
-* hashtable will use the fl_hashtable_hash_pointer function.
-* Another hash functions the hashtable module provides through the 
-* fl_hashtable_hash_* family are (all use the djb2 hash):
-*   string
-*   int
-*   char
-*   sizet
-* -------------------------------------------------------------
-*/
+/*
+ * Type: unsigned long(*FlHashtableHashFunc)(const FlByte *key)
+ *
+ * Hash function that receives a key and returns an unsigned long.
+ * By default if FlHashtableArgs.hash_function is not present, the
+ * hashtable will use the fl_hashtable_hash_pointer function.
+ * Another hash functions the hashtable module provides through the 
+ * fl_hashtable_hash_* family are (all use the djb2 hash):
+ *   string
+ *   int
+ *   char
+ *   sizet
+ *
+ */
 typedef unsigned long(*FlHashtableHashFunc)(const FlByte *key);
 
-/* -------------------------------------------------------------
-* {datatype: struct FlHashtableArgs}
-* -------------------------------------------------------------
-* This struct let's the caller configure the behavior of the
-* hashtable when provided to the fl_hashtable_new_args function.
-* Members:
-*   - hash_function: Function to hash keys. If not present, fl_hashtable_hash_pointer will be used
-*   - key_comparer: Function that compares keys. If not present, fl_hashtable_compare_pointer will be used
-*   - key_cleaner: Function that frees a key when it is discarded. If not present, key remains untouched
-*   - value_cleaner: Function that frees a value when it is discarded. If not present, value remains untouched
-*   - key_writer: Function that writes the key into the hashtable. If not present, the hashtable works with pointers
-*   - value_writer: Function that writes the value into the hashtable. If not present, the hashtable works with pointers
-*   - load_factor: Hashtable's load factor. If not present, it takes a value of 0.75
-*   - buckets_count: Number of buckets of the hashtable. If not present, a default value of NBUCKETS=83 is used
-* -------------------------------------------------------------
-*/
+/*
+ * Type: struct FlHashtableArgs
+ *
+ * This struct let's the caller configure the behavior of the
+ * hashtable when provided to the fl_hashtable_new_args function.
+ * Members:
+ *   - hash_function: Function to hash keys. If not present, fl_hashtable_hash_pointer will be used
+ *   - key_writer: Function that writes the key into the hashtable. If not present, the hashtable works with pointers
+ *   - key_comparer: Function that compares keys. If not present, fl_hashtable_compare_pointer will be used
+ *   - key_cleaner: Function that frees a key when it is discarded. If not present, key remains untouched
+ *   - value_writer: Function that writes the value into the hashtable. If not present, the hashtable works with pointers
+ *   - value_cleaner: Function that frees a value when it is discarded. If not present, value remains untouched
+ *   - load_factor: Hashtable's load factor. If not present, it takes a value of 0.75
+ *   - buckets_count: Number of buckets of the hashtable. If not present, a default value of NBUCKETS=83 is used
+ *
+ */
 struct FlHashtableArgs {
     FlHashtableHashFunc hash_function;
-    FlContainerEqualsFunc key_comparer;
-    FlContainerCleanupFunc key_cleaner;
-    FlContainerCleanupFunc value_cleaner;
     FlContainerWriterFunc key_writer;
+    FlContainerEqualsFunc key_comparer;
+    FlContainerCleanupFunction key_cleaner;
     FlContainerWriterFunc value_writer;
+    FlContainerCleanupFunction value_cleaner;
     double load_factor;
     size_t buckets_count;
 };
 
-/* -------------------------------------------------------------
-* {function: fl_hashtable_new}
-* -------------------------------------------------------------
-* Creates a hashtable
-* -------------------------------------------------------------
-* {param: FlHashtableHashFunc hash_func} Function to hash keys. 
-*    The hashtable uses fl_hashtable_hash_pointer if not present
-* {param: FlContainerEqualsFunc key_comparer} Function to 
-*    compare keys. Hashtable uses fl_hashtable_compare_pointer if 
-*    not present
-* {param: FlContainerCleanupFunc key_cleaner} Function to clean 
-*    the memory used by key. If not present, the key remains 
-*    untouched
-* {param: FlContainerCleanupFunc value_cleaner} Function to clean 
-*    the memory used by value. If not present, the value remains 
-*    untouched
-* {param: FlContainerWriterFunc key_writer} Allocates memory and 
-*    writes the key to the hashtable's entry. If not present, the 
-*    hashtable uses pointers
-* {param: FlContainerWriterFunc value_writer} Allocates memory and 
-*    writes the value to the hashtable's entry. If not present, 
-*    the hastable uses pointers
-* -------------------------------------------------------------
-* {return: FlHashtable} The new hashtable
-* -------------------------------------------------------------
-*/
+/*
+ * Function: fl_hashtable_new
+ *
+ * Creates a hashtable
+ *
+ * FlHashtableHashFunc hash_func - Function to hash keys. 
+ *    The hashtable uses fl_hashtable_hash_pointer if not present
+ * FlContainerEqualsFunc key_comparer - Function to 
+ *    compare keys. Hashtable uses fl_hashtable_compare_pointer if 
+ *    not present
+ * FlContainerCleanupFunction key_cleaner - Function to clean 
+ *    the memory used by key. If not present, the key remains 
+ *    untouched
+ * FlContainerCleanupFunction value_cleaner - Function to clean 
+ *    the memory used by value. If not present, the value remains 
+ *    untouched
+ * FlContainerWriterFunc key_writer - Allocates memory and 
+ *    writes the key to the hashtable's entry. If not present, the 
+ *    hashtable uses pointers
+ * FlContainerWriterFunc value_writer - Allocates memory and 
+ *    writes the value to the hashtable's entry. If not present, 
+ *    the hastable uses pointers
+ *
+ * {return: FlHashtable} The new hashtable
+ *
+ */
 FlHashtable fl_hashtable_new(
     FlHashtableHashFunc hash_func, 
     FlContainerEqualsFunc key_comparer, 
-    FlContainerCleanupFunc key_cleaner, 
-    FlContainerCleanupFunc value_cleaner, 
+    FlContainerCleanupFunction key_cleaner, 
+    FlContainerCleanupFunction value_cleaner, 
     FlContainerWriterFunc key_writer, 
     FlContainerWriterFunc value_writer
 );
 
-/* -------------------------------------------------------------
-* {function: fl_hashtable_new_args}
-* -------------------------------------------------------------
-* Creates a new hashtable as in {fl_hashtable_new}, but the user 
-* can pass its own {hash_function} and {cleanup_function} to the
-* constructor.
-* -------------------------------------------------------------
-* {param: struct FlHashtableArgs args} Arguments to build a new hashtable
-* -------------------------------------------------------------
-* {return: FlHashtable} Newly created hashtable
-* -------------------------------------------------------------
-*/
+/*
+ * Function: fl_hashtable_new_args
+ *
+ * Creates a new hashtable as in {fl_hashtable_new}, but the user 
+ * can pass its own {hash_function} and {cleanup_function} to the
+ * constructor.
+ *
+ * struct FlHashtableArgs args - Arguments to build a new hashtable
+ *
+ * {return: FlHashtable} Newly created hashtable
+ *
+ */
 FlHashtable fl_hashtable_new_args(struct FlHashtableArgs args);
 
-/* -------------------------------------------------------------
-* {function: fl_hashtable_delete}
-* -------------------------------------------------------------
-* Releases the memory used by the hashtable and also frees the
-* stored key and values. Use it when key and value are not mallocing
-* memory for members (in the case of structs or unions).
-* -------------------------------------------------------------
-* {param: FlHashtable ht} Hashtable to release its memory
-* -------------------------------------------------------------
-* {return: void}
-* -------------------------------------------------------------
-*/
+/*
+ * Function: fl_hashtable_delete
+ *
+ * Releases the memory used by the hashtable and also frees the
+ * stored key and values. Use it when key and value are not mallocing
+ * memory for members (in the case of structs or unions).
+ *
+ * FlHashtable ht - Hashtable to release its memory
+ *
+ * {return: void}
+ *
+ */
 void fl_hashtable_delete(FlHashtable ht);
 
-/* -------------------------------------------------------------
-* {function: fl_hashtable_load_factor}
-* -------------------------------------------------------------
-* Returns the current load factor of the Hashtable
-* -------------------------------------------------------------
-* {param: FlHashtable ht} Target hashtable to retrieve its load factor
-* -------------------------------------------------------------
-* {return: double} Load factor
-* -------------------------------------------------------------
-*/
+/*
+ * Function: fl_hashtable_load_factor
+ *
+ * Returns the current load factor of the Hashtable
+ *
+ * FlHashtable ht - Target hashtable to retrieve its load factor
+ *
+ * {return: double} Load factor
+ *
+ */
 double fl_hashtable_load_factor(FlHashtable ht);
 
-/* -------------------------------------------------------------
-* {function: fl_hashtable_add}
-* -------------------------------------------------------------
-* Inserts a new element with value {value} under key {key}. If
-* the key already exists it returns NULL without adding the value,
-* else it inserts the new value and returns a pointer to it.
-* -------------------------------------------------------------
-* {param: FlHashtable ht} Table Hashtable to add the key-value pair
-* {param: void* key} Pointer to a key element
-* {param: void* value} Pointer to the value element
-* -------------------------------------------------------------
-* {return: void*} On success pointer to the new inserted element,
-* NULL instead.
-* -------------------------------------------------------------
-*/
+/*
+ * Function: fl_hashtable_add
+ *
+ * Inserts a new element with value {value} under key {key}. If
+ * the key already exists it returns NULL without adding the value,
+ * else it inserts the new value and returns a pointer to it.
+ *
+ * FlHashtable ht - Table Hashtable to add the key-value pair
+ * void* key - Pointer to a key element
+ * void* value - Pointer to the value element
+ *
+ * {return: void*} On success pointer to the new inserted element,
+ * NULL instead.
+ *
+ */
 void* fl_hashtable_add(FlHashtable ht, const void *key, const void *value);
 
-/* -------------------------------------------------------------
-* {function: fl_hashtable_get}
-* -------------------------------------------------------------
-* If the hashtable contains the key, it returns a pointer to the
-* mapped value. If the key does not exist in the container,
-* it returns NULL
-* -------------------------------------------------------------
-* {param: FlHashtable ht} Container
-* {param: void* key} Key value of the element whose mapped value is accessed
-* -------------------------------------------------------------
-* {return: void*} Pointer to the element mapped from the key value {key}
-* -------------------------------------------------------------
-*/
+/*
+ * Function: fl_hashtable_get
+ *
+ * If the hashtable contains the key, it returns a pointer to the
+ * mapped value. If the key does not exist in the container,
+ * it returns NULL
+ *
+ * FlHashtable ht - Container
+ * void* key - Key value of the element whose mapped value is accessed
+ *
+ * {return: void*} Pointer to the element mapped from the key value {key}
+ *
+ */
 void* fl_hashtable_get(FlHashtable ht, const void *key);
 
-/* -------------------------------------------------------------
-* {function: fl_hashtable_set}
-* -------------------------------------------------------------
-* Inserts an element with value {value} under key {key}. If
-* the key already exists, its mapped value will be replaced by the new one,
-* and the old value will be cleaned up using the {cleanup_function}.
-* If the key does not exist, this function inserts the new value.
-* In both cases it returns a pointer to the inserted value
-* -------------------------------------------------------------
-* {param: FlHashtable ht} Table Hashtable to add the key-value pair
-* {param: void* key} Pointer to a key element
-* {param: void* value} Pointer to the value element
-* -------------------------------------------------------------
-* {return: void*} Pointer to the inserted value
-* -------------------------------------------------------------
-*/
+/*
+ * Function: fl_hashtable_set
+ *
+ * Inserts an element with value {value} under key {key}. If
+ * the key already exists, its mapped value will be replaced by the new one,
+ * and the old value will be cleaned up using the {cleanup_function}.
+ * If the key does not exist, this function inserts the new value.
+ * In both cases it returns a pointer to the inserted value
+ *
+ * FlHashtable ht - Table Hashtable to add the key-value pair
+ * void* key - Pointer to a key element
+ * void* value - Pointer to the value element
+ *
+ * {return: void*} Pointer to the inserted value
+ *
+ */
 void* fl_hashtable_set(FlHashtable ht, const void *key, const void *value);
 
-/* -------------------------------------------------------------
-* {function: fl_hashtable_remove}
-* -------------------------------------------------------------
-* This function removes the value mapped by key. If key exists
-* both key and value will be cleaned up using the {cleanup_function}.
-* Returns true if the key exists and both key and value are deleted,
-* false if the key does not exist.
-* -------------------------------------------------------------
-* {param: FlHashtable ht} Container to remove the key-value pair
-* {param: void* key} Pointer to a key element
-* -------------------------------------------------------------
-* {return: bool} true if key exists and both key and value are deleted.
-* false if key does not exist or there is an error removing the element.
-* -------------------------------------------------------------
-*/
+/*
+ * Function: fl_hashtable_remove
+ *
+ * This function removes the value mapped by key. If key exists
+ * both key and value will be cleaned up using the {cleanup_function}.
+ * Returns true if the key exists and both key and value are deleted,
+ * false if the key does not exist.
+ *
+ * FlHashtable ht - Container to remove the key-value pair
+ * void* key - Pointer to a key element
+ *
+ * {return: bool} true if key exists and both key and value are deleted.
+ * false if key does not exist or there is an error removing the element.
+ *
+ */
 bool fl_hashtable_remove(FlHashtable ht, const void *key);
 
-/* -------------------------------------------------------------
-* {function: fl_hashtable_clear}
-* -------------------------------------------------------------
-* Removes all the key-value pairs and release the memory used
-* by the element through the {cleanup_function} and reduces the memory
-* used by the container.
-* -------------------------------------------------------------
-* {param: FlHashtable ht} Hashtable to be cleared
-* -------------------------------------------------------------
-* {return: void}
-* -------------------------------------------------------------
-*/
+/*
+ * Function: fl_hashtable_clear
+ *
+ * Removes all the key-value pairs and release the memory used
+ * by the element through the {cleanup_function} and reduces the memory
+ * used by the container.
+ *
+ * FlHashtable ht - Hashtable to be cleared
+ *
+ * {return: void}
+ *
+ */
 void fl_hashtable_clear(FlHashtable ht);
 
-/* -------------------------------------------------------------
-* {function: fl_hashtable_length}
-* -------------------------------------------------------------
-* Returns the current number of key-value pairs in the hashtable
-* -------------------------------------------------------------
-* {param: FlHashtable ht} Container to retrieve its current number of elements
-* -------------------------------------------------------------
-* {return: size_t} Number of elements stored in {ht}
-* -------------------------------------------------------------
-*/
+/*
+ * Function: fl_hashtable_length
+ *
+ * Returns the current number of key-value pairs in the hashtable
+ *
+ * FlHashtable ht - Container to retrieve its current number of elements
+ *
+ * {return: size_t} Number of elements stored in {ht}
+ *
+ */
 size_t fl_hashtable_length(FlHashtable ht);
 
-/* -------------------------------------------------------------
-* {function: fl_hashtable_keys}
-* -------------------------------------------------------------
-* Returns an FlArray (dynamic array) containing all the keys
-* present in the hashtable.
-* -------------------------------------------------------------
-* {param: FlHashtable ht} Hashtable to retrieve its keys
-* -------------------------------------------------------------
-* {return: void*} Pointer to a dynamic array containing all the keys in {ht}
-* -------------------------------------------------------------
-*/
+/*
+ * Function: fl_hashtable_keys
+ *
+ * Returns an FlArray (dynamic array) containing all the keys
+ * present in the hashtable.
+ *
+ * FlHashtable ht - Hashtable to retrieve its keys
+ *
+ * {return: void*} Pointer to a dynamic array containing all the keys in {ht}
+ *
+ */
 FlArray fl_hashtable_keys(FlHashtable ht);
 
-/* -------------------------------------------------------------
-* {function: fl_hashtable_values}
-* -------------------------------------------------------------
-* Returns an FlArray (dynamic array) containing all the values
-* present in the hashtable.
-* -------------------------------------------------------------
-* {param: FlHashtable ht} Hashtable to retrieve its values
-* -------------------------------------------------------------
-* {return: void*} Pointer to a dynamic array containing all the values in {ht}
-* -------------------------------------------------------------
-*/
+/*
+ * Function: fl_hashtable_values
+ *
+ * Returns an FlArray (dynamic array) containing all the values
+ * present in the hashtable.
+ *
+ * FlHashtable ht - Hashtable to retrieve its values
+ *
+ * {return: void*} Pointer to a dynamic array containing all the values in {ht}
+ *
+ */
 FlArray fl_hashtable_values(FlHashtable ht);
 
-/* -------------------------------------------------------------
-* {function: fl_hashtable_has_key}
-* -------------------------------------------------------------
-* Returns true if key is present in the hashtable
-* -------------------------------------------------------------
-* {param: FlHashtable ht} {key} will be searched on this hashtable
-* {param: void* key} Key to be searched in {ht}
-* -------------------------------------------------------------
-* {return: bool} true if {key} is present in hashtable, otherwise false.
-* -------------------------------------------------------------
-*/
+/*
+ * Function: fl_hashtable_has_key
+ *
+ * Returns true if key is present in the hashtable
+ *
+ * FlHashtable ht} {key - will be searched on this hashtable
+ * void* key} Key to be searched in {ht -
+ *
+ * {return: bool} true if {key} is present in hashtable, otherwise false.
+ *
+ */
 bool fl_hashtable_has_key(FlHashtable ht, const void *key);
 
-/* -------------------------------------------------------------
-* {function: fl_hashtable_resize}
-* -------------------------------------------------------------
-* Resizes hashtable to contain {nbuckets} buckets
-* -------------------------------------------------------------
-* {param: FlHashtable ht} Hashtable to be resized
-* {param: size_t nbuckets} Number of buckets to use in {ht}
-* -------------------------------------------------------------
-* {return: void}
-* -------------------------------------------------------------
-*/
+/*
+ * Function: fl_hashtable_resize
+ *
+ * Resizes hashtable to contain {nbuckets} buckets
+ *
+ * FlHashtable ht - Hashtable to be resized
+ * size_t nbuckets} Number of buckets to use in {ht -
+ *
+ * {return: void}
+ *
+ */
 void fl_hashtable_resize(FlHashtable ht, size_t nbuckets);
 
-/* -------------------------------------------------------------
-* {function: fl_hashtable_buckets_count}
-* -------------------------------------------------------------
-* Returns the number of buckets allocated by {ht}
-* -------------------------------------------------------------
-* {param: FlHashtable ht} Hashtable to retrieve its buckets count 
-* -------------------------------------------------------------
-* {return: size_t} Number of buckets allocated into {ht}
-* -------------------------------------------------------------
-*/
+/*
+ * Function: fl_hashtable_buckets_count
+ *
+ * Returns the number of buckets allocated by {ht}
+ *
+ * FlHashtable ht - Hashtable to retrieve its buckets count 
+ *
+ * {return: size_t} Number of buckets allocated into {ht}
+ *
+ */
 size_t fl_hashtable_buckets_count(FlHashtable ht);
 
-/* -------------------------------------------------------------
-* {function: fl_hashtable_hash_pointer}
-* -------------------------------------------------------------
-* Creates a hash from the pointer {key}. It uses djb2 hash function
-* -------------------------------------------------------------
-* {param: const FlByte* key} Key to be hashed
-* -------------------------------------------------------------
-* {return: unsigned long} Hash of {key}
-* -------------------------------------------------------------
-*/
+/*
+ * Function: fl_hashtable_hash_pointer
+ *
+ * Creates a hash from the pointer {key}. It uses djb2 hash function
+ *
+ * const FlByte* key - Key to be hashed
+ *
+ * {return: unsigned long} Hash of {key}
+ *
+ */
 unsigned long fl_hashtable_hash_pointer(const FlByte *key);
 
-/* -------------------------------------------------------------
-* {function: fl_hashtable_hash_string}
-* -------------------------------------------------------------
-* Creates a hash from the null terminated string pointed by {key}. 
-* It uses djb2 hash function
-* -------------------------------------------------------------
-* {param: const FlByte* key} string to be hashed
-* -------------------------------------------------------------
-* {return: unsigned long} Hash of the string pointed by {key}
-* -------------------------------------------------------------
-*/
+/*
+ * Function: fl_hashtable_hash_string
+ *
+ * Creates a hash from the null terminated string pointed by {key}. 
+ * It uses djb2 hash function
+ *
+ * const FlByte* key - string to be hashed
+ *
+ * {return: unsigned long} Hash of the string pointed by {key}
+ *
+ */
 unsigned long fl_hashtable_hash_string(const FlByte *key);
 
-/* -------------------------------------------------------------
-* {function: fl_hashtable_hash_int}
-* -------------------------------------------------------------
-* Creates a hash from the integer pointed by {key}. It uses djb2 hash function
-* -------------------------------------------------------------
-* {param: const FlByte* key} integer to be hashed
-* -------------------------------------------------------------
-* {return: unsigned long} Hash of the integer pointed by {key}
-* -------------------------------------------------------------
-*/
+/*
+ * Function: fl_hashtable_hash_int
+ *
+ * Creates a hash from the integer pointed by {key}. It uses djb2 hash function
+ *
+ * const FlByte* key - integer to be hashed
+ *
+ * {return: unsigned long} Hash of the integer pointed by {key}
+ *
+ */
 unsigned long fl_hashtable_hash_int(const FlByte *key);
 
-/* -------------------------------------------------------------
-* {function: fl_hashtable_hash_char}
-* -------------------------------------------------------------
-* Creates a hash from the char pointed by {key}. It uses djb2 hash function
-* -------------------------------------------------------------
-* {param: const FlByte* key} char to be hashed
-* -------------------------------------------------------------
-* {return: unsigned long} Hash of the char pointed by {key}
-* -------------------------------------------------------------
-*/
+/*
+ * Function: fl_hashtable_hash_char
+ *
+ * Creates a hash from the char pointed by {key}. It uses djb2 hash function
+ *
+ * const FlByte* key - char to be hashed
+ *
+ * {return: unsigned long} Hash of the char pointed by {key}
+ *
+ */
 unsigned long fl_hashtable_hash_char(const FlByte *key);
 
-/* -------------------------------------------------------------
-* {function: fl_hashtable_hash_sizet}
-* -------------------------------------------------------------
-* Creates a hash from the size_t object pointed by {key}. 
-* It uses djb2 hash function
-* -------------------------------------------------------------
-* {param: const FlByte* key} size_t object to be hashed
-* -------------------------------------------------------------
-* {return: unsigned long} Hash of the size_t object pointed by {key}
-* -------------------------------------------------------------
-*/
+/*
+ * Function: fl_hashtable_hash_sizet
+ *
+ * Creates a hash from the size_t object pointed by {key}. 
+ * It uses djb2 hash function
+ *
+ * const FlByte* key - size_t object to be hashed
+ *
+ * {return: unsigned long} Hash of the size_t object pointed by {key}
+ *
+ */
 unsigned long fl_hashtable_hash_sizet(const FlByte *key);
 
 #endif /* FL_HASHTABLE_H */

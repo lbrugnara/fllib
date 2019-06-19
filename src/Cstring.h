@@ -7,15 +7,30 @@
 #include "Types.h"
 #include "containers/Vector.h"
 
-/**
- * {length} Length of the string to be created (no need to take in mind the \0, this function adds it)
- * Alloc memory for a new char* of size {length} plus null terminated character.
+/*
+ * Function: fl_cstring_new
+ *  Allocates *length*+1 bytes of memory to include the NULL character ('\0') and return a pointer
+ *  to the memory region.
+ *  If the memory cannot be allocated, this function returns NULL.
+ *
+ * Parameters:
+ *  length - Length of the string to allocate WITHOUT including the '\0'
+ *
+ * Returns:
+ *  char* - Pointer to the allocated memory, or NULL on failure.
+ *
  */
 char* fl_cstring_new(size_t length);
 
-/**
- * {str} String to free
- * Free the memory used by {str}
+/*
+ * Function: fl_cstring_delete
+ *  Frees the memory allocated in *str* with the <fl_cstring_new> function
+ *
+ * Parameters:
+ *  str - String to be freed.
+ *
+ * Returns:
+ *  void - This function does not return a value
  */
 void fl_cstring_delete(char *str);
 

@@ -26,22 +26,22 @@ struct FlBucketEntry {
 // Number of entries to allocate inside each bucket
 #define NBUCKETENTRIES 5
 
-/* -------------------------------------------------------------
-* {datatype: struct FlHashtable}
-* -------------------------------------------------------------
-* Each hashtable uses its own hash (hash_func) and clean up (cleanup) functions
-* to generate the key hash and to free the memory used by a key-value pair.
-* {buckets} will contain NBUCKETS that points to dynamic arrays that will 
-* keep the entries of the hashtable.
-* {kdtsize} and {vdtsize} are the sizes of the key and value data types.
-* {length} keeps track of the current number of elements in the hashtable.
-* -------------------------------------------------------------
-*/
+/*
+ * Type: struct FlHashtable
+ *
+ * Each hashtable uses its own hash (hash_func) and clean up (cleanup) functions
+ * to generate the key hash and to free the memory used by a key-value pair.
+ * {buckets} will contain NBUCKETS that points to dynamic arrays that will 
+ * keep the entries of the hashtable.
+ * {kdtsize} and {vdtsize} are the sizes of the key and value data types.
+ * {length} keeps track of the current number of elements in the hashtable.
+ *
+ */
 struct FlHashtable {
     FlHashtableHashFunc key_hasher;
     FlContainerEqualsFunc key_comparer;
-    FlContainerCleanupFunc key_cleaner;
-    FlContainerCleanupFunc value_cleaner;
+    FlContainerCleanupFunction key_cleaner;
+    FlContainerCleanupFunction value_cleaner;
     FlContainerWriterFunc key_writer;
     FlContainerWriterFunc value_writer;
     struct FlBucketEntry **buckets; // fl_array
@@ -68,7 +68,15 @@ unsigned long fl_hashtable_hash_pointer(const FlByte *key)
 
 unsigned long fl_hashtable_hash_string(const FlByte *key)
 {
-    return djb2_hash(key, strlen((const char *)key));
+    if (!key)
+        return djb2_hash(NULL, 0);
+
+    char *str = *(char**)key;
+
+    if (!str)
+        return djb2_hash(NULL, 0);
+
+    return djb2_hash((FlByte*)str, strlen(str));
 }
 
 unsigned long fl_hashtable_hash_int(const FlByte *key)
@@ -89,8 +97,8 @@ unsigned long fl_hashtable_hash_sizet(const FlByte *key)
 FlHashtable fl_hashtable_new(
     FlHashtableHashFunc hash_func, 
     FlContainerEqualsFunc key_comparer, 
-    FlContainerCleanupFunc key_cleaner, 
-    FlContainerCleanupFunc value_cleaner, 
+    FlContainerCleanupFunction key_cleaner, 
+    FlContainerCleanupFunction value_cleaner, 
     FlContainerWriterFunc key_writer, 
     FlContainerWriterFunc value_writer
 )

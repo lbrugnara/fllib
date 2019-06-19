@@ -6,6 +6,7 @@
 #include "IO.h"
 #include "Error.h"
 #include "Cstring.h"
+#include "Array.h"
 
 #ifdef _WIN32
     #include <direct.h>
@@ -20,11 +21,11 @@
     #define FL_IO_DIR_SEPARATOR "/"
 #endif
 
-FlFile *fl_io_file_open(const char *filename, const char *mode)
+FILE * fl_io_file_open(const char *filename, const char *mode)
 {
     #if defined(_WIN32) && __STDC_WANT_SECURE_LIB__
     {
-        FlFile *fd;
+        FILE * fd;
         if (fopen_s(&fd, filename, mode) != 0)
             return NULL;
         return fd;
@@ -48,8 +49,10 @@ bool fl_io_dir_create(const char *pathname)
     int res = mkdir(pathname, 0775);
     if (res == 0)
         return true;
+    
     char errmsg[64];
     fl_error_push(errno, fl_errno_str(errno, errmsg, 64));
+
     return false;
 }
 
@@ -88,84 +91,156 @@ CLEANUP:
     return status;
 }
 
-void fl_io_file_close(FlFile *fd)
+bool fl_io_file_close(FILE * fd)
 {
-    fclose(fd);
+    return fclose(fd) == 0;
 }
 
-long fl_io_file_size(FlFile *fd)
+long fl_io_file_size(FILE * fd)
 {
     flm_assert(fd != NULL, "File descriptor cannot be NULL");
+
     long originalPos = ftell(fd);
+
+    if (originalPos == -1L)
+        return -1L;
+    
     fseek(fd, 0, SEEK_END);
+    
     long size = ftell(fd);
+
+    if (size == -1L)
+        return -1L;
+
     fseek(fd, originalPos, SEEK_SET);
+    
     return size;
 }
 
-size_t fl_io_file_read_bytes(FlFile *file, size_t bytesToRead, FlByte *dst)
+size_t fl_io_file_read_bytes(FILE * file, size_t nbytes, FlByte *destination)
 {
     flm_assert(file != NULL, "File descriptor cannot be NULL");
-    size_t read = fread(dst, 1, bytesToRead, file);
+    size_t read = fread(destination, 1, nbytes, file);
     return read;
 }
 
-bool fl_io_file_write_bytes(const char *filename, size_t nbytes, const FlByte *bytes)
+size_t fl_io_file_write_bytes(FILE *file, size_t nbytes, const FlByte *bytes)
 {
-    FlFile *fd = fl_io_file_open(filename, "wb");
+    flm_assert(file != NULL, "File descriptor cannot be NULL");
 
-    if (!fd)
-        return false;
-
-    fwrite(bytes, nbytes, 1, fd);
-    fl_io_file_close(fd);
-
-    return true;
+    return fwrite(bytes, 1, nbytes, file);
 }
 
-FlByte *fl_io_file_read_all_bytes(const char *filename)
+FlArray fl_io_file_read_all_bytes(const char *filename)
 {
-    FlFile *fd = fl_io_file_open(filename, "rb");
+    FILE * fd = fl_io_file_open(filename, "rb");
+
     if (!fd)
         return NULL;
+
     fseek(fd, 0, SEEK_END);
-    int length = ftell(fd);
+    long llength = ftell(fd);
+
+    if(llength == -1L)
+    {
+        fl_io_file_close(fd);
+        return NULL;
+    }
+
+    size_t length = (size_t)llength;
+
     FlByte *buffer = (FlByte*)fl_array_new(1, length);
+
+    if (!buffer)
+    {
+        fl_io_file_close(fd);
+        return NULL;
+    }
+
     fseek(fd, 0, SEEK_SET);
-    fread(buffer, length, 1, fd);
+
+    size_t read = fread(buffer, 1, length, fd);
+
+    if (read != length)
+    {
+        fl_io_file_close(fd);
+        fl_array_delete(buffer);
+        return NULL;
+    }
+    
     fl_io_file_close(fd);
+
     return buffer;
 }
 
-bool fl_io_file_write_all_bytes(const char *filename, const FlByte *bytes)
+bool fl_io_file_write_all_bytes(const char *filename, const FlArray bytes)
 {
-    return fl_io_file_write_bytes(filename, fl_array_length(bytes), bytes);
+    FILE *fd = fl_io_file_open(filename, "wb");
+    
+    size_t nbytes = fl_array_length(bytes);
+    size_t wbytes = fl_io_file_write_bytes(fd, nbytes, bytes);
+
+    fl_io_file_close(fd);
+
+    return nbytes == wbytes;
 }
 
 char* fl_io_file_read_all_text(const char *filename)
 {
-    FlFile *fd = fl_io_file_open(filename, "r");
+    FILE * fd = fl_io_file_open(filename, "r");
+
     if (!fd)
         return NULL;
+
     fseek(fd, 0, SEEK_END);
-    int length = ftell(fd);
-    char *buffer = fl_cstring_new(length+1);
+    
+    long llength = ftell(fd);
+
+    if (llength == -1L)
+    {
+        fl_io_file_close(fd);
+        return NULL;
+    }
+
+    size_t length = (size_t)llength;
+
+    char *buffer = fl_cstring_new(length);
+
+    if (buffer == NULL)
+    {
+        fl_io_file_close(fd);
+        return NULL;
+    }
+
     fseek(fd, 0, SEEK_SET);
-    fread(buffer, length, 1, fd);
+    
+    size_t read = fread(buffer, 1, length, fd);
+
+    if (read != length)
+    {
+        fl_cstring_delete(buffer);
+        fl_io_file_close(fd);
+        return NULL;
+    }
+
     buffer[length] = '\0';
+
     fl_io_file_close(fd);
+
     return buffer;
 }
 
 bool fl_io_file_write_all_text(const char *filename, const char *content)
 {
-    FlFile *fd = fl_io_file_open(filename, "w");
+    FILE * fd = fl_io_file_open(filename, "w");
 
     if (!fd)
         return false;
 
-    fwrite(content, strlen(content), 1, fd);
+    size_t length = strlen(content);
+    size_t written = fwrite(content, 1, length, fd);
+    
     fl_io_file_close(fd);
 
-    return true;
+    return length == written;
 }

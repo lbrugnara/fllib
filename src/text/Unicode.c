@@ -6,19 +6,19 @@
 #include "Unicode.h"
 #include "resources/UnicodeData.h"
 
-/* -------------------------------------------------------------
-* Last code point (inclusive) of each UTF-8 range (1-4 bytes)
-* -------------------------------------------------------------
-*/
+/*
+ * Last code point (inclusive) of each UTF-8 range (1-4 bytes)
+ *
+ */
 #define UNICODE_LAST_CODEPOINT_1 0x0000007F
 #define UNICODE_LAST_CODEPOINT_2 0x000007FF
 #define UNICODE_LAST_CODEPOINT_3 0x0000FFFF
 #define UNICODE_LAST_CODEPOINT_4 0x0010FFFF
 
-/* -------------------------------------------------------------
-* Lead byte of each UTF-8 and max value of each lead byte
-* -------------------------------------------------------------
-*/
+/*
+ * Lead byte of each UTF-8 and max value of each lead byte
+ *
+ */
 #define UTF8_CODEPOINT_LEADBYTE_2 0xC0
 #define UTF8_CODEPOINT_LEADBYTE_2_MAX 0xDF
 #define UTF8_CODEPOINT_LEADBYTE_3 0xE0
@@ -41,13 +41,13 @@
 #define UTF32_LAST_CODEPOINT_3 ((FlByte*)"\x00\x00\xFF\xFF")
 #define UTF32_LAST_CODEPOINT_4 ((FlByte*)"\x00\x10\xFF\xFF")
 
-/* -------------------------------------------------------------
-* PRIVATE API
-* -------------------------------------------------------------
-* Multibyte Strings: All these functions assume input-charset 
-* and exec-charset are UTF-8
-* -------------------------------------------------------------
-*/
+/*
+ * PRIVATE API
+ *
+ * Multibyte Strings: All these functions assume input-charset 
+ * and exec-charset are UTF-8
+ *
+ */
 static inline bool utf8_mb_str_is_bigendian();
 static inline void swap_representations(const FlByte *src, FlByte *dst, size_t nbytes);
 static inline size_t utf32_codepoint_size(const FlByte* src);
@@ -55,12 +55,12 @@ static inline size_t utf8_codepoint_size(const FlByte* src, const FlByte *end);
 static inline size_t utf32_to_utf8(const FlByte *src, FlByte *dst);
 static inline bool utf8_to_utf32(const FlByte *src, const FlByte *end, FlByte *dst);
 
-/* -------------------------------------------------------------
-* Checks if a multibyte character is stored as big-endiann. It
-* is implementation dependant, maybe to make it compatible with
-* common chars.
-* -------------------------------------------------------------
-*/
+/*
+ * Checks if a multibyte character is stored as big-endiann. It
+ * is implementation dependant, maybe to make it compatible with
+ * common chars.
+ *
+ */
 static inline bool utf8_mb_str_is_bigendian()
 {
     char *oldac = "𐌀"; // Hex 0xF0908C80
@@ -68,11 +68,11 @@ static inline bool utf8_mb_str_is_bigendian()
     return ((FlByte*)oldac)[0] != ((FlByte*)&oldah)[0];
 }
 
-/* -------------------------------------------------------------
-* Helper function to convert between multibyte and uint32_t
-* representations.
-* -------------------------------------------------------------
-*/
+/*
+ * Helper function to convert between multibyte and uint32_t
+ * representations.
+ *
+ */
 static inline void swap_representations(const FlByte *src, FlByte *dst, size_t nbytes)
 {
     bool mbUsesBigEndian = utf8_mb_str_is_bigendian();
@@ -84,11 +84,11 @@ static inline void swap_representations(const FlByte *src, FlByte *dst, size_t n
     }
 }
 
-/* -------------------------------------------------------------
-* Returns the size of a UTF-32 valid character represented by a
-* multi-byte character.
-* -------------------------------------------------------------
-*/
+/*
+ * Returns the size of a UTF-32 valid character represented by a
+ * multi-byte character.
+ *
+ */
 static inline size_t utf32_codepoint_size(const FlByte *src)
 {
     if (memcmp(src, UTF32_LAST_CODEPOINT_4, 4) <= 0 && (memcmp(src, "\x00\x00\xD8\x00", 4) < 0 || memcmp(src, "\x00\x00\xDF\xFF", 4) > 0))
@@ -98,11 +98,11 @@ static inline size_t utf32_codepoint_size(const FlByte *src)
     return FL_UNICODE_INVALID_SIZE;
 }
 
-/* -------------------------------------------------------------
-* Returns the size of a UTF-8 valid character represented by a
-* multi-byte character
-* -------------------------------------------------------------
-*/
+/*
+ * Returns the size of a UTF-8 valid character represented by a
+ * multi-byte character
+ *
+ */
 static inline size_t utf8_codepoint_size(const FlByte *src, const FlByte *end)
 {
     flm_assert(src != NULL, "The source byte array cannot be NULL.");
@@ -169,11 +169,11 @@ static inline size_t utf8_codepoint_size(const FlByte *src, const FlByte *end)
     return FL_UNICODE_INVALID_SIZE;
 }
 
-/* -------------------------------------------------------------
-* Returns the maximal subpart of an ill-formed code unit sequence
-* (Unicode 9.0 - 3.9 Unicode Encoding Forms - Best practices for using U+FFFD)
-* -------------------------------------------------------------
-*/
+/*
+ * Returns the maximal subpart of an ill-formed code unit sequence
+ * (Unicode 9.0 - 3.9 Unicode Encoding Forms - Best practices for using U+FFFD)
+ *
+ */
 static inline size_t utf8_maximal_subpart(const FlByte *src, const FlByte *end)
 {
     flm_assert(src != NULL, "The source byte array cannot be NULL.");
@@ -272,10 +272,10 @@ static inline size_t utf8_maximal_subpart(const FlByte *src, const FlByte *end)
     return 1;
 }
 
-/* -------------------------------------------------------------
-* Converts an UTF-32 uint32_t to its UTF-8 representation
-* -------------------------------------------------------------
-*/
+/*
+ * Converts an UTF-32 uint32_t to its UTF-8 representation
+ *
+ */
 static inline size_t utf32_to_utf8(const FlByte *src, FlByte *dst)
 {
     if (memcmp(src, UTF32_LAST_CODEPOINT_1, 4) <= 0)
@@ -324,10 +324,10 @@ static inline size_t utf32_to_utf8(const FlByte *src, FlByte *dst)
     return FL_UNICODE_INVALID_SIZE;
 }
 
-/* -------------------------------------------------------------
-* Converts an UTF-8 uint32_t to its UTF-32 representation
-* -------------------------------------------------------------
-*/
+/*
+ * Converts an UTF-8 uint32_t to its UTF-32 representation
+ *
+ */
 static inline bool utf8_to_utf32(const FlByte *src, const FlByte *end, FlByte *dst)
 {
     size_t l = utf8_codepoint_size(src, end);
@@ -369,10 +369,10 @@ static inline bool utf8_to_utf32(const FlByte *src, const FlByte *end, FlByte *d
     return true;
 }
 
-/* -------------------------------------------------------------
-* PUBLIC API
-* -------------------------------------------------------------
-*/
+/*
+ * PUBLIC API
+ *
+ */
 
 size_t fl_unicode_codepoint_convert(FlEncoding srcencoding, const FlByte *src, const FlByte *end, FlEncoding dstencoding, FlByte *dst)
 {
@@ -410,10 +410,10 @@ size_t fl_unicode_codepoint_convert(FlEncoding srcencoding, const FlByte *src, c
     return FL_UNICODE_INVALID_SIZE;
 }
 
-/* -------------------------------------------------------------
-* UNICODE CODE POINT AND UNIT FUNCTIONS (FlByte*)
-* -------------------------------------------------------------
-*/
+/*
+ * UNICODE CODE POINT AND UNIT FUNCTIONS (FlByte*)
+ *
+ */
 
 size_t fl_unicode_codepoint_size(FlEncoding encoding, const FlByte *src, const FlByte *end)
 {
@@ -430,10 +430,10 @@ size_t fl_unicode_codepoint_size(FlEncoding encoding, const FlByte *src, const F
 
 // TODO: Fix for UTF16
 // TODO: Fix logic to retrieve UTF-8 code units size
-/* -------------------------------------------------------------
-* Returns the amount of valid code units in sequence
-* -------------------------------------------------------------
-*/
+/*
+ * Returns the amount of valid code units in sequence
+ *
+ */
 size_t fl_unicode_codeunit_sequence_size(FlEncoding encoding, const FlByte* sequence, const FlByte* end)
 {
     flm_assert(sequence != NULL, "Code unit sequence cannot be NULL.");
@@ -497,10 +497,10 @@ size_t fl_unicode_codeunit_sequence_size(FlEncoding encoding, const FlByte* sequ
 
 // TODO: Fix for UTF16
 // TODO: Fix logic to retrieve UTF-8 code points length
-/* -------------------------------------------------------------
-* Returns the amount of valid code points in sequence
-* -------------------------------------------------------------
-*/
+/*
+ * Returns the amount of valid code points in sequence
+ *
+ */
 size_t fl_unicode_codepoint_sequence_length(FlEncoding encoding, const FlByte* sequence, const FlByte* end)
 {
     flm_assert(sequence != NULL, "Code unit sequence cannot be NULL.");
@@ -562,10 +562,10 @@ size_t fl_unicode_codepoint_sequence_length(FlEncoding encoding, const FlByte* s
     return size;
 }
 
-/* -------------------------------------------------------------
-* Returns the 'at'-th character of a Unicode string encoded as 'encoding'
-* -------------------------------------------------------------
-*/
+/*
+ * Returns the 'at'-th character of a Unicode string encoded as 'encoding'
+ *
+ */
 size_t fl_unicode_codepoint_at(FlEncoding encoding, const FlByte *str, const FlByte *end, size_t at, FlByte *dst)
 {
     if (encoding == FL_ENCODING_UTF32)

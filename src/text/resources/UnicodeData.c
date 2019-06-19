@@ -5,10 +5,10 @@
 #include "../../Array.h"
 #include "UnicodeData.h"
 
-/* -------------------------------------------------------------
-* Private DataTypes
-* -------------------------------------------------------------
-*/
+/*
+ * Private DataTypes
+ *
+ */
 typedef enum
 {
     DECOMP_TYPE_CANONICAL, // default

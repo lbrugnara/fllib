@@ -13,23 +13,23 @@
     #define FL_ERROR_QUEUE_MAX 1
 #endif
 
-/* -------------------------------------------------------------
-* The FlErrQueue struct is used as a circular queue, through FL_ERROR_QUEUE_MAX
-* the user can se the maximum number of errors to "save".
-* This module is intended to be used in a multi-threaded environment, in that
-* case, each thread has its own FL_ERROR_QUEUE_MAX restriction.
-* -------------------------------------------------------------
-*/
+/*
+ * The FlErrQueue struct is used as a circular queue, through FL_ERROR_QUEUE_MAX
+ * the user can se the maximum number of errors to "save".
+ * This module is intended to be used in a multi-threaded environment, in that
+ * case, each thread has its own FL_ERROR_QUEUE_MAX restriction.
+ *
+ */
 typedef struct FlErrQueue {
     int last;
-    FlError errors[FL_ERROR_QUEUE_MAX];
+    struct FlError errors[FL_ERROR_QUEUE_MAX];
 } FlErrQueue;
 
-/* -------------------------------------------------------------
-* Errors is an FlHashtable<FlThreadId, FlErrQueue> that will contains
-* up to FL_ERROR_QUEUE_MAX errors for each thread.
-* -------------------------------------------------------------
-*/
+/*
+ * Errors is an FlHashtable<FlThreadId, FlErrQueue> that will contains
+ * up to FL_ERROR_QUEUE_MAX errors for each thread.
+ *
+ */
 FlHashtable Errors;
 
 FlMutex ErrMutex = FL_MUTEX_INIT_STATIC;
@@ -79,8 +79,8 @@ void fl_error_push(int id, const char *format, ...)
     va_start(args, format);
     char *str = fl_cstring_vadup(format, args);
     va_end(args);
-    // Cap the message to FL_ERROR_MAX_MSG_SIZE
-    size_t length = min(FL_ERROR_MAX_MSG_SIZE, strlen(str) + 1);
+    // Cap the message to FL_ERROR_MSG_SIZE
+    size_t length = min(FL_ERROR_MSG_SIZE, strlen(str) + 1);
     memcpy(error.message, str, length);
     error.message[length-1] = FL_EOS;
     fl_cstring_delete(str);
@@ -119,28 +119,28 @@ void fl_error_push(int id, const char *format, ...)
     fl_mutex_unlock(&ErrMutex);
 }
 
-/* -------------------------------------------------------------
-* Returns the thread's last registered error
-* -------------------------------------------------------------
-*/
-FlError fl_error_last()
+/*
+ * Returns the thread's last registered error
+ *
+ */
+struct FlError fl_error_last()
 {
     FlThreadId currentid = fl_thread_current_id();
 
     if (Errors == NULL || !fl_hashtable_has_key(Errors, &currentid))
-        return (FlError){ 0 };
+        return (struct FlError){ 0 };
 
     FlErrQueue *queue = (FlErrQueue*)fl_hashtable_get(Errors, &currentid);    
 
     return last_error(queue);
 }
 
-/* -------------------------------------------------------------
-* This function wraps the strerror function to use when available the
-* secure version, if it is not available, just copy up to {len} bytes
-* of the msg in the destination buffer.
-* -------------------------------------------------------------
-*/
+/*
+ * This function wraps the strerror function to use when available the
+ * secure version, if it is not available, just copy up to {len} bytes
+ * of the msg in the destination buffer.
+ *
+ */
 char* fl_errno_str(int errnum, char* buf, size_t len) 
 {
     // If we have the secure version of strrerror use it, if not use strerror with its known 
@@ -162,12 +162,12 @@ char* fl_errno_str(int errnum, char* buf, size_t len)
     return buf;
 }
 
-/* -------------------------------------------------------------
-* Calls exit(-1) but before send formatted error message to the
-* stderror
-* -------------------------------------------------------------
-*/
-void fl_exit(FlErrorType errtype, const char *format, ...)
+/*
+ * Calls exit(-1) but before send formatted error message to the
+ * stderror
+ *
+ */
+void fl_exit(enum FlErrorType errtype, const char *format, ...)
 {
     char *errtypemsg;
     switch(errtype)
@@ -192,4 +192,17 @@ void fl_exit(FlErrorType errtype, const char *format, ...)
     fl_cstring_delete(msg);
     fl_cstring_delete(errtypemsg);
     exit(-1);
+}
+
+struct FlContext* fl_ctx_new(void)
+{
+    struct FlContext *ctx = fl_malloc(sizeof(struct FlContext));
+
+    return ctx;
+}
+
+
+void fl_ctx_delete(struct FlContext *ctx)
+{
+    fl_free(ctx);
 }

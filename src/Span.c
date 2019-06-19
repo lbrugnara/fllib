@@ -22,9 +22,9 @@ bool fl_span_equals_sequence(const struct FlSpan *span, const FlByte * const seq
     return fl_equals(span->sequence, sequence, span->length * span->dtsize);
 }
 
-/* -------------------------------------------------------------
+/*
  * FlIterator support
- * -------------------------------------------------------------
+ *
  */
 typedef struct FlSpanIterator {
     const FlByte * const sequence;

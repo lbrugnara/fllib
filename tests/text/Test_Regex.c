@@ -58,7 +58,7 @@ void test_fl_regex_tokenize()
     tokenize("[1-9]", expect("[", "1", "-", "9", "]"));
     
     tokenize("[3-1]", NULL);
-    FlError err = fl_error_last();
+    struct FlError err = fl_error_last();
     fl_expect("Regex [3-1] must not compile because it is an invalid range", fl_equals(err.message, "Invalid range", 13));
 
     tokenize("[x-j]", NULL);

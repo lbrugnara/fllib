@@ -10,7 +10,7 @@
 
 void thread_error(void *args)
 {
-    FlError error;
+    struct FlError error;
     char *str;
     FlThreadId id = fl_thread_current_id();
     fl_error_push(1, "ID=%d | Testing error 1", id);
@@ -62,59 +62,117 @@ void test_errors()
     fl_array_delete(threads);
 }
 
-static FlTryContext simpletest;
 
-void a();
-void b();
-void c();
-void d();
-void e();
+void a(struct FlContext *ctx);
+void b(struct FlContext *ctx);
+void c(struct FlContext *ctx);
+void d(struct FlContext *ctx);
+void e(struct FlContext *ctx);
 
 void test_std_exception()
 {
-    Try(&simpletest)
+    struct FlContext *ctx = fl_ctx_new();
+
+    Try(ctx)
     {
-        a();
+        a(ctx);
+    }
+    Catch((int)'a')
+    {
+        struct FlContextFrame *frame = fl_ctx_last_frame(ctx);
+        fl_expect("Catched exception in root should be (int)'a'", frame->exception == (int)'a');
+        fl_expect("Catched exception in root should have message \"a\"", flm_cstring_nequals(frame->message, "a", 1));
     }
     Rest
     {
-        fl_expect("Catched exception in test_std_exception() should be 2", simpletest.exception == 2);
+        fl_expect("Exception shouldn't have fallen in root's Rest clause", false);
+    }
+    EndTry;
+
+    fl_ctx_delete(ctx);
+}
+
+void a(struct FlContext *ctx) 
+{
+    Try(ctx)
+    {
+        b(ctx);
+    }
+    Catch((int)'b')
+    {
+        struct FlContextFrame *frame = fl_ctx_last_frame(ctx);
+        fl_expect("Catched exception in a() should be (int)'b'", frame->exception == (int)'b');
+        fl_expect("Catched exception in a() should have message \"b\"", flm_cstring_nequals(frame->message, "b", 1));
+        Throw(ctx, (int)'a', "a");
+    }
+    Rest
+    {
+        fl_expect("Exception shouldn't have fallen in a()'s Rest clause", false);
     }
     EndTry;
 }
 
-void a() 
+void b(struct FlContext *ctx) 
 {
-    b();
+    Try(ctx)
+    {
+        c(ctx);
+    }
+    Catch((int)'c')
+    {
+        struct FlContextFrame *frame = fl_ctx_last_frame(ctx);
+        fl_expect("Catched exception in b() should be (int)'c'", frame->exception == (int)'c');
+        fl_expect("Catched exception in b() should have message \"c\"", flm_cstring_nequals(frame->message, "c", 1));
+        Throw(ctx, (int)'b', "b");
+    }
+    Rest
+    {
+        fl_expect("Exception shouldn't have fallen in b()'s Rest clause", false);
+    }
+    EndTry;
 }
 
-void b() 
-{
-    c();
-}
-
-void c() 
+void c(struct FlContext *ctx) 
 { 
-    volatile FlTryContext prevctx = simpletest;
-    Try(&simpletest)
+    Try(ctx)
     {   
-        d();
+        d(ctx);
+    }
+    Catch((int)'d')
+    {
+        struct FlContextFrame *frame = fl_ctx_last_frame(ctx);
+        fl_expect("Catched exception in c() should be (int)'d'", frame->exception == (int)'d');
+        fl_expect("Catched exception in c() should have message \"d\"", flm_cstring_nequals(frame->message, "d", 1));
+        Throw(ctx, (int)'c', "c");
     }
     Rest
     {
-        fl_expect("Catched exception in c() should be 1", simpletest.exception == 1);
-        simpletest = prevctx;
-        Throw(&simpletest, 2);
+        fl_expect("Exception shouldn't have fallen in c()'s Rest clause", false);
     }
     EndTry;
 }
 
-void d() 
+void d(struct FlContext *ctx) 
 {
-    e();
+    Try(ctx)
+    {
+        e(ctx);
+    }
+    Catch((int)'e')
+    {
+        struct FlContextFrame *frame = fl_ctx_last_frame(ctx);
+        fl_expect("Catched exception in d() should be (int)'e'", frame->exception == (int)'e');
+        fl_expect("Catched exception in d() should have message \"e\"", flm_cstring_nequals(frame->message, "e", 1));
+        Throw(ctx, (int)'d', "d");
+    }
+    Rest
+    {
+        fl_expect("Exception shouldn't have fallen in d()'s Rest clause", false);
+    }
+    EndTry;
 }
 
-void e() 
+void e(struct FlContext *ctx) 
 {
-    Throw(&simpletest, 1);
+    Throw(ctx, (int)'e', "e");
 }

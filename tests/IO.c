@@ -33,9 +33,9 @@ void test_file_rw_all_bytes()
     #endif
 
     // Read all the bytes back, and check if the contet is the same as the str variable
-    FlByte *bytes = fl_io_file_read_all_bytes("test_file.txt");
+    FlArray bytes = fl_io_file_read_all_bytes("test_file.txt");
     fl_expect("Amount of bytes written are the same amount of bytes read", strlen(str) == fl_array_length(bytes));
-    fl_expect("File content equals to 'Hello world.\\nBye.\\n'", flm_cstring_nequals(str, (char*)bytes, strlen(str)));
+    fl_expect("File content equals to 'Hello world.\nBye.\n'", flm_cstring_nequals(str, (char*)bytes, strlen(str)));
 
     // Cleanup
     // Restore working dir

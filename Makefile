@@ -69,8 +69,6 @@ FL_OBJECTS=\
 	obj/$(TARGET)/src/containers/Iterator.o 		\
 	obj/$(TARGET)/src/containers/Vector.o 			\
 	obj/$(TARGET)/src/containers/List.o 			\
-	obj/$(TARGET)/src/containers/KeyValuePair.o		\
-	obj/$(TARGET)/src/containers/Dictionary.o 		\
 	obj/$(TARGET)/src/containers/Hashtable.o 		\
 	obj/$(TARGET)/src/text/Regex.o 					\
 	obj/$(TARGET)/src/os/System.o 					\
@@ -92,7 +90,8 @@ FL_TEST_OBJECTS=\
 	obj/$(TARGET)/tests/text/Test_Unicode.o \
 	obj/$(TARGET)/tests/text/Test_String.o 	\
 	obj/$(TARGET)/tests/text/Test_Regex.o 	\
-	obj/$(TARGET)/tests/containers/Test_Hashtable.o
+	obj/$(TARGET)/tests/containers/Test_Hashtable.o \
+	obj/$(TARGET)/tests/containers/Test_List.o
 
 ifeq ($(LINKAGE),static)
 	# Creates the .a file

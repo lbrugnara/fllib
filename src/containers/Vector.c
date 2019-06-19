@@ -255,9 +255,9 @@ void* fl_vector_to_array(FlVector vector)
     return array;
 }
 
-/* -------------------------------------------------------------
+/*
  * FlIterator support
- * -------------------------------------------------------------
+ *
  */
 typedef struct FlVectorIterator {
     FlByte* base;

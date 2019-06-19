@@ -3,16 +3,16 @@
 
 #define MAX_HANDLERS 30
 
-/* -------------------------------------------------------------
- * {datatype: struct FlWinRegisteredExceptionHandler}
- * -------------------------------------------------------------
+/*
+ * Type: struct FlWinRegisteredExceptionHandler
+ *
  * Internal usage struct to keep track of handlers functions
  * to be called when an exception with code {exception}
  * is raised by Windows
- * -------------------------------------------------------------
+ *
  * {member: DWORD exception} Exception code of the registered handler
  * {member: FlWinExceptionHandler handler} Handler function
- * -------------------------------------------------------------
+ *
  */
 typedef struct
 {
@@ -20,38 +20,38 @@ typedef struct
     FlWinExceptionHandler handler;
 } FlWinRegisteredExceptionHandler;
 
-/* -------------------------------------------------------------
+/*
  * {variable: FlWinRegisteredExceptionHandler[] RegisteredExHandlers}
- * -------------------------------------------------------------
+ *
  * Keep track of registered handlers for each type of exception
- * -------------------------------------------------------------
+ *
  */
 static FlWinRegisteredExceptionHandler RegisteredExHandlers[MAX_HANDLERS] = {{0}};
-/* -------------------------------------------------------------
+/*
  * {variable: FlWinExceptionHandler PrevHandler}
- * -------------------------------------------------------------
+ *
  * Keeps track of the previous registered exception handler.
  * It is returned when user registers a global handler (windows style)
  * or each time it calls fl_winex_handler_set to register
  * an specific exception handler
- * -------------------------------------------------------------
+ *
  */
 static FlWinExceptionHandler PrevHandler = NULL;
 
-/* -------------------------------------------------------------
- * {function: winex_filter}
- * -------------------------------------------------------------
+/*
+ * Function: winex_filter
+ *
  * Overrides the previous UnhandledExceptionFilter (if exists)
  * to support fl_winex_handler_set, using specific exceptions
  * codes.
  * This function will be called each time Windows throws an exception
  * but will call the user registered FlWinExceptionHandler only when
  * the exception code is registered by the user.
- * -------------------------------------------------------------
- * {param: EXCEPTION_POINTERS* ExceptionInfo} Information about the Windows exception
- * -------------------------------------------------------------
+ *
+ * EXCEPTION_POINTERS* ExceptionInfo - Information about the Windows exception
+ *
  * {return: LONG} Returns one of three values: EXCEPTION_CONTINUE_SEARCH, EXCEPTION_EXECUTE_HANDLER or EXCEPTION_CONTINUE_EXECUTION
- * -------------------------------------------------------------
+ *
  */
 LONG WINAPI winex_filter(EXCEPTION_POINTERS * ExceptionInfo)
 {
@@ -72,9 +72,9 @@ LONG WINAPI winex_filter(EXCEPTION_POINTERS * ExceptionInfo)
     return (*handler)(ExceptionInfo);
 }
 
-/* -------------------------------------------------------------
- * {function: fl_winex_handler_set}
- * -------------------------------------------------------------
+/*
+ * Function: fl_winex_handler_set
+ *
  * Sets an exception handler for an specific exception code. It saves
  * the user's exception handler in the {RegisteredExHandlers} array
  * and registers the {winex_filter} function as the Unhandled Exception
@@ -93,12 +93,12 @@ LONG WINAPI winex_filter(EXCEPTION_POINTERS * ExceptionInfo)
  * we release the memory used by this module
  *
  * Known bug: https://support.microsoft.com/en-us/kb/173652
- * -------------------------------------------------------------
- * {param: DWORD exceptionCode}
- * {param: FlWinExceptionHandler handler} Handler function to call when an exception with code {exceptionCode} occurs
- * -------------------------------------------------------------
+ *
+ * DWORD exceptionCode -
+ * FlWinExceptionHandler handler} Handler function to call when an exception with code {exceptionCode - occurs
+ *
  * {return: FlWinExceptionHandler} Returns the previous UnhandledExceptionFilter
- * -------------------------------------------------------------
+ *
  */
 FlWinExceptionHandler fl_winex_handler_set(DWORD exceptionCode, FlWinExceptionHandler handler)
 {
@@ -117,38 +117,38 @@ FlWinExceptionHandler fl_winex_handler_set(DWORD exceptionCode, FlWinExceptionHa
     return PrevHandler;
 }
 
-/* -------------------------------------------------------------
- * {function: fl_winex_global_handler_set}
- * -------------------------------------------------------------
+/*
+ * Function: fl_winex_global_handler_set
+ *
  * Sets a global exception handler. It suffers the same problem
  * as fl_winex_handler_set, The usage of PrevHandler makes the
  * module incompatible to use in threaded applications. The usage
  * of GetCurrentThreadId could help to keep track of the registered
  * exception filters for each thread. 
- * -------------------------------------------------------------
- * {param: FlWinExceptionHandler handler}
- * -------------------------------------------------------------
+ *
+ * FlWinExceptionHandler handler -
+ *
  * {return: FlWinExceptionHandler} Returns the previous UnhandledExceptionFilter
- * -------------------------------------------------------------
+ *
  */
 FlWinExceptionHandler fl_winex_global_handler_set(FlWinExceptionHandler handler)
 {
     return (PrevHandler = SetUnhandledExceptionFilter(handler));
 }
 
-/* -------------------------------------------------------------
- * {function: fl_winex_message_get}
- * -------------------------------------------------------------
+/*
+ * Function: fl_winex_message_get
+ *
  * Using {exceptionCode} copies into {destmsg} a brief description
  * of the exception
- * -------------------------------------------------------------
- * {param: DWORD exceptionCode} Exception code to look for a message
- * {param: char* destmsg} Destination string to use to copy the message
- * -------------------------------------------------------------
+ *
+ * DWORD exceptionCode - Exception code to look for a message
+ * char* destmsg - Destination string to use to copy the message
+ *
  * {return: void}
- * -------------------------------------------------------------
+ *
  */
-void fl_winex_message_get(DWORD exceptionCode, char *destmsg)
+void fl_winex_message_get(DWORD exceptionCode, char *destmsg, size_t maxlength)
 {
     if (destmsg == NULL)
         return;
@@ -237,12 +237,14 @@ void fl_winex_message_get(DWORD exceptionCode, char *destmsg)
     }
     if (msg == NULL)
         return;
-    memcpy(destmsg, msg, strlen(msg));
+
+    size_t strlength = strlen(msg);
+    memcpy(destmsg, msg, strlength < maxlength ? strlength : maxlength);
 }
 
-/* -------------------------------------------------------------
+/*
  * Control Handler
- * -------------------------------------------------------------
+ *
  */
 #define CMDCTRLS_NUMBER 6
 
@@ -254,7 +256,7 @@ typedef struct
 
 static FlConsoleCtrl ConsoleCtrl[CMDCTRLS_NUMBER] = {{0}};
 
-BOOL winctrl_handler( DWORD ctrlType )
+BOOL __stdcall winctrl_handler(DWORD ctrlType)
 {
     FlWinCmdControlHandler *handler = NULL;
     for (int i=0; i < CMDCTRLS_NUMBER; i++)

@@ -4,7 +4,8 @@
 #include "Test.h"
 #include "Test_Cstring.h"
 
-#include "../src/Cstring.c"
+extern size_t integer_length(long long i);
+extern size_t uinteger_length(unsigned long long i);
 
 void test_cstring_new()
 {
@@ -16,7 +17,7 @@ void test_cstring_new()
     str[3] = 'l';
     str[4] = 'o';
     fl_expect("Assign each character into str to form \"Hello\"", flm_cstring_equals(str, "Hello"));
-    fl_expect("str[5] must be the null character", str[5] == '\0');
+    fl_expect("Because fl_cstring_new adds 1 byte for the NULL character, str[5] must be the NULL character", str[5] == '\0');
     fl_cstring_delete(str);
 }
 

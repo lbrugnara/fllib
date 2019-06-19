@@ -5,102 +5,117 @@
 #include "Mem.h"
 #include "Array.h"
 
-/**
- * FlArrayHeader contains the
- * size ({s}) of each element in the array and the current
- * number of element that this array can contain ({n})
+/*
+ * Type: FlArrayHeader
+ * 	Tracks the datatype size and the length of the array
+ * 
+ * ===== C =====
+ * typedef struct FlArrayHeader
+ * {
+ * 		size_t dtsize;
+ * 		size_t length;
+ * } FlArrayHeader;
+ * 
  */
 typedef struct FlArrayHeader
 {
-	size_t s;
-	size_t n;
+	size_t dtsize;
+	size_t length;
 } FlArrayHeader;
 
 #define GetHeader(a) (((FlArrayHeader*)a)-1)
+#define GetArray(h) (((FlArrayHeader*)h) + 1)
 
-void* fl_array_new(size_t size, size_t n)
+void* fl_array_new(size_t dtsize, size_t length)
 {
-	flm_assert(n > 0, "Number of elements must be greater than 0");
-	void *array = fl_calloc(1, sizeof(FlArrayHeader) + size * n);
-	FlArrayHeader *h = ((FlArrayHeader*)array)+0;
-	h->s = size;
-	h->n = n;
-	memset(h+1, 0, size * n);
-	return h+1;
+	flm_assert(length > 0, "Number of elements must be greater than 0");
+
+	FlArrayHeader *header = (FlArrayHeader*)fl_calloc(1, sizeof(FlArrayHeader) + dtsize * length);
+
+	header->dtsize = dtsize;
+	header->length = length;
+
+	memset(GetArray(header), 0, dtsize * length);
+
+	return GetArray(header);
 }
 
-void* fl_array_resize(void *array, size_t n)
+FlArray fl_array_resize(FlArray array, size_t length)
 {
-	FlArrayHeader *h = GetHeader(array);
-	h->n = n;
-	void *tmp = fl_realloc((void*)h, sizeof(FlArrayHeader) + (h->n * h->s));
-	h = tmp;
-	return h+1;
+	FlArrayHeader *header = GetHeader(array);
+
+	void *tmp = fl_realloc((void*)header, sizeof(FlArrayHeader) + (length * header->dtsize));
+
+	if (tmp == NULL)
+		return NULL;
+
+	header->length = length;
+	header = tmp;
+
+	return GetArray(header);
 }
 
-void fl_array_delete(void *array)
+void fl_array_delete(FlArray array)
 {
-	FlArrayHeader *h = GetHeader(array);
-	fl_free(h);
+	FlArrayHeader *header = GetHeader(array);
+	fl_free(header);
 }
 
-void fl_array_delete_h(void *array, void (*delete_handler)(FlByte*))
+void fl_array_delete_h(FlArray array, void (*delete_handler)(FlByte*))
 {
-	FlArrayHeader *h = GetHeader(array);
-	size_t l = h->n * h->s;
+	FlArrayHeader *header = GetHeader(array);
+	size_t bytes = header->length * header->dtsize;
 	FlByte *data = array;
-    for (size_t i=0; i < l; i += h->s)
+    for (size_t i=0; i < bytes; i += header->dtsize)
     {
         if (data+i)
-        {
             delete_handler(data+i);
-        }
     }
-    fl_free(h);
+    fl_free(header);
 }
 
-size_t fl_array_length(const void *array)
+size_t fl_array_length(const FlArray array)
 {
-	FlArrayHeader *h = GetHeader(array);
-	return h->n;
+	FlArrayHeader *header = GetHeader(array);
+	return header->length;
+}
+
+bool fl_array_contains(const FlArray array, const void *needle) 
+{
+	FlArrayHeader *header = GetHeader(array);
+	size_t nelems = header->length;
+	size_t needlesize = header->dtsize;
+	for (size_t i=0; i < nelems; i++)
+	{
+		if (memcmp(((FlByte*)array)+(i*needlesize), needle, needlesize) == 0)
+			return true;
+	}
+	return false;
 }
 
 bool fl_array_contains_n(const void *array, size_t nelems, const void *needle, size_t needlesize) 
 {
-	for (size_t i=0; i < nelems; i++)
+	const FlByte *bytes = (FlByte*)array;
+
+	for (size_t i=0; i * needlesize < nelems; i++)
 	{
-		if (memcmp(((FlByte*)array)+(i*needlesize), needle, needlesize) == 0)
+		if (memcmp(&bytes[i * needlesize], needle, needlesize) == 0)
 			return true;
 	}
 	return false;
 }
 
-bool fl_array_contains(const void *array, const void *needle) 
+FlVector fl_array_to_vector(const FlArray array)
 {
-	FlArrayHeader *h = GetHeader(array);
-	size_t nelems = h->n;
-	size_t needlesize = h->s;
-	for (size_t i=0; i < nelems; i++)
-	{
-		if (memcmp(((FlByte*)array)+(i*needlesize), needle, needlesize) == 0)
-			return true;
-	}
-	return false;
-}
-
-FlVector fl_array_to_vector(const void *array)
-{
-	FlArrayHeader *h = GetHeader(array);
-	FlVector v = fl_vector_new(h->s, h->n);
+	FlArrayHeader *header = GetHeader(array);
+	FlVector vector = fl_vector_new(header->dtsize, header->length);
 
 	const FlByte *data = array;
-	size_t l = h->n * h->s;
-	for (size_t i=0; i < l; i += h->s)
+	size_t l = header->length * header->dtsize;
+	for (size_t i=0; i < l; i += header->dtsize)
     {
         if (data+i)
-        {
-            fl_vector_add(v, data+i);
-        }
+            fl_vector_add(vector, data+i);
     }
-    return v;
+    return vector;
 }

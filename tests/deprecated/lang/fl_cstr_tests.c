@@ -73,7 +73,7 @@ fl_cstring_tests()
 	}
 
 	{
-		FlError *error = NULL;
+		struct FlError *error = NULL;
 		fl_error_set(&error, 99, "%sa", "str");
 		flm_test(fl_error_get_id(error) == 99);
 		FlCstr msg = fl_error_get_message(error);
@@ -84,7 +84,7 @@ fl_cstring_tests()
 	}
 
 	{
-		FlError *error = NULL;
+		struct FlError *error = NULL;
 		fl_error_set(&error, 99, "Test [%c][%d][%s]", 'a',1,"str");
 		flm_test(fl_error_get_id(error) == 99);
 		FlCstr msg = fl_error_get_message(error);

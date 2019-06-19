@@ -24,8 +24,6 @@ clang.exe -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-f
 clang.exe -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -std=gnu99 -pedantic -fstrict-aliasing -finput-charset=UTF-8 -fexec-charset=UTF-8 -DFL_UNICODE_DB -ggdb -DFL_DEBUG -c .\src\containers\Iterator.c  -o .\obj\debug\containers\Iterator.o
 clang.exe -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -std=gnu99 -pedantic -fstrict-aliasing -finput-charset=UTF-8 -fexec-charset=UTF-8 -DFL_UNICODE_DB -ggdb -DFL_DEBUG -c .\src\containers\Vector.c  -o .\obj\debug\containers\Vector.o
 clang.exe -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -std=gnu99 -pedantic -fstrict-aliasing -finput-charset=UTF-8 -fexec-charset=UTF-8 -DFL_UNICODE_DB -ggdb -DFL_DEBUG -c .\src\containers\List.c  -o .\obj\debug\containers\List.o
-clang.exe -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -std=gnu99 -pedantic -fstrict-aliasing -finput-charset=UTF-8 -fexec-charset=UTF-8 -DFL_UNICODE_DB -ggdb -DFL_DEBUG -c .\src\containers\KeyValuePair.c  -o .\obj\debug\containers\KeyValuePair.o
-clang.exe -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -std=gnu99 -pedantic -fstrict-aliasing -finput-charset=UTF-8 -fexec-charset=UTF-8 -DFL_UNICODE_DB -ggdb -DFL_DEBUG -c .\src\containers\Dictionary.c  -o .\obj\debug\containers\Dictionary.o
 clang.exe -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -std=gnu99 -pedantic -fstrict-aliasing -finput-charset=UTF-8 -fexec-charset=UTF-8 -DFL_UNICODE_DB -ggdb -DFL_DEBUG -c .\src\containers\Hashtable.c  -o .\obj\debug\containers\Hashtable.o
 clang.exe -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -std=gnu99 -pedantic -fstrict-aliasing -finput-charset=UTF-8 -fexec-charset=UTF-8 -DFL_UNICODE_DB -ggdb -DFL_DEBUG -c .\src\text\Regex.c  -o .\obj\debug\text\Regex.o
 clang.exe -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -std=gnu99 -pedantic -fstrict-aliasing -finput-charset=UTF-8 -fexec-charset=UTF-8 -DFL_UNICODE_DB -ggdb -DFL_DEBUG -c .\src\os\System.c  -o .\obj\debug\os\System.o
@@ -51,8 +49,6 @@ lib -NOLOGO -VERBOSE                        ^
     obj\debug\containers\Iterator.o         ^
     obj\debug\containers\Vector.o           ^
     obj\debug\containers\List.o             ^
-    obj\debug\containers\KeyValuePair.o     ^
-    obj\debug\containers\Dictionary.o       ^
     obj\debug\containers\Hashtable.o        ^
     obj\debug\text\Regex.o                  ^
     obj\debug\os\System.o                   ^
@@ -78,6 +74,7 @@ clang.exe -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-f
 clang.exe -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -std=gnu99 -pedantic -fstrict-aliasing -finput-charset=UTF-8 -fexec-charset=UTF-8 -DFL_UNICODE_DB -ggdb -DFL_DEBUG -c -I.\include -I.\src tests\text\Test_String.c -o .\tests\obj\debug\text\Test_String.o
 clang.exe -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -std=gnu99 -pedantic -fstrict-aliasing -finput-charset=UTF-8 -fexec-charset=UTF-8 -DFL_UNICODE_DB -ggdb -DFL_DEBUG -c -I.\include -I.\src tests\text\Test_Regex.c -o .\tests\obj\debug\text\Test_Regex.o
 clang.exe -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -std=gnu99 -pedantic -fstrict-aliasing -finput-charset=UTF-8 -fexec-charset=UTF-8 -DFL_UNICODE_DB -ggdb -DFL_DEBUG -c -I.\include -I.\src tests\containers\Test_Hashtable.c -o .\tests\obj\debug\containers\Test_Hashtable.o
+clang.exe -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -std=gnu99 -pedantic -fstrict-aliasing -finput-charset=UTF-8 -fexec-charset=UTF-8 -DFL_UNICODE_DB -ggdb -DFL_DEBUG -c -I.\include -I.\src tests\containers\Test_List.c -o .\tests\obj\debug\containers\Test_List.o
 
 md .\tests\build\debug
 
@@ -91,18 +88,20 @@ md .\tests\build\debug
 ::     tests\obj\debug\text\Test_String.o  ^
 ::     tests\obj\debug\Test_Cstring.o
 
-link.exe /out:tests\\build\\debug\\tests.exe ^
-    /defaultlib:libcmt ^
-    /nologo ^
+lld-link.exe ^
+    /OUT:tests\build\debug\tests.exe ^
+    /DEFAULTLIB:libcmt ^
+    /NOLOGO ^
     /DEBUG:FULL ^
-    build\\debug\\libfl.lib ^
-    tests\\obj\\debug\\Main.o ^
-    tests\\obj\\debug\\Test.o ^
-    tests\\obj\\debug\\Std.o ^
-    tests\\obj\\debug\\Test_Span.o ^
-    tests\\obj\\debug\\IO.o ^
-    tests\\obj\\debug\\Test_Cstring.o ^
-    tests\\obj\\debug\\text\\Test_Unicode.o ^
-    tests\\obj\\debug\\text\\Test_String.o ^
-    tests\\obj\\debug\\text\\Test_regex.o ^
-    tests\\obj\\debug\\containers\\Test_Hashtable.o
+    build\debug\libfl.lib ^
+    tests\obj\debug\Main.o ^
+    tests\obj\debug\Test.o ^
+    tests\obj\debug\Std.o ^
+    tests\obj\debug\Test_Span.o ^
+    tests\obj\debug\IO.o ^
+    tests\obj\debug\Test_Cstring.o ^
+    tests\obj\debug\text\Test_Unicode.o ^
+    tests\obj\debug\text\Test_String.o ^
+    tests\obj\debug\text\Test_regex.o ^
+    tests\obj\debug\containers\Test_Hashtable.o ^
+    tests\obj\debug\containers\Test_List.o

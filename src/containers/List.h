@@ -5,166 +5,179 @@
 #include "Container.h"
 #include "Iterator.h"
 
-typedef struct FlListNode* FlListNode;
-typedef struct FlList* FlList;
-
-/**
- * {@dtsize} DataType size for the new list
+/*
+ * Type: FlList
+ *  
+ *  An opaque pointer to a doubly linked list instance.
  *
- * Creates an empty list for elements of {dtsize} size
  */
-FlList fl_list_new(size_t dtsize);
+typedef struct FlList *FlList;
 
-/**
- * Returns the number of elements in {list}
+/*
+ * Type: struct FlListNode
+ *  Represents a list node
+ * 
+ * ===== C ===== 
+ * struct FlListNode {
+ *    FlByte *value;
+ *    struct FlListNode *prev;
+ *    struct FlListNode *next;
+ * };
  */
-size_t fl_list_length(FlList list);
+struct FlListNode {
+    FlByte *value;
+    struct FlListNode *prev;
+    struct FlListNode *next;
+};
 
-/**
- * Returns the size of the data type that {list} accepts
+/*
+ * Type: struct FlListArgs
+ *  Arguments to create a new doubly linked list using
+ *  the provided configuration
+ * 
+ * ===== C ===== 
+ * struct FlListArgs {
+ *     FlContainerWriterFunc value_writer;
+ *     FlContainerCleanupFunction value_cleaner;
+ * };
  */
-size_t fl_list_dtsize(FlList list);
+struct FlListArgs {
+    FlContainerWriterFunc value_writer;
+    FlContainerCleanupFunction value_cleaner;
+};
 
-/**
- * {@list} Target list to add a new value
- * {@elem} Element to add to the list.
- * Return a pointer to the inserted element
- */
-void* fl_list_add(FlList list, const void *elem);
-
-/**
- * {@list} Target list to insert a new value
- * {@elem} Element to add to the list.
- * Insert {elem} in the position {pos} of {list}
- * Return a pointer to the inserted element
- */
-void* fl_list_insert(FlList list, const void *elem, size_t pos);
-
-/**
- * Returns a pointer to the element in the {index} index of {list}
- */
-void* fl_list_get(FlList list, size_t index);
-
-/**
- * Returns a pointer to the FlListNode element in the {index} index of {list}
- */
-FlListNode fl_list_get_node(FlList list, size_t index);
-
-/**
- * If {elem} exists in {list}, returns a pointer to the element
- */
-void* fl_list_find(FlList list, const void *elem);
-
-/**
- * If {elem} exists in {list}, returns a pointer to the element.
- * To find {elem} this functions uses a {handler} function
+/*
+ * Function: fl_list_new
+ *  Creates a new doubly linked list that simply saves pointer references
+ *  into its nodes' value pointer, and at delete it does not
+ *  perform nodes' value cleanup
+ * 
+ * Parameters:
+ *  None.
  *
- * {handler} receives a current element {ce}, an {elem} to look for and the size in bytes of each {ce}
+ * Returns:
+ *  FlList - an opaque pointer to a list
+ *
  */
-void* fl_list_find_h(FlList list, bool (*handler)(const void *ce, const void *elem, size_t dtsize), const void *elem);
+FlList fl_list_new(void);
 
-/**
- * Remove from {list}, the first element in {list} copying it into {dest}
+/*
+ * Function: fl_list_new_args
+ *  Creates a new list using the provided <FlContainerWriterFunc> and
+ *  <FlContainerCleanupFunction> functions to save and clean nodes' values
+ *
+ * Parameters:
+ *  args - The arguments to configure the list instance (<struct FlListArgs>)
+ *
+ * Returns:
+ *  FlList - an opaque pointer to a list
+ *
  */
-bool fl_list_shift(FlList list, void *dest);
+FlList fl_list_new_args(struct FlListArgs args);
 
-/**
- * Insert {elem} in the first position of {list}
+/*
+ * Function: fl_list_head
+ *  Returns the head of the doubly linked list
+ *
+ * Parameters:
+ *  list - List to get its head
+ *
+ * Returns:
+ * struct FlListNode* - The list's head
+ *
  */
-void* fl_list_unshift(FlList list, const void *elem);
+struct FlListNode* fl_list_head(FlList list);
 
-/**
- * Remove from {list}, the last element in {list} copying it into {dest}
+/*
+ * Function: fl_list_tail
+ *  Returns the tail of the doubly linked list
+ *
+ * Parameters:
+ *  list - List to get its tail
+ *
+ * Returns:
+ * struct FlListNode* - The list's tail
+ *
  */
-bool fl_list_pop(FlList list, void *dest);
+struct FlListNode* fl_list_tail(FlList list);
 
-/**
- * Return true if {list} contains {elem}
+/*
+ * Function: fl_list_append
+ *  Adds a new <struct FlListNode> to the end of the list and returns
+ *  a pointer to it (which is the new list's tail)
+ *
+ * Parameters:
+ *  list - Target list to add the new node
+ *  value - Value to be assigned/copied to the node's value
+ *
+ * Returns:
+ *  struct FlListNode* - Pointer to the newly inserted node
+ *
  */
-bool fl_list_contains(FlList list, const void *elem);
+struct FlListNode* fl_list_append(FlList list, const void *value);
 
-/**
- * Append {list2} elements at the end of {list}
+/*
+ * Function: fl_list_prepend
+ *  Adds a new <struct FlListNode> to the start of the list and returns
+ *  a pointer to it (which is the new list's head)
+ *
+ * Parameters:
+ *  list - Target list to add the new node
+ *  value - Value to be assigned/copied to the node's value
+ *
+ * Returns:
+ *  struct FlListNode* - Pointer to the newly inserted node
+ *
  */
-void fl_list_concat(FlList list, FlList list2);
+struct FlListNode* fl_list_prepend(FlList list, const void *value);
 
-/**
- * Creates a new FlList that will contain all the elements of
- * {list} and {list2}
+/*
+ * Function: fl_list_insert_after
+ *  Inserts a new <struct FlListNode> after the *target* node and returns a pointer
+ *  to the newly inserted node. If *target* is the list's tail, the inserted node
+ *  will be the new tail
+ * 
+ * Parameters:
+ *  list - Target list to insert the new node
+ *  target - Target node to insert the new node after it
+ *  value - Value to be assigned/copied to the node's value
+ *
+ * Returns:
+ *  struct FlListNode* - Pointer to the newly inserted node
+ *
  */
-FlList fl_list_merge(FlList list, FlList list2);
+struct FlListNode* fl_list_insert_after(FlList list, struct FlListNode *target, const void *value);
 
-/**
- * Removes the {pos}-th element {list}.
- * The removed element will be copied in {dest}
+/*
+ * Function: fl_list_insert_before
+ *  Inserts a new <struct FlListNode> before the *target* node and returns a pointer
+ *  to the newly inserted node. If *target* is the list's head, the inserted node
+ *  will be the new head
+ * 
+ * Parameters:
+ *  list - Target list to insert the new node
+ *  target - Target node to insert the new node before it
+ *  value - Value to be assigned/copied to the node's value
+ *
+ * Returns:
+ *  struct FlListNode* - Pointer to the newly inserted node
+ *
  */
-bool fl_list_remove(FlList list, size_t pos, void *dest);
+struct FlListNode* fl_list_insert_before(FlList list, struct FlListNode *target, const void *value);
 
-/**
- * Removes from {list} the element that found with {comparer}.
- * The removed element will be copied in {dest}
- */
-bool fl_list_remove_h(FlList list, bool (*comparer)(const void *celem, const void *elem, size_t dtsize), const void *elem, void *dest);
 
-/**
- * Remove all elements from the {list}
- */
-void fl_list_clear(FlList list);
-
-/**
- * Remove all elements from the {list} using {delete_handler} to release the memory
- */
-void fl_list_clear_h(FlList list, void (*delete_handler)(FlByte*));
-
-/**
- * Free the memory reserved for {list}
+/*
+ * Function: fl_list_delete
+ *  Frees the resources allocated by the list, including the memory allocated 
+ *  for the <struct FlListNode>s. If the list has a <FlContainerCleanupFunction>
+ *  the nodes' value will be cleaned using it.
+ *
+ * Parameters:
+ *  list - List to be freed
+ *
+ * Returns:
+ *  void - This function does not return a value
  */
 void fl_list_delete(FlList list);
-
-/**
- * Free the memory reserved for {list} using {delete_handler} for each element.
- * The handler MUST free the memory used by each element
- */
-void fl_list_delete_h(FlList list, void (*delete_handler)(FlByte*));
-
-/**
- * Returns a pointer to the next element of {node}
- */
-FlListNode fl_list_node_next(FlListNode node);
-
-/**
- * Returns a pointer to the previous element of {node}
- */
-FlListNode fl_list_node_prev(FlListNode node);
-
-/**
- * Returns a pointer to data saved in {node}
- */
-FlByte* fl_list_node_data(FlListNode node);
-
-/* -------------------------------------------------------------
- * {function: fl_list_begin}
- * -------------------------------------------------------------
- * Returns an {FlIterator} that points to the first element in {param: list}
- * -------------------------------------------------------------
- * {param: const FlList list} Target list to be pointed by the iterator
- * -------------------------------------------------------------
- * {return: FlIterator} Iterator pointing to the first element in {param: list}
- * -------------------------------------------------------------
- */
-FlIterator fl_list_begin(const FlList list);
-
-/* -------------------------------------------------------------
- * {function: fl_list_end}
- * -------------------------------------------------------------
- * Returns an {FlIterator} that points to the past-last-nth element in {param: list}
- * The FlIterator returned by this function MUST NOT be dereferenced by fl_iterator_value.
- * -------------------------------------------------------------
- * {param: const FlList list} Target list to be pointed by the iterator
- * -------------------------------------------------------------
- * {return: FlIterator} Iterator pointing beyond the last element in {param: list}
- * -------------------------------------------------------------
- */
-FlIterator fl_list_end(const FlList list);
 
 #endif /* FL_LIST_H */

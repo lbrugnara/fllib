@@ -9,6 +9,7 @@
 #include "text/Test_String.h"
 #include "text/Test_Regex.h"
 #include "containers/Test_Hashtable.h"
+#include "containers/Test_List.h"
 
 #include <fllib.h>
 #include <stdio.h>
@@ -27,14 +28,14 @@ int main(void)
             { "Span iterator", &test_span_iterator }
         ),
         fl_test_suite("Module Cstr", 
-            { "fl_cstring_new",            &test_cstring_new          }, 
-            { "fl_cstring_dup",            &test_cstring_dup          },
-            { "fl_cstring_split",          &test_cstring_split        },
-            { "fl_cstring_replace_char",   &test_cstring_replace_char },
-            { "fl_cstring_replace",        &test_cstring_replace      },
-            { "fl_cstring_append{_char}",  &test_cstring_append       },
-            { "fl_cstring_join",           &test_cstring_join         },
-            { "cstr_misc_functions",    &test_cstring_misc         }
+            { "fl_cstring_new", &test_cstring_new }, 
+            { "fl_cstring_dup", &test_cstring_dup },
+            { "fl_cstring_split", &test_cstring_split },
+            { "fl_cstring_replace_char", &test_cstring_replace_char },
+            { "fl_cstring_replace", &test_cstring_replace },
+            { "fl_cstring_append{_char}", &test_cstring_append },
+            { "fl_cstring_join", &test_cstring_join },
+            { "cstr_misc_functions", &test_cstring_misc }
         ),
         fl_test_suite("Module IO", 
             { "fl_io_file_write_all_bytes and fl_io_file_read_all_bytes", &test_file_rw_all_bytes }
@@ -67,6 +68,14 @@ int main(void)
             { "fl_hashtable_keys_and_values", &test_fl_hashtable_keys_and_values },
             { "fl_hashtable_remove", &test_fl_hashtable_remove },
             { "fl_hashtable_resize", &test_fl_hashtable_resize }
+        ),
+        fl_test_suite("Module List",
+            { "fl_list_head", &test_fl_list_head },
+            { "fl_list_tail", &test_fl_list_tail },
+            { "fl_list_append", &test_fl_list_append },
+            { "fl_list_prepend", &test_fl_list_prepend },
+            { "fl_list_insert_after", &test_fl_list_insert_after },
+            { "fl_list_insert_before", &test_fl_list_insert_before }
         ),
         NULL
     );

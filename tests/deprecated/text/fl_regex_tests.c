@@ -9,7 +9,7 @@
 
 bool fl_regex_match_test(FlCstr pattern, FlCstr input)
 {
-	FlError *error = NULL;
+	struct FlError *error = NULL;
 	FlRegex *regex = fl_regex_compile(pattern, &error);
 	if (error != NULL)
 	{
@@ -27,7 +27,7 @@ fl_regex_test_tokenize(const FlCstr regex, FlCstr expect[])
 {
 	printf("Tokenize: /%s/ => ", regex);
 	RegexFlags flags;
-	FlError *error = NULL;
+	struct FlError *error = NULL;
 	FlVector* tokens = parse_regex(regex, &flags, &error);
 	if (error != NULL)
 	{

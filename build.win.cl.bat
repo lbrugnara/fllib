@@ -24,8 +24,6 @@ cl.exe /Zi /DEBUG:FULL /W1 /DFL_UNICODE_DB /DFL_DEBUG /c .\src\containers\Contai
 cl.exe /Zi /DEBUG:FULL /W1 /DFL_UNICODE_DB /DFL_DEBUG /c .\src\containers\Iterator.c  /Fo.\obj\debug\containers\Iterator.o
 cl.exe /Zi /DEBUG:FULL /W1 /DFL_UNICODE_DB /DFL_DEBUG /c .\src\containers\Vector.c  /Fo.\obj\debug\containers\Vector.o
 cl.exe /Zi /DEBUG:FULL /W1 /DFL_UNICODE_DB /DFL_DEBUG /c .\src\containers\List.c  /Fo.\obj\debug\containers\List.o
-cl.exe /Zi /DEBUG:FULL /W1 /DFL_UNICODE_DB /DFL_DEBUG /c .\src\containers\KeyValuePair.c  /Fo.\obj\debug\containers\KeyValuePair.o
-cl.exe /Zi /DEBUG:FULL /W1 /DFL_UNICODE_DB /DFL_DEBUG /c .\src\containers\Dictionary.c  /Fo.\obj\debug\containers\Dictionary.o
 cl.exe /Zi /DEBUG:FULL /W1 /DFL_UNICODE_DB /DFL_DEBUG /c .\src\containers\Hashtable.c  /Fo.\obj\debug\containers\Hashtable.o
 cl.exe /Zi /DEBUG:FULL /W1 /DFL_UNICODE_DB /DFL_DEBUG /c .\src\text\Regex.c  /Fo.\obj\debug\text\Regex.o
 cl.exe /Zi /DEBUG:FULL /W1 /DFL_UNICODE_DB /DFL_DEBUG /c .\src\os\System.c  /Fo.\obj\debug\os\System.o
@@ -51,8 +49,6 @@ lib -NOLOGO -VERBOSE                        ^
     obj\debug\containers\Iterator.o         ^
     obj\debug\containers\Vector.o           ^
     obj\debug\containers\List.o             ^
-    obj\debug\containers\KeyValuePair.o     ^
-    obj\debug\containers\Dictionary.o       ^
     obj\debug\containers\Hashtable.o        ^
     obj\debug\text\Regex.o                  ^
     obj\debug\os\System.o                   ^
@@ -78,6 +74,7 @@ cl.exe /Zi /DEBUG:FULL /W1 /DFL_UNICODE_DB /DFL_DEBUG /c -I.\include -I.\src tes
 cl.exe /Zi /DEBUG:FULL /W1 /DFL_UNICODE_DB /DFL_DEBUG /c -I.\include -I.\src tests\text\Test_String.c /Fo.\tests\obj\debug\text\Test_String.o
 cl.exe /Zi /DEBUG:FULL /W1 /DFL_UNICODE_DB /DFL_DEBUG /c -I.\include -I.\src tests\text\Test_Regex.c /Fo.\tests\obj\debug\text\Test_Regex.o
 cl.exe /Zi /DEBUG:FULL /W1 /DFL_UNICODE_DB /DFL_DEBUG /c -I.\include -I.\src tests\containers\Test_Hashtable.c /Fo.\tests\obj\debug\containers\Test_Hashtable.o
+cl.exe /Zi /DEBUG:FULL /W1 /DFL_UNICODE_DB /DFL_DEBUG /c -I.\include -I.\src tests\containers\Test_List.c /Fo.\tests\obj\debug\containers\Test_List.o
 
 md .\tests\build\debug
 
@@ -105,4 +102,5 @@ link.exe /out:tests\\build\\debug\\tests.exe ^
     tests\\obj\\debug\\text\\Test_Unicode.o ^
     tests\\obj\\debug\\text\\Test_String.o ^
     tests\\obj\\debug\\text\\Test_regex.o ^
-    tests\\obj\\debug\\containers\\Test_Hashtable.o
+    tests\\obj\\debug\\containers\\Test_Hashtable.o ^
+    tests\\obj\\debug\\containers\\Test_List.o

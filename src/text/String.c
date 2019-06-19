@@ -1,10 +1,10 @@
 #include "../Std.h"
 #include "String.h"
 
-/* -------------------------------------------------------------
-* PUBLIC API
-* -------------------------------------------------------------
-*/
+/*
+ * PUBLIC API
+ *
+ */
 
 FlString fl_string_new(const FlString str)
 {
@@ -49,4 +49,4 @@ FlUnicodeChar fl_string_char_at(const FlString str, size_t at)
     }
     return fl_unicode_codepoint_to_unichar(FL_ENCODING_UTF8, (const FlByte*)dst, dst+b);
 }
-*/
+ */

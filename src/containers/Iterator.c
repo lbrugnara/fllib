@@ -1,26 +1,26 @@
-/* =============================================================
- * {module: Iterator}
- * =============================================================
+/*
+ * file: Iterator
+ *
  * {FlIterator} is merely a group of functions and a data type
  * that only the container module knows how they work together
  * to return elements of the collection.
  * The container module has to create an own iterator implementation
  * referenced by {FlIterator} as the "target"
- * -------------------------------------------------------------
+ *
  */
 
 #include "../Std.h"
 #include "../Mem.h"
 #include "Iterator.h"
 
-/* -------------------------------------------------------------
- * {datatype: struct FlIterator}
- * -------------------------------------------------------------
+/*
+ * Type: struct FlIterator
+ *
  * Represents an Iterator that contains the data and functions
  * necessaries to traverse a container. All the information
  * MUST be provided by the particular implementation made by
  * a container module.
- * -------------------------------------------------------------
+ *
  * {member: FlIteratorType type} The type of iterator.
  * {member: void *itdata} The container needs to implement a data structure to keep track of the state of the iterator
  * {member: FlIteratorMove next} Moves the iterator to the next element in the collection
@@ -30,7 +30,7 @@
  * {member: FlIteratorPosition isstart} Checks if an iterator is pointing to the first element in the collection
  * {member: FlIteratorPosition isend} Checks if an iterator is pointing to the past-the-last-nth element in the collection
  * {member: FlIteratorDelete delete} Frees the memory used by {itdata}
- * -------------------------------------------------------------
+ *
  */
 struct FlIterator {
     FlIteratorType type;
@@ -69,18 +69,18 @@ FlIterator fl_iterator_new(
     return it;
 }
 
-/* -------------------------------------------------------------
- * {function: fl_iterator_delete}
- * -------------------------------------------------------------
+/*
+ * Function: fl_iterator_delete
+ *
  * Releases the memory used by {FlIterator} and calls the
  * {FlIteratorDelete} function to request to the container
  * module implementing the iterator to release the memory
  * allocated in the process.
- * -------------------------------------------------------------
- * {param: FlIterator it} Target iterator to clean up
- * -------------------------------------------------------------
+ *
+ * FlIterator it - Target iterator to clean up
+ *
  * {return: void}
- * -------------------------------------------------------------
+ *
  */
 void fl_iterator_delete(FlIterator it)
 {

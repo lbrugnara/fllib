@@ -92,7 +92,7 @@ fl_vector_tests()
 			printf("pop=%d\n", myInt);
 		} while (fl_vector_length(fv));
 
-		printf("/* ------------------------------------------------------------------------*/\n");
+		printf("/*-----------*/\n");
 	    fl_vector_delete(fv);
 	}
 
@@ -151,11 +151,11 @@ fl_vector_tests()
 			printf("myInt=%d\n", myInt);
 		} while (fl_vector_length(fv));
 
-		printf("/* ------------------------------------------------------------------------*/\n");
+		printf("/*-----------*/\n");
 	    fl_vector_delete(fv);
 	}
 
-/* ------------------------------------------------------------------------*/
+/*-----------*/
 
 	if (1) {
 		FlVector* fv2 = fl_vector_new(sizeof(int*), 5);
@@ -199,7 +199,7 @@ fl_vector_tests()
 	    free(pos3);
 	}
 
-/* ------------------------------------------------------------------------*/
+/*-----------*/
     if (1) {
 		FlVector* fv3 = fl_vector_new(sizeof(char*), 15);
 		

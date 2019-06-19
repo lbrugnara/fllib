@@ -1,12 +1,12 @@
-/* =============================================================
-* {module: Tests}
-* =============================================================
-* This is a basic module to run unit tests. It is very basic and
-* it was intended to be used as soon as possible, it will need
-* some refactoring to make it more pleasant to work with, robust
-* and extensible..
-* -------------------------------------------------------------
-*/
+/*
+ * file: Tests
+ *
+ * This is a basic module to run unit tests. It is very basic and
+ * it was intended to be used as soon as possible, it will need
+ * some refactoring to make it more pleasant to work with, robust
+ * and extensible..
+ *
+ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -15,15 +15,15 @@
 #include <fllib.h>
 #include "Test.h"
 
-/* -------------------------------------------------------------
- * {datatype: struct FlTestSuite}
- * -------------------------------------------------------------
+/*
+ * Type: struct FlTestSuite
+ *
  * Represents a test suite that contains a set of tests to run
- * -------------------------------------------------------------
+ *
  * {member: char* name} Suite name
  * {member: size_t ntests} Number of tests that compose the suite
  * {member: FlTest* tests} Pointer to the set of tests
- * -------------------------------------------------------------
+ *
  */
 struct FlTestSuite
 {
@@ -32,17 +32,17 @@ struct FlTestSuite
     const FlTest *tests;
 };
 
-/* -------------------------------------------------------------
- * {function: fl_test_suite_new}
- * -------------------------------------------------------------
+/*
+ * Function: fl_test_suite_new
+ *
  * Creates a test suite
- * -------------------------------------------------------------
- * {param: const char* name} Suite name
- * {param: const FlTest[] tests} Array of tests that compose the suite
- * {param: size_t ntests} Number of tests that compose the suite
- * -------------------------------------------------------------
+ *
+ * const char* name - Suite name
+ * const FlTest[] tests - Array of tests that compose the suite
+ * size_t ntests - Number of tests that compose the suite
+ *
  * {return: FlTestSuite} Suite pointer
- * -------------------------------------------------------------
+ *
  */
 FlTestSuite fl_test_suite_new(const char *name, const FlTest *tests, size_t ntests)
 {
@@ -53,69 +53,71 @@ FlTestSuite fl_test_suite_new(const char *name, const FlTest *tests, size_t ntes
     return t;
 }
 
-/* -------------------------------------------------------------
- * {function: fl_test_suite_delete}
- * -------------------------------------------------------------
+/*
+ * Function: fl_test_suite_delete
+ *
  * Delete a suite freeing its memory
- * -------------------------------------------------------------
- * {param: FlTestSuite suite} Target suite to be removed
- * -------------------------------------------------------------
+ *
+ * FlTestSuite suite - Target suite to be removed
+ *
  * {return: void}
- * -------------------------------------------------------------
+ *
  */
 void fl_test_suite_delete(FlTestSuite suite)
 {
     free(suite);
 }
 
-/* -------------------------------------------------------------
+/*
  * Running tests
- * -------------------------------------------------------------
+ *
  */
 enum {
     TEST_FAILURE = 1,
     TEST_EXCEPTION
 };
 
-/* -------------------------------------------------------------
- * {variable: FlTryContext testctx}
- * -------------------------------------------------------------
+/*
+ * {variable: struct FlContext testctx}
+ *
  * Will keep the state of the program before running a test
  * to be able to go back a continue the execution
- * -------------------------------------------------------------
+ *
  */
-static FlTryContext testctx;
+static struct FlContext testctx = FL_CTX_STATIC_INIT;
 
-/* -------------------------------------------------------------
- * {function: sighandler}
- * -------------------------------------------------------------
+/*
+ * Function: sighandler
+ *
  * Signal handler function for POSIX platforms. When a signal
  * is raised, this handler will trigger an exception.
- * -------------------------------------------------------------
- * {param: int sign} Signal number
- * -------------------------------------------------------------
+ *
+ * int sign - Signal number
+ *
  * {return: void}
- * -------------------------------------------------------------
+ *
  */
 void sighandler(int sign)
 {
-    Throw(&testctx, TEST_FAILURE);
+    char msg[FL_CTX_MSG_SIZE];
+    snprintf(msg, FL_CTX_MSG_SIZE, "Signal %d", sign);
+    Throw(&testctx, TEST_FAILURE, msg);
 }
 
 #ifdef _WIN32
 #include "../src/os/WinEx.h"
-/* -------------------------------------------------------------
- * {function: exception_filter}
- * -------------------------------------------------------------
+/*
+ * Function: exception_filter
+ *
  * Exception filter function for Windows platforms. Capture an 
  * exception raised by Win32 API. When that happens, it throws
  * an exception.
- * -------------------------------------------------------------
- * {param: EXCEPTION_POINTERS ExceptionInfo} Information about the exception
- * -------------------------------------------------------------
+ *
+ * EXCEPTION_POINTERS ExceptionInfo - Information about the exception
+ *
  * {return: LONG} Returns EXCEPTION_CONTINUE_EXECUTION to resume the execution
  *  or EXCEPTION_CONTINUE_SEARCH when the program can't continue
- * -------------------------------------------------------------
+ *
  */
 LONG WINAPI exception_filter(EXCEPTION_POINTERS * ExceptionInfo)
 {
@@ -123,75 +125,74 @@ LONG WINAPI exception_filter(EXCEPTION_POINTERS * ExceptionInfo)
         return EXCEPTION_CONTINUE_SEARCH; // Let Win32 resolve
     // An error condition occured, so take the brief description and Throw the exception
     // to the Try()
-    fl_winex_message_get(ExceptionInfo->ExceptionRecord->ExceptionCode, testctx.message);
-    Throw(&testctx, TEST_EXCEPTION);
+    char message[FL_CTX_MSG_SIZE];
+    fl_winex_message_get(ExceptionInfo->ExceptionRecord->ExceptionCode, message, FL_CTX_MSG_SIZE);
+    Throw(&testctx, TEST_EXCEPTION, message);
     return EXCEPTION_CONTINUE_EXECUTION;
 }
 #endif
 
-/* -------------------------------------------------------------
- * {function: fl_expect}
- * -------------------------------------------------------------
+/*
+ * Function: fl_expect
+ *
  * Simple functions that throws an exception when the condition
  * is false
- * -------------------------------------------------------------
- * {param: const char* descr} Description of the conditions to check
- * {param: bool conditionResult} Condition result
- * -------------------------------------------------------------
+ *
+ * const char* descr - Description of the conditions to check
+ * bool conditionResult - Condition result
+ *
  * {return: bool} true if conditionResult is valid, throws exception if not
- * -------------------------------------------------------------
+ *
  */
 bool fl_expect(const char* descr, bool conditionResult)
 {
     if (!conditionResult)
     {
         printf(" |-- Failed: %s\n", descr);
-        fl_cstring_copy_n(testctx.message, descr, FL_ERROR_TRYCONTEXT_MAX_MSG_SIZE);
-        Throw(&testctx, TEST_FAILURE);
+        Throw(&testctx, TEST_FAILURE, descr);
     }
     printf(" |-- Passed: %s\n", descr);
     return true;
 }
 
-/* -------------------------------------------------------------
- * {function: fl_expect}
- * -------------------------------------------------------------
+/*
+ * Function: fl_expect
+ *
  * Simple functions that throws an exception when the condition
  * is false
- * -------------------------------------------------------------
- * {param: const char* descr} Description of the conditions to check
- * {param: bool conditionResult} Condition result
- * -------------------------------------------------------------
+ *
+ * const char* descr - Description of the conditions to check
+ * bool conditionResult - Condition result
+ *
  * {return: bool} true if conditionResult is valid, throws exception if not
- * -------------------------------------------------------------
+ *
  */
 bool fl_vexpect(bool conditionResult, const char* format, ...)
 {
-    char descr[FL_ERROR_TRYCONTEXT_MAX_MSG_SIZE];
+    char descr[FL_CTX_MSG_SIZE];
     va_list args;
     va_start(args, format);
-    vsnprintf(descr, FL_ERROR_TRYCONTEXT_MAX_MSG_SIZE, format, args);
+    vsnprintf(descr, FL_CTX_MSG_SIZE, format, args);
     va_end(args);
 
     if (!conditionResult)
     {
         printf(" |-- Failed: %s\n", descr);
-        fl_cstring_copy_n(testctx.message, descr, FL_ERROR_TRYCONTEXT_MAX_MSG_SIZE);
-        Throw(&testctx, TEST_FAILURE);
+        Throw(&testctx, TEST_FAILURE, descr);
     }
     printf(" |-- Passed: %s\n", descr);
     return true;
 }
 
-/* -------------------------------------------------------------
- * {function: fl_test_suite_run}
- * -------------------------------------------------------------
+/*
+ * Function: fl_test_suite_run
+ *
  * Run a suite of tests
- * -------------------------------------------------------------
- * {param: FlTestSuite suite} Target suite to be ran
- * -------------------------------------------------------------
+ *
+ * FlTestSuite suite - Target suite to be ran
+ *
  * {return: size_t} number of passed tests
- * -------------------------------------------------------------
+ *
  */
 size_t fl_test_suite_run(FlTestSuite suite)
 {
@@ -233,7 +234,7 @@ size_t fl_test_suite_run(FlTestSuite suite)
 
         if (failed)
         {
-            printf(" [Result] fail: %s\n\n", testctx.message);
+            printf(" [Result] fail: %s\n\n", fl_ctx_last_frame(&testctx)->message);
         }
         else
         {

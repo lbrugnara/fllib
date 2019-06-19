@@ -1,28 +1,51 @@
 #ifndef FL_TYPES_H
 #define FL_TYPES_H
 
-/* -------------------------------------------------------------
-* {datatype: unsigned char FlByte}
-* -------------------------------------------------------------
-* Represents a single byte. Preferred over unsigned char for
-* readability
-* -------------------------------------------------------------
-*/
+/*
+ * Type: FlByte
+ * ===== C =====
+ *  typedef unsigned char FlByte;
+ * =============
+ * 
+ *   Represents a single byte. Preferred over *unsigned char* for readability, but it is not a must.
+ *
+ */
 typedef unsigned char FlByte;
 
 
-/* -------------------------------------------------------------
-* {define: FlString}
-* -------------------------------------------------------------
-* Represents an UTF8 string
-* -------------------------------------------------------------
-*/
+/*
+ * define: FlString
+ * ===== C =====
+ *  #define FlString char*
+ * =============
+ * 
+ *   Represents an UTF8 string
+ * 
+ */
 #define FlString char*
 
 #ifndef NULL
+    /*
+    * define: NULL
+    * ===== C =====
+    *   #define NULL (void*)0
+    * =============
+    * 
+    *   Null pointer
+    * 
+    */
     #define NULL (void*)0
 #endif
 
+/*
+ * define: FL_EOS
+ * ===== C =====
+ *  #define FL_EOS '\0'
+ * =============
+ * 
+ *   End of string
+ * 
+ */
 #define FL_EOS '\0'
 
 #ifdef HAVE_STDBOOL_H

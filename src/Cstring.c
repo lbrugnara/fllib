@@ -10,7 +10,12 @@
 char *fl_cstring_new(size_t length)
 {
     char *str = fl_calloc(length + 1, sizeof(char));
-    str[length] = FL_EOS;
+
+    if (!str)
+        return NULL;
+
+    str[length] = '\0';
+
     return str;
 }
 

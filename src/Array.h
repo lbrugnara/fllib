@@ -1,153 +1,193 @@
 #ifndef FL_ARRAY_H
 #define FL_ARRAY_H
 
-/* =============================================================
- * {module: Array}
- * =============================================================
- * Provides a simple mechanism to allocate arrays on heap, keep 
- * track of its size and implements some manipulation and 
- * searching functions.
- * All the module's functions ASSUME the array they are manipulating
- * was allocated using this module, unless the function docs tells
- * otherwise.
- * -------------------------------------------------------------
+/*
+ * File: Array
+ *  Provides a simple mechanism to allocate arrays on heap, keep track of its size and 
+ *  implements some manipulation and searching functions. 
+ * 
+ * Notes:
+ *  All the module's functions ASSUME the array they are manipulating was allocated 
+ *  using the functions in this module, unless the function documentation tells otherwise.
+ *  The signature of each function clearly states if it specifically expects <FlArray> 
+ *  or if it accepts any type of array (including <FlArray>), and based on that it is safe 
+ *  to assume that functions that expect an <FlArray> works only with arrays allocated with <fl_array_new> 
+ *  and functions that expect a pointer work with both types of arrays.
+ *
  */
 
 #include "Types.h"
 #include "containers/Vector.h"
 
-#define FlArray void*
+/*
+ * Type: FlArray
+ *  An FlArray is a pointer to the allocated memory
+ *
+ */
+typedef void *FlArray;
+
 #define arrayof(type) (type*)
 
-/* -------------------------------------------------------------
- * {macro: flm_array_length}
- * -------------------------------------------------------------
- * Obtains the length of a C array that is allocated on the stack
- * {important: This MUST NOT be used with heap allocated arrays,
- * use {fl_array_new} and {fl_array_length} instead}
- * -------------------------------------------------------------
- * {param: mixed[] x} Stack allocated array
- * -------------------------------------------------------------
+/*
+ * Macro: flm_array_length
+ * ===== C =====
+ *  #define flm_array_length(x)  (sizeof(x) / sizeof((x)[0]))
+ * =============
+ * 
+ *  Obtains the length of a C array that is allocated on the stack
+ *  *important: This MUST NOT be used with heap allocated arrays,
+ *  use <fl_array_new> and <fl_array_length> instead*
+ *
+ * Parameters:
+ *  mixed[] x - Stack allocated array
+ *
  */
 #define flm_array_length(x)  (sizeof(x) / sizeof((x)[0]))
 
-/* -------------------------------------------------------------
- * {macro: flm_array_cmp}
- * -------------------------------------------------------------
- * Syntactic sugar for memcmp
- * -------------------------------------------------------------
+/*
+ * Macro: flm_array_cmp
+ * ===== C =====
+ *  #define flm_array_cmp memcmp
+ * =============
+ *
+ *  Syntactic sugar for the memcmp function
+ *
  */
 #define flm_array_cmp memcmp
 
-/* -------------------------------------------------------------
- * {function: fl_array_new}
- * -------------------------------------------------------------
- * Allocate space for {n} elements of {size} bytes each
- * -------------------------------------------------------------
- * {param: size_t size} Size of the type of the array
- * {param: size_t n} Number of elements of {size} bytes to allocate
- * -------------------------------------------------------------
- * {return: void*} Pointer to the allocated memory
- * -------------------------------------------------------------
+/*
+ * Function: fl_array_new
+ *  Allocates space for *n* elements of *size* bytes each and return
+ *  a pointer to it.
+ *
+ * Parameters:
+ *  size_t size - Size of the type of the array
+ *  size_t n - Number of elements of *size* bytes to allocate
+ *
+ * Return:
+ *  FlArray - Pointer to the allocated memory
+ * 
+ * Notes:
+ *  The pointer returned by this function MUST BE freed with the <fl_array_delete> function
+ *
  */
-void* fl_array_new(size_t size, size_t n);
+FlArray fl_array_new(size_t size, size_t n);
 
-/* -------------------------------------------------------------
- * {function: fl_array_delete}
- * -------------------------------------------------------------
- * Releases the memory allocated with {fl_array_new}
- * -------------------------------------------------------------
- * {param: void *array} A pointer to the memory to be released
- * -------------------------------------------------------------
- * {return: void}
- * -------------------------------------------------------------
+/*
+ * Function: fl_array_delete
+ *  Releases the memory allocated with the <fl_array_new> function
+ *
+ * Parameters:
+ *  FlArray array - A pointer to the memory to be freed
+ *
+ * Return:
+ *  void - This function does not return a value
+ *
  */
-void fl_array_delete(void *array);
+void fl_array_delete(FlArray array);
 
-/* -------------------------------------------------------------
- * {function: fl_array_delete_h}
- * -------------------------------------------------------------
- * Releases the memory allocated for {array} using {delete_handler}
- * to release the memory used by each element.
- * The handler function MUST free all the memory used by each
- * element.
- * -------------------------------------------------------------
- * {param: void *array} A pointer to the memory to be realeased
- * {param: void (*)(FlByte*) delete_handler} Handler function to release the memory for each element of array
- * -------------------------------------------------------------
- * {return: void}
- * -------------------------------------------------------------
+/*
+ * Function: fl_array_delete_h
+ *  Releases the memory allocated for an *array* using *delete_handler*
+ *  to release the memory used by each element within the array.
+ *  It is up to the handler function to free all the memory used by each
+ *  element.
+ *
+ * Parameters:
+ *  FlArray array - A pointer to the memory to be realeased
+ *  void (*)(FlByte*) delete_handler - Handler function to release the memory for each element of array
+ *
+ * Return:
+ *  void - This function does not return a value.
+ *
  */
-void fl_array_delete_h(void *array, void (*delete_handler)(FlByte*));
+void fl_array_delete_h(FlArray array, void (*delete_handler)(FlByte*));
 
-/* -------------------------------------------------------------
- * {function: fl_array_resize}
- * -------------------------------------------------------------
- * Reallocate memory (previously allocated with {fl_array_new})
- * in {array}. The new size will be {n} * sizeof(type) where
- * type is the data type used to allocate the {array}
- * -------------------------------------------------------------
- * {param: void *array} A pointer to the memory to be reallocated
- * {param: size_t n} Number of elements to allocate in {array}
- * -------------------------------------------------------------
- * {return: void*} A pointer to the new allocated memory
- * -------------------------------------------------------------
+/*
+ * Function: fl_array_resize
+ *  Reallocates memory (previously allocated with <fl_array_new>)
+ *  in *array*. The new size will be *n* * *sizeof(type)* where
+ *  type is the data type used to allocate the *array*. Similarly
+ *  to the <fl_realloc> function, if the reallocation fails, this
+ *  function frees the memory used by *array*, that way
+ *  the following snippet of code can be safely used (as far as *array*
+ *  does not point to a memory section that needs to be freed too):
+ * 
+ * ===== C =====
+ *  array = fl_array_resize(array, size);
+ * =============
+ *
+ * Parameters:
+ *  FlArray array - A pointer to the memory to be reallocated
+ *  size_t n - Number of elements to allocate in *array*
+ *
+ * Return:
+ *  FlArray - A pointer to the new allocated memory, or NULL on failure
+ *
  */
-void* fl_array_resize(void *array, size_t n);
+FlArray fl_array_resize(FlArray array, size_t n);
 
-/* -------------------------------------------------------------
- * {function: fl_array_length}
- * -------------------------------------------------------------
- * Returns the number of elements allocated in array
- * -------------------------------------------------------------
- * {param: void *array} Target array
- * -------------------------------------------------------------
- * {return: size_t} Number of elements array can contain
- * -------------------------------------------------------------
+/*
+ * Function: fl_array_length
+ *  Returns the number of elements the *array* contains
+ *
+ * Parameters:
+ *  FlArray array - Target array to get its capacity
+ *
+ * Return:
+ *  size_t - Number of elements the array can contain
+ *
  */
-size_t fl_array_length(const void *array);
+size_t fl_array_length(const FlArray array);
 
-/* -------------------------------------------------------------
- * {function: fl_array_contains}
- * -------------------------------------------------------------
- * Search for {needle} in {array}. This function MUST be used
- * only with arrays allocated with {fl_array_new}.
- * -------------------------------------------------------------
- * {param: const void *array} Target array to look for {needle}
- * {param: const void *needle} Pointer to the memory to search in {array}
- * -------------------------------------------------------------
- * {return: bool} True if needle is in array
- * -------------------------------------------------------------
+/*
+ * Function: fl_array_contains
+ *  Search for *needle* in *array*. This function MUST be used
+ *  only with arrays allocated with <fl_array_new>.
+ *
+ * Parameters:
+ *  const FlArray array - Target array to look for *needle*
+ *  const void *needle - Pointer to the memory to search in *array*
+ *
+ * Return:
+ *  bool - *true* if *needle* is present in the *array*
+ *
  */
-bool fl_array_contains(const void *array, const void *needle);
+bool fl_array_contains(const FlArray array, const void *needle);
 
-/* -------------------------------------------------------------
- * {function: fl_array_contains_n}
- * -------------------------------------------------------------
- * Search for {needle} (of {needlesize} bytes) in the {nelems}
- * elements of {array}.
- * -------------------------------------------------------------
- * {param: const void *array} Target array to look for {needle}
- * {param: size_t nelems} Number of elements of {array}
- * {param: const void *needle} Pointer to the memory to search in {array}
- * {param: size_t needlesize} Size of {needle}
- * -------------------------------------------------------------
- * {return: bool} True if needle is in array
- * -------------------------------------------------------------
+/*
+ * Function: fl_array_contains_n
+ *  Search for *needle* (of *needlesize* bytes) in the *nelems*
+ *  elements of *array*.
+ *
+ * Parameters>
+ *  const void *array - Target array to look for *needle*
+ *  size_t nelems - Number of elements of *array*
+ *  const void *needle - Pointer to the memory to search in *array*
+ *  size_t needlesize - Size of *needle*
+ *
+ * Return:
+ *  bool - *true* if needle is present in the *array*
+ * 
+ * Notes:
+ *  This function does not necessarily expect array to be an array allocated
+ *  with <fl_array_new>, it can be safely used with stack or heap allocated arrays,
+ *  including <FlArray>s.
+ *
  */
 bool fl_array_contains_n(const void *array, size_t nelems, const void *needle, size_t needlesize);
 
-/* -------------------------------------------------------------
- * {function: fl_array_to_vector}
- * -------------------------------------------------------------
- * Creates an {FlVector} using as source of elements {array}
- * -------------------------------------------------------------
- * {param: const void *array} Array of elements
- * -------------------------------------------------------------
- * {return: FlVector`} Pointer to a new vector with the array 
- * elements on it
- * -------------------------------------------------------------
+/*
+ * Function: fl_array_to_vector
+ *  Creates an <FlVector> using as the source of elements the provided *array*
+ *
+ * Parameters:
+ *  const FlArray array - Array of elements
+ *
+ * Return:
+ *  FlVector - Pointer to a new vector with the array's elements on it
+ *
  */
-FlVector fl_array_to_vector(const void *array);
+FlVector fl_array_to_vector(const FlArray array);
 
 #endif /* FL_ARRAY_H */

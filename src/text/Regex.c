@@ -1,6 +1,6 @@
-/* =============================================================
- * {module: Regex}
- * =============================================================
+/*
+ * file: Regex
+ *
  * This module compiles a regular expression patterns into an NFA
  * The steps involved in the process are:
  *	- Analysis of the pattern
@@ -9,7 +9,7 @@
  * This module currently support matching functions.
  *-------------------------------------------------------------
  * {todo: Capturing groups}
- * -------------------------------------------------------------
+ *
  */
 #include <stdlib.h>
 #include <stdio.h>
@@ -22,14 +22,14 @@
 #include "../Mem.h"
 #include "../containers/Vector.h"
 
-/* -------------------------------------------------------------
- * {datatype: unsigned char RegexFlags}
- * -------------------------------------------------------------
+/*
+ * Type: unsigned char RegexFlags
+ *
  * Use bitwise operators to track pattern flags.
  * Current flags:
  * 	Bit 0 - Start: 1 if pattern starts with ^
  *	Bit 1 - End: 1 if pattern ends with $
- * -------------------------------------------------------------
+ *
  */
 typedef unsigned char RegexFlags;
 #define FLAG_START 			FLBIT(0)
@@ -39,13 +39,13 @@ typedef unsigned char RegexFlags;
 #define HAS_FLAG_START(s)	FLBIT_IS_ON(s,FLAG_START)
 #define HAS_FLAG_END(s)		FLBIT_IS_ON(s,FLAG_END)
 
-/* -------------------------------------------------------------
- * {datatype: enum NfaStateType}
- * -------------------------------------------------------------
+/*
+ * Type: enum NfaStateType
+ *
  * Type of NFA state. Current types:
  * 	NFA_STATE: Represents a simple state with a given value like S(a)
  * 	NFA_CHARCLASS_STATE: Represents a charclass state like S([0-9])
- * -------------------------------------------------------------
+ *
  */
 typedef enum
 {
@@ -53,14 +53,14 @@ typedef enum
 	NFA_CHARCLASS_STATE
 } NfaStateType;
 
-/* -------------------------------------------------------------
- * {datatype: unsigned char StateFlags}
- * -------------------------------------------------------------
+/*
+ * Type: unsigned char StateFlags
+ *
  * Use bitwise operators to track state flags. 
  * Current flags:
  * 	Bit 0 - Initial: 1 when state is the initial state of the NFA
  *	Bit 1 - Final: 1 when state is a final state of the NFA
- * -------------------------------------------------------------
+ *
  */
 typedef unsigned char StateFlags;
 #define STATE_INITIAL 			FLBIT(0)
@@ -72,17 +72,17 @@ typedef unsigned char StateFlags;
 #define STATE_IS_INITIAL(s)		FLBIT_IS_ON(s->flags,STATE_INITIAL)
 #define STATE_IS_FINAL(s)		FLBIT_IS_ON(s->flags,STATE_FINAL)
 
-/* -------------------------------------------------------------
- * {datatype: struct NfaState}
- * -------------------------------------------------------------
+/*
+ * Type: struct NfaState
+ *
  * Represents an state of an NFA
- * -------------------------------------------------------------
+ *
  * {member: int id} State ID (starts from 0). It us used as an array index to run the NFA 
  * {member: char* value} Node value to be matched (or a pretty representation like in NfaStateCharClass)
  * {member: FlVector to*} Vector of states reachables from current state
  * {member: StateFlags flags} Set of flags to indicate initial and final states
  * {member: NfaStateType type} Type of state
- * -------------------------------------------------------------
+ *
  */
 #define STATE_BASE_DEF() 	\
 int id;						\
@@ -96,13 +96,13 @@ typedef struct
 	STATE_BASE_DEF()
 } NfaState;
 
-/* -------------------------------------------------------------
- * {datatype: struct NfaStateCharClass}
- * -------------------------------------------------------------
+/*
+ * Type: struct NfaStateCharClass
+ *
  * {member: int map} Represents 256 ASCII characters. Valid characters are set to 1. State matches with all 
  * 	the values that are 1 in map (or 0 based on {negated})
  * {member: bool negated} True when the char class state is a negated set
- * -------------------------------------------------------------
+ *
  */
 typedef struct
 {
@@ -111,13 +111,13 @@ typedef struct
 	bool negated;
 } NfaStateCharClass;
 
-/* -------------------------------------------------------------
- * {datatype: struct FlRegex}
- * -------------------------------------------------------------
+/*
+ * Type: struct FlRegex
+ *
  * {member: char* pattern} Pattern used to compile the {FlRegex}
  * {member: NfaState states} Array of {NfaState} pointers (represent the NFA)
  * {member: RegexFlags flags} Flags parsed during compilation
- * -------------------------------------------------------------
+ *
  */
 struct FlRegex
 {
@@ -126,14 +126,14 @@ struct FlRegex
 	RegexFlags flags;
 };
 
-/* -------------------------------------------------------------
- * {datatype: struct RegexOperatorInfo}
- * -------------------------------------------------------------
+/*
+ * Type: struct RegexOperatorInfo
+ *
  * Represents the information related to an operator
  * {member: short precedence} Operator precedence
  * {member: char assoc} Operator associativity ('r' for right and 'l' for left)
  * {member: char arity} Operator arity ('u' for unary, 'b' for binary)
- * -------------------------------------------------------------
+ *
  */
 typedef struct 
 {
@@ -142,13 +142,13 @@ typedef struct
     char arity;
 } RegexOperatorInfo;
 
-/* -------------------------------------------------------------
- * {datatype: struct RegexOperator}
- * -------------------------------------------------------------
+/*
+ * Type: struct RegexOperator
+ *
  * Represents a regex operator and its information
  * {member: char operator} Character representation of the operator
  * {member: RegexOperatorInfo data} Operator info 
- * -------------------------------------------------------------
+ *
  */
 typedef struct 
 {
@@ -156,14 +156,14 @@ typedef struct
 	RegexOperatorInfo data;    
 } RegexOperator;
 
-/* -------------------------------------------------------------
- * {datatype: struct NfaStepResult}
- * -------------------------------------------------------------
+/*
+ * Type: struct NfaStepResult
+ *
  * Return type of the nfa_step function. Contains information about a step of the NFA for a given input
- * -------------------------------------------------------------
+ *
  * {member: bool anyMatch} True if we can reach another state in the step
  * {member: bool anyFinal} True if a reached state in the step is a final step
- * -------------------------------------------------------------
+ *
  */
 typedef struct
 {
@@ -171,14 +171,14 @@ typedef struct
 	bool anyFinal;
 } NfaStepResult;
 
-/* -------------------------------------------------------------
- * {datatype: struct CurrentState}
- * -------------------------------------------------------------
+/*
+ * Type: struct CurrentState
+ *
  * Represents a reached state in the NFA for a given input in a certain step
- * -------------------------------------------------------------
+ *
  * {member: int id} State ID
  * {member: bool e} True when state is an Epsilon state
- * -------------------------------------------------------------
+ *
  */
 typedef struct 
 {
@@ -186,15 +186,15 @@ typedef struct
 	bool e;
 } CurrentState;
 
-/* -------------------------------------------------------------
- * {datatype: struct RegexAnalysis}
- * -------------------------------------------------------------
+/*
+ * Type: struct RegexAnalysis
+ *
  * Intended to track information about a pattern. Used by {analyze_regex}
- * -------------------------------------------------------------
+ *
  * {member: size_t patternStart} Position to start at tokenization
  * {member: size_t patternEnd} Position to end at tokenization
  * {member: size_t numTokens} Number of tokens the tokenization process will produce
- * -------------------------------------------------------------
+ *
  */
 typedef struct
 {
@@ -203,13 +203,13 @@ typedef struct
 	size_t numTokens;
 } RegexAnalysis;
 
-/* -------------------------------------------------------------
+/*
  * {variable: char[] operators_chars}
- * -------------------------------------------------------------
+ *
  * Contains all the operators recognized by this regex engine. & is recognized
  * as an operator, by it is used explicitly in the code, so there is no need to
  * keep it here. (Commented out to make it notorious)
- * -------------------------------------------------------------
+ *
  */
 static char operators_chars[] = {
 	'(', ')', 		/* Capturing group */
@@ -219,30 +219,30 @@ static char operators_chars[] = {
 	//'&'			/* Concatenation will be added explictly */
 };
 
-/* -------------------------------------------------------------
+/*
  * {variable: char[] compile_operators}
- * -------------------------------------------------------------
+ *
  * Operators that need special attention while compiling the pattern
- * -------------------------------------------------------------
+ *
  */
 static char compile_operators[] = {'&', '|', '*', '+', '?', '['};
 
-/* -------------------------------------------------------------
+/*
  * {variable: char[] char_class_operators}
- * -------------------------------------------------------------
+ *
  * Contains operators used for character class operators
- * -------------------------------------------------------------
+ *
  */
 static char char_class_operators[] = {
 	'[', ']', '^', '-'
 };
 
-/* -------------------------------------------------------------
+/*
  * {variable: RegexOperator[] regex_operators}
- * -------------------------------------------------------------
+ *
  * Contains the information of operators, used to parse the pattern and convert
  * it to postfix notation
- * -------------------------------------------------------------
+ *
  */
 RegexOperator regex_operators[] = {
 	// Op	Precedence 	Assoc 	Type
@@ -253,27 +253,27 @@ RegexOperator regex_operators[] = {
 	{ '|',	{ 80,  		'l', 	'b' }}
 };
 
-/* -------------------------------------------------------------
+/*
  * {variable: char[] concat_at_right_op}
- * -------------------------------------------------------------
+ *
  * Operators that allow a concatenation operator at its right side, but not at its left side
- * -------------------------------------------------------------
+ *
  */
 char concat_at_right_op[] = {')', ']', '*', '+', '?'};
 
-/* -------------------------------------------------------------
+/*
  * {variable: char[] concat_at_left_op}
- * -------------------------------------------------------------
+ *
  * Operators that allow a concatenation operator at its left side, but not at its right side
- * -------------------------------------------------------------
+ *
  */
 char concat_at_left_op[] = {'(', '['};
 
-/* -------------------------------------------------------------
+/*
  * {variable: char[] escaped_chars}
- * -------------------------------------------------------------
+ *
  * Allowed escape sequences
- * -------------------------------------------------------------
+ *
  */
 char escaped_chars[] = {
 	'(', ')', '\\',
@@ -287,9 +287,9 @@ char escaped_chars[] = {
 	'.'
 };
 
-/* -------------------------------------------------------------
+/*
  * Helper functions to find values inside arrays like operators, escaped chars, etc
- * -------------------------------------------------------------
+ *
  */
 static inline bool is_operator(char c) 
 { 
@@ -323,9 +323,9 @@ static inline bool allow_concat(short t, char c)
 	return fl_array_contains_n(concat_at_right_op, flm_array_length(concat_at_right_op), &c, sizeof(char)); 
 }
 
-/* -------------------------------------------------------------
+/*
  * Helper functions to retrieve precedence, assocciativity, arity, etc.
- * -------------------------------------------------------------
+ *
  */
 static int regex_operators_length = flm_array_length(regex_operators);
 
@@ -369,9 +369,9 @@ static inline char regex_operator_get_arity(char op)
 	return FL_EOS;
 }
 
-/* -------------------------------------------------------------
+/*
  * Private API used by Regex module
- * -------------------------------------------------------------
+ *
  */
 FlVector parse_regex (char* regex, RegexFlags *flags);
 
@@ -401,18 +401,18 @@ bool regex_match (FlRegex regex, char* text);
 
 int compare_states(const void* v1, const void* v2);
 
-/* -------------------------------------------------------------
- * {function: analyze_regex}
- * -------------------------------------------------------------
+/*
+ * Function: analyze_regex
+ *
  * Make an analysis of the pattern to determine flags like anchors.
  * (Intended to be used in the future when more features will be added)
- * -------------------------------------------------------------
- * {param: char* regex} Pattern to analyze
- * {param: RegexFlags* flags} The function will change this when find certain flags like anchors
- * {param: RegexAnalysis* analysis} Will keep metainformation of the pattern
- * -------------------------------------------------------------
+ *
+ * char* regex - Pattern to analyze
+ * RegexFlags* flags - The function will change this when find certain flags like anchors
+ * RegexAnalysis* analysis - Will keep metainformation of the pattern
+ *
  * {return: void}
- * -------------------------------------------------------------
+ *
  */
 void analyze_regex(char* regex, RegexFlags *flags, RegexAnalysis *analysis)
 {
@@ -434,16 +434,16 @@ void analyze_regex(char* regex, RegexFlags *flags, RegexAnalysis *analysis)
 	}
 }
 
-/* -------------------------------------------------------------
- * {function: parse_regex}
- * -------------------------------------------------------------
+/*
+ * Function: parse_regex
+ *
  * Parses the pattern in {regex} and populates {flags}
  * with parsing information. If an error occurs, the 
  * {error} struct is populated with useful information
  * about the failure
- * -------------------------------------------------------------
+ *
  * {return: FlVector} Vector of char* that contains the tokens of the parsed regex
- * -------------------------------------------------------------
+ *
  */
 FlVector parse_regex(char* regex, RegexFlags *flags)
 {
@@ -639,15 +639,15 @@ FlVector parse_regex(char* regex, RegexFlags *flags)
 	return output;
 }
 
-/* -------------------------------------------------------------
- * {function: regex_to_postfix}
- * -------------------------------------------------------------
+/*
+ * Function: regex_to_postfix
+ *
  * Parses the pattern in {regex} and populates {flags}
  * with parsing information. 
- * -------------------------------------------------------------
+ *
  * {return: FlVector} Vector of char* that contains the tokens 
  * 	of the parsed regex. The tokens are in a postfix notation
- * -------------------------------------------------------------
+ *
  */
 FlVector regex_to_postfix (char* regex, RegexFlags *flags) 
 {
@@ -837,15 +837,15 @@ FlVector regex_to_postfix (char* regex, RegexFlags *flags)
 	return output;
 }
 
-/* -------------------------------------------------------------
- * {function: fl_regex_compile}
- * -------------------------------------------------------------
+/*
+ * Function: fl_regex_compile
+ *
  * Given a certain pattern, this function parses and compiles it
  * into an FlRegex struct that contains a set of NfaStates that
  * represents the NFA for the given regular expression
- * -------------------------------------------------------------
+ *
  * {return: FlRegex} NFA for the given pattern
- * -------------------------------------------------------------
+ *
  */
 FlRegex fl_regex_compile (char* pattern)
 {
@@ -907,8 +907,8 @@ FlRegex fl_regex_compile (char* pattern)
 		{
 			// {todo: Implement capturing groups}
 		} 
-		// If tokenval is not an operator, add a new state with {token} value
-		else if (!fl_array_contains_n(compile_operators, flm_array_length(compile_operators), token, strlen(token)))
+		// If tokenval is not an operator, add a new state with {token} value (strlen(token) > 1 because all operators are 1 char so far)
+		else if (strlen(token) > 1 || !fl_array_contains_n(compile_operators, flm_array_length(compile_operators), token, 1))
 		{
 			s = create_nfa_state(stateId++, token);
 			PUSH_STATE(s);
@@ -1134,13 +1134,13 @@ clean_token:
 	return regex;
 }
 
-/* -------------------------------------------------------------
- * {function: delete_nfa}
- * -------------------------------------------------------------
+/*
+ * Function: delete_nfa
+ *
  * Releases the memory used by an {NfaState}
- * -------------------------------------------------------------
+ *
  * {return: void}
- * -------------------------------------------------------------
+ *
  */
 void delete_nfa(FlByte *statebytes)
 {
@@ -1157,17 +1157,17 @@ void delete_nfa(FlByte *statebytes)
 	fl_free(s);
 }
 
-/* -------------------------------------------------------------
- * {function: create_nfa_state}
- * -------------------------------------------------------------
+/*
+ * Function: create_nfa_state
+ *
  * Creates an NFA state with the provided ID and the value needed
  * to reach the state
- * -------------------------------------------------------------
- * {param: int id} ID to be assigned to the new state
- * {param: char* value} Value needed to reach the new state
- * -------------------------------------------------------------
+ *
+ * int id - ID to be assigned to the new state
+ * char* value - Value needed to reach the new state
+ *
  * {return: NfaState*} The created NfaState
- * -------------------------------------------------------------
+ *
  */
 NfaState* create_nfa_state(int id, char* value)
 {
@@ -1181,17 +1181,17 @@ NfaState* create_nfa_state(int id, char* value)
 	return s;
 }
 
-/* -------------------------------------------------------------
- * {function: create_char_class_nfa_state}
- * -------------------------------------------------------------
+/*
+ * Function: create_char_class_nfa_state
+ *
  * Creates an NFA state that represents a character class operator
- * -------------------------------------------------------------
- * {param: int id} ID of the state
- * {param: char* value} Representation of the character class (it is NOT used to run the NFA)
- * {param: bool negated} When the character class contains is a negated one
- * -------------------------------------------------------------
+ *
+ * int id - ID of the state
+ * char* value - Representation of the character class (it is NOT used to run the NFA)
+ * bool negated - When the character class contains is a negated one
+ *
  * {return: NfaState*} Created state
- * ------------------------------------------------------------- 
+ * 
  */
 NfaState* create_char_class_nfa_state(int id, char* value, bool negated)
 {
@@ -1207,20 +1207,20 @@ NfaState* create_char_class_nfa_state(int id, char* value, bool negated)
 	return (NfaState*)s;
 }
 
-/* -------------------------------------------------------------
- * {function: nfa_print_operands}
- * -------------------------------------------------------------
+/*
+ * Function: nfa_print_operands
+ *
  * Show the operands for a given operator while we are creating the NFA.
  * It is used for debug purpouses
- * -------------------------------------------------------------
- * {param: const char* operator} String representation of the operator
- * {param: NfaState* states} Set of states that form the NFA
- * {param: short s} Min index
- * {param: short m} Mid index
- * {param: short e} Max index
- * -------------------------------------------------------------
+ *
+ * const char* operator - String representation of the operator
+ * NfaState* states - Set of states that form the NFA
+ * short s - Min index
+ * short m - Mid index
+ * short e - Max index
+ *
  * {return: void}
- * -------------------------------------------------------------
+ *
  */
 void nfa_print_operands(const char *operator, NfaState **states, short s, short m, short e)
 {
@@ -1238,23 +1238,23 @@ void nfa_print_operands(const char *operator, NfaState **states, short s, short 
 	printf("----------------------------\n");
 }
 
-/* -------------------------------------------------------------
- * {function: nfa_concat}
- * -------------------------------------------------------------
+/*
+ * Function: nfa_concat
+ *
  * Adds transitions between states. Concatenation is a binary
  * operator that takes a left operand (LS) and a right operand
  * (RS).
  * LS = states[ls] to states[le]
  * RS = states[rs] to states[re]
- * -------------------------------------------------------------
- * {param: NfaState** states} Set of states that form the NFA
- * {param: short ls} LS start index
- * {param: short le} LS end index
- * {param: short rs} RS start index
- * {param: short re} RS end index
- * -------------------------------------------------------------
+ *
+ * NfaState** states - Set of states that form the NFA
+ * short ls - LS start index
+ * short le - LS end index
+ * short rs - RS start index
+ * short re - RS end index
+ *
  * {return: void}
- * -------------------------------------------------------------
+ *
  */
 void nfa_concat(NfaState **states, short ls, short le, short rs, short re)
 {
@@ -1283,18 +1283,18 @@ void nfa_concat(NfaState **states, short ls, short le, short rs, short re)
 	}
 }
 
-/* -------------------------------------------------------------
- * {function: nfa_repeat}
- * -------------------------------------------------------------
+/*
+ * Function: nfa_repeat
+ *
  * Repetition is a unary operator that take a left operand (LS)
  * and adds transitions from LS final states to LS initial ones
- * -------------------------------------------------------------
- * {param: NfaState** states} Set of states that form the NFA
- * {param: short ls} LS start index
- * {param: short le} LS end index
- * -------------------------------------------------------------
+ *
+ * NfaState** states - Set of states that form the NFA
+ * short ls - LS start index
+ * short le - LS end index
+ *
  * {return: void}
- * -------------------------------------------------------------
+ *
  */
 void nfa_repeat (NfaState **states, short ls, short le)
 {
@@ -1315,14 +1315,14 @@ void nfa_repeat (NfaState **states, short ls, short le)
 	}
 }
 
-/* -------------------------------------------------------------
- * {function: compare_states}
- * -------------------------------------------------------------
+/*
+ * Function: compare_states
+ *
  * Used by qsort to sort the states by ID. The IDs start at 0,
  * shorting them we can access them by 0-based indexes
- * -------------------------------------------------------------
+ *
  * {return: int} Negative value if v1 < v2, 0 if equals, positive if v1 > v2
- * -------------------------------------------------------------
+ *
  */
 int compare_states(const void* v1, const void* v2)
 {
@@ -1335,15 +1335,15 @@ int compare_states(const void* v1, const void* v2)
 	return s1->id - s2->id;
 }
 
-/* -------------------------------------------------------------
- * {function: print_nfa}
- * -------------------------------------------------------------
+/*
+ * Function: print_nfa
+ *
  * Walks the NFA printing its states
- * -------------------------------------------------------------
- * {param: NfaState** states} Set of states that form the NFA
- * -------------------------------------------------------------
+ *
+ * NfaState** states - Set of states that form the NFA
+ *
  * {return: void}
- * -------------------------------------------------------------
+ *
  */
 void print_nfa (NfaState **states)
 {
@@ -1363,15 +1363,15 @@ void print_nfa (NfaState **states)
 	printf("\r\n");
 }
 
-/* -------------------------------------------------------------
- * {function: print_nfa_state}
- * -------------------------------------------------------------
+/*
+ * Function: print_nfa_state
+ *
  * Prints out a representation of the state
- * -------------------------------------------------------------
- * {param: NfaState* state} State to print
- * -------------------------------------------------------------
+ *
+ * NfaState* state - State to print
+ *
  * {return: void}
- * -------------------------------------------------------------
+ *
  */
 void print_nfa_state(NfaState *state)
 {
@@ -1402,22 +1402,22 @@ void print_nfa_state(NfaState *state)
 	}
 }
 
-/* -------------------------------------------------------------
- * {function: nfa_step}
- * -------------------------------------------------------------
+/*
+ * Function: nfa_step
+ *
  * Standing in state {state}, uses {value} to make al the 
  * possible transitions to the next step of the NFA
- * -------------------------------------------------------------
- * {param: NfaState* state} Current state
- * {param: CurrentState[] nextstates} Reached states from {state}
- * {param: unsigned char value} Input value for the current step
- * {param: const CurrentState[] current_statestates} Already reached states in this step
- * -------------------------------------------------------------
+ *
+ * NfaState* state - Current state
+ * CurrentState[] nextstates} Reached states from {state -
+ * unsigned char value - Input value for the current step
+ * const CurrentState[] current_statestates - Already reached states in this step
+ *
  * {return: NfaStepResult} Contains info of the step result.
  * 	If at least one state was reached, result.anyMatch will be true.
  *	If at least one final state was reached, result.anyFinal will be
  * 	true.
- * -------------------------------------------------------------
+ *
  */
 NfaStepResult nfa_step (NfaState *state, CurrentState nextstates[], unsigned char value, const CurrentState current_statestates[])
 {
@@ -1465,16 +1465,16 @@ NfaStepResult nfa_step (NfaState *state, CurrentState nextstates[], unsigned cha
 	return stepresult;
 }
 
-/* -------------------------------------------------------------
- * {function: can_reach_state}
- * -------------------------------------------------------------
+/*
+ * Function: can_reach_state
+ *
  * Returns true if {state} is reachable with the given input
- * -------------------------------------------------------------
- * {param: NfaState* state} State to try to reach
- * {param: unsigned char value} Input to check to reach {state}
- * -------------------------------------------------------------
+ *
+ * NfaState* state - State to try to reach
+ * unsigned char value} Input to check to reach {state -
+ *
  * {return: bool} true if {state} can be reached with {value}
- * -------------------------------------------------------------
+ *
  */
 bool can_reach_state (NfaState *state, unsigned char value)
 {
@@ -1495,17 +1495,17 @@ bool can_reach_state (NfaState *state, unsigned char value)
 	return	(!statecc->negated && statecc->map[value] == 1) || (statecc->negated && statecc->map[value] == 0);
 }
 
-/* -------------------------------------------------------------
- * {function: regex_match}
- * -------------------------------------------------------------
+/*
+ * Function: regex_match
+ *
  * Check the input text against the regex and returns true if
  * the input matches the pattern
- * -------------------------------------------------------------
- * {param: FlRegex regex} Regular expression
- * {param: char* text} Input string to check against pattern
- * -------------------------------------------------------------
+ *
+ * FlRegex regex - Regular expression
+ * char* text - Input string to check against pattern
+ *
  * {return: bool} True if text matches the pattern
- * -------------------------------------------------------------
+ *
  */
 bool regex_match (FlRegex regex, char* text)
 {
@@ -1596,25 +1596,25 @@ bool regex_match (FlRegex regex, char* text)
 	return result.anyFinal;
 }
 
-/* -------------------------------------------------------------
+/*
  * Public API functions
- * -------------------------------------------------------------
+ *
  */
 bool fl_regex_match(FlRegex regex, char* text)
 {
 	return regex_match(regex, text);
 }
 
-/* -------------------------------------------------------------
- * {function: fl_regex_delete}
- * -------------------------------------------------------------
+/*
+ * Function: fl_regex_delete
+ *
  * Free the memory used by an FlRegex struct. To free the memory
  * used by member states, this function uses the handler {delete_nfa}
- * -------------------------------------------------------------
- * {param: FlRegex regex} target FlRegex struct to cleanup
- * -------------------------------------------------------------
+ *
+ * FlRegex regex - target FlRegex struct to cleanup
+ *
  * {return: void}
- * -------------------------------------------------------------
+ *
  */
 void fl_regex_delete (FlRegex regex)
 {

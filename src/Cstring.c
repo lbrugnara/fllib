@@ -21,7 +21,6 @@ char *fl_cstring_new(size_t length)
 
 void fl_cstring_delete(char *str)
 {
-    flm_assert(str != NULL, "char* argument to free cannot be NULL");
     fl_free(str);
 }
 
@@ -35,21 +34,27 @@ FlVector fl_cstring_split(const char *str)
 {
     flm_assert(str != NULL, "char* argument to split cannot be NULL");
 
-    size_t l = strlen(str);
-    FlVector ovector = fl_vector_new(sizeof(char), l);
-    if (l == 0)
-        return ovector;
+    size_t length = strlen(str);
+    FlVector vector = fl_vector_new_args((struct FlVectorArgs){
+        .writer = fl_container_writer_char,
+        .element_size = sizeof(char),
+        .capacity = length,
+    });
+    
+    if (length == 0)
+        return vector;
 
-    for (size_t i = 0; i < l; i++)
-        fl_vector_add(ovector, (void *)&str[i]);
-    return ovector;
+    for (size_t i = 0; i < length; i++)
+        fl_vector_add(vector, (void *)&str[i]);
+
+    return vector;
 }
 
 FlVector fl_cstring_split_by(const char *string, const char *separator)
 {
     flm_assert(string != NULL, "char* argument to split cannot be NULL");
 
-    FlVector parts = fl_vector_new(sizeof(char*), 1);
+    FlVector parts = fl_vector_new(1, fl_container_cleaner_pointer);
 
     size_t separatorLength = strlen(separator);
     size_t index = 0;
@@ -135,7 +140,11 @@ char *fl_cstring_vadup(const char *s, va_list args)
 {
     flm_assert(s != NULL, "char* argument to duplicate cannot be NULL");
     size_t length = strlen(s);
-    FlVector parts = fl_vector_new(sizeof(char), length);
+    FlVector parts = fl_vector_new_args((struct FlVectorArgs){
+        .capacity = length,
+        .element_size = sizeof(char),
+        .writer = fl_container_writer_char
+    });
     char sc;
     for (size_t i = 0; i < length; i++)
     {
@@ -158,7 +167,7 @@ char *fl_cstring_vadup(const char *s, va_list args)
             case 'd':
             {
                 int i = va_arg(args, int);
-                size_t t = integer_length(i);
+                size_t t = integer_length(i) + 1;
                 char *dst = fl_array_new(sizeof(char), t);
                 snprintf(dst, t, "%d", i);
                 for (size_t j = 0; j < t; j++)
@@ -292,7 +301,7 @@ char *fl_cstring_replace(const char *src, const char *needle, const char *rplc)
     size_t rplc_size = strlen(rplc);
 
     char *dst;
-    size_t newlength = fl_cstring_replace_n(src, src_size, needle, needle_size, rplc, rplc_size, &dst);
+    fl_cstring_replace_n(src, src_size, needle, needle_size, rplc, rplc_size, &dst);
     return dst;
 }
 
@@ -320,8 +329,8 @@ size_t fl_cstring_replace_n(const char *src, size_t src_size, const char *needle
         .key_comparer = fl_container_equals_char,
         .key_cleaner = fl_container_cleaner_pointer,
         .value_cleaner = fl_container_cleaner_pointer,
-        .key_writer = fl_container_writer_char,
-        .value_writer = fl_container_writer_sizet
+        .key_allocator = fl_container_allocator_char,
+        .value_allocator = fl_container_allocator_sizet
     });
 
     for (size_t i = 0; i < needle_size - 1; i++)
@@ -367,8 +376,8 @@ size_t fl_cstring_replace_n(const char *src, size_t src_size, const char *needle
     {
         if (map[mpi])
         {
-            for (size_t j = mpi; j < mpi + rplc_size; j++)
-                (*dst)[dpi++] = rplc[j - mpi];
+            for (size_t j = mpi; j < mpi + rplc_size; j++, dpi++)
+                (*dst)[dpi] = rplc[j - mpi];
             spi += needle_size;
             mpi += needle_size;
         }
@@ -408,8 +417,8 @@ char *fl_cstring_find(const char *str, const char *needle)
         .key_comparer = fl_container_equals_char,
         .key_cleaner = fl_container_cleaner_pointer,
         .value_cleaner = fl_container_cleaner_pointer,
-        .key_writer = fl_container_writer_char,
-        .value_writer = fl_container_writer_sizet
+        .key_allocator = fl_container_allocator_char,
+        .value_allocator = fl_container_allocator_sizet
     });
 
     for (size_t i = 0; i < needle_size; i++)
@@ -468,7 +477,7 @@ char *fl_cstring_join(FlVector vector, char *glue)
     while (i < end)
     {
         // Current element and its length
-        char *el = flm_vector_get(vector, char *, i);
+        char *el = (char*)fl_vector_get(vector, i);
         size_t el_length = strlen(el);
         // Str current length
         size_t str_length = strlen(str);
@@ -496,7 +505,7 @@ char *fl_char_join(FlVector vector, char *glue)
     while (i < end)
     {
         // Current element and its length
-        char el = flm_vector_get(vector, char, i);
+        char el = *(char*)fl_vector_get(vector, i);
         // Str current length
         size_t str_length = strlen(str);
         // Glue length depends on end variable, when el is the final element, glue won't be appended

@@ -305,7 +305,7 @@ struct FlContext {
  *  For a heap allocated <struct FlContext> object use <fl_ctx_new> and <fl_ctx_delete>
  * 
  */
-#define FL_CTX_STATIC_INIT (struct FlContext){ .fp = 0 }
+#define FL_CTX_STATIC_INIT {0}
 
 /*
  * Function: fl_ctx_new

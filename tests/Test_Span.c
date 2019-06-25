@@ -9,15 +9,15 @@ void test_span()
 
     struct FlSpan span = fl_span_new((const FlByte*)sequence, 1, 0, 4);
     fl_expect("Sequence span[0,4] is equals to 'Some'", flm_cstring_nequals((const char*)span.sequence, "Some", span.length));
-    fl_expect("Span[0,4] is equals to sequence", fl_span_equals_sequence(&span, (const FlByte*)sequence));
+    fl_expect("Span[0,4] is equals to sequence", fl_span_equals_sequence(&span, (const FlByte*)sequence, strlen(sequence)));
 
     struct FlSpan span2 = fl_span_new((const FlByte*)sequence, 1, 34, 10);
     fl_expect("Sequence span[36,10] is equals to 'contiguous'", flm_cstring_nequals((const char*)span2.sequence, "contiguous", span.length));
-    fl_expect("Span[36,10] is equals to sequence + 34", fl_span_equals_sequence(&span2, (const FlByte*)sequence + 34));
+    fl_expect("Span[36,10] is equals to sequence + 34", fl_span_equals_sequence(&span2, (const FlByte*)sequence + 34, strlen(sequence + 34)));
 
     struct FlSpan span3 = fl_span_new((const FlByte*)sequence, 1, 57, 5);
     fl_expect("Sequence span[57,5] is equals to 'bytes'", flm_cstring_nequals((const char*)span3.sequence, "bytes", span.length));
-    fl_expect("Span[57,5] is equals to sequence + 57", fl_span_equals_sequence(&span3, (const FlByte*)sequence + 57));
+    fl_expect("Span[57,5] is equals to sequence + 57", fl_span_equals_sequence(&span3, (const FlByte*)sequence + 57, strlen(sequence + 57)));
     
     struct FlSpan span4 = fl_span_new((const FlByte*)sequence, 1, 34, 10);
     fl_expect("Two spans[36,10] must be equals", fl_span_equals(&span2, &span4));

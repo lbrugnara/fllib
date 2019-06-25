@@ -12,8 +12,8 @@ void test_fl_hashtable_add()
             .key_comparer = fl_container_equals_char,
             .key_cleaner = fl_container_cleaner_pointer,
             .value_cleaner = fl_container_cleaner_pointer,
-            .key_writer = fl_container_writer_char,
-            .value_writer = fl_container_writer_int
+            .key_allocator = fl_container_allocator_char,
+            .value_allocator = fl_container_allocator_int
         });
 
         char k='a';
@@ -118,8 +118,8 @@ void test_fl_hashtable_get()
             .key_comparer = fl_container_equals_char,
             .key_cleaner = fl_container_cleaner_pointer,
             .value_cleaner = fl_container_cleaner_pointer,
-            .key_writer = fl_container_writer_char,
-            .value_writer = fl_container_writer_int
+            .key_allocator = fl_container_allocator_char,
+            .value_allocator = fl_container_allocator_int
         });
         
         int i = 65;
@@ -163,8 +163,8 @@ void test_fl_hashtable_set()
         .key_comparer = fl_container_equals_char,
         .key_cleaner = fl_container_cleaner_pointer,
         .value_cleaner = fl_container_cleaner_pointer,
-        .key_writer = fl_container_writer_char,
-        .value_writer = fl_container_writer_int
+        .key_allocator = fl_container_allocator_char,
+        .value_allocator = fl_container_allocator_int
     });
 
     char chr;
@@ -236,8 +236,8 @@ void test_fl_hashtable_clear()
             .key_comparer = fl_container_equals_char,
             .key_cleaner = fl_container_cleaner_pointer,
             .value_cleaner = fl_container_cleaner_pointer,
-            .key_writer = fl_container_writer_char,
-            .value_writer = fl_container_writer_int
+            .key_allocator = fl_container_allocator_char,
+            .value_allocator = fl_container_allocator_int
         });
 
     // Add A-Z with its codes
@@ -260,8 +260,8 @@ void test_fl_hashtable_keys_and_values()
         .key_comparer = fl_container_equals_char,
         .key_cleaner = fl_container_cleaner_pointer,
         .value_cleaner = fl_container_cleaner_pointer,
-        .key_writer = fl_container_writer_char,
-        .value_writer = fl_container_writer_int
+        .key_allocator = fl_container_allocator_char,
+        .value_allocator = fl_container_allocator_int
     });
 
     // Add A-Z with its codes
@@ -289,8 +289,8 @@ void test_fl_hashtable_remove()
         .key_comparer = fl_container_equals_char,
         .key_cleaner = fl_container_cleaner_pointer,
         .value_cleaner = fl_container_cleaner_pointer,
-        .key_writer = fl_container_writer_char,
-        .value_writer = fl_container_writer_int
+        .key_allocator = fl_container_allocator_char,
+        .value_allocator = fl_container_allocator_int
     });
 
     // Add A-Z with its codes
@@ -337,8 +337,8 @@ void test_fl_hashtable_resize()
         .key_comparer = key_comparer2,
         .key_cleaner = fl_container_cleaner_pointer,
         .value_cleaner = fl_container_cleaner_pointer,
-        .key_writer = size_t_writer,
-        .value_writer = size_t_writer,
+        .key_allocator = size_t_writer,
+        .value_allocator = size_t_writer,
         .buckets_count = 52736,
         .load_factor = 1.0
     });

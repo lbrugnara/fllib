@@ -38,12 +38,12 @@ struct FlBucketEntry {
  *
  */
 struct FlHashtable {
-    FlHashtableHashFunc key_hasher;
-    FlContainerEqualsFunc key_comparer;
+    FlHashtableHashFunction key_hasher;
+    FlContainerEqualsFunction key_comparer;
     FlContainerCleanupFunction key_cleaner;
     FlContainerCleanupFunction value_cleaner;
-    FlContainerWriterFunc key_writer;
-    FlContainerWriterFunc value_writer;
+    FlContainerAllocatorFunction key_allocator;
+    FlContainerAllocatorFunction value_allocator;
     struct FlBucketEntry **buckets; // fl_array
     double load_factor;
     size_t length;
@@ -95,12 +95,12 @@ unsigned long fl_hashtable_hash_sizet(const FlByte *key)
 }
 
 FlHashtable fl_hashtable_new(
-    FlHashtableHashFunc hash_func, 
-    FlContainerEqualsFunc key_comparer, 
+    FlHashtableHashFunction hash_func, 
+    FlContainerEqualsFunction key_comparer, 
     FlContainerCleanupFunction key_cleaner, 
     FlContainerCleanupFunction value_cleaner, 
-    FlContainerWriterFunc key_writer, 
-    FlContainerWriterFunc value_writer
+    FlContainerAllocatorFunction key_allocator, 
+    FlContainerAllocatorFunction value_allocator
 )
 {
     return fl_hashtable_new_args((struct FlHashtableArgs){
@@ -108,8 +108,8 @@ FlHashtable fl_hashtable_new(
         .key_comparer = key_comparer,
         .key_cleaner = key_cleaner,
         .value_cleaner = value_cleaner,
-        .key_writer = key_writer,
-        .value_writer = value_writer,
+        .key_allocator = key_allocator,
+        .value_allocator = value_allocator,
     });
 }
 
@@ -122,8 +122,8 @@ FlHashtable fl_hashtable_new_args(struct FlHashtableArgs args)
     
     ht->key_hasher = args.hash_function != NULL ? args.hash_function : fl_hashtable_hash_pointer;
     ht->key_comparer = args.key_comparer != NULL ? args.key_comparer : fl_container_equals_pointer;
-    ht->key_writer = args.key_writer != NULL ? args.key_writer : NULL;
-    ht->value_writer = args.value_writer != NULL ? args.value_writer : NULL;
+    ht->key_allocator = args.key_allocator != NULL ? args.key_allocator : NULL;
+    ht->value_allocator = args.value_allocator != NULL ? args.value_allocator : NULL;
 
     ht->key_cleaner = args.key_cleaner;
     ht->value_cleaner = args.value_cleaner;
@@ -281,8 +281,8 @@ void* ht_internal_add(FlHashtable ht, const void *key, const void *value, enum B
     // Set key (if the bucket is free) and value
     if (lookup_type == BUCKET_LOOKUP_UNUSED || target_bucket->free)
     {
-        if (ht->key_writer)
-            ht->key_writer((FlByte**)&target_bucket->key, key);
+        if (ht->key_allocator)
+            ht->key_allocator((FlByte**)&target_bucket->key, key);
         else 
             target_bucket->key = (void*) key;
         // Increment the number of entries just if it is a new bucket in use
@@ -290,14 +290,14 @@ void* ht_internal_add(FlHashtable ht, const void *key, const void *value, enum B
     }
     else if (lookup_type == BUCKET_LOOKUP_ANY)
     {
-        if (ht->key_writer)
-            ht->key_writer((FlByte**)&target_bucket->key, key);
+        if (ht->key_allocator)
+            ht->key_allocator((FlByte**)&target_bucket->key, key);
         else 
             target_bucket->key = (void*) key;
     }
 
-    if (ht->value_writer)
-        ht->value_writer((FlByte**)&target_bucket->value, value);
+    if (ht->value_allocator)
+        ht->value_allocator((FlByte**)&target_bucket->value, value);
     else
         target_bucket->value = (void*) value;
 

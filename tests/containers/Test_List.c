@@ -44,7 +44,7 @@ void test_fl_list_tail(void)
     fl_expect("After append, the new tail must be the appended node", tail == node2);
     fl_expect("Tail's prev node must be the first inserted node, and first node's next node must be the tail of the list", tail->prev == node && tail == node->next);
 
-    struct FlListNode *node3 = fl_list_prepend(list, NULL);
+    fl_list_prepend(list, NULL);
     fl_expect("After prepend, the tail must not change", tail == node2);
 
     fl_list_delete(list);
@@ -53,7 +53,7 @@ void test_fl_list_tail(void)
 void test_fl_list_append(void)
 {
     FlList list = fl_list_new_args((struct FlListArgs) {
-        .value_writer = fl_container_writer_sizet,
+        .value_allocator = fl_container_allocator_sizet,
         .value_cleaner = fl_container_cleaner_pointer
     });
 
@@ -74,7 +74,7 @@ void test_fl_list_append(void)
 void test_fl_list_prepend(void)
 {
     FlList list = fl_list_new_args((struct FlListArgs) {
-        .value_writer = fl_container_writer_sizet,
+        .value_allocator = fl_container_allocator_sizet,
         .value_cleaner = fl_container_cleaner_pointer
     });
 
@@ -95,7 +95,7 @@ void test_fl_list_prepend(void)
 void test_fl_list_insert_after(void)
 {
     FlList list = fl_list_new_args((struct FlListArgs) {
-        .value_writer = fl_container_writer_sizet,
+        .value_allocator = fl_container_allocator_sizet,
         .value_cleaner = fl_container_cleaner_pointer
     });
 
@@ -124,7 +124,7 @@ void test_fl_list_insert_after(void)
 void test_fl_list_insert_before(void)
 {
     FlList list = fl_list_new_args((struct FlListArgs) {
-        .value_writer = fl_container_writer_sizet,
+        .value_allocator = fl_container_allocator_sizet,
         .value_cleaner = fl_container_cleaner_pointer
     });
 

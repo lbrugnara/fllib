@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <ctype.h>
 
 #include <fllib.h>
 #include "Test.h"
@@ -30,6 +31,13 @@ struct FlTestSuite
     const char *name;
     size_t ntests;
     const FlTest *tests;
+};
+
+struct FlTestSuiteResult {
+    FlTestSuite *suite;
+    size_t passedTests;
+    long elapsed;
+    bool ran;
 };
 
 /*
@@ -87,7 +95,7 @@ enum {
 static struct FlContext testctx = FL_CTX_STATIC_INIT;
 
 /*
- * Function: sighandler
+ * Function: test_signal_handler
  *
  * Signal handler function for POSIX platforms. When a signal
  * is raised, this handler will trigger an exception.
@@ -97,7 +105,7 @@ static struct FlContext testctx = FL_CTX_STATIC_INIT;
  * {return: void}
  *
  */
-void sighandler(int sign)
+void test_signal_handler(int sign)
 {
     char msg[FL_CTX_MSG_SIZE];
     snprintf(msg, FL_CTX_MSG_SIZE, "Signal %d", sign);
@@ -185,7 +193,7 @@ bool fl_vexpect(bool conditionResult, const char* format, ...)
 }
 
 /*
- * Function: fl_test_suite_run
+ * Function: run_suite
  *
  * Run a suite of tests
  *
@@ -194,20 +202,23 @@ bool fl_vexpect(bool conditionResult, const char* format, ...)
  * {return: size_t} number of passed tests
  *
  */
-size_t fl_test_suite_run(FlTestSuite suite)
+void run_suite(FlTestSuite suite, struct FlTestSuiteResult *result)
 {
     #ifdef _WIN32
-    FlWinExceptionHandler prevh = fl_winex_global_handler_set(exception_filter);
+    FlWinExceptionHandler global_handler = fl_winex_global_handler_set(exception_filter);
     #endif
-    fl_signal_global_handler_set(sighandler);
+    fl_signal_global_handler_set(test_signal_handler);
+
     printf("============================\n");
     printf("Test Suite: %s\n", suite->name);
     printf("----------------------------\n");
-    size_t failedTests = 0;
+
+    size_t failed_tests = 0;
+
     for (size_t i=0; i < suite->ntests; i++)
     {
-        printf(" # Test Case: %s\n", suite->tests[i].name);
-        
+        printf(" +-- Test Case: %s\n", suite->tests[i].name);
+
         volatile bool failed = false;
 
         FlTimer timer = fl_timer_create();
@@ -219,68 +230,116 @@ size_t fl_test_suite_run(FlTestSuite suite)
         }
         Catch(TEST_EXCEPTION)
         {
-            failedTests++;
+            failed_tests++;
             failed = true;
         }
         Rest
         {
-            failedTests++;
+            failed_tests++;
             failed = true;
         }
         EndTry;
         
         fl_timer_end(timer);
-        printf(" [Elapsed ms]: %ld\n", fl_timer_elapsed_ms(timer));
 
         if (failed)
         {
-            printf(" [Result] fail: %s\n\n", fl_ctx_last_frame(&testctx)->message);
+            printf(" +-- Assertion failed: %s\n\n", fl_ctx_last_frame(&testctx)->message);
         }
         else
         {
-            printf(" [Result] success\n\n");
+            printf(" +-- OK: %ld ms\n\n", fl_timer_elapsed_ms(timer));
         }
+
+        result->elapsed += fl_timer_elapsed_ms(timer);
 
         fl_timer_delete(timer);
     }
+    
+    result->ran = true;
+    result->passedTests = suite->ntests - failed_tests;
+
     printf("\n");
+
     #ifdef _WIN32
-    fl_winex_global_handler_set(prevh);
+    fl_winex_global_handler_set(global_handler);
     #endif
-    return suite->ntests - failedTests;
 }
 
-struct FlSuiteResult {
-    FlTestSuite *suite;
-    size_t passedTests;
-};
+bool should_run_suite(struct FlTestSuite *suite, int argc, char **argv)
+{
+    if (argc == 1)
+        return true;
 
-void fl_test_run_all(FlTestSuite *suites)
+    if (argc == 2 && flm_cstring_equals("all", argv[1]))
+        return true;
+
+    size_t suite_name_length = strlen(suite->name);
+    for (int j=1; j < argc; j++)
+    {
+        size_t arg_length = strlen(argv[j]);
+        
+        if (arg_length != suite_name_length)
+            continue;
+
+        for (size_t k=0; k < suite_name_length; k++)
+        {
+            if (tolower(suite->name[k]) != tolower(argv[j][k]))
+                break;
+
+            if (k == suite_name_length - 1)
+                return true;
+        }
+    }
+
+    return false;
+}
+
+void fl_test_run_all(int argc, char **argv, FlTestSuite *suites)
 {
     size_t number_of_suites = 0;
     for (;number_of_suites < SIZE_MAX && suites[number_of_suites]; number_of_suites++);
 
-    struct FlSuiteResult *results = fl_array_new(sizeof(struct FlSuiteResult), number_of_suites);
+    struct FlTestSuiteResult *results = fl_array_new(sizeof(struct FlTestSuiteResult), number_of_suites);
+    
+    bool any = false;
+    unsigned long long totalElapsedTime = 0;
     for (size_t i=0; i < number_of_suites; i++)
     {
         results[i].suite = &suites[i];
-        results[i].passedTests = fl_test_suite_run(suites[i]);
+        results[i].ran = false;
+        
+        if (!should_run_suite(suites[i], argc, argv))
+            continue;
+
+        any = true;
+        run_suite(suites[i], &results[i]);
+        totalElapsedTime += results[i].elapsed;
+    }
+
+    if (!any)
+    {
+        printf("No tests have been run.\n");
+        return;
     }
 
     size_t ntests = 0;
     size_t nptests = 0;
-    printf("+--------------------------+--------------+------------+\n");
-    printf("| %-25s| %-12s | %-10s |\n", "Suite", "Passed/Total", "Percentage");
-    printf("+--------------------------+--------------+------------+\n");
+    printf("+--------------------------+--------------+------------+------------+\n");
+    printf("| %-25s| %-12s | %-10s | %-10s |\n", "Suite", "Passed/Total", "Percentage", "Time (ms)");
+    printf("+--------------------------+--------------+------------+------------+\n");
     for (size_t i=0; i < number_of_suites; i++)
     {
+        if (!results[i].ran)
+            continue;
+
         ntests += suites[i]->ntests;
         nptests += results[i].passedTests;
-        printf("| %-25s| %6zu/%-5zu | %-2s%3.2f%%%-1s |\n", suites[i]->name, results[i].passedTests, suites[i]->ntests, "", (results[i].passedTests / (float)suites[i]->ntests)*100, "");
+        printf("| %-25s| %6zu/%-5zu | %-2s%3.2f%%%-1s | %7ld ms |\n", suites[i]->name, results[i].passedTests, suites[i]->ntests, "", (results[i].passedTests / (float)suites[i]->ntests)*100, "", results[i].elapsed);
         fl_test_suite_delete(suites[i]);
     }
-    printf("+--------------------------+--------------+------------+\n");
-    printf("| %-25s| %6zu/%-5zu | %-2s%3.2f%%%-1s |\n", "Total", nptests, ntests, "", (nptests/(float)ntests)*100, "");
-    printf("+--------------------------+--------------+------------+\n");
+    printf("+--------------------------+--------------+------------+------------+\n");
+    printf("| %-25s| %6zu/%-5zu | %-2s%3.2f%%%-1s | %7lld ms |\n", "Total", nptests, ntests, "", (nptests/(float)ntests)*100, "", totalElapsedTime);
+    printf("+--------------------------+--------------+------------+------------+\n");
     fl_array_delete(results);
 }

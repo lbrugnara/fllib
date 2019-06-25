@@ -7,7 +7,7 @@
 typedef struct FlHashtable* FlHashtable;
 
 /*
- * Type: unsigned long(*FlHashtableHashFunc)(const FlByte *key)
+ * Type: unsigned long(*FlHashtableHashFunction)(const FlByte *key)
  *
  * Hash function that receives a key and returns an unsigned long.
  * By default if FlHashtableArgs.hash_function is not present, the
@@ -20,68 +20,68 @@ typedef struct FlHashtable* FlHashtable;
  *   sizet
  *
  */
-typedef unsigned long(*FlHashtableHashFunc)(const FlByte *key);
+typedef unsigned long(*FlHashtableHashFunction)(const FlByte *key);
 
-/*
- * Type: struct FlHashtableArgs
- *
- * This struct let's the caller configure the behavior of the
- * hashtable when provided to the fl_hashtable_new_args function.
- * Members:
- *   - hash_function: Function to hash keys. If not present, fl_hashtable_hash_pointer will be used
- *   - key_writer: Function that writes the key into the hashtable. If not present, the hashtable works with pointers
- *   - key_comparer: Function that compares keys. If not present, fl_hashtable_compare_pointer will be used
- *   - key_cleaner: Function that frees a key when it is discarded. If not present, key remains untouched
- *   - value_writer: Function that writes the value into the hashtable. If not present, the hashtable works with pointers
- *   - value_cleaner: Function that frees a value when it is discarded. If not present, value remains untouched
- *   - load_factor: Hashtable's load factor. If not present, it takes a value of 0.75
- *   - buckets_count: Number of buckets of the hashtable. If not present, a default value of NBUCKETS=83 is used
- *
- */
+/* -------------------------------------------------------------
+* {datatype: struct FlHashtableArgs}
+* -------------------------------------------------------------
+* This struct let's the caller configure the behavior of the
+* hashtable when provided to the fl_hashtable_new_args function.
+* Members:
+*   - hash_function: Function to hash keys. If not present, fl_hashtable_hash_pointer will be used
+*   - key_comparer: Function that compares keys. If not present, fl_hashtable_compare_pointer will be used
+*   - key_cleaner: Function that frees a key when it is discarded. If not present, key remains untouched
+*   - value_cleaner: Function that frees a value when it is discarded. If not present, value remains untouched
+*   - key_allocator: Function that allocates and writes the key into the hashtable. If not present, the hashtable works with pointers
+*   - value_allocator: Function that allocates and writes the value into the hashtable. If not present, the hashtable works with pointers
+*   - load_factor: Hashtable's load factor. If not present, it takes a value of 0.75
+*   - buckets_count: Number of buckets of the hashtable. If not present, a default value of NBUCKETS=83 is used
+* -------------------------------------------------------------
+*/
 struct FlHashtableArgs {
-    FlHashtableHashFunc hash_function;
-    FlContainerWriterFunc key_writer;
-    FlContainerEqualsFunc key_comparer;
+    FlHashtableHashFunction hash_function;
+    FlContainerEqualsFunction key_comparer;
     FlContainerCleanupFunction key_cleaner;
-    FlContainerWriterFunc value_writer;
     FlContainerCleanupFunction value_cleaner;
+    FlContainerAllocatorFunction key_allocator;
+    FlContainerAllocatorFunction value_allocator;
     double load_factor;
     size_t buckets_count;
 };
 
-/*
- * Function: fl_hashtable_new
- *
- * Creates a hashtable
- *
- * FlHashtableHashFunc hash_func - Function to hash keys. 
- *    The hashtable uses fl_hashtable_hash_pointer if not present
- * FlContainerEqualsFunc key_comparer - Function to 
- *    compare keys. Hashtable uses fl_hashtable_compare_pointer if 
- *    not present
- * FlContainerCleanupFunction key_cleaner - Function to clean 
- *    the memory used by key. If not present, the key remains 
- *    untouched
- * FlContainerCleanupFunction value_cleaner - Function to clean 
- *    the memory used by value. If not present, the value remains 
- *    untouched
- * FlContainerWriterFunc key_writer - Allocates memory and 
- *    writes the key to the hashtable's entry. If not present, the 
- *    hashtable uses pointers
- * FlContainerWriterFunc value_writer - Allocates memory and 
- *    writes the value to the hashtable's entry. If not present, 
- *    the hastable uses pointers
- *
- * {return: FlHashtable} The new hashtable
- *
- */
+/* -------------------------------------------------------------
+* {function: fl_hashtable_new}
+* -------------------------------------------------------------
+* Creates a hashtable
+* -------------------------------------------------------------
+* {param: FlHashtableHashFunction hash_func} Function to hash keys. 
+*    The hashtable uses fl_hashtable_hash_pointer if not present
+* {param: FlContainerEqualsFunction key_comparer} Function to 
+*    compare keys. Hashtable uses fl_hashtable_compare_pointer if 
+*    not present
+* {param: FlContainerCleanupFunc key_cleaner} Function to clean 
+*    the memory used by key. If not present, the key remains 
+*    untouched
+* {param: FlContainerCleanupFunc value_cleaner} Function to clean 
+*    the memory used by value. If not present, the value remains 
+*    untouched
+* {param: FlContainerAllocatorFunction key_allocator} Allocates memory and 
+*    writes the key to the hashtable's entry. If not present, the 
+*    hashtable uses pointers
+* {param: FlContainerAllocatorFunction value_allocator} Allocates memory and 
+*    writes the value to the hashtable's entry. If not present, 
+*    the hastable uses pointers
+* -------------------------------------------------------------
+* {return: FlHashtable} The new hashtable
+* -------------------------------------------------------------
+*/
 FlHashtable fl_hashtable_new(
-    FlHashtableHashFunc hash_func, 
-    FlContainerEqualsFunc key_comparer, 
+    FlHashtableHashFunction hash_func, 
+    FlContainerEqualsFunction key_comparer, 
     FlContainerCleanupFunction key_cleaner, 
     FlContainerCleanupFunction value_cleaner, 
-    FlContainerWriterFunc key_writer, 
-    FlContainerWriterFunc value_writer
+    FlContainerAllocatorFunction key_allocator, 
+    FlContainerAllocatorFunction value_allocator
 );
 
 /*

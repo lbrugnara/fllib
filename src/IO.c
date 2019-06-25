@@ -86,7 +86,7 @@ bool fl_io_dir_create_recursive(const char *pathname)
 
 CLEANUP:
     fl_cstring_delete(current);
-    fl_vector_delete_ptrs(parts);
+    fl_vector_delete(parts);
     fl_cstring_delete(path);
     return status;
 }

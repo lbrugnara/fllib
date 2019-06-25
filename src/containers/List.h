@@ -10,6 +10,9 @@
  *  
  *  An opaque pointer to a doubly linked list instance.
  *
+ * ===== C =====
+ *  typedef struct FlList *FlList;
+ * =============
  */
 typedef struct FlList *FlList;
 
@@ -37,12 +40,12 @@ struct FlListNode {
  * 
  * ===== C ===== 
  * struct FlListArgs {
- *     FlContainerWriterFunc value_writer;
+ *     FlContainerAllocatorFunction value_allocator;
  *     FlContainerCleanupFunction value_cleaner;
  * };
  */
 struct FlListArgs {
-    FlContainerWriterFunc value_writer;
+    FlContainerAllocatorFunction value_allocator;
     FlContainerCleanupFunction value_cleaner;
 };
 
@@ -63,7 +66,7 @@ FlList fl_list_new(void);
 
 /*
  * Function: fl_list_new_args
- *  Creates a new list using the provided <FlContainerWriterFunc> and
+ *  Creates a new list using the provided <FlContainerAllocatorFunction> and
  *  <FlContainerCleanupFunction> functions to save and clean nodes' values
  *
  * Parameters:

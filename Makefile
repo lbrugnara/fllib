@@ -91,6 +91,7 @@ FL_TEST_OBJECTS=\
 	obj/$(TARGET)/tests/text/Test_String.o 	\
 	obj/$(TARGET)/tests/text/Test_Regex.o 	\
 	obj/$(TARGET)/tests/containers/Test_Hashtable.o \
+	obj/$(TARGET)/tests/containers/Test_Vector.o \
 	obj/$(TARGET)/tests/containers/Test_List.o
 
 ifeq ($(LINKAGE),static)

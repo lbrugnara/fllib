@@ -1,3 +1,4 @@
+#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -7,41 +8,100 @@
 #include "../Cstring.h"
 #include "../Array.h"
 
-/**
- * {@type} Container type
- * {@dtisze} Data type size of each element to be almacenated
- * {@capacity} Max number of elements to be almacenated
- * {@length} Number of current saved elements
- * {@data} Memory used by {FlVector} to save elements
- */
 struct FlVector {
-    size_t dtsize;
+    FlContainerWriterFunction writer;
+    FlContainerCleanupFunction cleaner;
+    double growth_factor;
+    size_t element_size;
     size_t capacity;
+    size_t max_capacity;
     size_t length;
-    FlByte* data;
+    FlByte *data;
 };
 
-FlVector fl_vector_new(size_t dtsize, size_t nelem) 
+static inline size_t calculate_growth(FlVector vector, size_t reqcapacity)
 {
-    FlVector vector = fl_calloc(1, sizeof(struct FlVector));
-    if (nelem == 0)
-        nelem = 1;
-    vector->data = fl_calloc(nelem, dtsize);
-    vector->dtsize = dtsize;
-    vector->length = 0;
-    vector->capacity = nelem;
-	return vector;
+    // If the vector has reached its max capacity, we have nothing to do here
+    if (vector->capacity == vector->max_capacity)
+        return vector->capacity;
+
+    // Apply growth factor until get required capacity or the maximum one, whichever
+    // happens first
+    size_t newcapacity = vector->capacity;
+    do {
+        newcapacity = (newcapacity > ceil(vector->max_capacity / vector->growth_factor))
+                            ? vector->max_capacity
+                            : ceil(newcapacity * vector->growth_factor);
+    } while (reqcapacity > newcapacity && newcapacity != vector->max_capacity);
+
+    return newcapacity;
 }
 
-void* fl_vector_add(FlVector vector, const void *elem) 
+bool resize_vector(FlVector vector, size_t capacity)
 {
-    if (vector->length >= vector->capacity) {
-        fl_vector_resize(vector, vector->capacity * 2);
+    // Check if the number of bytes will overflow
+    if (fl_std_umult_wrap(vector->element_size, capacity, SIZE_MAX))
+        return false;
+
+    // Try to reallocate 
+    void *tmp = fl_realloc(vector->data, vector->element_size * capacity);
+    if (!tmp)
+        return false;
+
+    // On success update the vector
+    vector->capacity = capacity;
+    vector->data = tmp;
+
+    return true;
+}
+
+FlVector fl_vector_new(size_t capacity, FlContainerCleanupFunction cleaner) 
+{
+    return fl_vector_new_args((struct FlVectorArgs){
+        .capacity = capacity,
+        .cleaner = cleaner,
+        .writer = NULL,
+        .growth_factor = 0.0, // default
+        .element_size = 0, // default
+        .max_capacity = 0 // default
+    });
+}
+
+FlVector fl_vector_new_args(struct FlVectorArgs args)
+{
+    flm_assert(args.element_size > 0 || args.writer == NULL, "Element size must be greater than 0");
+
+    FlVector vector = fl_calloc(1, sizeof(struct FlVector));
+
+    vector->length = 0;
+
+    vector->writer = args.writer != NULL ? args.writer : NULL;
+    vector->cleaner = args.cleaner != NULL ? args.cleaner : NULL;
+
+    vector->growth_factor = args.growth_factor != 0.0 ? args.growth_factor : 2.0;
+    vector->element_size = args.element_size > 0 ? args.element_size : sizeof(void*);
+
+    if (args.capacity == 0)
+        args.capacity = 1;
+
+    vector->capacity = args.capacity;
+    vector->max_capacity = args.max_capacity != 0 ? args.max_capacity : SIZE_MAX / vector->element_size;
+
+    if (vector->capacity > vector->max_capacity)
+    {
+        fl_vector_delete(vector);
+        return NULL;
     }
-    size_t sizet = (vector->length * vector->dtsize);
-    memcpy(vector->data + sizet, elem, vector->dtsize);
-    vector->length++;
-    return vector->data + sizet;
+
+    if (fl_std_umult_wrap(vector->max_capacity, vector->element_size, SIZE_MAX))
+    {
+        fl_vector_delete(vector);
+        return NULL;
+    }
+
+    vector->data = fl_calloc(vector->capacity, vector->element_size);
+
+	return vector;
 }
 
 size_t fl_vector_length(FlVector vector)
@@ -49,9 +109,9 @@ size_t fl_vector_length(FlVector vector)
     return vector->length;
 }
 
-size_t fl_vector_dtsize(FlVector vector)
+double fl_vector_growth_factor(FlVector vector)
 {
-    return vector->dtsize;
+    return vector->growth_factor;
 }
 
 size_t fl_vector_capacity(FlVector vector)
@@ -59,108 +119,193 @@ size_t fl_vector_capacity(FlVector vector)
     return vector->capacity;
 }
 
-void* fl_vector_insert(FlVector vector, const void *elem, size_t pos)
+size_t fl_vector_max_capacity(FlVector vector)
 {
-    if (elem == NULL)
+    return vector->max_capacity;
+}
+
+size_t fl_vector_element_size(FlVector vector)
+{
+    return vector->element_size;
+}
+
+void* fl_vector_add(FlVector vector, const void *element) 
+{
+    size_t reqcapacity = vector->length + 1;
+
+    if (reqcapacity > vector->capacity)
     {
-        flm_exit(ERR_FATAL, "elem is NULL");
+        size_t newcapacity = calculate_growth(vector, reqcapacity);
+
+        if (newcapacity == vector->max_capacity)
+            return NULL;
+
+        if (!resize_vector(vector,  newcapacity))
+            return NULL;
     }
 
-    if (vector->length >= vector->capacity) {
-        fl_vector_resize(vector, vector->capacity * 2);
+    void *retval = NULL;
+    if (vector->writer == NULL)
+    {
+        retval = ((void**)vector->data)[vector->length] = (void*)element;
     }
-    else if (pos >= vector->capacity) {
-        fl_vector_resize(vector, vector->capacity + pos);
+    else
+    {
+        retval = vector->data + vector->length * vector->element_size;
+        vector->writer(retval, element);
+    }
+    
+    vector->length++;
+    
+    return retval;
+}
+
+void* fl_vector_insert(FlVector vector, const void *element, size_t index)
+{
+    // Capacity required to store an element in the index-nth position
+    size_t reqcapacity = index + 1;
+
+    if (reqcapacity > vector->max_capacity)
+        return NULL;
+
+    // Check resize
+    if (vector->length >= vector->capacity || reqcapacity > vector->capacity)
+    {
+        // Expected new capacity per growth factor
+        size_t newcapacity = calculate_growth(vector, reqcapacity);
+
+        if (!resize_vector(vector, newcapacity))
+            return NULL;
     }
 
-    if (vector->length < pos)
-    {
-        memset(vector->data + (vector->length*vector->dtsize), 0, (pos - vector->length) * vector->dtsize);
+    // Zero out between the last element and the index if needed
+    if (vector->length < index)
+    {        
+        size_t bytes = (index - vector->length) * vector->element_size;        
+        memset(vector->data + vector->length * vector->element_size, 0, bytes);
     }
 
-    size_t destpos = (pos * vector->dtsize);
-    if (pos < vector->length)
+    // Calculate index' offset
+    size_t offset = (index * vector->element_size);    
+
+    // If the index is in between current elements, we need to move elements
+    // to make space for the new element
+    if (index < vector->length)
     {
-        size_t bytestomove = (vector->length - pos) * vector->dtsize;
-        memmove((vector->data + destpos + vector->dtsize), (vector->data + destpos), bytestomove);
+        // Number of bytes to move "forward"
+        size_t bytes = (vector->length - index) * vector->element_size;        
+
+        // We need to move "forward" from the calculated offset...
+        void *from = vector->data + offset;
+        // ... to the "next" position to make room for the new element
+        void *to = vector->data + (offset + vector->element_size);
+        memmove(to, from, bytes);
+
+        // Update the length taking into account the new element
         vector->length++;
     } 
     else 
     {
-        vector->length = pos+1 ;
+        // If the index is "beyond" the length, we just need to
+        // update the length to reflect all the added padding along
+        // with the new element
+        vector->length = index + 1 ;
     }
-    memcpy(vector->data + destpos, elem, vector->dtsize);
-    return vector->data+destpos;
+
+    void *retval = NULL;
+
+    if (vector->writer == NULL)
+    {
+        retval = ((void**)vector->data)[index] = (void*)element;
+    }
+    else
+    {
+        retval = vector->data + offset;
+        vector->writer(retval, element);
+    }
+
+    return retval;
 }
 
-void* fl_vector_unshift(FlVector vector, const void *elem)
-{
-    return fl_vector_insert(vector, elem, 0);
-}
-
-void fl_vector_resize(FlVector vector, size_t nelem)
-{
-    vector->capacity = nelem;
-    size_t new_size = vector->dtsize * vector->capacity;
-    vector->data = fl_realloc(vector->data, new_size);
-}
-
-/* Returns a pointer to the element in the index {index} in {vector->data} */
-void* fl_vector_get(FlVector vector, size_t index) 
+void* fl_vector_get(FlVector vector, size_t index)
 {
     if (index >= vector->length)
         return NULL;
-    size_t sizet = (index * vector->dtsize);
-    return (vector->data + sizet);
-}
 
-void *fl_vector_first(FlVector vector)
-{
-    if (vector->length == 0)
-        return NULL;
-    return vector->data;
+    if (vector->writer == NULL)
+        return ((void**)vector->data)[index];
+
+    return vector->data + index * vector->element_size;
 }
 
 void *fl_vector_last(FlVector vector)
 {
     if (vector->length == 0)
         return NULL;
-    return (vector->data + (vector->length-1) * vector->dtsize);
+    
+    if (vector->writer == NULL)
+        return ((void**)vector->data)[vector->length-1];
+
+    return vector->data + (vector->length-1) * vector->element_size;
 }
 
-bool fl_vector_shift(FlVector vector, void *dest)
+void* fl_vector_shift(FlVector vector, void *dest)
 {
     if (vector->length == 0)
-        return false;
-    if (dest != NULL)
-        memcpy(dest, vector->data, vector->dtsize);
+        return NULL;
+
+    if (vector->writer == NULL)
+    {
+        *(void**)dest = ((void**)vector->data)[0];
+    }
+    else
+    {
+        vector->writer(dest, vector->data);
+    }
+
     vector->length--;
-    size_t o1 = vector->dtsize; // First element
-    memmove(&vector->data[0], &vector->data[o1], vector->dtsize * vector->length); // Move the items one position to the left
-    size_t offset = vector->dtsize * vector->length; // Old last element index
-    memset(vector->data+offset, 0, vector->dtsize); // Clear old last element
-    return true;
+
+    // Move the items one position to the left
+    size_t offsetFirstElement = vector->element_size; // First element
+    memmove(vector->data, vector->data + offsetFirstElement, vector->element_size * vector->length);
+
+    // Clear old last element
+    size_t offsetOldLastElement = vector->element_size * vector->length; // Old last element index
+    memset(vector->data + offsetOldLastElement, 0, vector->element_size);
+
+    return dest;
 }
 
-bool fl_vector_pop(FlVector vector, void *dest)
+void* fl_vector_pop(FlVector vector, void *dest)
 {
     if (vector->length == 0)
-        return false;
+        return NULL;
+
     vector->length--;
-    size_t offset = vector->dtsize * vector->length;
-    if (dest != NULL)
-        memcpy(dest, vector->data+offset, vector->dtsize);
-    memset(vector->data+offset, 0, vector->dtsize);
-    return true;
+    
+    size_t offset = vector->element_size * vector->length;
+
+    if (vector->writer == NULL)
+    {
+        *(void**)dest = ((void**)vector->data)[vector->length];
+    }
+    else
+    {
+        vector->writer(dest, vector->data + vector->element_size * vector->length);
+    }
+
+    memset(vector->data+offset, 0, vector->element_size);
+
+    return dest;
 }
 
 bool fl_vector_contains(FlVector vector, const void *needle)
 {
-    size_t offset = vector->dtsize * vector->length;
+    size_t offset = vector->element_size * vector->length;
     for (size_t i=0; i < vector->length; i++)
     {
         // TODO
-        if (memcmp(vector->data+offset, needle, vector->dtsize) == 0)
+        if (memcmp(vector->data+offset, needle, vector->element_size) == 0)
             return true;
     }
     return false;
@@ -168,10 +313,10 @@ bool fl_vector_contains(FlVector vector, const void *needle)
 
 void fl_vector_concat(FlVector v, FlVector v2)
 {
-    size_t sizev = v->dtsize*v->length;
-    size_t sizev2 = v2->dtsize*v2->length;
+    size_t sizev = v->element_size*v->length;
+    size_t sizev2 = v2->element_size*v2->length;
     if (v->length + v2->length >= v->capacity) {
-        fl_vector_resize(v, v->capacity + v2->length);
+        resize_vector(v, v->capacity + v2->length);
     }
     memcpy(v->data+sizev, v2->data, sizev2);
     v->length += v2->length;
@@ -180,9 +325,9 @@ void fl_vector_concat(FlVector v, FlVector v2)
 FlVector fl_vector_merge(FlVector v, FlVector v2)
 {
     size_t totallength = v->length + v2->length;
-    FlVector newone = fl_vector_new(v->dtsize, totallength);
-    size_t sizev = v->dtsize*v->length;
-    size_t sizev2 = v2->dtsize*v2->length;
+    FlVector newone = fl_vector_new(totallength, v->cleaner);
+    size_t sizev = v->element_size*v->length;
+    size_t sizev2 = v2->element_size*v2->length;
     memcpy(newone->data, v->data, sizev);
     memcpy(newone->data+sizev, v2->data, sizev2);
     newone->length = totallength;
@@ -194,54 +339,51 @@ bool fl_vector_remove(FlVector vector, size_t pos, void *dest)
     if (vector->length == 0 || pos >= vector->length)
         return false;
 
-    size_t targetindex = vector->dtsize * pos;
+    size_t targetindex = vector->element_size * pos;
     if (dest != NULL)
-        memcpy(dest, vector->data+targetindex, vector->dtsize);
-    size_t targetnextindex = targetindex + vector->dtsize;
+    {
+        if (vector->writer == NULL)
+        {
+            *(void**)dest = ((void**)vector->data)[targetindex];
+        }
+        else
+        {
+            vector->writer(dest, vector->data+targetindex);
+        }
+    }
+    
+    if (dest == NULL && vector->cleaner)
+    {
+        vector->cleaner(vector->data + targetindex);
+    }
+    
+    size_t targetnextindex = targetindex + vector->element_size;
     vector->length--;
-    memmove(&vector->data[targetindex], &vector->data[targetnextindex], vector->dtsize * vector->length);
-    return true;
-}
+    memmove(vector->data, vector->data + targetnextindex, vector->element_size * vector->length);
 
-void fl_vector_clear(FlVector vector)
-{
-    if (vector->length == 0)
-        return;
-    size_t nbytes = vector->dtsize * vector->length;
-    memset(vector->data, 0, nbytes);
-    vector->length = 0;
+    return true;
 }
 
 /* Free the memory reserved for ar */
 void fl_vector_delete(FlVector vector) 
 {
-    fl_free(vector->data);
-    fl_free(vector);
-}
-
-void fl_vector_delete_ptrs(FlVector vector)
-{
-    FlByte** data = (FlByte**)vector->data;
-    size_t offset;
-    for (size_t i=0; i < vector->length; i++)
+    if (vector->cleaner)
     {
-        if (data[i])
-            fl_free(data[i]);
-    }
-    fl_free(vector->data);
-    fl_free(vector);
-}
-
-// TODO: data[i] is not valid when typeof is not a pointer
-void fl_vector_delete_h(FlVector vector, void (*delete_handler)(FlByte*))
-{
-    FlByte** data = (FlByte**)vector->data;
-    size_t offset;
-    for (size_t i=0; i < vector->length; i++)
-    {
-        if (data[i])
+        if (vector->writer)
         {
-            delete_handler(data[i]);
+            size_t total = vector->length * vector->element_size;
+            for (size_t i = 0; i < total; i += vector->element_size)
+            {
+                FlByte *ptr = (FlByte*)vector->data + i;
+                vector->cleaner(ptr);
+            }
+        }
+        else
+        {
+            for (size_t i = 0; i < vector->length; i++)
+            {
+                vector->cleaner(((void**)vector->data)[i]);
+            }
         }
     }
     fl_free(vector->data);
@@ -250,8 +392,8 @@ void fl_vector_delete_h(FlVector vector, void (*delete_handler)(FlByte*))
 
 void* fl_vector_to_array(FlVector vector)
 {
-	void * array = fl_array_new(vector->dtsize, vector->length);
-    memcpy(array, vector->data, vector->dtsize * vector->length);
+	void * array = fl_array_new(vector->element_size, vector->length);
+    memcpy(array, vector->data, vector->element_size * vector->length);
     return array;
 }
 
@@ -262,19 +404,19 @@ void* fl_vector_to_array(FlVector vector)
 typedef struct FlVectorIterator {
     FlByte* base;
     unsigned int current;
-    size_t dtsize;  
+    size_t element_size;  
 } FlVectorIterator;
 
 static void it_next(void *it)
 {
     FlVectorIterator *vit = (FlVectorIterator*)it;
-    vit->current += vit->dtsize;
+    vit->current += vit->element_size;
 }
 
 static void it_prev(void *it)
 {
     FlVectorIterator *vit = (FlVectorIterator*)it;
-    vit->current -= vit->dtsize;
+    vit->current -= vit->element_size;
 }
 
 static void* it_value(void *it)
@@ -301,7 +443,7 @@ static bool it_end(void *it, void *container)
 {
     FlVectorIterator *vit = it;
     FlVector vector = container;
-    return vit->base + vit->current == vector->data + (vector->dtsize * vector->length);
+    return vit->base + vit->current == vector->data + (vector->element_size * vector->length);
 }
 
 static void it_delete(void *it)
@@ -314,15 +456,15 @@ FlIterator fl_vector_begin(const FlVector vector)
     FlVectorIterator *vector_it = fl_calloc(1, sizeof(struct FlVectorIterator));
     vector_it->base = (FlByte*)vector->data;
     vector_it->current = 0;
-    vector_it->dtsize = vector->dtsize;
+    vector_it->element_size = vector->element_size;
     return fl_iterator_new(IT_VECTOR, vector_it, &it_next, &it_prev, &it_value, &it_equals, &it_start, &it_end, &it_delete);
 }
 
 FlIterator fl_vector_end(const FlVector vector)
 {
     FlVectorIterator *vector_it = fl_calloc(1, sizeof(struct FlVectorIterator));
-    vector_it->base = (FlByte*)vector->data + (vector->dtsize * vector->length);
+    vector_it->base = (FlByte*)vector->data + (vector->element_size * vector->length);
     vector_it->current = 0;
-    vector_it->dtsize = vector->dtsize;
+    vector_it->element_size = vector->element_size;
     return fl_iterator_new(IT_VECTOR, vector_it, &it_next, &it_prev, &it_value, &it_equals, &it_start, &it_end, &it_delete);
 }

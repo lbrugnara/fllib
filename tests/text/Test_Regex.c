@@ -15,7 +15,7 @@ void tokenize(char *regex, char *expect[])
     bool pass = true;
 	for(size_t i=0; i < l; i++)
 	{
-		char* c = flm_vector_get(tokens, char*, i);
+		char* c = (char*)fl_vector_get(tokens, i);
 		if (expect != NULL)
         {
             int expectl = strlen(expect[i]);
@@ -41,7 +41,7 @@ void tokenize(char *regex, char *expect[])
         fl_vexpect(pass, "No expectations still received '%s'", tokensstr);
     }
     fl_cstring_delete(tokensstr);
-	fl_vector_delete_ptrs(tokens);
+	fl_vector_delete(tokens);
 }
 
 void test_fl_regex_tokenize()

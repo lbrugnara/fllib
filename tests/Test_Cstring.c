@@ -36,7 +36,7 @@ void test_cstring_split()
     fl_expect("Split resulted in a vector with length 5", length == 5);
     for(size_t i=0; i < length; i++)
     {
-        char c = flm_vector_get(v, char, i);
+        char c = *(char*)fl_vector_get(v, i);
         switch(i)
         {
             case 0:
@@ -174,19 +174,19 @@ void test_cstring_append()
 
 void test_cstring_join()
 {
-    FlVector str_vector = fl_vector_new(sizeof(char*), 3);
+    FlVector str_vector = fl_vector_new(3, fl_container_cleaner_pointer);
     char *str1 = fl_cstring_dup("one");
     char *str2 = fl_cstring_dup("two");
     char *str3 = fl_cstring_dup("three");
 
-    fl_vector_add(str_vector, &str1);
-    fl_vector_add(str_vector, &str2);
-    fl_vector_add(str_vector, &str3);
+    fl_vector_add(str_vector, str1);
+    fl_vector_add(str_vector, str2);
+    fl_vector_add(str_vector, str3);
     char *str = fl_cstring_join(str_vector, ", ");
     fl_expect("Join vector with three items 'one', 'two' and 'three' using ', ' as glue, results in 'one, two, three'", flm_cstring_equals(str, "one, two, three"));
     fl_expect("Length of previous joined string is 15 characters", strlen(str) == 15);
     fl_cstring_delete(str);
-    fl_vector_delete_ptrs(str_vector);
+    fl_vector_delete(str_vector);
 }
 
 void test_cstring_misc()

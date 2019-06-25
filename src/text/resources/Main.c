@@ -81,7 +81,7 @@ int unicodedata_comparer(const void *a, const void *b)
 // It returns a vector of char*, caller must free the memory.
 FlStringVector split_text(const char *source, size_t length, char chr)
 {
-    FlStringVector lines = fl_vector_new(sizeof(char**), 10);
+    FlStringVector lines = fl_vector_new(10, fl_container_cleaner_pointer);
     size_t s = 0;
     char *tmp = NULL;
     for (size_t i=0; i < length; i++)
@@ -167,7 +167,7 @@ void parse_derived_normalization_property(FlVector data, const char *buffer, Nor
             break;
     }
 
-    FlVector newcodepoints = fl_vector_new(sizeof(UnicodeData*),1000);
+    FlVector newcodepoints = fl_vector_new(1000, NULL);
 
     char* start = strstr((const char*)buffer, startv);
     char* end = strstr(start, endv);
@@ -220,11 +220,11 @@ void parse_derived_normalization_property(FlVector data, const char *buffer, Nor
         }
         fl_array_delete(codes);
     }
-    fl_vector_delete_ptrs(lines);
+    fl_vector_delete(lines);
 
     fl_vector_concat(data, newcodepoints);
     fl_vector_delete(newcodepoints);
-    qsort(fl_vector_get(data, 0), fl_vector_length(data), fl_vector_dtsize(data), &unicodedata_comparer);
+    qsort(fl_vector_get(data, 0), fl_vector_length(data), sizeof(UnicodeData*), &unicodedata_comparer);
 }
 
 // This function parses DerivedNormalizationProps and set some of these properties in {data}
@@ -388,7 +388,7 @@ void parse_unicode_data(FlVector data)
     fl_cstring_delete(buffer);
 }
 
-void delete_data_handler(FlByte *ptr)
+void delete_data_handler(void *ptr)
 {
     UnicodeData *ud = (UnicodeData*)ptr;
     if (ud->code) fl_cstring_delete(ud->code);
@@ -509,9 +509,9 @@ void create_unicode_database_file(FlVector data)
 
 int main(void)
 {
-    FlVector data = fl_vector_new(sizeof(UnicodeData*), 30000);
+    FlVector data = fl_vector_new(30000, delete_data_handler);
     parse_unicode_data(data);
     parse_derived_normalization_properties(data);
     create_unicode_database_file(data);
-    fl_vector_delete_h(data, &delete_data_handler);
+    fl_vector_delete(data);
 }

@@ -8,7 +8,7 @@
 struct FlList {
 	struct FlListNode *head;
 	struct FlListNode *tail;
-	FlContainerWriterFunc writer;
+	FlContainerAllocatorFunction allocator;
 	FlContainerCleanupFunction cleaner;
 };
 
@@ -22,7 +22,7 @@ FlList fl_list_new_args(struct FlListArgs args)
 	
 	list->head = NULL;
 	list->tail = NULL;
-	list->writer = args.value_writer;
+	list->allocator = args.value_allocator;
 	list->cleaner = args.value_cleaner;
 
 	return list;
@@ -44,10 +44,10 @@ struct FlListNode* fl_list_append(FlList list, const void *value)
 	node->prev = NULL;
 	node->next = NULL;
 
-	if (!list->writer)
+	if (!list->allocator)
 		node->value = (FlByte*)value;
 	else
-		list->writer(&node->value, value);
+		list->allocator(&node->value, value);
 
 	if (list->head == NULL)
 		return list->head = list->tail = node;
@@ -68,10 +68,10 @@ struct FlListNode* fl_list_prepend(FlList list, const void *value)
 	node->prev = NULL;
 	node->next = NULL;
 
-	if (!list->writer)
+	if (!list->allocator)
 		node->value = (FlByte*)value;
 	else
-		list->writer(&node->value, value);
+		list->allocator(&node->value, value);
 
 	if (list->head == NULL)
 		return list->head = list->tail = node;
@@ -92,10 +92,10 @@ struct FlListNode* fl_list_insert_after(FlList list, struct FlListNode *target, 
 	node->prev = NULL;
 	node->next = NULL;
 
-	if (!list->writer)
+	if (!list->allocator)
 		node->value = (FlByte*)value;
 	else
-		list->writer(&node->value, value);
+		list->allocator(&node->value, value);
 
 	bool isTail = target == list->tail;
 
@@ -122,10 +122,10 @@ struct FlListNode* fl_list_insert_before(FlList list, struct FlListNode *target,
 	node->prev = NULL;
 	node->next = NULL;
 
-	if (!list->writer)
+	if (!list->allocator)
 		node->value = (FlByte*)value;
 	else
-		list->writer(&node->value, value);
+		list->allocator(&node->value, value);
 
 	bool isHead = target == list->head;
 

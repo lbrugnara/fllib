@@ -18,13 +18,13 @@
  * ===== C =====
  *   struct FlSpan {
  *       const FlByte * const sequence;
- *       const size_t dtsize;
+ *       const size_t element_size;
  *       const size_t length;
  *   };
  */
 struct FlSpan {
     const FlByte * const sequence;
-    const size_t dtsize;
+    const size_t element_size;
     const size_t length;
 };
 
@@ -40,7 +40,7 @@ struct FlSpan {
  *  <struct FlSpan> - Representation of the contiguous read-only sequence of bytes
  *
  */
-struct FlSpan fl_span_new(const FlByte * const sequence, size_t dtsize, size_t offset, size_t length);
+struct FlSpan fl_span_new(const FlByte * const sequence, size_t element_size, size_t offset, size_t length);
 
 /*
  * Function: fl_span_equals
@@ -63,12 +63,13 @@ bool fl_span_equals(const struct FlSpan *span1, const struct FlSpan *span2);
  * Parameters:
  *  <struct FlSpan> *span - Span to compare with the sequence of bytes
  *  const FlByte * const sequence - Sequence of bytes
+ *  size_t sequence_length - Length of the sequence to compare
  *
  * Return:
  *  bool - True if the span is within the sequence of bytes
  *
  */
-bool fl_span_equals_sequence(const struct FlSpan *span, const FlByte * const sequence);
+bool fl_span_equals_sequence(const struct FlSpan *span, const FlByte * const sequence, size_t sequence_length);
 
 /*
  * Function: fl_span_begin

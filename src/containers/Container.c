@@ -31,10 +31,7 @@ bool fl_container_equals_sizet(const FlByte *val1, const FlByte *val2)
 
 void fl_container_allocator_string(FlByte **dest, const FlByte *src)
 {
-    if (!src)
-        return;
-
-    const char *string = *(const char**)src;
+    const char *string = (const char*)src;
 
     if (!string)
         return;

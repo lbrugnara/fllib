@@ -65,7 +65,7 @@ FlVector fl_cstring_split_by(const char *string, const char *separator)
         size_t length = temp - string - index;
 
         char *part = fl_cstring_dup_n(string + index, length);
-        fl_vector_add(parts, (void *)&part);
+        fl_vector_add(parts, part);
         
         index += length + separatorLength;
     }
@@ -75,7 +75,7 @@ FlVector fl_cstring_split_by(const char *string, const char *separator)
     if (stringLength - index != 0)
     {
         char *part = fl_cstring_dup(string + index);
-        fl_vector_add(parts, (void*)&part);
+        fl_vector_add(parts, part);
     }
 
     return parts;
@@ -305,6 +305,26 @@ char *fl_cstring_replace(const char *src, const char *needle, const char *rplc)
     return dst;
 }
 
+char* fl_cstring_replace_in_source(char *source, const char *needle, const char *replacement)
+{
+    flm_assert(source != NULL, "Source cannot be NULL");
+    flm_assert(replacement != NULL, "Replacement cannot be NULL");
+
+    size_t src_size = strlen(source);
+    size_t needle_size = needle == NULL ? 0 : strlen(needle);
+    size_t rplc_size = strlen(replacement);
+
+    char *dst = NULL;
+    fl_cstring_replace_n(source, src_size, needle, needle_size, replacement, rplc_size, &dst);
+
+    if (!dst)
+        return NULL;
+
+    fl_cstring_delete(source);
+
+    return dst;
+}
+
 size_t fl_cstring_replace_n(const char *src, size_t src_size, const char *needle, size_t needle_size, const char *rplc, size_t rplc_size, char **dst)
 {
     flm_assert(src != NULL, "Source cannot be NULL");
@@ -404,7 +424,7 @@ char *fl_cstring_find(const char *str, const char *needle)
     flm_assert(str != NULL, "Source cannot be NULL");
 
     size_t str_size = strlen(str);
-    size_t needle_size = (size_t)-1;
+    size_t needle_size = 0;
     // If needle is NULL or it is longer than str, no need to replace anything
     if (needle == NULL || str_size < (needle_size = strlen(needle)))
         return NULL;
@@ -423,7 +443,7 @@ char *fl_cstring_find(const char *str, const char *needle)
 
     for (size_t i = 0; i < needle_size; i++)
     {
-        size_t n = needle_size - i - 1;
+        size_t n = needle_size - 1 - i;
         fl_hashtable_set(table, needle + i, &n);
     }
 
@@ -438,7 +458,20 @@ char *fl_cstring_find(const char *str, const char *needle)
         if (strptr[i] != needle[needle_size - 1] || (needle_size > 1 && !cstr_match_backw(strptr + k, needle, needle_size - 1)))
         {
             size_t *pi = (size_t *)fl_hashtable_get(table, strptr + i);
-            i += (pi == NULL ? needle_size : *pi);
+
+            if (pi)
+            {
+                if (*pi == 0)
+                {
+                    result = strptr + i;
+                    break;   
+                }
+                i += *pi;
+            }
+            else
+            {
+                i += needle_size;
+            }
             continue;
         }
         result = strptr + k;

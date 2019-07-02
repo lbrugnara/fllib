@@ -5,6 +5,12 @@
 #include "Std.h"
 #include "Array.h"
 
+#ifdef _WIN32
+    #define FL_IO_DIR_SEPARATOR "\\"
+#else
+    #define FL_IO_DIR_SEPARATOR "/"
+#endif
+
 /*
  * Function: fl_io_file_open
  *  Wrapper for the fopen function.
@@ -182,5 +188,7 @@ char* fl_io_file_read_all_text(const char *filename);
  *
  */
 bool fl_io_file_write_all_text(const char *filename, const char *content);
+
+bool fl_io_file_get_modified_timestamp(const char *filename, unsigned long long *timestamp);
 
 #endif /* FL_IO_H */

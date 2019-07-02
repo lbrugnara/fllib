@@ -7,18 +7,18 @@
 #include "Error.h"
 #include "Cstring.h"
 #include "Array.h"
+#include "os/System.h"
 
 #ifdef _WIN32
+    #include <windows.h>
     #include <direct.h>
     #include <io.h>
     #define access _access
     #define mkdir(path, mode) _mkdir((path))
-    #define FL_IO_DIR_SEPARATOR "\\"
 #elif defined(__linux__) || defined(__CYGWIN__)
     #include <unistd.h>
     #include <sys/stat.h>
     #include <sys/types.h>
-    #define FL_IO_DIR_SEPARATOR "/"
 #endif
 
 FILE * fl_io_file_open(const char *filename, const char *mode)
@@ -70,7 +70,7 @@ bool fl_io_dir_create_recursive(const char *pathname)
     char *current = fl_cstring_dup("");
     for (size_t i=0; i < count; i++)
     {
-        fl_cstring_append(&current, *(const char **)fl_vector_get(parts, i));
+        fl_cstring_append(&current, (const char*)fl_vector_get(parts, i));
         fl_cstring_append(&current, FL_IO_DIR_SEPARATOR);
         
         if (fl_io_file_exists(current))
@@ -243,4 +243,46 @@ bool fl_io_file_write_all_text(const char *filename, const char *content)
     fl_io_file_close(fd);
 
     return length == written;
+}
+
+bool fl_io_file_get_modified_timestamp(const char *filename, unsigned long long *timestamp)
+{
+    #if defined(_WIN32)
+    {
+        HANDLE fh = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
+
+        if (fh == INVALID_HANDLE_VALUE)
+        {
+            char *wdir = fl_system_get_working_dir();
+            char *fullname = fl_cstring_vdup("%s%s%s", wdir, FL_IO_DIR_SEPARATOR, filename);
+
+            fh = CreateFile(fullname, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
+
+            fl_cstring_delete(fullname);
+            fl_cstring_delete(wdir);
+
+            if (fh == INVALID_HANDLE_VALUE)
+                return false;
+        }
+
+        FILETIME modtime;
+        if (GetFileTime(fh, NULL, NULL, &modtime) == 0)
+            return false;
+
+        ULARGE_INTEGER integer = {
+            .LowPart = modtime.dwLowDateTime,
+            .HighPart = modtime.dwHighDateTime
+        };
+        
+        *timestamp = integer.QuadPart;
+
+        CloseHandle(fh);
+
+        return true;
+    }
+    #elif
+    {
+        unimplemented
+    }
+    #endif
 }

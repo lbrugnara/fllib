@@ -68,10 +68,7 @@ unsigned long fl_hashtable_hash_pointer(const FlByte *key)
 
 unsigned long fl_hashtable_hash_string(const FlByte *key)
 {
-    if (!key)
-        return djb2_hash(NULL, 0);
-
-    char *str = *(char**)key;
+    const char *str = (const char*)key;
 
     if (!str)
         return djb2_hash(NULL, 0);

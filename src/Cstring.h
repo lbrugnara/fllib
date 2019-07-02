@@ -110,6 +110,8 @@ char* fl_cstring_replace_char(const char *src, const char chr, const char *rplc)
  */
 char* fl_cstring_replace(const char *src, const char *needle, const char *rplc);
 
+char* fl_cstring_replace_in_source(char *source, const char *needle, const char *replacement);
+
 size_t fl_cstring_replace_n(const char *src, size_t src_size, const char *needle, size_t needle_size, const char *rplc, size_t rplc_size, char **dst);
 
 /**

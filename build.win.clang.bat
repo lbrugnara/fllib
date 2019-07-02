@@ -13,7 +13,6 @@ set CFLAGS= -std=c99 ^
             -finput-charset=UTF-8 ^
             -fexec-charset=UTF-8 ^
             -ggdb ^
-            -O3 ^
             -DFL_UNICODE_DB ^
             -D_FORTIFY_SOURCE=2 ^
             -DFL_DEBUG

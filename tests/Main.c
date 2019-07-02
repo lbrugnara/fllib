@@ -2,7 +2,7 @@
 
 // Tests
 #include "Std.h"
-#include "Test_Span.h"
+#include "Test_Slice.h"
 #include "Test_Cstring.h"
 #include "IO.h"
 #include "text/Test_Unicode.h"
@@ -26,9 +26,9 @@ int main(int argc, char **argv)
             { "Exception handling", &test_std_exception },
             { "Global error handling thread safety", &test_errors }
         ),
-        fl_test_suite("Span", 
-            { "Span allocation", &test_span },
-            { "Span iterator", &test_span_iterator }
+        fl_test_suite("Slice", 
+            { "Slice allocation", &test_slice },
+            { "Slice iterator", &test_slice_iterator }
         ),
         fl_test_suite("Cstr", 
             { "fl_cstring_new", &test_cstring_new }, 

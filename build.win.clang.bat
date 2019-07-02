@@ -68,7 +68,7 @@ clang.exe %CFLAGS% -c .\src\text\resources\UnicodeData.c  -o .\obj\debug\text\re
 clang.exe %CFLAGS% -c .\src\text\Unicode.c  -o .\obj\debug\text\Unicode.o
 clang.exe %CFLAGS% -c .\src\text\String.c  -o .\obj\debug\text\String.o
 clang.exe %CFLAGS% -c .\src\Cstring.c  -o .\obj\debug\Cstring.o
-clang.exe %CFLAGS% -c .\src\Span.c  -o .\obj\debug\Span.o
+clang.exe %CFLAGS% -c .\src\Slice.c  -o .\obj\debug\Slice.o
 clang.exe %CFLAGS% -c .\src\Array.c  -o .\obj\debug\Array.o
 clang.exe %CFLAGS% -c .\src\IO.c  -o .\obj\debug\IO.o
 clang.exe %CFLAGS% -c .\src\containers\Container.c  -o .\obj\debug\containers\Container.o
@@ -93,7 +93,7 @@ llvm-lib -NOLOGO -VERBOSE                        ^
     obj\debug\text\Unicode.o                ^
     obj\debug\text\String.o                 ^
     obj\debug\Cstring.o                     ^
-    obj\debug\Span.o                        ^
+    obj\debug\Slice.o                        ^
     obj\debug\Array.o                       ^
     obj\debug\IO.o                          ^
     obj\debug\containers\Container.o        ^
@@ -123,7 +123,7 @@ set TEST_CFLAGS=%CFLAGS% -I.\src -I.\include
 clang.exe %TEST_CFLAGS% -c tests\Main.c -o .\tests\obj\debug\Main.o
 clang.exe %TEST_CFLAGS% -c tests\Test.c -o .\tests\obj\debug\Test.o
 clang.exe %TEST_CFLAGS% -c tests\Std.c -o .\tests\obj\debug\Std.o
-clang.exe %TEST_CFLAGS% -c tests\Test_Span.c -o .\tests\obj\debug\Test_Span.o
+clang.exe %TEST_CFLAGS% -c tests\Test_Slice.c -o .\tests\obj\debug\Test_Slice.o
 clang.exe %TEST_CFLAGS% -c tests\IO.c -o .\tests\obj\debug\IO.o
 clang.exe %TEST_CFLAGS% -c tests\Test_Cstring.c -o .\tests\obj\debug\Test_Cstring.o
 clang.exe %TEST_CFLAGS% -c tests\text\Test_Unicode.c -o .\tests\obj\debug\text\Test_Unicode.o
@@ -150,7 +150,7 @@ lld-link.exe ^
     tests\obj\debug\Main.o ^
     tests\obj\debug\Test.o ^
     tests\obj\debug\Std.o ^
-    tests\obj\debug\Test_Span.o ^
+    tests\obj\debug\Test_Slice.o ^
     tests\obj\debug\IO.o ^
     tests\obj\debug\Test_Cstring.o ^
     tests\obj\debug\text\Test_Unicode.o ^

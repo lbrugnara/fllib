@@ -331,7 +331,10 @@ void fl_test_run_all(int argc, char **argv, FlTestSuite *suites)
     for (size_t i=0; i < number_of_suites; i++)
     {
         if (!results[i].ran)
+        {
+            fl_test_suite_delete(suites[i]);
             continue;
+        }
 
         ntests += suites[i]->ntests;
         nptests += results[i].passedTests;

@@ -52,7 +52,7 @@ cl.exe %CFLAGS% /c .\src\text\resources\UnicodeData.c  /Fo.\obj\debug\text\resou
 cl.exe %CFLAGS% /c .\src\text\Unicode.c  /Fo.\obj\debug\text\Unicode.o
 cl.exe %CFLAGS% /c .\src\text\String.c  /Fo.\obj\debug\text\String.o
 cl.exe %CFLAGS% /c .\src\Cstring.c  /Fo.\obj\debug\Cstring.o
-cl.exe %CFLAGS% /c .\src\Span.c  /Fo.\obj\debug\Span.o
+cl.exe %CFLAGS% /c .\src\Slice.c  /Fo.\obj\debug\Slice.o
 cl.exe %CFLAGS% /c .\src\Array.c  /Fo.\obj\debug\Array.o
 cl.exe %CFLAGS% /c .\src\IO.c  /Fo.\obj\debug\IO.o
 cl.exe %CFLAGS% /c .\src\containers\Container.c  /Fo.\obj\debug\containers\Container.o
@@ -71,7 +71,7 @@ md .\build\debug
 lib -NOLOGO -VERBOSE                        ^
     obj\debug\threading\Thread.o            ^
     obj\debug\Std.o                         ^
-    obj\debug\Span.o                        ^
+    obj\debug\Slice.o                        ^
     obj\debug\Error.o                       ^
     obj\debug\Mem.o                         ^
     obj\debug\text\resources\UnicodeData.o  ^
@@ -107,7 +107,7 @@ set TEST_CFLAGS=%CFLAGS% -I.\include -I.\src
 cl.exe %TEST_CFLAGS% /c tests\Main.c /Fo.\tests\obj\debug\Main.o
 cl.exe %TEST_CFLAGS% /c tests\Test.c /Fo.\tests\obj\debug\Test.o
 cl.exe %TEST_CFLAGS% /c tests\Std.c /Fo.\tests\obj\debug\Std.o
-cl.exe %TEST_CFLAGS% /c tests\Test_Span.c /Fo.\tests\obj\debug\Test_Span.o
+cl.exe %TEST_CFLAGS% /c tests\Test_Slice.c /Fo.\tests\obj\debug\Test_Slice.o
 cl.exe %TEST_CFLAGS% /c tests\IO.c /Fo.\tests\obj\debug\IO.o
 cl.exe %TEST_CFLAGS% /c tests\Test_Cstring.c /Fo.\tests\obj\debug\Test_Cstring.o
 cl.exe %TEST_CFLAGS% /c tests\text\Test_Unicode.c /Fo.\tests\obj\debug\text\Test_Unicode.o
@@ -134,7 +134,7 @@ link.exe ^
     tests\obj\debug\Main.o ^
     tests\obj\debug\Test.o ^
     tests\obj\debug\Std.o ^
-    tests\obj\debug\Test_Span.o ^
+    tests\obj\debug\Test_Slice.o ^
     tests\obj\debug\IO.o ^
     tests\obj\debug\Test_Cstring.o ^
     tests\obj\debug\text\Test_Unicode.o ^

@@ -21,11 +21,11 @@ These are common C data types and algorithms with an abstraction layer over them
 
 - `Cstring`: Provides a set of functions to operate on `char*`
 - `Array`: Dynamic array implementation that uses a header `struct` to track the number of elements and the data type size
-- `Span`: An abstraction over a contiguous sequence of `const` bytes
+- `Slice`: An abstraction over a contiguous sequence of `const` bytes
 
 #### Containers
 
-Set of containers implemented using opaque pointers. All the containers (and other modules like `Span`) support `Iterator` through function pointers
+Set of containers implemented using opaque pointers. All the containers (and other modules like `Slice`) support `Iterator` through function pointers
 
 - `Hashtable`: A generic implementation that uses function pointers to hash, allocate, and deallocate keys and values
 - `List`: A doubly linked list

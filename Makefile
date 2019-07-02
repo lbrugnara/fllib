@@ -56,7 +56,7 @@ endif
 FL_OBJECTS=\
 	obj/$(TARGET)/src/threading/Thread.o 			\
 	obj/$(TARGET)/src/Std.o 						\
-	obj/$(TARGET)/src/Span.o 						\
+	obj/$(TARGET)/src/Slice.o 						\
 	obj/$(TARGET)/src/Error.o 						\
 	obj/$(TARGET)/src/Mem.o 						\
 	obj/$(TARGET)/src/text/resources/UnicodeData.o 	\
@@ -84,7 +84,7 @@ FL_TEST_OBJECTS=\
 	obj/$(TARGET)/tests/Main.o \
 	obj/$(TARGET)/tests/Test.o \
 	obj/$(TARGET)/tests/Std.o \
-	obj/$(TARGET)/tests/Test_Span.o \
+	obj/$(TARGET)/tests/Test_Slice.o \
 	obj/$(TARGET)/tests/IO.o \
 	obj/$(TARGET)/tests/Test_Cstring.o \
 	obj/$(TARGET)/tests/text/Test_Unicode.o \

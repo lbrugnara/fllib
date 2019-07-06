@@ -150,46 +150,9 @@ void fl_container_allocator_sizet(FlByte **dest, const FlByte *src);
 *   sizet
 * -------------------------------------------------------------
 */
-typedef void(*FlContainerWriterFunction)(FlByte *dest, const FlByte *src);
+typedef void(*FlContainerWriterFunction)(FlByte *dest, const FlByte *src, size_t size);
 
-/* -------------------------------------------------------------
-* {function: fl_container_writer_int}
-* -------------------------------------------------------------
-* Copies the integer pointed by {src} into {dest}
-* -------------------------------------------------------------
-* {param: FlByte** dest} Destination object
-* {param: const FlByte* src} Pointer to an integer
-* -------------------------------------------------------------
-* {return: void}
-* -------------------------------------------------------------
-*/
-void fl_container_writer_int(FlByte *dest, const FlByte *src);
-
-/* -------------------------------------------------------------
-* {function: fl_container_writer_char}
-* -------------------------------------------------------------
-* Copies the char pointed by {src} into {dest}
-* -------------------------------------------------------------
-* {param: FlByte** dest} Destination object
-* {param: const FlByte* src} Pointer to a char
-* -------------------------------------------------------------
-* {return: void}
-* -------------------------------------------------------------
-*/
-void fl_container_writer_char(FlByte *dest, const FlByte *src);
-
-/* -------------------------------------------------------------
-* {function: fl_container_writer_sizet}
-* -------------------------------------------------------------
-* Copies the size_t pointed by {src} into {dest}
-* -------------------------------------------------------------
-* {param: FlByte** dest} Destination object
-* {param: const FlByte* src} Pointer to a size_t object
-* -------------------------------------------------------------
-* {return: void}
-* -------------------------------------------------------------
-*/
-void fl_container_writer_sizet(FlByte *dest, const FlByte *src);
+void fl_container_writer(FlByte *dest, const FlByte *src, size_t size);
 
 /*
  * Type: bool(*FlContainerEqualsFunction)(const FlByte *val1, const FlByte *val2)

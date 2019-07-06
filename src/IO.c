@@ -187,7 +187,7 @@ bool fl_io_file_write_all_bytes(const char *filename, const FlArray bytes)
 
 char* fl_io_file_read_all_text(const char *filename)
 {
-    FILE * fd = fl_io_file_open(filename, "r");
+    FILE * fd = fl_io_file_open(filename, "rb");
 
     if (!fd)
         return NULL;
@@ -232,7 +232,7 @@ char* fl_io_file_read_all_text(const char *filename)
 
 bool fl_io_file_write_all_text(const char *filename, const char *content)
 {
-    FILE * fd = fl_io_file_open(filename, "w");
+    FILE * fd = fl_io_file_open(filename, "wb");
 
     if (!fd)
         return false;
@@ -247,7 +247,7 @@ bool fl_io_file_write_all_text(const char *filename, const char *content)
 
 bool fl_io_file_get_modified_timestamp(const char *filename, unsigned long long *timestamp)
 {
-    #if defined(_WIN32)
+    #ifdef _WIN32
     {
         HANDLE fh = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
 
@@ -280,9 +280,14 @@ bool fl_io_file_get_modified_timestamp(const char *filename, unsigned long long 
 
         return true;
     }
-    #elif
+    #else
     {
-        unimplemented
+        struct stat attr;
+        if (stat(filename, &attr) == 1)
+            return false;
+
+        *timestamp = (unsigned long long)attr.st_mtime;
+        return true;
     }
     #endif
 }

@@ -2,8 +2,10 @@ set ARCH=%VSCMD_ARG_HOST_ARCH%
 
 set CFLAGS= -std=c99 ^
             -Wall ^
+            -Werror ^
             -Wextra ^
             -pedantic ^
+            -O3 ^
             -Wmissing-field-initializers ^
             -Wno-unused-parameter ^
             -Wno-unused-variable ^
@@ -77,6 +79,7 @@ clang.exe %CFLAGS% -c .\src\containers\List.c  -o .\obj\debug\containers\List.o
 clang.exe %CFLAGS% -c .\src\containers\Hashtable.c  -o .\obj\debug\containers\Hashtable.o
 clang.exe %CFLAGS% -c .\src\text\Regex.c  -o .\obj\debug\text\Regex.o
 clang.exe %CFLAGS% -c .\src\os\System.c  -o .\obj\debug\os\System.o
+clang.exe %CFLAGS% -c .\src\os\Process.c  -o .\obj\debug\os\Process.o
 clang.exe %CFLAGS% -c .\src\os\Timer.c  -o .\obj\debug\os\Timer.o
 clang.exe %CFLAGS% -c .\src\os\Signal.c  -o .\obj\debug\os\Signal.o
 clang.exe %CFLAGS% -c .\src\os\WinEx.c -o .\obj\debug\os\WinEx.o
@@ -102,6 +105,7 @@ llvm-lib -NOLOGO -VERBOSE                        ^
     obj\debug\containers\Hashtable.o        ^
     obj\debug\text\Regex.o                  ^
     obj\debug\os\System.o                   ^
+    obj\debug\os\Process.o                   ^
     obj\debug\os\Timer.o                    ^
     obj\debug\os\Signal.o                   ^
     obj\debug\os\WinEx.o                    ^
@@ -122,6 +126,7 @@ set TEST_CFLAGS=%CFLAGS% -I.\src -I.\include
 clang.exe %TEST_CFLAGS% -c tests\Main.c -o .\tests\obj\debug\Main.o
 clang.exe %TEST_CFLAGS% -c tests\Test.c -o .\tests\obj\debug\Test.o
 clang.exe %TEST_CFLAGS% -c tests\Std.c -o .\tests\obj\debug\Std.o
+clang.exe %TEST_CFLAGS% -c tests\Test_Defer.c -o .\tests\obj\debug\Test_Defer.o
 clang.exe %TEST_CFLAGS% -c tests\Test_Slice.c -o .\tests\obj\debug\Test_Slice.o
 clang.exe %TEST_CFLAGS% -c tests\IO.c -o .\tests\obj\debug\IO.o
 clang.exe %TEST_CFLAGS% -c tests\Test_Cstring.c -o .\tests\obj\debug\Test_Cstring.o
@@ -149,6 +154,7 @@ lld-link.exe ^
     tests\obj\debug\Main.o ^
     tests\obj\debug\Test.o ^
     tests\obj\debug\Std.o ^
+    tests\obj\debug\Test_Defer.o ^
     tests\obj\debug\Test_Slice.o ^
     tests\obj\debug\IO.o ^
     tests\obj\debug\Test_Cstring.o ^

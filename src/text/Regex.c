@@ -1064,8 +1064,8 @@ FlRegex fl_regex_compile (char* pattern)
 							fl_vector_pop(ascii_codes, &sic);
 							int endindex = (int)*eic;
 							int startindex = (int)*sic;														
-							for (int i=startindex; i <= endindex; i++)
-								((NfaStateCharClass*)s)->map[i] = 1;
+							for (int j=startindex; j <= endindex; j++)
+								((NfaStateCharClass*)s)->map[j] = 1;
 							
 							char* endchar = NULL;
 							fl_vector_pop(display, &endchar);
@@ -1617,7 +1617,7 @@ bool fl_regex_match(FlRegex regex, char* text)
 void fl_regex_delete (FlRegex regex)
 {
 	// Delete FlVector states with delete_nfa handler
-	fl_array_delete_h(regex->states, delete_nfa);
+	fl_array_delete_each(regex->states, delete_nfa);
 	fl_free(regex->pattern);
 	fl_free(regex);
 }

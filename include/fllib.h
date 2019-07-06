@@ -4,6 +4,7 @@
 #include "../src/Types.h"
 #include "../src/threading/Thread.h"
 #include "../src/Std.h"
+#include "../src/Defer.h"
 #include "../src/Slice.h"
 #include "../src/text/resources/UnicodeData.h"
 #include "../src/text/Unicode.h"
@@ -19,6 +20,7 @@
 #include "../src/containers/List.h"
 #include "../src/containers/Vector.h"
 #include "../src/os/System.h"
+#include "../src/os/Process.h"
 #include "../src/os/Timer.h"
 #include "../src/os/Signal.h"
 

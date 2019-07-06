@@ -36,7 +36,7 @@ FlVector fl_cstring_split(const char *str)
 
     size_t length = strlen(str);
     FlVector vector = fl_vector_new_args((struct FlVectorArgs){
-        .writer = fl_container_writer_char,
+        .writer = fl_container_writer,
         .element_size = sizeof(char),
         .capacity = length,
     });
@@ -143,7 +143,7 @@ char *fl_cstring_vadup(const char *s, va_list args)
     FlVector parts = fl_vector_new_args((struct FlVectorArgs){
         .capacity = length,
         .element_size = sizeof(char),
-        .writer = fl_container_writer_char
+        .writer = fl_container_writer
     });
     char sc;
     for (size_t i = 0; i < length; i++)
@@ -166,10 +166,40 @@ char *fl_cstring_vadup(const char *s, va_list args)
             }
             case 'd':
             {
-                int i = va_arg(args, int);
-                size_t t = integer_length(i) + 1;
+                int integer = va_arg(args, int);
+                size_t t = integer_length(integer) + 1;
                 char *dst = fl_array_new(sizeof(char), t);
-                snprintf(dst, t, "%d", i);
+                snprintf(dst, t, "%d", integer);
+                for (size_t j = 0; j < t; j++)
+                    fl_vector_add(parts, dst + j);
+                fl_array_delete(dst);
+                break;
+            }
+            case 'l':
+            {
+                char *dst = NULL;
+                size_t t = 0;
+                if (s[i+1] == 'u')
+                {
+                    sc = s[++i];
+                    unsigned long ulong_integer = va_arg(args, unsigned long);
+                    t = uinteger_length(ulong_integer) + 1;
+                    dst = fl_array_new(sizeof(char), t);
+                    snprintf(dst, t, "%lu", ulong_integer);
+                }
+                else if (s[i+1] == 'd')
+                {
+                    sc = s[++i];
+                    long long_integer = va_arg(args, long);
+                    t = integer_length(long_integer) + 1;
+                    dst = fl_array_new(sizeof(char), t);
+                    snprintf(dst, t, "%ld", long_integer);
+                }
+                else
+                {
+                    break;
+                }
+
                 for (size_t j = 0; j < t; j++)
                     fl_vector_add(parts, dst + j);
                 fl_array_delete(dst);
@@ -441,7 +471,8 @@ char *fl_cstring_find(const char *str, const char *needle)
         .value_allocator = fl_container_allocator_sizet
     });
 
-    for (size_t i = 0; i < needle_size; i++)
+    // Last element will jump "needle_size"
+    for (size_t i = 0; i < needle_size - 1; i++)
     {
         size_t n = needle_size - 1 - i;
         fl_hashtable_set(table, needle + i, &n);

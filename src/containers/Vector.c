@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdint.h>
 
 #include "Vector.h"
 #include "../Mem.h"
@@ -152,7 +153,7 @@ void* fl_vector_add(FlVector vector, const void *element)
     else
     {
         retval = vector->data + vector->length * vector->element_size;
-        vector->writer(retval, element);
+        vector->writer(retval, element, vector->element_size);
     }
     
     vector->length++;
@@ -221,7 +222,7 @@ void* fl_vector_insert(FlVector vector, const void *element, size_t index)
     else
     {
         retval = vector->data + offset;
-        vector->writer(retval, element);
+        vector->writer(retval, element, vector->element_size);
     }
 
     return retval;
@@ -260,7 +261,7 @@ void* fl_vector_shift(FlVector vector, void *dest)
     }
     else
     {
-        vector->writer(dest, vector->data);
+        vector->writer(dest, vector->data, vector->element_size);
     }
 
     vector->length--;
@@ -293,13 +294,22 @@ void* fl_vector_pop(FlVector vector, void *dest)
         }
         else
         {
-            vector->writer(dest, vector->data + vector->element_size * vector->length);
+            vector->writer(dest, vector->data + offset, vector->element_size);
         }
 
         return dest;
     }
+    
+    
+    // memset(vector->data + offset, 0, vector->element_size);
 
-    memset(vector->data+offset, 0, vector->element_size);
+    if (vector->cleaner)
+    {
+        if (vector->writer == NULL)
+            vector->cleaner(((void**)vector->data)[vector->length]);
+        else
+            vector->cleaner(vector->data + offset);
+    }
 
     return NULL;
 }
@@ -310,7 +320,7 @@ bool fl_vector_contains(FlVector vector, const void *needle)
     for (size_t i=0; i < vector->length; i++)
     {
         // TODO
-        if (memcmp(vector->data+offset, needle, vector->element_size) == 0)
+        if (memcmp(vector->data + offset, needle, vector->element_size) == 0)
             return true;
     }
     return false;
@@ -353,13 +363,12 @@ bool fl_vector_remove(FlVector vector, size_t pos, void *dest)
         }
         else
         {
-            vector->writer(dest, vector->data+targetindex);
+            vector->writer(dest, vector->data+targetindex, vector->element_size);
         }
     }
-    
-    if (dest == NULL && vector->cleaner)
+    else if (vector->cleaner)
     {
-        vector->cleaner(vector->data + targetindex);
+        vector->cleaner(vector->writer ? vector->data + targetindex : ((void**)vector->data + targetindex)[0]);
     }
     
     size_t targetnextindex = targetindex + vector->element_size;

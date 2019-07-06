@@ -303,9 +303,9 @@ void test_fl_hashtable_remove()
     char **keys = fl_hashtable_keys(ht);
     size_t keys_length = fl_array_length(keys);
 
-    for (size_t i=0; i < keys_length; i++)
+    for (size_t j=0; j < keys_length; j++)
     {
-        fl_hashtable_remove(ht, keys[i]);
+        fl_hashtable_remove(ht, keys[j], true);
     }
 
     fl_expect("Current length after removing all the elements by key must be 0", fl_hashtable_length(ht) == 0);

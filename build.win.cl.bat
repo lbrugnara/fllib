@@ -62,6 +62,7 @@ cl.exe %CFLAGS% /c .\src\containers\List.c  /Fo.\obj\debug\containers\List.o
 cl.exe %CFLAGS% /c .\src\containers\Hashtable.c  /Fo.\obj\debug\containers\Hashtable.o
 cl.exe %CFLAGS% /c .\src\text\Regex.c  /Fo.\obj\debug\text\Regex.o
 cl.exe %CFLAGS% /c .\src\os\System.c  /Fo.\obj\debug\os\System.o
+cl.exe %CFLAGS% /c .\src\os\Process.c  /Fo.\obj\debug\os\Process.o
 cl.exe %CFLAGS% /c .\src\os\Timer.c  /Fo.\obj\debug\os\Timer.o
 cl.exe %CFLAGS% /c .\src\os\Signal.c  /Fo.\obj\debug\os\Signal.o
 cl.exe %CFLAGS% /c .\src\os\WinEx.c /Fo.\obj\debug\os\WinEx.o
@@ -87,6 +88,7 @@ lib -NOLOGO -VERBOSE                        ^
     obj\debug\containers\Hashtable.o        ^
     obj\debug\text\Regex.o                  ^
     obj\debug\os\System.o                   ^
+    obj\debug\os\Process.o                   ^
     obj\debug\os\Timer.o                    ^
     obj\debug\os\Signal.o                   ^
     obj\debug\os\WinEx.o                    ^
@@ -107,6 +109,7 @@ set TEST_CFLAGS=%CFLAGS% -I.\include -I.\src
 cl.exe %TEST_CFLAGS% /c tests\Main.c /Fo.\tests\obj\debug\Main.o
 cl.exe %TEST_CFLAGS% /c tests\Test.c /Fo.\tests\obj\debug\Test.o
 cl.exe %TEST_CFLAGS% /c tests\Std.c /Fo.\tests\obj\debug\Std.o
+cl.exe %TEST_CFLAGS% /c tests\Test_Defer.c /Fo.\tests\obj\debug\Test_Defer.o
 cl.exe %TEST_CFLAGS% /c tests\Test_Slice.c /Fo.\tests\obj\debug\Test_Slice.o
 cl.exe %TEST_CFLAGS% /c tests\IO.c /Fo.\tests\obj\debug\IO.o
 cl.exe %TEST_CFLAGS% /c tests\Test_Cstring.c /Fo.\tests\obj\debug\Test_Cstring.o
@@ -134,6 +137,7 @@ link.exe ^
     tests\obj\debug\Main.o ^
     tests\obj\debug\Test.o ^
     tests\obj\debug\Std.o ^
+    tests\obj\debug\Test_Defer.o ^
     tests\obj\debug\Test_Slice.o ^
     tests\obj\debug\IO.o ^
     tests\obj\debug\Test_Cstring.o ^

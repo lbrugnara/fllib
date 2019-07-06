@@ -60,19 +60,9 @@ void fl_container_allocator_sizet(FlByte **dest, const FlByte *src)
     memcpy(*dest, src, sizeof(size_t));
 }
 
-void fl_container_writer_int(FlByte *dest, const FlByte *src)
+void fl_container_writer(FlByte *dest, const FlByte *src, size_t struct_size)
 {
-    memcpy(dest, src, sizeof(int));
-}
-
-void fl_container_writer_char(FlByte *dest, const FlByte *src)
-{
-    memcpy(dest, src, sizeof(char));
-}
-
-void fl_container_writer_sizet(FlByte *dest, const FlByte *src)
-{
-    memcpy(dest, src, sizeof(size_t));
+    memcpy(dest, src, struct_size);
 }
 
 void fl_container_cleaner_pointer(void *obj)

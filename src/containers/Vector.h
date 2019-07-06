@@ -228,19 +228,19 @@ void* fl_vector_last(FlVector vector);
  */
 void* fl_vector_shift(FlVector vector, void *dest);
 
-/**
- * Remove from {vector}, the last element copying it into {dest}
- */
 /*
  * Function: fl_vector_pop
+ *  Removes the last element in {vector}. If {dest} is not null,
+ *  the element to be removed will be copied into it. If *dest* is NULL
+ *  and the cleaner function is configured for the *vector*, the value will
+ *  be cleaned up.
  *
- * Removes the last element in {vector}. If {dest} is not null,
- * the element to be removed will be copied into it.
+ * Parameters:
+ *  vector - <FlVector> to remove its last element
+ *  dest - If present, the removed element will be copied into it
  *
- * FlVector vector - Vector to remove its last element
- * void *dest - If present, the removed element will be copied into it
- *
- * {return: bool} false if vector length is 0, true otherwise
+ * Return:
+ *  bool - *false* if vector length is 0, true otherwise
  *
  */
 void* fl_vector_pop(FlVector vector, void *dest);

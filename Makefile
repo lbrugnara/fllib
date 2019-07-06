@@ -72,6 +72,7 @@ FL_OBJECTS=\
 	obj/$(TARGET)/src/containers/Hashtable.o 		\
 	obj/$(TARGET)/src/text/Regex.o 					\
 	obj/$(TARGET)/src/os/System.o 					\
+	obj/$(TARGET)/src/os/Process.o 					\
 	obj/$(TARGET)/src/os/Timer.o 					\
 	obj/$(TARGET)/src/os/Signal.o
 

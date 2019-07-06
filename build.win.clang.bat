@@ -77,6 +77,7 @@ clang.exe %CFLAGS% -c .\src\containers\List.c  -o .\obj\debug\containers\List.o
 clang.exe %CFLAGS% -c .\src\containers\Hashtable.c  -o .\obj\debug\containers\Hashtable.o
 clang.exe %CFLAGS% -c .\src\text\Regex.c  -o .\obj\debug\text\Regex.o
 clang.exe %CFLAGS% -c .\src\os\System.c  -o .\obj\debug\os\System.o
+clang.exe %CFLAGS% -c .\src\os\Process.c  -o .\obj\debug\os\Process.o
 clang.exe %CFLAGS% -c .\src\os\Timer.c  -o .\obj\debug\os\Timer.o
 clang.exe %CFLAGS% -c .\src\os\Signal.c  -o .\obj\debug\os\Signal.o
 clang.exe %CFLAGS% -c .\src\os\WinEx.c -o .\obj\debug\os\WinEx.o
@@ -102,6 +103,7 @@ llvm-lib -NOLOGO -VERBOSE                        ^
     obj\debug\containers\Hashtable.o        ^
     obj\debug\text\Regex.o                  ^
     obj\debug\os\System.o                   ^
+    obj\debug\os\Process.o                   ^
     obj\debug\os\Timer.o                    ^
     obj\debug\os\Signal.o                   ^
     obj\debug\os\WinEx.o                    ^

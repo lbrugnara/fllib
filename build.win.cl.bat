@@ -62,6 +62,7 @@ cl.exe %CFLAGS% /c .\src\containers\List.c  /Fo.\obj\debug\containers\List.o
 cl.exe %CFLAGS% /c .\src\containers\Hashtable.c  /Fo.\obj\debug\containers\Hashtable.o
 cl.exe %CFLAGS% /c .\src\text\Regex.c  /Fo.\obj\debug\text\Regex.o
 cl.exe %CFLAGS% /c .\src\os\System.c  /Fo.\obj\debug\os\System.o
+cl.exe %CFLAGS% /c .\src\os\Process.c  /Fo.\obj\debug\os\Process.o
 cl.exe %CFLAGS% /c .\src\os\Timer.c  /Fo.\obj\debug\os\Timer.o
 cl.exe %CFLAGS% /c .\src\os\Signal.c  /Fo.\obj\debug\os\Signal.o
 cl.exe %CFLAGS% /c .\src\os\WinEx.c /Fo.\obj\debug\os\WinEx.o
@@ -87,6 +88,7 @@ lib -NOLOGO -VERBOSE                        ^
     obj\debug\containers\Hashtable.o        ^
     obj\debug\text\Regex.o                  ^
     obj\debug\os\System.o                   ^
+    obj\debug\os\Process.o                   ^
     obj\debug\os\Timer.o                    ^
     obj\debug\os\Signal.o                   ^
     obj\debug\os\WinEx.o                    ^

@@ -49,7 +49,7 @@ size_t get_decomp_type(const char *udata, char *dest)
     size_t length = flm_array_length(types);
     for (size_t i=0; i < length; i++)
     {
-        if (!flm_cstring_nequals(udata, types[i], strlen(types[i])))
+        if (!flm_cstring_equals_n(udata, types[i], strlen(types[i])))
             continue;
         size_t size = strlen(ctypes[i]);
         memcpy(dest, ctypes[i], size);

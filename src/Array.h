@@ -78,13 +78,13 @@ FlArray fl_array_new(size_t size, size_t n);
  *  Releases the memory allocated with the <fl_array_new> function
  *
  * Parameters:
- *  FlArray array - A pointer to the memory to be freed
+ *  const FlArray array - A pointer to the memory to be freed
  *
  * Return:
  *  void - This function does not return a value
  *
  */
-void fl_array_delete(FlArray array);
+void fl_array_delete(const FlArray array);
 
 /*
  * Function: fl_array_delete_h
@@ -94,14 +94,14 @@ void fl_array_delete(FlArray array);
  *  element.
  *
  * Parameters:
- *  FlArray array - A pointer to the memory to be realeased
+ *  const FlArray array - A pointer to the memory to be realeased
  *  void (*)(FlByte*) delete_handler - Handler function to release the memory for each element of array
  *
  * Return:
  *  void - This function does not return a value.
  *
  */
-void fl_array_delete_h(FlArray array, void (*delete_handler)(FlByte*));
+void fl_array_delete_h(const FlArray array, void (*delete_handler)(FlByte*));
 
 /*
  * Function: fl_array_resize

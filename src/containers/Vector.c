@@ -285,18 +285,23 @@ void* fl_vector_pop(FlVector vector, void *dest)
     
     size_t offset = vector->element_size * vector->length;
 
-    if (vector->writer == NULL)
+    if (dest != NULL)
     {
-        *(void**)dest = ((void**)vector->data)[vector->length];
-    }
-    else
-    {
-        vector->writer(dest, vector->data + vector->element_size * vector->length);
+        if (vector->writer == NULL)
+        {
+            *(void**)dest = ((void**)vector->data)[vector->length];
+        }
+        else
+        {
+            vector->writer(dest, vector->data + vector->element_size * vector->length);
+        }
+
+        return dest;
     }
 
     memset(vector->data+offset, 0, vector->element_size);
 
-    return dest;
+    return NULL;
 }
 
 bool fl_vector_contains(FlVector vector, const void *needle)

@@ -8,15 +8,15 @@ void test_slice()
     const char * const sequence = "Some text we want to work with as contiguous sequence of bytes";
 
     struct FlSlice slice = fl_slice_new((const FlByte*)sequence, 1, 0, 4);
-    fl_expect("Sequence slice[0,4] is equals to 'Some'", flm_cstring_nequals((const char*)slice.sequence, "Some", slice.length));
+    fl_expect("Sequence slice[0,4] is equals to 'Some'", flm_cstring_equals_n((const char*)slice.sequence, "Some", slice.length));
     fl_expect("Slice[0,4] is equals to sequence", fl_slice_equals_sequence(&slice, (const FlByte*)sequence, slice.length));
 
     struct FlSlice slice2 = fl_slice_new((const FlByte*)sequence, 1, 34, 10);
-    fl_expect("Sequence slice[36,10] is equals to 'contiguous'", flm_cstring_nequals((const char*)slice2.sequence, "contiguous", slice.length));
+    fl_expect("Sequence slice[36,10] is equals to 'contiguous'", flm_cstring_equals_n((const char*)slice2.sequence, "contiguous", slice.length));
     fl_expect("Slice[36,10] is equals to sequence + 34", fl_slice_equals_sequence(&slice2, (const FlByte*)sequence + 34, slice2.length));
 
     struct FlSlice slice3 = fl_slice_new((const FlByte*)sequence, 1, 57, 5);
-    fl_expect("Sequence slice[57,5] is equals to 'bytes'", flm_cstring_nequals((const char*)slice3.sequence, "bytes", slice.length));
+    fl_expect("Sequence slice[57,5] is equals to 'bytes'", flm_cstring_equals_n((const char*)slice3.sequence, "bytes", slice.length));
     fl_expect("Slice[57,5] is equals to sequence + 57", fl_slice_equals_sequence(&slice3, (const FlByte*)sequence + 57, slice3.length));
     
     struct FlSlice slice4 = fl_slice_new((const FlByte*)sequence, 1, 34, 10);

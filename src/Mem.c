@@ -15,9 +15,9 @@ void* fl_malloc(size_t size)
 	return NULL;
 }
 
-void fl_free(void *ptr)
+void fl_free(const void *ptr)
 {
-	free(ptr);
+	free((void*)ptr);
 }
 
 void* fl_calloc(size_t nmemb, size_t size)

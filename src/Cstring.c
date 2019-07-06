@@ -19,7 +19,7 @@ char *fl_cstring_new(size_t length)
     return str;
 }
 
-void fl_cstring_delete(char *str)
+void fl_cstring_delete(const char *str)
 {
     fl_free(str);
 }
@@ -305,7 +305,7 @@ char *fl_cstring_replace(const char *src, const char *needle, const char *rplc)
     return dst;
 }
 
-char* fl_cstring_replace_in_source(char *source, const char *needle, const char *replacement)
+char* fl_cstring_replace_realloc(char *source, const char *needle, const char *replacement)
 {
     flm_assert(source != NULL, "Source cannot be NULL");
     flm_assert(replacement != NULL, "Replacement cannot be NULL");

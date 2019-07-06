@@ -32,7 +32,7 @@ char* fl_cstring_new(size_t length);
  * Returns:
  *  void - This function does not return a value
  */
-void fl_cstring_delete(char *str);
+void fl_cstring_delete(const char *str);
 
 /**
  * {dst} String to resize
@@ -110,7 +110,7 @@ char* fl_cstring_replace_char(const char *src, const char chr, const char *rplc)
  */
 char* fl_cstring_replace(const char *src, const char *needle, const char *rplc);
 
-char* fl_cstring_replace_in_source(char *source, const char *needle, const char *replacement);
+char* fl_cstring_replace_realloc(char *source, const char *needle, const char *replacement);
 
 size_t fl_cstring_replace_n(const char *src, size_t src_size, const char *needle, size_t needle_size, const char *rplc, size_t rplc_size, char **dst);
 
@@ -163,6 +163,6 @@ char* fl_char_join(FlVector vector, char* glue);
 char* fl_cstring_concat(char **strings);
 
 #define flm_cstring_equals(cstr1, cstr2) (strcmp((cstr1), (cstr2)) == 0)
-#define flm_cstring_nequals(cstr1, cstr2, n) (strncmp((cstr1), (cstr2), (n)) == 0)
+#define flm_cstring_equals_n(cstr1, cstr2, n) (strncmp((cstr1), (cstr2), (n)) == 0)
 
 #endif /* FL_C_STR_H */

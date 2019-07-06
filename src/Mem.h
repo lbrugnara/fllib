@@ -37,7 +37,7 @@ void* fl_malloc(size_t size);
  *  void - This function does not return a value.
  *
  */
-void  fl_free(void *ptr);
+void fl_free(const void *ptr);
 
 
 /*

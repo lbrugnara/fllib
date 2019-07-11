@@ -49,8 +49,8 @@ FlArray fl_array_resize(FlArray array, size_t length)
 	if (tmp == NULL)
 		return NULL;
 
-	header->length = length;
 	header = tmp;
+	header->length = length;
 
 	return GetArray(header);
 }

@@ -577,7 +577,7 @@ do                                                                              
 {                                                                                       \
     flm_assert(ex != 0, "setjmp will return 1 after longjmp because int val == 0");     \
     fl_ctx_frame(tryctx)->exception = ex;                                               \
-    if (msg)                                                                            \
+    if (msg != NULL)                                                                            \
     {                                                                                   \
         size_t msglength = strlen(msg);                                                 \
         memcpy(fl_ctx_frame(tryctx)->message, msg, msglength < FL_CTX_MSG_SIZE          \

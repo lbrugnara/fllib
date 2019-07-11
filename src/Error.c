@@ -13,6 +13,10 @@
     #define FL_ERROR_QUEUE_MAX 1
 #endif
 
+#ifndef min
+#define min(a,b) ((a) < (b) ? (a) : (b))
+#endif
+
 /*
  * The FlErrQueue struct is used as a circular queue, through FL_ERROR_QUEUE_MAX
  * the user can se the maximum number of errors to "save".

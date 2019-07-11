@@ -441,7 +441,8 @@ char *fl_cstring_find(const char *str, const char *needle)
         .value_allocator = fl_container_allocator_sizet
     });
 
-    for (size_t i = 0; i < needle_size; i++)
+    // Last element will jump "needle_size"
+    for (size_t i = 0; i < needle_size - 1; i++)
     {
         size_t n = needle_size - 1 - i;
         fl_hashtable_set(table, needle + i, &n);

@@ -36,7 +36,7 @@ FlVector fl_cstring_split(const char *str)
 
     size_t length = strlen(str);
     FlVector vector = fl_vector_new_args((struct FlVectorArgs){
-        .writer = fl_container_writer_char,
+        .writer = fl_container_writer,
         .element_size = sizeof(char),
         .capacity = length,
     });
@@ -143,7 +143,7 @@ char *fl_cstring_vadup(const char *s, va_list args)
     FlVector parts = fl_vector_new_args((struct FlVectorArgs){
         .capacity = length,
         .element_size = sizeof(char),
-        .writer = fl_container_writer_char
+        .writer = fl_container_writer
     });
     char sc;
     for (size_t i = 0; i < length; i++)
@@ -170,6 +170,36 @@ char *fl_cstring_vadup(const char *s, va_list args)
                 size_t t = integer_length(i) + 1;
                 char *dst = fl_array_new(sizeof(char), t);
                 snprintf(dst, t, "%d", i);
+                for (size_t j = 0; j < t; j++)
+                    fl_vector_add(parts, dst + j);
+                fl_array_delete(dst);
+                break;
+            }
+            case 'l':
+            {
+                char *dst = NULL;
+                size_t t = 0;
+                if (s[i+1] == 'u')
+                {
+                    sc = s[++i];
+                    unsigned long i = va_arg(args, unsigned long);
+                    t = uinteger_length(i) + 1;
+                    dst = fl_array_new(sizeof(char), t);
+                    snprintf(dst, t, "%lu", i);
+                }
+                else if (s[i+1] == 'd')
+                {
+                    sc = s[++i];
+                    long i = va_arg(args, long);
+                    t = integer_length(i) + 1;
+                    dst = fl_array_new(sizeof(char), t);
+                    snprintf(dst, t, "%ld", i);
+                }
+                else
+                {
+                    break;
+                }
+
                 for (size_t j = 0; j < t; j++)
                     fl_vector_add(parts, dst + j);
                 fl_array_delete(dst);

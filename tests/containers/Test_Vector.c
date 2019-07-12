@@ -95,7 +95,7 @@ void test_fl_vector_add()
 
     // Use a container writer
     vector = fl_vector_new_args((struct FlVectorArgs){
-        .writer = fl_container_writer_sizet,
+        .writer = fl_container_writer,
         .element_size = sizeof(size_t),
         .capacity = 10
     });
@@ -167,7 +167,7 @@ void test_fl_vector_insert()
     {
         FlVector vector = fl_vector_new_args((struct FlVectorArgs) {
             // Use a container writer
-            .writer = fl_container_writer_sizet,
+            .writer = fl_container_writer,
             .element_size = sizeof(size_t),
             .capacity = 10
         });
@@ -296,7 +296,7 @@ void test_fl_vector_shift()
 
     // Use a container writer
     vector = fl_vector_new_args((struct FlVectorArgs){
-        .writer = fl_container_writer_int,
+        .writer = fl_container_writer,
         .element_size = sizeof(int),
         .capacity = 10
     });
@@ -347,7 +347,7 @@ void test_fl_vector_pop()
 
     // Use a container writer
     vector = fl_vector_new_args((struct FlVectorArgs){
-        .writer = fl_container_writer_int,
+        .writer = fl_container_writer,
         .element_size = sizeof(int),
         .capacity = 10
     });

@@ -187,7 +187,7 @@ bool fl_io_file_write_all_bytes(const char *filename, const FlArray bytes)
 
 char* fl_io_file_read_all_text(const char *filename)
 {
-    FILE * fd = fl_io_file_open(filename, "r");
+    FILE * fd = fl_io_file_open(filename, "rb");
 
     if (!fd)
         return NULL;
@@ -232,7 +232,7 @@ char* fl_io_file_read_all_text(const char *filename)
 
 bool fl_io_file_write_all_text(const char *filename, const char *content)
 {
-    FILE * fd = fl_io_file_open(filename, "w");
+    FILE * fd = fl_io_file_open(filename, "wb");
 
     if (!fd)
         return false;

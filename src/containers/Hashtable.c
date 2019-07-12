@@ -335,7 +335,7 @@ void* fl_hashtable_get(FlHashtable ht, const void *key)
     return target_bucket != NULL ? target_bucket->value : NULL;
 }
 
-bool fl_hashtable_remove(FlHashtable ht, const void *key)
+bool fl_hashtable_remove(FlHashtable ht, const void *key, bool clean)
 {
     flm_assert(ht != NULL, "Hashtable must not be null");
 
@@ -344,11 +344,14 @@ bool fl_hashtable_remove(FlHashtable ht, const void *key)
     if (!target_bucket)
         return false;
 
-    if (ht->key_cleaner)
-        ht->key_cleaner(target_bucket->key);
+    if (clean)
+    {
+        if (ht->key_cleaner)
+            ht->key_cleaner(target_bucket->key);
 
-    if (ht->value_cleaner)
-        ht->value_cleaner(target_bucket->value);
+        if (ht->value_cleaner)
+            ht->value_cleaner(target_bucket->value);
+    }
 
     // Mark this bucket as free
     target_bucket->free = 1;
@@ -400,8 +403,11 @@ enum HashtableContent {
 
 FlArray ht_get_content(FlHashtable ht, enum HashtableContent content_type)
 {
+    if (ht->length == 0)
+        return NULL;
+
     FlByte *content;
-    size_t size = sizeof(void*);
+    size_t size = sizeof(void*);    
 
     if (content_type == HT_KEYS)
         content = fl_array_new(size, ht->length);

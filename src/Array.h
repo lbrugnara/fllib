@@ -87,7 +87,7 @@ FlArray fl_array_new(size_t size, size_t n);
 void fl_array_delete(const FlArray array);
 
 /*
- * Function: fl_array_delete_h
+ * Function: fl_array_delete_each
  *  Releases the memory allocated for an *array* using *delete_handler*
  *  to release the memory used by each element within the array.
  *  It is up to the handler function to free all the memory used by each
@@ -101,7 +101,7 @@ void fl_array_delete(const FlArray array);
  *  void - This function does not return a value.
  *
  */
-void fl_array_delete_h(const FlArray array, void (*delete_handler)(FlByte*));
+void fl_array_delete_each(const FlArray array, void (*delete_handler)(FlByte*));
 
 /*
  * Function: fl_array_resize

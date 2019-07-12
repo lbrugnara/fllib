@@ -1617,7 +1617,7 @@ bool fl_regex_match(FlRegex regex, char* text)
 void fl_regex_delete (FlRegex regex)
 {
 	// Delete FlVector states with delete_nfa handler
-	fl_array_delete_h(regex->states, delete_nfa);
+	fl_array_delete_each(regex->states, delete_nfa);
 	fl_free(regex->pattern);
 	fl_free(regex);
 }

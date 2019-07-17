@@ -2,6 +2,7 @@ set ARCH=%VSCMD_ARG_HOST_ARCH%
 
 set CFLAGS= -std=c99 ^
             -Wall ^
+            -Werror ^
             -Wextra ^
             -pedantic ^
             -Wmissing-field-initializers ^

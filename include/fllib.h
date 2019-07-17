@@ -4,6 +4,7 @@
 #include "../src/Types.h"
 #include "../src/threading/Thread.h"
 #include "../src/Std.h"
+#include "../src/Defer.h"
 #include "../src/Slice.h"
 #include "../src/text/resources/UnicodeData.h"
 #include "../src/text/Unicode.h"

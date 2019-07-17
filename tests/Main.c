@@ -2,6 +2,7 @@
 
 // Tests
 #include "Std.h"
+#include "Test_Defer.h"
 #include "Test_Slice.h"
 #include "Test_Cstring.h"
 #include "IO.h"
@@ -17,7 +18,9 @@
 #include <locale.h>
 #include <time.h>
 
-int main(int argc, char **argv)
+void voidvoid(void){ printf("void\n"); }
+
+int main(int argc, char **argv) 
 {
     fl_test_run_all_suites(
         argc,
@@ -86,6 +89,9 @@ int main(int argc, char **argv)
             { "fl_list_prepend", &test_fl_list_prepend },
             { "fl_list_insert_after", &test_fl_list_insert_after },
             { "fl_list_insert_before", &test_fl_list_insert_before }
+        ),
+        fl_test_suite("Defer", 
+            { "Deferred statements and expressions", &test_defer_scope }
         ),
         NULL
     );

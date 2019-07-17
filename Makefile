@@ -85,6 +85,7 @@ FL_TEST_OBJECTS=\
 	obj/$(TARGET)/tests/Main.o \
 	obj/$(TARGET)/tests/Test.o \
 	obj/$(TARGET)/tests/Std.o \
+	obj/$(TARGET)/tests/Test_Defer.o \
 	obj/$(TARGET)/tests/Test_Slice.o \
 	obj/$(TARGET)/tests/IO.o \
 	obj/$(TARGET)/tests/Test_Cstring.o \

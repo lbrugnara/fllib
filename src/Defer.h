@@ -4,51 +4,49 @@
 #include "Types.h"
 
 /*
- * Type: struct FlDeferCallObj
+ * Type: struct FlDeferStmt
  * 
  * ===== C =====
- *  struct FlDeferCallObj {
- *      struct FlDeferCallObj *prev;
+ *  struct FlDeferStmt {
+ *      struct FlDeferStmt *prev;
  *      void *object;
  *      void (*call)(void*);
  *  };
  *
  */
-struct FlDeferCallObj {
-    struct FlDeferCallObj *prev;
-    void *object;
-    void (*call)(void*);
+struct FlDeferStmt {
+    struct FlDeferStmt *prev;
+    jmp_buf stmt_entry;
 };
 
 struct FlDeferScope {
-    struct FlDeferCallObj *call_chain;
+    struct FlDeferStmt *call_chain;
+    jmp_buf exit;
     void *tmpptr;
 };
 
-static inline void fl_defer_scope_close(struct FlDeferScope *scope)
-{
-    if (!scope->call_chain)
-        return;
-
-    struct FlDeferCallObj *deferred_call = scope->call_chain;
-    while (deferred_call)
-    {
-        deferred_call->call(deferred_call->object);
-        deferred_call = deferred_call->prev;
-    }
-}
-
-#define defer_return do { fl_defer_scope_close(&scope); return; } while (0)
-#define defer_return_value(expr) do { fl_defer_scope_close(&scope); return expr; } while (0)
+#define defer_scope_return if (setjmp(scope.exit) == 0) longjmp(scope.call_chain ? scope.call_chain->stmt_entry : scope.exit, 1); else return
 
 #define defer_scope \
-    for (struct FlDeferScope scope = { .call_chain = NULL }; scope.call_chain == NULL; fl_defer_scope_close(&scope))
+    for (struct FlDeferScope scope = { .call_chain = NULL, .exit = { 0 } }; scope.call_chain == NULL; longjmp(scope.call_chain ? scope.call_chain->stmt_entry : scope.exit, 1)) \
+        if (setjmp(scope.exit) != 0) \
+        { \
+            break; \
+        } else 
 
-#define defer_call(func, obj) \
-    scope.call_chain = &(struct FlDeferCallObj) {   \
-        .object = obj,  \
-        .call = (void(*)(void*))func,   \
-        .prev = scope.call_chain    \
+#define defer_statements \
+    scope.call_chain = &(struct FlDeferStmt) { .prev = scope.call_chain, .stmt_entry = { 0 } }; \
+    for (struct FlDeferStmt *this = scope.call_chain; \
+        setjmp(this->stmt_entry) != 0 ; \
+        (scope.call_chain = this->prev, longjmp(scope.call_chain ? scope.call_chain->stmt_entry : scope.exit, 1)))
+
+#define defer_statement(statement) \
+    scope.call_chain = &(struct FlDeferStmt) { .prev = scope.call_chain, .stmt_entry = { 0 } }; \
+    if (setjmp(scope.call_chain->stmt_entry) != 0) \
+    { \
+        statement; \
+        scope.call_chain = scope.call_chain->prev; \
+        longjmp(scope.call_chain ? scope.call_chain->stmt_entry : scope.exit, 1); \
     }
 
 

@@ -17,8 +17,46 @@
 #include <locale.h>
 #include <time.h>
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) defer_enable_in_function {
+        int *v1 = fl_malloc(sizeof(int) * 10 );
+        int *v2 = fl_malloc(sizeof(int) * 10 );
+        int *v3 = fl_malloc(sizeof(int) * 10 );
+        
+        defer_statements {
+            printf("Free v2\n");
+            fl_free(v2);
+            printf("Free v3\n");
+            fl_free(v3);
+            printf("Free v1\n");
+            fl_free(v1);
+        }
+
+        defer_enable_in_block {
+            int *v1 = fl_malloc(sizeof(int) * 10 );
+            int *v2 = fl_malloc(sizeof(int) * 10 );
+            int *v3 = fl_malloc(sizeof(int) * 10 );
+            
+            defer_expression(printf("Expr1\n"));
+            defer_expression(printf("Expr2\n"));
+
+            defer_statements {
+                printf("Nested free v2\n");
+                fl_free(v2);
+                printf("Nested free v3\n");
+                fl_free(v3);
+                printf("Nested free v1\n");
+                fl_free(v1);
+
+            }
+        }
+
+        printf("Scope");
+        
+        defer_end();
+         
+    }
+
+
     fl_test_run_all_suites(
         argc,
         argv,

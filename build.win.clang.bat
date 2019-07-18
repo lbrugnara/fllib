@@ -125,6 +125,7 @@ set TEST_CFLAGS=%CFLAGS% -I.\src -I.\include
 clang.exe %TEST_CFLAGS% -c tests\Main.c -o .\tests\obj\debug\Main.o
 clang.exe %TEST_CFLAGS% -c tests\Test.c -o .\tests\obj\debug\Test.o
 clang.exe %TEST_CFLAGS% -c tests\Std.c -o .\tests\obj\debug\Std.o
+clang.exe %TEST_CFLAGS% -c tests\Test_Defer.c -o .\tests\obj\debug\Test_Defer.o
 clang.exe %TEST_CFLAGS% -c tests\Test_Slice.c -o .\tests\obj\debug\Test_Slice.o
 clang.exe %TEST_CFLAGS% -c tests\IO.c -o .\tests\obj\debug\IO.o
 clang.exe %TEST_CFLAGS% -c tests\Test_Cstring.c -o .\tests\obj\debug\Test_Cstring.o
@@ -152,6 +153,7 @@ lld-link.exe ^
     tests\obj\debug\Main.o ^
     tests\obj\debug\Test.o ^
     tests\obj\debug\Std.o ^
+    tests\obj\debug\Test_Defer.o ^
     tests\obj\debug\Test_Slice.o ^
     tests\obj\debug\IO.o ^
     tests\obj\debug\Test_Cstring.o ^

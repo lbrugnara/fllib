@@ -91,7 +91,12 @@ int main(int argc, char **argv)
             { "fl_list_insert_before", &test_fl_list_insert_before }
         ),
         fl_test_suite("Defer", 
-            { "Deferred statements and expressions", &test_defer_scope }
+            { "Deferred scope", &test_defer_scope },
+            { "Deferred expressions", &test_defer_expressions },
+            { "Deferred statements", &test_defer_statements },
+            { "Deferred statements and expressions", &test_defer_stmts_and_exprs },
+            { "Exit from a deferred scope", &test_defer_exit },
+            { "Return from a deferred scope", &test_defer_return }
         ),
         NULL
     );

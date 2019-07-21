@@ -193,7 +193,7 @@ void fl_exit(enum FlErrorType errtype, const char *format, ...);
      /*
      * Macro: flm_assert
      * ===== C =====
-     *  #define flm_assert(condition, error) do { if (!(condition)) (flm_exit(ERR_FATAL, "Condition '" #condition "' failed. " error)); } while(0)
+     *  #define flm_assert(condition, error) ((condition) ? (flm_exit(ERR_FATAL, "Condition '" #condition "' failed. " error), 0) : 1)
      * =============
      *  Checks the *condition*, and if it is false, it calls the <fl_exit> function with the
      *  message error defined in *error*
@@ -207,12 +207,12 @@ void fl_exit(enum FlErrorType errtype, const char *format, ...);
      *  - This macro evaluates only when the <FL_DEBUG> flag evaluates to 1
      *
      */
-    #define flm_assert(condition, error) do { if (!(condition)) (flm_exit(ERR_FATAL, "Condition '" #condition "' failed. " error)); } while(0)
+    #define flm_assert(condition, error) (!(condition) ? (flm_exit(ERR_FATAL, "Condition '" #condition "' failed. " error), 0) : 1)
 
      /*
       * Macro: flm_vassert
       * ===== C =====
-      *  #define flm_vassert(condition, error, ...) do { if (!(condition)) (flm_vexit(ERR_FATAL, "Condition '" #condition "' failed. " error, __VA_ARGS__)); } while(0)
+      *  #define flm_vassert(condition, error, ...) (!(condition) ? (flm_vexit(ERR_FATAL, "Condition '" #condition "' failed. " error, __VA_ARGS__), 0) : 1)
       * =============
       *  Checks the *condition*, and if it is false, it calls the <fl_exit> function with the
       *  message error defined in *error* formatted with the additional arguments.
@@ -226,11 +226,11 @@ void fl_exit(enum FlErrorType errtype, const char *format, ...);
       *  - If the condition evaluates to false, the macro calls <fl_exit> therefore in that situation it does not return
       *  - This macro evaluates only when the <FL_DEBUG> flag evaluates to 1
       */
-    #define flm_vassert(condition, error, ...) do { if (!(condition)) (flm_vexit(ERR_FATAL, "Condition '" #condition "' failed. " error, __VA_ARGS__)); } while(0)
+    #define flm_vassert(condition, error, ...) (!(condition) ? (flm_vexit(ERR_FATAL, "Condition '" #condition "' failed. " error, __VA_ARGS__), 0) : 1)
 #else
     /* Mute the assertions */
-    #define flm_assert(condition, error) 0
-    #define flm_vassert(condition, error, ...) 0
+    #define flm_assert(condition, error) 1
+    #define flm_vassert(condition, error, ...) 1
 #endif
 
 /*

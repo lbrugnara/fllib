@@ -82,7 +82,7 @@ void test_defer_stmts_and_exprs(void)
         defer_statements {
             numbers[3] = 3;
             numbers[4] = 4;
-            numbers[5] = 5;    
+            numbers[5] = 5;
         }
         numbers[0] = 0;
         numbers[1] = 1;
@@ -93,7 +93,7 @@ void test_defer_stmts_and_exprs(void)
         fl_vexpect(i == numbers[i], "Numbers array is ordered (%d == %d)", i, numbers[i]);
 }
 
-void test_defer_exit()
+void test_defer_break()
 {
     char *conststrs[] = {
         "zero",
@@ -121,7 +121,7 @@ void test_defer_exit()
         strings[1] = conststrs[1];
         strings[2] = conststrs[2];
 
-        defer_exit();
+        defer_break();
 
         strings[3] = conststrs[3];
     }

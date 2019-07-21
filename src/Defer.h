@@ -12,127 +12,183 @@ struct FlDeferScope {
     struct FlDeferStmt *call_chain;
     jmp_buf exit_point;
     enum { 
-        FL_DEFER_STARTED = 0,
+        FL_DEFER_RUNNING = 0,
         FL_DEFER_LEAVING,
         FL_DEFER_ENDED
     } state;
 };
 
-#define defer_scope                                                                                         \
-    for (                                                                                                   \
-        /* initialization */                                                                                \
-        struct FlDeferScope _fl_defer_scope_ = { .state = FL_DEFER_STARTED, .call_chain = NULL };           \
-        /* condition: get in only if the state is "started (0)" */                                          \
-        _fl_defer_scope_.state == FL_DEFER_STARTED;                                                         \
-        /* increment (use comma operator) */                                                                \
-        (                                                                                                   \
-            /* Flag scope as "leaving (1)" only if it is "started (0)" */                                   \
-            _fl_defer_scope_.state = FL_DEFER_LEAVING,                                                      \
-            /* Jump to the next stacked statement, or to the scope's exit */                                \
-            longjmp(_fl_defer_scope_.call_chain                                                             \
-                ? _fl_defer_scope_.call_chain->entry_point                                                  \
-                : _fl_defer_scope_.exit_point, 1)                                                           \
-        )                                                                                                   \
-    )                                                                                                       \
-        /* Save the exit point */                                                                           \
-        if (setjmp(_fl_defer_scope_.exit_point) != 0) {                                                     \
-            /* longjmp will jump here after traversing the deferred statement's */                          \
-            /* list (if any). We break the loop, for that we flag the scope as "exited (2)" */              \
-            _fl_defer_scope_.state = FL_DEFER_ENDED;                                                        \
-            break;                                                                                          \
-        }                                                                                                   \
+
+/*
+ * Macro: FL_DEFER_SCOPE_INIT
+ * ===== C =====
+ *  #define FL_DEFER_SCOPE_INIT struct FlDeferScope _fl_defer_scope_ = { .state = FL_DEFER_RUNNING, .call_chain = NULL }
+ * =============
+ *  Initializes the defer scope
+ *
+ */
+#define FL_DEFER_SCOPE_INIT struct FlDeferScope _fl_defer_scope_ = { .state = FL_DEFER_RUNNING, .call_chain = NULL }
+
+/*
+ * Macro: FL_DEFER_IS_RUNNING
+ * ===== C =====
+ *  #define FL_DEFER_IS_RUNNING _fl_defer_scope_.state == FL_DEFER_RUNNING
+ * =============
+ *  Expression that returns true if the scope's state is <FL_DEFER_RUNNING>
+ *
+ */
+#define FL_DEFER_IS_RUNNING _fl_defer_scope_.state == FL_DEFER_RUNNING
+
+/*
+ * Macro: FL_DEFER_IS_EXIT_POINT
+ * ===== C =====
+ *  #define FL_DEFER_IS_EXIT_POINT (setjmp(_fl_defer_scope_.exit_point) != 0)
+ * =============
+ *  This macro "hides" the magic of the setjmp call by simply evaluating the
+ *  setjmp's return value and return *true* only if the value is different from 0.
+ *  When a call to longjmp happens on the scope's exit point, this macro will evaluate
+ *  to 1, that way we are sure we are leaving the defer scope.
+ *
+ */
+#define FL_DEFER_IS_EXIT_POINT (setjmp(_fl_defer_scope_.exit_point) != 0)
+
+/*
+ * Macro: FL_DEFER_STMT_IS_ENTRY_POINT
+ * ===== C =====
+ *  #define FL_DEFER_STMT_IS_ENTRY_POINT (setjmp(_fl_defer_scope_.call_chain->entry_point) != 0)
+ * =============
+ *  This macro "hides" the magic of the setjmp call by simply evaluating the
+ *  setjmp's return value and return *true* only if the value is different from 0.
+ *  When a call to longjmp happens on the statement's entry point, this macro will evaluate
+ *  to 1, that way we are sure we need to execute the deferred statement
+ *
+ */
+#define FL_DEFER_STMT_IS_ENTRY_POINT (setjmp(_fl_defer_scope_.call_chain->entry_point) != 0)
+
+/*
+ * Macro: FL_DEFER_ASSERT_RUNNING
+ * ===== C =====
+ *  #define FL_DEFER_ASSERT_RUNNING flm_assert(FL_DEFER_IS_RUNNING, "defer_break cannot be called twice nor be called within a defer statement")
+ * =============
+ *  If the scope's state is different from FL_DEFER_RUNNING, the program will exit with an error. This macro is
+ *  used to make sure all the defer's macro calls are correct
+ *
+ */
+#define FL_DEFER_ASSERT_RUNNING flm_assert(FL_DEFER_IS_RUNNING, "defer_break cannot be called twice nor be called within a defer statement")
+
+/*
+ * Macro: FL_DEFER_JUMP
+ * ===== C =====
+ *  #define FL_DEFER_JUMP longjmp(_fl_defer_scope_.call_chain ? _fl_defer_scope_.call_chain->entry_point : _fl_defer_scope_.exit_point, FL_DEFER_LEAVING)
+ * =============
+ *  This macro calls longjmp to jump to the last enqueued statement (if any) or to the scope's exit point
+ *
+ */
+#define FL_DEFER_JUMP longjmp(_fl_defer_scope_.call_chain ? _fl_defer_scope_.call_chain->entry_point : _fl_defer_scope_.exit_point, FL_DEFER_LEAVING)
+
+/*
+ * Macro: FL_DEFER_JUMP_NEXT
+ * ===== C =====
+ *  #define FL_DEFER_JUMP_NEXT (_fl_defer_scope_.call_chain = _fl_defer_scope_.call_chain->prev, FL_DEFER_JUMP)
+ * =============
+ *  This macro removes an statement from the statements list and calls longjmp to jump to the next statement (if any)
+ *  or to the scope's exit point
+ *
+ */
+#define FL_DEFER_JUMP_NEXT (_fl_defer_scope_.call_chain = _fl_defer_scope_.call_chain->prev, FL_DEFER_JUMP)
+
+/*
+ * Macro: FL_DEFER_ENQUEUE_STMT
+ * ===== C =====
+ *  #define FL_DEFER_ENQUEUE_STMT (_fl_defer_scope_.call_chain = &(struct FlDeferStmt) { .prev = _fl_defer_scope_.call_chain }, 1)
+ * =============
+ *  This macro enqueues a new deferred statement to the statements list. It uses the comma operator and returns a 1 to make sure it
+ *  evaluates to *true*.
+ *
+ */
+#define FL_DEFER_ENQUEUE_STMT (_fl_defer_scope_.call_chain = &(struct FlDeferStmt) { .prev = _fl_defer_scope_.call_chain }, 1)
+
+/*
+ * Macro: FL_DEFER_LEAVE
+ * ===== C =====
+ *  #define FL_DEFER_LEAVE (_fl_defer_scope_.state = FL_DEFER_LEAVING, FL_DEFER_JUMP)
+ * =============
+ *  Changes the scope's state to <FL_DEFER_LEAVING> to flag it so other statements can check if the scope
+ *  is valid for certain operations, and then jumps to last enqueued statement or the scope's exit point
+ *
+ */
+#define FL_DEFER_LEAVE (_fl_defer_scope_.state = FL_DEFER_LEAVING, FL_DEFER_JUMP)
+
+/*
+ * Macro: FL_DEFER_END
+ * ===== C =====
+ *  #define FL_DEFER_END (_fl_defer_scope_.state = FL_DEFER_ENDED)
+ * =============
+ *  Changes the scope's state to <FL_DEFER_ENDED> to reflect the scope is no longer valid for deferred
+ *  operations.
+ *
+ */
+#define FL_DEFER_END (_fl_defer_scope_.state = FL_DEFER_ENDED)
+
+
+/*
+ * Macro: defer_scope
+ *  Initializes the deferred scope, sets the exit point, evaluates the scope's body and 
+ *  before leave it runs all the deferred statements
+ *
+ */
+#define defer_scope                                                                             \
+    for (FL_DEFER_SCOPE_INIT; FL_DEFER_ASSERT_RUNNING; FL_DEFER_LEAVE)                          \
+        if (FL_DEFER_IS_EXIT_POINT) {                                                           \
+            FL_DEFER_END;                                                                       \
+            break;                                                                              \
+        }                                                                                       \
         else
 
 
-#define defer_exit()                                                                                        \
-do {                                                                                                        \
-    /* Check current state to make sure it is valid */                                                      \
-    switch (_fl_defer_scope_.state)                                                                         \
-    {                                                                                                       \
-        case FL_DEFER_LEAVING:                                                                              \
-            flm_assert(false, "defer_exit cannot be called twice nor be called within a defer statement");  \
-            break;                                                                                          \
-        case FL_DEFER_ENDED:                                                                                \
-            flm_assert(false, "Scope has ended, defer_exit cannot be used"); break;                         \
-        default: break;                                                                                     \
-    }                                                                                                       \
-    /* Flag scope as "leaving (1)" only if it is "started (0)" */                                           \
-    _fl_defer_scope_.state = FL_DEFER_LEAVING;                                                              \
-    longjmp(_fl_defer_scope_.call_chain                                                                     \
-        ? _fl_defer_scope_.call_chain->entry_point                                                          \
-        : _fl_defer_scope_.exit_point, 1);                                                                  \
-} while (0)
-
-#define defer_return                                                                                        \
-    /* The outer for calls setjmp to change the scope's exit point (to our return statement). */            \
-    /* If the inner for's longjmp call succeed, we will jump back here, the fldefjmp will be */             \
-    /* updated to the longjmp's value. */                                                                   \
-    for (int fldefjmp = 0; (fldefjmp = setjmp(_fl_defer_scope_.exit_point), 1) ;)                           \
-        /* The inner for will check two conditions to know if it needs to avoid longjmp: */                 \
-        /*  1- fldefjmp different to 0: We already executed longjmp, we called the deferred statements */   \
-        /*     (if any) and we need to leave */                                                             \
-        /*  2- If the scope's state is different to STARTED it means we are in a not valid state */         \
-        /*      so we need to keep that into account */                                                     \
-        /* If the longjmp is avoided, we simply continue to the inner-most for. In case we */               \
-        /* need to take the longjmp, we will jump before continuing to the inner-most for */                \
-        for (;                                                                                              \
-            fldefjmp != 0 || _fl_defer_scope_.state != FL_DEFER_STARTED                                     \
-                ? 1                                                                                         \
-                : (_fl_defer_scope_.state = FL_DEFER_LEAVING, longjmp(_fl_defer_scope_.call_chain           \
-                    ? _fl_defer_scope_.call_chain->entry_point                                              \
-                    : _fl_defer_scope_.exit_point, 1), 0);)                                                 \
-            for (;                                                                                          \
-                /* In case of an error state, we abort with an error. If not, the condition */              \
-                /* will be true, and the return statement will be executed  */                              \
-                fldefjmp == 0 &&_fl_defer_scope_.state != FL_DEFER_STARTED                                  \
-                    ? (flm_exit(ERR_FATAL, "defer_exit cannot be called twice nor"                          \
-                        " be called within a defer statement"), 0)                                          \
-                    : 1;)                                                                                   \
-                return 
+/*
+ * Macro: defer_break
+ *  It jumps out of the deferred scope, but before leaving it calls all the deferred statements.
+ *
+ */
+#define defer_break() if (FL_DEFER_ASSERT_RUNNING) { continue; } else {}
 
 
-#define defer_statements                                                                                    \
-    /* This for will be skipped the first time it is called, and the body */                                \
-    /* will be accessible just by a longjmp call to the buffer we are     */                                \
-    /* evaluation at the "condition" part. */                                                               \
-    for (                                                                                                   \
-        /* init: "Capture" the newly created statement, if not we will lose */                              \
-        /* it on following statements' "pushes"  */                                                         \
-        struct FlDeferStmt *self                                                                            \
-            = _fl_defer_scope_.call_chain                                                                   \
-            = &(struct FlDeferStmt) { .prev = _fl_defer_scope_.call_chain };                                \
-        /* condition: We will skip the for's body in the first setjmp call */                               \
-        setjmp(self->entry_point) != 0;                                                                     \
-        /* increment (use comma operator) */                                                                \
-        (                                                                                                   \
-            /* The increment condition is the "deferred statement" that has been */                         \
-            /* executed. We need to move to the previous "deferred statemet" */                             \
-            _fl_defer_scope_.call_chain = self->prev,                                                       \
-            /* If there is still a call in the stack, jump to it, if not, jump to */                        \
-            /* the scope's exit point */                                                                    \
-            longjmp(_fl_defer_scope_.call_chain                                                             \
-                ? _fl_defer_scope_.call_chain->entry_point                                                  \
-                : _fl_defer_scope_.exit_point, 1)                                                           \
-        )                                                                                                   \
-    )
+/*
+ * Macro: defer_return
+ *  Changes the scope's exit point to be the return statement, but before leaving, it calls
+ *  all the deferred statements.
+ *
+ */
+#define defer_return                                                                            \
+    for (; FL_DEFER_IS_EXIT_POINT ? 1 : (FL_DEFER_ASSERT_RUNNING, FL_DEFER_LEAVE, 0); )         \
+        return
 
-#define defer_expression(expression)                                                                        \
-    flm_assert(_fl_defer_scope_.state == FL_DEFER_STARTED,                                                  \
-        "Cannot stack a deferred statement within a deferred block.");                                      \
-    /* Add the new deferred statement to the stack, and skip the if's body in the first call */             \
-    /* to setjmp */                                                                                         \
-    if (setjmp((_fl_defer_scope_.call_chain                                                                 \
-        = &(struct FlDeferStmt) { .prev = _fl_defer_scope_.call_chain })->entry_point) != 0)                \
-    {                                                                                                       \
-        /* evaluate the expression */                                                                       \
-        (expression);                                                                                       \
-        /* Remove the statement from the stack by overriding it with the previous */                        \
-        /* stacked statement */                                                                             \
-        _fl_defer_scope_.call_chain = _fl_defer_scope_.call_chain->prev;                                    \
-        /* If the previous statement exists, jump to it. If not, jump to the */                             \
-        /* scope's exit point */                                                                            \
-        longjmp(_fl_defer_scope_.call_chain                                                                 \
-            ? _fl_defer_scope_.call_chain->entry_point : _fl_defer_scope_.exit_point, 1);                   \
+
+/*
+ * Macro: defer_statements
+ *  The statements within the <defer_statements> block will be enqueued to be called
+ *  before leaving the deferred scope.
+ *  Even though the deferred statements and expressions are called in the inverse order 
+ *  they were registered (LIFO), the statements within the <defer_statements> block will
+ *  be evaluated in a FIFO order
+ *
+ */
+#define defer_statements                                                                        \
+    for (FL_DEFER_ENQUEUE_STMT; FL_DEFER_STMT_IS_ENTRY_POINT; FL_DEFER_JUMP_NEXT)
+
+
+/*
+ * Macro: defer_expression
+ *  The *expression* is enqueued to be called before leaving the deferred scope.
+ *
+ */
+#define defer_expression(expression)                                                            \
+    if (FL_DEFER_ASSERT_RUNNING && FL_DEFER_ENQUEUE_STMT && FL_DEFER_STMT_IS_ENTRY_POINT)       \
+    {                                                                                           \
+        /* evaluate the expression */                                                           \
+        (expression);                                                                           \
+        FL_DEFER_JUMP_NEXT;                                                                     \
     }
 
 #endif /*FL_DEFER_H */

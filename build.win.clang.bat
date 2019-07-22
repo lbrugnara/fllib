@@ -5,6 +5,7 @@ set CFLAGS= -std=c99 ^
             -Werror ^
             -Wextra ^
             -pedantic ^
+            -O3 ^
             -Wmissing-field-initializers ^
             -Wno-unused-parameter ^
             -Wno-unused-variable ^

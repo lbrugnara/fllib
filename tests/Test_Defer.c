@@ -4,7 +4,7 @@
 
 void test_defer_scope(void)
 {
-    int numbers[9] = {0};
+    volatile int numbers[9] = {0};
     defer_scope {
         numbers[0] = 0;
         numbers[1] = 1;
@@ -23,7 +23,7 @@ void test_defer_scope(void)
 
 void test_defer_expressions(void)
 {
-    int numbers[9] = {0};
+    volatile int numbers[9] = {0};
     defer_scope {
         defer_expression(numbers[0] = 0);
         defer_expression(numbers[1] = 1);
@@ -42,7 +42,20 @@ void test_defer_expressions(void)
 
 void test_defer_statements(void)
 {
-    int numbers[9] = {0};
+    volatile int numbers[9] = {0};
+    defer_scope {
+        defer_statements {
+            for (int i=0; i < 9; i++)
+                numbers[i] = i;
+        }
+    }
+
+    for (int i=0; i < 9; i++)
+        fl_vexpect(i == numbers[i], "Numbers array is ordered (%d == %d)", i, numbers[i]);
+
+    for (int i=0; i < 9; i++)
+        numbers[i] = 0;
+
     defer_scope {
 
         defer_statements {
@@ -68,7 +81,7 @@ void test_defer_statements(void)
 
 void test_defer_stmts_and_exprs(void)
 {
-    int numbers[9] = {0};
+    volatile int numbers[9] = {0};
     defer_scope {
         defer_expression(
             numbers[8] = 8
@@ -93,7 +106,7 @@ void test_defer_stmts_and_exprs(void)
         fl_vexpect(i == numbers[i], "Numbers array is ordered (%d == %d)", i, numbers[i]);
 }
 
-void test_defer_break()
+void test_defer_break(void)
 {
     char *conststrs[] = {
         "zero",
@@ -105,7 +118,7 @@ void test_defer_break()
         "six",
         "seven"
     };
-    char *strings[8] = { 0 };
+    char * volatile strings[8] = { 0 };
     
     defer_scope {
         defer_expression(strings[6] = conststrs[6]);
@@ -129,7 +142,7 @@ void test_defer_break()
     for (int i=0; i < 8; i++)
     {
         if (i != 3)
-            fl_vexpect(strings[i] == conststrs[i], "Strings array in index %d is equals to conststrs[%d] = \"%s\"", i, i, conststrs[i]);
+            fl_vexpect(strings[i] == conststrs[i], "Strings array in index %d is equals to conststrs[%d] = \"%s\" (\"%s\")", i, i, conststrs[i], strings[i]);
         else
             fl_vexpect(strings[i] == NULL, "Strings array in index %d is NULL", i, i, conststrs[i]);
     }
@@ -183,7 +196,7 @@ void defer_return_without_value(char **strings, char **conststrs)
     }
 }
 
-void test_defer_return()
+void test_defer_return(void)
 {
     char *conststrs[] = {
         "zero",
@@ -223,5 +236,35 @@ void test_defer_return()
             else
                 fl_vexpect(strings[i] == NULL, "Strings array in index %d is NULL", i, i, conststrs[i]);
         }   
+    }
+}
+
+void test_defer_file(void)
+{
+    defer_scope {
+        FILE *fd = NULL;
+        char *path = NULL;
+
+        #if defined(_WIN32)
+        path = "c:\\tmp\\defer_file.txt";
+        errno_t fdres = fopen_s(&fd, path, "w+");
+        fl_vexpect(fdres == 0 && fd, "fopen call to open %s must return a valid FILE*", path);
+        #else
+        path = "/tmp/defer_file.txt";
+        fd = fopen(path, "w+");
+        fl_vexpect(fd != NULL, "fopen call to open %s must return a valid FILE*", path);
+        #endif
+    
+        defer_expression(fl_expect("fclose call must return 0", fclose(fd) == 0));
+
+        fl_expect("Bytes written must be greater than 0", fwrite("test", 1, 4, fd) > 0);
+        
+        fflush(fd);
+        fseek(fd, 0, 0);
+
+        char buf[5] = {0};
+        fl_expect("Bytes read must be greater than 0", fread(buf, 1, 4, fd) > 0 );
+
+        fl_vexpect(flm_cstring_equals_n("test", buf, 4), "Text read from file %s must be equals to 'test'", path);
     }
 }

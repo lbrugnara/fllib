@@ -95,8 +95,9 @@ int main(int argc, char **argv)
             { "Deferred expressions", &test_defer_expressions },
             { "Deferred statements", &test_defer_statements },
             { "Deferred statements and expressions", &test_defer_stmts_and_exprs },
-            { "Exit from a deferred scope", &test_defer_break },
-            { "Return from a deferred scope", &test_defer_return }
+            { "Break from a deferred scope", &test_defer_break },
+            { "Return from a deferred scope", &test_defer_return },
+            { "Working with files", &test_defer_file }
         ),
         NULL
     );

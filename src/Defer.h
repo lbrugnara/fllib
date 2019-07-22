@@ -174,10 +174,9 @@ struct FlDeferScope {
  *
  */
 #define defer_return                                                                            \
-    if (FL_DEFER_SET_EXIT_POINT)                                                                \
-        (FL_DEFER_ASSERT_RUNNING, FL_DEFER_LEAVE, 0);                                           \
-    else return
-
+    for (;;(FL_DEFER_ASSERT_RUNNING, FL_DEFER_LEAVE))                                           \
+        for (;FL_DEFER_IS_EXIT_POINT;)                                                          \
+            return
 
 /*
  * Macro: defer_statements

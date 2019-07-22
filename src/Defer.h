@@ -53,6 +53,19 @@ struct FlDeferScope {
 #define FL_DEFER_IS_EXIT_POINT (setjmp(_fl_defer_scope_.exit_point) != 0)
 
 /*
+ * Macro: FL_DEFER_SET_EXIT_POINT
+ * ===== C =====
+ *  #define FL_DEFER_SET_EXIT_POINT (setjmp(_fl_defer_scope_.exit_point) == 0)
+ * =============
+ *  This macro "hides" the magic of the setjmp call by simply evaluating the
+ *  setjmp's return value and return *true* only if the value is equals to 0.
+ *  The macro "sets" (or actually saves) the point where it is used as the
+ *  future scope's exit point
+ *
+ */
+#define FL_DEFER_SET_EXIT_POINT (setjmp(_fl_defer_scope_.exit_point) == 0)
+
+/*
  * Macro: FL_DEFER_STMT_IS_ENTRY_POINT
  * ===== C =====
  *  #define FL_DEFER_STMT_IS_ENTRY_POINT (setjmp(_fl_defer_scope_.call_chain->entry_point) != 0)
@@ -161,8 +174,9 @@ struct FlDeferScope {
  *
  */
 #define defer_return                                                                            \
-    for (; FL_DEFER_IS_EXIT_POINT ? 1 : (FL_DEFER_ASSERT_RUNNING, FL_DEFER_LEAVE, 0); )         \
-        return
+    if (FL_DEFER_SET_EXIT_POINT)                                                                \
+        (FL_DEFER_ASSERT_RUNNING, FL_DEFER_LEAVE, 0);                                           \
+    else return
 
 
 /*
@@ -184,11 +198,14 @@ struct FlDeferScope {
  *
  */
 #define defer_expression(expression)                                                            \
-    if (FL_DEFER_ASSERT_RUNNING && FL_DEFER_ENQUEUE_STMT && FL_DEFER_STMT_IS_ENTRY_POINT)       \
+    if (FL_DEFER_ASSERT_RUNNING && FL_DEFER_ENQUEUE_STMT)                                       \
     {                                                                                           \
-        /* evaluate the expression */                                                           \
-        (expression);                                                                           \
-        FL_DEFER_JUMP_NEXT;                                                                     \
+        if (FL_DEFER_STMT_IS_ENTRY_POINT)                                                       \
+        {                                                                                       \
+            /* evaluate the expression */                                                       \
+            (expression);                                                                       \
+            FL_DEFER_JUMP_NEXT;                                                                 \
+        }                                                                                       \
     }
 
 #endif /*FL_DEFER_H */

@@ -166,10 +166,10 @@ char *fl_cstring_vadup(const char *s, va_list args)
             }
             case 'd':
             {
-                int i = va_arg(args, int);
-                size_t t = integer_length(i) + 1;
+                int integer = va_arg(args, int);
+                size_t t = integer_length(integer) + 1;
                 char *dst = fl_array_new(sizeof(char), t);
-                snprintf(dst, t, "%d", i);
+                snprintf(dst, t, "%d", integer);
                 for (size_t j = 0; j < t; j++)
                     fl_vector_add(parts, dst + j);
                 fl_array_delete(dst);
@@ -182,18 +182,18 @@ char *fl_cstring_vadup(const char *s, va_list args)
                 if (s[i+1] == 'u')
                 {
                     sc = s[++i];
-                    unsigned long i = va_arg(args, unsigned long);
-                    t = uinteger_length(i) + 1;
+                    unsigned long ulong_integer = va_arg(args, unsigned long);
+                    t = uinteger_length(ulong_integer) + 1;
                     dst = fl_array_new(sizeof(char), t);
-                    snprintf(dst, t, "%lu", i);
+                    snprintf(dst, t, "%lu", ulong_integer);
                 }
                 else if (s[i+1] == 'd')
                 {
                     sc = s[++i];
-                    long i = va_arg(args, long);
-                    t = integer_length(i) + 1;
+                    long long_integer = va_arg(args, long);
+                    t = integer_length(long_integer) + 1;
                     dst = fl_array_new(sizeof(char), t);
-                    snprintf(dst, t, "%ld", i);
+                    snprintf(dst, t, "%ld", long_integer);
                 }
                 else
                 {

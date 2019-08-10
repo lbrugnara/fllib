@@ -1064,8 +1064,8 @@ FlRegex fl_regex_compile (char* pattern)
 							fl_vector_pop(ascii_codes, &sic);
 							int endindex = (int)*eic;
 							int startindex = (int)*sic;														
-							for (int i=startindex; i <= endindex; i++)
-								((NfaStateCharClass*)s)->map[i] = 1;
+							for (int j=startindex; j <= endindex; j++)
+								((NfaStateCharClass*)s)->map[j] = 1;
 							
 							char* endchar = NULL;
 							fl_vector_pop(display, &endchar);

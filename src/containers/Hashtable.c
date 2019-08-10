@@ -494,8 +494,8 @@ void fl_hashtable_resize(FlHashtable ht, size_t nbuckets)
         {
             if (!ht->buckets[i])
                 continue;
-            size_t l = fl_array_length(ht->buckets[i]);
-            for (size_t j=0; j < l; j++)
+            size_t l2 = fl_array_length(ht->buckets[i]);
+            for (size_t j=0; j < l2; j++)
             {
                 if ((ht->buckets[i]+j))
                 {
@@ -523,8 +523,8 @@ void fl_hashtable_delete(FlHashtable ht)
         {
             if (!ht->buckets[i])
                 continue;
-            size_t l = fl_array_length(ht->buckets[i]);
-            for (size_t j=0; j < l; j++)
+            size_t l2 = fl_array_length(ht->buckets[i]);
+            for (size_t j=0; j < l2; j++)
             {
                 if ((ht->buckets[i]+j))
                 {

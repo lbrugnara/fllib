@@ -245,7 +245,7 @@ void test_defer_file(void)
         FILE *fd = NULL;
         char *path = NULL;
 
-        #if defined(_WIN32)
+        #if defined(_WIN32) && __STDC_WANT_SECURE_LIB__
         path = "c:\\tmp\\defer_file.txt";
         errno_t fdres = fopen_s(&fd, path, "w+");
         fl_vexpect(fdres == 0 && fd, "fopen call to open %s must return a valid FILE*", path);

@@ -54,7 +54,11 @@ struct FlTestSuiteResult {
  */
 FlTestSuite fl_test_suite_new(const char *name, const FlTest *tests, size_t ntests)
 {
-    FlTestSuite t = calloc(1, sizeof(struct FlTestSuite));
+    FlTestSuite t = fl_malloc(sizeof(struct FlTestSuite));
+
+    if (t == NULL)
+        return NULL;
+
     t->name = name;
     t->ntests = ntests;
     t->tests = tests;
@@ -73,7 +77,7 @@ FlTestSuite fl_test_suite_new(const char *name, const FlTest *tests, size_t ntes
  */
 void fl_test_suite_delete(FlTestSuite suite)
 {
-    free(suite);
+    fl_free(suite);
 }
 
 /*
@@ -342,7 +346,7 @@ void fl_test_run_all(int argc, char **argv, FlTestSuite *suites)
         fl_test_suite_delete(suites[i]);
     }
     printf("+--------------------------+--------------+------------+------------+\n");
-    printf("| %-25s| %6zu/%-5zu | %-2s%3.2f%%%-1s | %7lld ms |\n", "Total", nptests, ntests, "", (nptests/(float)ntests)*100, "", totalElapsedTime);
+    printf("| %-25s| %6zu/%-5zu | %-2s%3.2f%%%-1s | %7llu ms |\n", "Total", nptests, ntests, "", (nptests/(float)ntests)*100, "", totalElapsedTime);
     printf("+--------------------------+--------------+------------+------------+\n");
     fl_array_delete(results);
 }

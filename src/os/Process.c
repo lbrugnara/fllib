@@ -5,6 +5,7 @@
     #include <unistd.h>
     #include <sys/types.h>
     #include <sys/wait.h>
+    #include <poll.h>
 #endif
 
 #include "../Types.h"
@@ -182,9 +183,12 @@ bool linux_process_create(FlProcess process)
 
     if (process->child_pid == 0) // child
     {
+
         // redirect stdin
         if (process->in)
         {
+            close(process->in->write);
+
             if (dup2(process->in->read, STDIN_FILENO) == -1)
             {
                 exit(-1);
@@ -194,6 +198,8 @@ bool linux_process_create(FlProcess process)
         // redirect stdout
         if (process->out)
         {
+            close(process->out->read);
+
             if (dup2(process->out->write, STDOUT_FILENO) == -1)
             {
                 exit(-1);
@@ -206,31 +212,14 @@ bool linux_process_create(FlProcess process)
             }
         }
 
+        // redirect stderr
         if (process->err)
         {
-            // redirect stderr
+            close(process->err->read);
             if (dup2(process->out->write, STDERR_FILENO) == -1)
             {
                 exit(-1);
             }
-        }
-
-        if (process->in)
-        {
-            close(process->in->read);
-            close(process->in->write);
-        }
-
-        if (process->out)
-        {
-            close(process->out->read);
-            close(process->out->write);
-        }
-
-        if (process->err)
-        {
-            close(process->err->read);
-            close(process->err->write);
         }
 
         int exit_code = execve(process->command, process->argv, process->envp);
@@ -244,6 +233,9 @@ bool linux_process_create(FlProcess process)
 
     if (process->out)
         close(process->out->write);
+
+    if (process->err)
+        close(process->err->write);
 
     return true;
 }
@@ -386,7 +378,7 @@ size_t fl_process_write_to_stdin(FlProcess process, const char *message, size_t 
     if (!process->in)
     {
         process->in = fl_process_pipe_new();
-        // Create a pipe for the child process's STDIN.  
+        // Create a pipe for the child process' STDIN.  
         if (!CreatePipe(&process->in->read, &process->in->write, &process->sec_attrs, 0))
             return 0;
 
@@ -403,12 +395,17 @@ size_t fl_process_write_to_stdin(FlProcess process, const char *message, size_t 
     return (size_t)written;
 
     #elif defined(__linux__)
-    return 0;
-    #endif
 
+    ssize_t written = write(process->in->write, message, length);
+
+    if (written == -1)
+        return 0;
+
+    return (size_t)written;
+    #endif
 }
 
-bool fl_process_poll_stdout(FlProcess process, unsigned long sleep_millisecods, int max_tries)
+bool fl_process_poll_stdout(FlProcess process, unsigned long sleep_milliseconds, int max_tries)
 {
     flm_assert(process, "Process cannot be NULL");
 
@@ -441,16 +438,40 @@ bool fl_process_poll_stdout(FlProcess process, unsigned long sleep_millisecods, 
             tries++;
         }
 
-        Sleep(sleep_millisecods);
+        Sleep(sleep_milliseconds);
 
     } while (true);
 
     #elif defined(__linux__)
-    return false;
+    struct pollfd fds = { .fd = process->out->read, .events = POLLIN };
+
+    unsigned long tries = 0;
+
+    do {
+        fds.revents = 0;
+
+        int result = poll(&fds, 1, sleep_milliseconds);
+
+        // Leave on error
+        if (result < 0)
+            return false;
+
+        // There is input pending, return 
+        if (fds.revents & POLLIN)
+            return true;        
+
+        // Timeout
+        if (max_tries > 0)
+        {
+            if (tries >= (unsigned long)max_tries)
+                return false;
+            tries++;
+        }
+    } while (true);
     #endif
 }
 
-bool fl_process_poll_stderr(FlProcess process, unsigned long sleep_millisecods, int max_tries)
+bool fl_process_poll_stderr(FlProcess process, unsigned long sleep_milliseconds, int max_tries)
 {
     flm_assert(process, "Process cannot be NULL");
 
@@ -483,12 +504,36 @@ bool fl_process_poll_stderr(FlProcess process, unsigned long sleep_millisecods, 
             tries++;
         }
 
-        Sleep(sleep_millisecods);
+        Sleep(sleep_milliseconds);
 
     } while (true);
 
     #elif defined(__linux__)
-    return false;
+    struct pollfd fds = { .fd = process->err->read, .events = POLLIN };
+
+    unsigned long tries = 0;
+
+    do {
+        fds.revents = 0;
+
+        int result = poll(&fds, 1, sleep_milliseconds);
+
+        // Leave on error
+        if (result < 0)
+            return false;
+
+        // There is input pending, return 
+        if (fds.revents & POLLIN)
+            return true;        
+
+        // Timeout
+        if (max_tries > 0)
+        {
+            if (tries >= (unsigned long)max_tries)
+                return false;
+            tries++;
+        }
+    } while (true);
     #endif
 }
 
@@ -514,6 +559,23 @@ bool fl_process_pending_stdout(FlProcess process)
     return available > 0;
 
     #elif defined(__linux__)
+    struct pollfd fds = { .fd = process->out->read, .events = POLLIN, .revents = 0 };
+    
+    int result = poll(&fds, 1, 0);
+
+    // Timeout
+    if (result == 0)
+        return false;
+
+    // Error
+    if (result < 0)
+        return false;
+
+    // There is input pending
+    if (fds.revents & POLLIN)
+        return true;
+
+    // Error
     return false;
     #endif
 }
@@ -540,6 +602,23 @@ bool fl_process_pending_stderr(FlProcess process)
     return available > 0;
 
     #elif defined(__linux__)
+    struct pollfd fds = { .fd = process->err->read, .events = POLLIN, .revents = 0 };
+    
+    int result = poll(&fds, 1, 0);
+
+    // Timeout
+    if (result == 0)
+        return false;
+
+    // Error
+    if (result < 0)
+        return false;
+
+    // There is input pending
+    if (fds.revents & POLLIN)
+        return true;
+
+    // Error
     return false;
     #endif
 }
@@ -580,7 +659,29 @@ char* fl_process_read_from_stdout(FlProcess process)
     return msg;
 
     #elif defined(__linux__)
-    return NULL;
+    #define BUF_SIZE 1024
+    char *msg = fl_cstring_new(0);
+    char buffer[BUF_SIZE+1];
+    ssize_t read_bytes = 0;
+
+    while ((read_bytes = read(process->out->read, buffer, BUF_SIZE)) > 0)
+    {
+        buffer[read_bytes] = '\0';
+        fl_cstring_append(&msg, buffer);
+
+        if (read_bytes < BUF_SIZE)
+            break;
+    }
+
+    if (read_bytes == -1)
+    {
+        fl_cstring_delete(msg);
+        return NULL;
+    }
+
+    return msg;
+
+    #undef BUF_SIZE
     #endif
 }
 
@@ -618,6 +719,28 @@ char* fl_process_read_from_stderr(FlProcess process)
     return msg;
 
     #elif defined(__linux__)
-    return NULL;
+    #define BUF_SIZE 1024
+    char *msg = fl_cstring_new(0);
+    char buffer[BUF_SIZE+1];
+    ssize_t read_bytes = 0;
+
+    while ((read_bytes = read(process->err->read, buffer, BUF_SIZE)) > 0)
+    {
+        buffer[read_bytes] = '\0';
+        fl_cstring_append(&msg, buffer);
+
+        if (read_bytes < BUF_SIZE)
+            break;
+    }
+
+    if (read_bytes == -1)
+    {
+        fl_cstring_delete(msg);
+        return NULL;
+    }
+
+    return msg;
+
+    #undef BUF_SIZE
     #endif
 }

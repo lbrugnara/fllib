@@ -40,6 +40,18 @@ void test_defer_expressions(void)
         fl_vexpect(i == numbers[i], "Numbers array is ordered (%d == %d)", i, numbers[i]);
 }
 
+void test_defer_expression_safety(void)
+{
+    volatile int number = 0;
+    defer_scope {
+        for (volatile int i=0; i < 10; i++)
+        {
+            defer_expression(number = i);
+        }
+    }
+    fl_expect("Number must be equals to 10", number == 10);
+}
+
 void test_defer_statements(void)
 {
     volatile int numbers[9] = {0};

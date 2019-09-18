@@ -108,7 +108,9 @@ struct FlDeferScope {
  *  or to the scope's exit point
  *
  */
-#define FL_DEFER_JUMP_NEXT (_fl_defer_scope_.call_chain = _fl_defer_scope_.call_chain->prev, FL_DEFER_JUMP)
+#define FL_DEFER_JUMP_NEXT (_fl_defer_scope_.call_chain =                                       \
+    _fl_defer_scope_.call_chain->prev == _fl_defer_scope_.call_chain                            \
+    ? NULL : _fl_defer_scope_.call_chain->prev, FL_DEFER_JUMP)
 
 /*
  * Macro: FL_DEFER_ENQUEUE_STMT

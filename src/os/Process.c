@@ -165,16 +165,34 @@ bool win32_process_create(FlProcess process)
 bool linux_process_create(FlProcess process)
 {
     if (process->in)
-        if (pipe((int[2]){ process->in->read, process->in->write }) < 0)
+    {
+        int fds[2];
+        if (pipe(fds) < 0)
             return false;
+
+        process->in->read = fds[0];
+        process->in->write = fds[1];
+    }
 
     if (process->out)
-        if (pipe((int[2]){ process->out->read, process->out->write }) < 0)
+    {
+        int fds[2];
+        if (pipe(fds) < 0)
             return false;
 
+        process->out->read = fds[0];
+        process->out->write = fds[1];
+    }
+
     if (process->err)
-        if (pipe((int[2]){ process->err->read, process->err->write }) < 0)
+    {
+        int fds[2];
+        if (pipe(fds) < 0)
             return false;
+
+        process->err->read = fds[0];
+        process->err->write = fds[1];
+    }
 
     process->child_pid = fork();
 

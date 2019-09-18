@@ -93,6 +93,7 @@ int main(int argc, char **argv)
         fl_test_suite("Defer", 
             { "Deferred scope", &test_defer_scope },
             { "Deferred expressions", &test_defer_expressions },
+            { "Break deferred chain call on duplicates", &test_defer_expression_safety },
             { "Deferred statements", &test_defer_statements },
             { "Deferred statements and expressions", &test_defer_stmts_and_exprs },
             { "Break from a deferred scope", &test_defer_break },

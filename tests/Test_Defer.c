@@ -118,6 +118,70 @@ void test_defer_stmts_and_exprs(void)
         fl_vexpect(i == numbers[i], "Numbers array is ordered (%d == %d)", i, numbers[i]);
 }
 
+void test_defer_nested_blocks(void)
+{
+    volatile int numbers[9] = {0};
+    volatile int index = 0;
+    defer_scope {
+        defer_expression(numbers[8] = index++);
+        defer_expression(numbers[7] = index++);
+        defer_scope {
+            defer_scope {
+                defer_expression(numbers[3] = index++);
+                defer_statements {
+                    numbers[0] = index++;
+                    numbers[1] = index++;
+                    numbers[2] = index++;
+                }
+            }
+            numbers[4] = index++;
+            numbers[5] = index++;
+            numbers[6] = index++;
+        }
+    }
+    
+    fl_expect("Index must be equals to 9", index == 9);
+
+    for (int i=0; i < 9; i++)
+        fl_vexpect(i == numbers[i], "Numbers array is ordered (%d == %d)", i, numbers[i]);
+}
+
+
+void test_defer_nested_blocks_break(void)
+{
+    volatile int numbers[9] = {0};
+    volatile int index = 0;
+    defer_scope {
+        defer_expression(numbers[8] = index++);
+        defer_expression(numbers[7] = index++);
+        defer_scope {
+            defer_scope {
+                defer_expression(numbers[3] = index++);
+                defer_statements {
+                    numbers[0] = index++;
+                    numbers[1] = index++;
+                    numbers[2] = index++;
+                }
+            }
+
+            defer_break();
+
+            numbers[4] = index++;
+            numbers[5] = index++;
+            numbers[6] = index++;
+        }
+
+        numbers[4] = index++;
+        numbers[5] = index++;
+        numbers[6] = index++;
+    }
+    
+    fl_expect("Index must be equals to 9", index == 9);
+
+    for (int i=0; i < 9; i++)
+        fl_vexpect(i == numbers[i], "Numbers array is ordered (%d == %d)", i, numbers[i]);
+}
+
 void test_defer_break(void)
 {
     char *conststrs[] = {

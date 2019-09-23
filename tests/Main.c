@@ -96,6 +96,8 @@ int main(int argc, char **argv)
             { "Break deferred chain call on duplicates", &test_defer_expression_safety },
             { "Deferred statements", &test_defer_statements },
             { "Deferred statements and expressions", &test_defer_stmts_and_exprs },
+            { "Support nested defer blocks", &test_defer_nested_blocks },
+            { "Support break in nested defer blocks", &test_defer_nested_blocks_break },
             { "Break from a deferred scope", &test_defer_break },
             { "Return from a deferred scope", &test_defer_return },
             { "Working with files", &test_defer_file }

@@ -2,6 +2,7 @@
 
 // Tests
 #include "Std.h"
+#include "Test_Array.h"
 #include "Test_Defer.h"
 #include "Test_Slice.h"
 #include "Test_Cstring.h"
@@ -28,6 +29,9 @@ int main(int argc, char **argv)
         fl_test_suite("Std", 
             { "Exception handling", &test_std_exception },
             { "Global error handling thread safety", &test_errors }
+        ),
+        fl_test_suite("Array", 
+            { "Array combine", &test_array_combine }
         ),
         fl_test_suite("Slice", 
             { "Slice allocation", &test_slice },

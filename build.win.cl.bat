@@ -109,6 +109,7 @@ set TEST_CFLAGS=%CFLAGS% -I.\include -I.\src
 cl.exe %TEST_CFLAGS% /c tests\Main.c /Fo.\tests\obj\debug\Main.o
 cl.exe %TEST_CFLAGS% /c tests\Test.c /Fo.\tests\obj\debug\Test.o
 cl.exe %TEST_CFLAGS% /c tests\Std.c /Fo.\tests\obj\debug\Std.o
+cl.exe %TEST_CFLAGS% /c tests\Test_Array.c /Fo.\tests\obj\debug\Test_Array.o
 cl.exe %TEST_CFLAGS% /c tests\Test_Defer.c /Fo.\tests\obj\debug\Test_Defer.o
 cl.exe %TEST_CFLAGS% /c tests\Test_Slice.c /Fo.\tests\obj\debug\Test_Slice.o
 cl.exe %TEST_CFLAGS% /c tests\IO.c /Fo.\tests\obj\debug\IO.o
@@ -137,6 +138,7 @@ link.exe ^
     tests\obj\debug\Main.o ^
     tests\obj\debug\Test.o ^
     tests\obj\debug\Std.o ^
+    tests\obj\debug\Test_Array.o ^
     tests\obj\debug\Test_Defer.o ^
     tests\obj\debug\Test_Slice.o ^
     tests\obj\debug\IO.o ^

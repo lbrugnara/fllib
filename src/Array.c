@@ -28,7 +28,7 @@ typedef struct FlArrayHeader
 
 void* fl_array_new(size_t element_size, size_t length)
 {
-	flm_assert(length > 0, "Number of elements must be greater than 0");
+	flm_assert(length >= 0, "Number of elements must be greater than 0");
 
 	FlArrayHeader *header = (FlArrayHeader*)fl_calloc(1, sizeof(FlArrayHeader) + element_size * length);
 
@@ -74,10 +74,42 @@ void fl_array_delete_each(const FlArray array, void (*delete_handler)(FlByte*))
     fl_free(header);
 }
 
+FlArray fl_array_combine(FlArray dest_array, FlArray src_array)
+{
+	FlArrayHeader *dest_header = GetHeader(dest_array);
+	FlArrayHeader *src_header = GetHeader(src_array);
+	
+	if (dest_header->element_size != src_header->element_size)
+		return NULL;
+
+	size_t orig_length = dest_header->length;
+	size_t new_length = dest_header->length + src_header->length;
+	void *tmp = fl_array_resize(dest_array, new_length);
+
+	if (tmp == NULL)
+		return NULL;
+
+	dest_header = GetHeader(tmp);
+	dest_header->length = new_length;
+	dest_array = tmp;
+
+
+	for (size_t i=0; orig_length < new_length; orig_length++, i++)
+		memcpy((FlByte*)dest_array + (orig_length * dest_header->element_size), (FlByte*)src_array + (i * src_header->element_size), dest_header->element_size);
+
+	return dest_array;
+}
+
 size_t fl_array_length(const FlArray array)
 {
 	FlArrayHeader *header = GetHeader(array);
 	return header->length;
+}
+
+size_t fl_array_element_size(const FlArray array)
+{
+	FlArrayHeader *header = GetHeader(array);
+	return header->element_size;
 }
 
 bool fl_array_contains(const FlArray array, const void *needle) 

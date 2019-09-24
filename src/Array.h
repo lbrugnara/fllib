@@ -141,6 +141,42 @@ FlArray fl_array_resize(FlArray array, size_t n);
 size_t fl_array_length(const FlArray array);
 
 /*
+ * Function: fl_array_element_size
+ *  Returns the size of the elements the array can hold
+ *
+ * Parameters:
+ *  FlArray array - Target array
+ *
+ * Return:
+ *  size_t - Size of the elements the array can hold
+ *
+ */
+size_t fl_array_element_size(const FlArray array);
+
+/*
+ * Function: fl_array_combine
+ *  Combines the 2 arrays by chaining the elements from the *src_array*
+ *  at the end of the *dest_array*. Similarly
+ *  to the <fl_realloc> function, if the reallocation fails, this
+ *  function frees the memory used by *dest_array*, that way
+ *  the following snippet of code can be safely used (as far as *dest_array*
+ *  does not point to a memory section that needs to be freed too):
+ * 
+ * ===== C =====
+ *  dest_array = fl_array_combine(dest_array, src_array);
+ * =============
+ * 
+ * Parameters:
+ * FlArray dest_array - Destination array that will contain the new elements
+ * FlArray src_array - Source array from where to get the elements
+ *
+ * Returns:
+ *  FlArray - A pointer to the destination array, or NULL on failure
+ *
+ */
+FlArray fl_array_combine(FlArray dest_array, FlArray src_array);
+
+/*
  * Function: fl_array_contains
  *  Search for *needle* in *array*. This function MUST be used
  *  only with arrays allocated with <fl_array_new>.

@@ -351,6 +351,6 @@ void test_fl_hashtable_resize()
     }
     fl_timer_end(timer);
     printf("Elapsed milliseconds: %ld\n", fl_timer_elapsed_ms(timer));
-    fl_timer_delete(timer);
+    fl_timer_free(timer);
     fl_hashtable_free(ht);
 }

@@ -257,7 +257,7 @@ void run_suite(FlTestSuite suite, struct FlTestSuiteResult *result)
 
         result->elapsed += fl_timer_elapsed_ms(timer);
 
-        fl_timer_delete(timer);
+        fl_timer_free(timer);
     }
     
     result->ran = true;

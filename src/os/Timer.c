@@ -76,7 +76,7 @@ long fl_timer_elapsed_ms(FlTimer timer)
     #endif
 }
 
-void fl_timer_delete(FlTimer timer)
+void fl_timer_free(FlTimer timer)
 {
     flm_assert(timer != NULL, "Timer must not be null");
     fl_free(timer);

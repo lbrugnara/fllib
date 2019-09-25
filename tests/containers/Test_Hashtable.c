@@ -277,8 +277,8 @@ void test_fl_hashtable_keys_and_values()
     char **values = fl_hashtable_values(ht);
     fl_expect("Values array must contain 26 elements", fl_array_length(values) == 26);
 
-    fl_array_delete(keys);
-    fl_array_delete(values);
+    fl_array_free(keys);
+    fl_array_free(values);
     fl_hashtable_delete(ht);
 }
 
@@ -310,7 +310,7 @@ void test_fl_hashtable_remove()
 
     fl_expect("Current length after removing all the elements by key must be 0", fl_hashtable_length(ht) == 0);
 
-    fl_array_delete(keys);
+    fl_array_free(keys);
     fl_hashtable_delete(ht);
 }
 

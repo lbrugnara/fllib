@@ -44,7 +44,7 @@ void test_file_rw_all_bytes()
         fl_system_set_working_dir(wdir);
         fl_cstring_delete(wdir);
     }
-    fl_array_delete(arr);
-    fl_array_delete(bytes);
+    fl_array_free(arr);
+    fl_array_free(bytes);
 
 }

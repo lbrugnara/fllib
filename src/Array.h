@@ -68,13 +68,13 @@ typedef void *FlArray;
  *  FlArray - Pointer to the allocated memory
  * 
  * Notes:
- *  The pointer returned by this function MUST BE freed with the <fl_array_delete> function
+ *  The pointer returned by this function MUST BE freed with the <fl_array_free> function
  *
  */
 FlArray fl_array_new(size_t size, size_t n);
 
 /*
- * Function: fl_array_delete
+ * Function: fl_array_free
  *  Releases the memory allocated with the <fl_array_new> function
  *
  * Parameters:
@@ -84,24 +84,24 @@ FlArray fl_array_new(size_t size, size_t n);
  *  void - This function does not return a value
  *
  */
-void fl_array_delete(const FlArray array);
+void fl_array_free(const FlArray array);
 
 /*
- * Function: fl_array_delete_each
- *  Releases the memory allocated for an *array* using *delete_handler*
+ * Function: fl_array_free_each
+ *  Releases the memory allocated for an *array* using *item_free_func*
  *  to release the memory used by each element within the array.
  *  It is up to the handler function to free all the memory used by each
  *  element.
  *
  * Parameters:
  *  const FlArray array - A pointer to the memory to be realeased
- *  void (*)(FlByte*) delete_handler - Handler function to release the memory for each element of array
+ *  void (*)(FlByte*) item_free_func - Handler function to release the memory for each element of array
  *
  * Return:
  *  void - This function does not return a value.
  *
  */
-void fl_array_delete_each(const FlArray array, void (*delete_handler)(FlByte*));
+void fl_array_free_each(const FlArray array, void (*item_free_func)(FlByte*));
 
 /*
  * Function: fl_array_resize

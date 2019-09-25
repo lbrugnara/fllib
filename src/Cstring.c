@@ -172,7 +172,7 @@ char *fl_cstring_vadup(const char *s, va_list args)
                 snprintf(dst, t, "%d", integer);
                 for (size_t j = 0; j < t; j++)
                     fl_vector_add(parts, dst + j);
-                fl_array_delete(dst);
+                fl_array_free(dst);
                 break;
             }
             case 'l':
@@ -202,7 +202,7 @@ char *fl_cstring_vadup(const char *s, va_list args)
 
                 for (size_t j = 0; j < t; j++)
                     fl_vector_add(parts, dst + j);
-                fl_array_delete(dst);
+                fl_array_free(dst);
                 break;
             }
             case 's':
@@ -437,7 +437,7 @@ size_t fl_cstring_replace_n(const char *src, size_t src_size, const char *needle
             mpi++;
         }
     }
-    fl_array_delete(map);
+    fl_array_free(map);
     return newlength;
 }
 

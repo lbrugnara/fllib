@@ -286,7 +286,7 @@ void test_defer_return(void)
     };
     defer_scope {
         char **strings = fl_array_new(sizeof(char*), 8);
-        defer_expression(fl_array_delete(strings));
+        defer_expression(fl_array_free(strings));
         
         defer_return_without_value(strings, conststrs);
 
@@ -301,7 +301,7 @@ void test_defer_return(void)
 
     defer_scope {
         char **strings = defer_return_with_value(conststrs);
-        defer_expression(fl_array_delete(strings));
+        defer_expression(fl_array_free(strings));
 
         fl_vexpect(strings != NULL, "Return from deferred scope must be a valid array");
 

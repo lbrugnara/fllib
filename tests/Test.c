@@ -348,5 +348,5 @@ void fl_test_run_all(int argc, char **argv, FlTestSuite *suites)
     printf("+--------------------------+--------------+------------+------------+\n");
     printf("| %-25s| %6zu/%-5zu | %-2s%3.2f%%%-1s | %7llu ms |\n", "Total", nptests, ntests, "", (nptests/(float)ntests)*100, "", totalElapsedTime);
     printf("+--------------------------+--------------+------------+------------+\n");
-    fl_array_delete(results);
+    fl_array_free(results);
 }

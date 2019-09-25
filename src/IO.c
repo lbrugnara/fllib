@@ -164,7 +164,7 @@ FlArray fl_io_file_read_all_bytes(const char *filename)
     if (read != length)
     {
         fl_io_file_close(fd);
-        fl_array_delete(buffer);
+        fl_array_free(buffer);
         return NULL;
     }
     

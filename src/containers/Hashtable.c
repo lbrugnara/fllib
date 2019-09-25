@@ -389,7 +389,7 @@ void fl_hashtable_clear(FlHashtable ht)
                     ht->length--;
                 }
             }
-            fl_array_delete(ht->buckets[i]);
+            fl_array_free(ht->buckets[i]);
             ht->buckets[i] = NULL;
         }
     }
@@ -507,7 +507,7 @@ void fl_hashtable_resize(FlHashtable ht, size_t nbuckets)
             }
         }
         fl_hashtable_clear(ht);
-        fl_array_delete(ht->buckets);
+        fl_array_free(ht->buckets);
         ht->buckets = newht.buckets;
         ht->length = newht.length;
     }
@@ -539,9 +539,9 @@ void fl_hashtable_delete(FlHashtable ht)
                         ht->value_cleaner(b->value);
                 }
             }
-            fl_array_delete(ht->buckets[i]);
+            fl_array_free(ht->buckets[i]);
         }
     }
-    fl_array_delete(ht->buckets);
+    fl_array_free(ht->buckets);
     fl_free(ht);
 }

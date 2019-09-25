@@ -55,13 +55,13 @@ FlArray fl_array_resize(FlArray array, size_t length)
 	return GetArray(header);
 }
 
-void fl_array_delete(const FlArray array)
+void fl_array_free(const FlArray array)
 {
 	FlArrayHeader *header = GetHeader(array);
 	fl_free(header);
 }
 
-void fl_array_delete_each(const FlArray array, void (*delete_handler)(FlByte*))
+void fl_array_free_each(const FlArray array, void (*item_free_func)(FlByte*))
 {
 	FlArrayHeader *header = GetHeader(array);
 	size_t bytes = header->length * header->element_size;
@@ -69,7 +69,7 @@ void fl_array_delete_each(const FlArray array, void (*delete_handler)(FlByte*))
     for (size_t i=0; i < bytes; i += header->element_size)
     {
         if (data+i)
-            delete_handler(data+i);
+            item_free_func(data+i);
     }
     fl_free(header);
 }

@@ -24,9 +24,9 @@ void test_array_combine(void)
         for (int i=0; i < 20; i++)
             fl_vexpect(i == zero_to_nineteen[i], "Element at position %d must be equals to %d", i, i);
 
-        fl_array_delete(zero_to_nine);
-        fl_array_delete(ten_to_nineteen);
-        fl_array_delete(zero_to_nineteen);
+        fl_array_free(zero_to_nine);
+        fl_array_free(ten_to_nineteen);
+        fl_array_free(zero_to_nineteen);
     }
 
     {
@@ -55,8 +55,8 @@ void test_array_combine(void)
             fl_vexpect(i == *zero_to_nineteen[i], "Element at position %d must be equals to %d", i, i);
         }
 
-        fl_array_delete(zero_to_nine);
-        fl_array_delete(ten_to_nineteen);
-        fl_array_delete(zero_to_nineteen);
+        fl_array_free(zero_to_nine);
+        fl_array_free(ten_to_nineteen);
+        fl_array_free(zero_to_nineteen);
     }
 }

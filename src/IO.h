@@ -136,7 +136,7 @@ size_t fl_io_file_write_bytes(FILE *file, size_t nbytes, const FlByte *bytes);
  * 
  * Notes:
  *  The returned pointer is an array allocated with the <fl_array_new> function,
- *  therefore after usage it needs to be deleted using the <fl_array_delete> function
+ *  therefore after usage it needs to be deleted using the <fl_array_free> function
  *
  */
 FlArray fl_io_file_read_all_bytes(const char *filename);

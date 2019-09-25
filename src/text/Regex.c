@@ -630,7 +630,7 @@ FlVector parse_regex(char* regex, RegexFlags *flags)
 	}
 
 	if (tokens)
-		fl_array_delete(tokens);
+		fl_array_free(tokens);
 
 	if (didError)
 	{
@@ -1128,7 +1128,7 @@ clean_token:
 		#endif
 	}
 
-	fl_array_delete(stack);
+	fl_array_free(stack);
 	fl_vector_delete(tokens);
 	return regex;
 }
@@ -1589,8 +1589,8 @@ bool regex_match (FlRegex regex, char* text)
 	 	result.anyFinal = false;
 
 	fl_vector_delete(input);
-	fl_array_delete(next_states);
-	fl_array_delete(current_states);
+	fl_array_free(next_states);
+	fl_array_free(current_states);
 	return result.anyFinal;
 }
 
@@ -1617,7 +1617,7 @@ bool fl_regex_match(FlRegex regex, char* text)
 void fl_regex_delete (FlRegex regex)
 {
 	// Delete FlVector states with delete_nfa handler
-	fl_array_delete_each(regex->states, delete_nfa);
+	fl_array_free_each(regex->states, delete_nfa);
 	fl_free(regex->pattern);
 	fl_free(regex);
 }

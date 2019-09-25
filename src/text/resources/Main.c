@@ -218,7 +218,7 @@ void parse_derived_normalization_property(FlVector data, const char *buffer, Nor
             }
             fl_cstring_delete(codes[j]);
         }
-        fl_array_delete(codes);
+        fl_array_free(codes);
     }
     fl_vector_delete(lines);
 
@@ -235,7 +235,7 @@ void parse_derived_normalization_properties(FlVector data)
     FlArray tmpbuffer = fl_io_file_read_all_bytes("src/text/resources/DerivedNormalizationProps-9.0.0.txt");
     char *buffer = NULL;
     size_t size = fl_cstring_replace_n((char*)tmpbuffer, fl_array_length(tmpbuffer), "\r\n", 2, "\n", 1, &buffer);
-    fl_array_delete(tmpbuffer);    
+    fl_array_free(tmpbuffer);    
 
     // Full_Composition_Exclusion
     parse_derived_normalization_property(data, (const char*)buffer, NORM_PROP_FCE);
@@ -268,7 +268,7 @@ void parse_unicode_data(FlVector data)
     //FlByte *buffer = (FlByte*)fl_cstring_replace((char*)tmpbuffer, "\r\n", "\n");
     char *buffer = NULL;
     size_t size = fl_cstring_replace_n((char*)tmpbuffer, fl_array_length(tmpbuffer), "\r\n", 2, "\n", 1, &buffer);
-    fl_array_delete(tmpbuffer);
+    fl_array_free(tmpbuffer);
     const char *base = (const char*)buffer;
     do
     {
@@ -348,7 +348,7 @@ void parse_unicode_data(FlVector data)
             int strsize = (int)fl_cstring_replace_n(buf, bufsize, " ", 1, ", 0x", 4, &str);
             ud->decomposition_mapping = fl_cstring_dup_n(str, strsize);
             fl_cstring_delete(str);
-            fl_array_delete(buf);
+            fl_array_free(buf);
         }
 
         // General_Category
@@ -374,7 +374,7 @@ void parse_unicode_data(FlVector data)
             memcpy(str, endField3+1, lengthField3);
             str[s-1] = FL_EOS;
             ud->canonical_combining_class = fl_cstring_dup_n(str, s);
-            fl_array_delete(str);
+            fl_array_free(str);
         }
         
         if (lengthField9 != 0 && (endField9+1)[0] == 'Y')

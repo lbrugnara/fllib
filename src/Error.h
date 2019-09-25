@@ -302,7 +302,7 @@ struct FlContext {
  *  Initializes a <struct FlContext> object in the stack.
  * 
  * Notes:
- *  For a heap allocated <struct FlContext> object use <fl_ctx_new> and <fl_ctx_delete>
+ *  For a heap allocated <struct FlContext> object use <fl_ctx_new> and <fl_ctx_free>
  * 
  */
 #define FL_CTX_STATIC_INIT {0}
@@ -310,7 +310,7 @@ struct FlContext {
 /*
  * Function: fl_ctx_new
  *  Allocates a <struct FlContext> object in heap and returns a pointer to it.
- *  The context returned by this function must be destroyed using the <fl_ctx_delete>
+ *  The context returned by this function must be destroyed using the <fl_ctx_free>
  *  function.
  *
  * Parameters:
@@ -326,7 +326,7 @@ struct FlContext {
 struct FlContext* fl_ctx_new(void);
 
 /*
- * Function: fl_ctx_delete
+ * Function: fl_ctx_free
  *  Frees the memory allocated by the <struct FlContext> object.
  *
  * Parameters:
@@ -335,7 +335,7 @@ struct FlContext* fl_ctx_new(void);
  * Returns:
  *  void - This function does not return a value
  */
-void fl_ctx_delete(struct FlContext *ctx);
+void fl_ctx_free(struct FlContext *ctx);
 
 /*
  * Macro: fl_ctx_frame

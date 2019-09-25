@@ -206,7 +206,7 @@ struct FlContext* fl_ctx_new(void)
 }
 
 
-void fl_ctx_delete(struct FlContext *ctx)
+void fl_ctx_free(struct FlContext *ctx)
 {
     fl_free(ctx);
 }

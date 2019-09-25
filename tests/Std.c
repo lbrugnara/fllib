@@ -89,7 +89,7 @@ void test_std_exception()
     }
     EndTry;
 
-    fl_ctx_delete(ctx);
+    fl_ctx_free(ctx);
 }
 
 void a(struct FlContext *ctx) 

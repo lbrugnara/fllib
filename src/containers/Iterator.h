@@ -47,48 +47,48 @@ typedef enum {
 } FlIteratorType;
 
 /*
- * Type: void (*)(void*) FlIteratorMove
+ * Type: void (*)(void*) FlIteratorMoveFunction
  *
  * Represents a function that moves the current iterator to 
  * another element in the collection.
  *
  */
-typedef void (*FlIteratorMove)(void *it);
+typedef void (*FlIteratorMoveFunction)(void *it);
 
 /*
- * Type: void* (*)(void*) FlIteratorValue
+ * Type: void* (*)(void*) FlIteratorValueFunction
  *
  * Represents a function that retrieves the value of an element
  *
  */
-typedef void* (*FlIteratorValue)(void *it);
+typedef void* (*FlIteratorValueFunction)(void *it);
 
 /*
- * Type: bool (*)(void*, void*) FlIteratorEquals
+ * Type: bool (*)(void*, void*) FlIteratorEqualsFunction
  *
  * Compares two iterators to check if both are pointing to the
  * same element in the collection,
  *
  */
-typedef bool (*FlIteratorEquals)(void *it1, void *it2);
+typedef bool (*FlIteratorEqualsFunction)(void *it1, void *it2);
 
 /*
- * Type: void (*)(void*) FlIteratorDelete
+ * Type: void (*)(void*) FlIteratorFreeFunction
  *
  * It is the routine called to free the memory used by the
  * specific implementation made by a container module
  *
  */
-typedef void (*FlIteratorDelete)(void *it);
+typedef void (*FlIteratorFreeFunction)(void *it);
 
 /*
- * Type: bool (*)(void*, void*) FlIteratorPosition
+ * Type: bool (*)(void*, void*) FlIteratorPositionFunction
  *
  * Is a function that check the position of the element pointed
  * by {it} in {container}
  *
  */
-typedef bool (*FlIteratorPosition)(void *it, void *container);
+typedef bool (*FlIteratorPositionFunction)(void *it, void *container);
 
 
 /*
@@ -101,13 +101,13 @@ typedef bool (*FlIteratorPosition)(void *it, void *container);
  * FlIteratorType type} Type of {FlIterator -
  * void *itdata - Is the data that the container module uses to manipulate the iteration process.
  *	It contains all the information necessary to move the iterator, retrieve its value, compare and check it.
- * FlIteratorMove next - Moves the iterator to the next element in the collection
- * FlIteratorMove prev - Moves the iterator to the previous element in the collection
- * FlIteratorValue value - Retrieves the value of the current elment
- * FlIteratorEquals equals - Comparision function to check if two iterators point to the same element in the collection
- * FlIteratorPosition isstart - Checks if an iterator is pointing to the first element in the collection
- * FlIteratorPosition isend - Checks if an iterator is pointing to the past-the-last-nth element in the collection
- * FlIteratorDelete delete} Frees the memory used by {itdata -
+ * FlIteratorMoveFunction next - Moves the iterator to the next element in the collection
+ * FlIteratorMoveFunction prev - Moves the iterator to the previous element in the collection
+ * FlIteratorValueFunction value - Retrieves the value of the current elment
+ * FlIteratorEqualsFunction equals - Comparision function to check if two iterators point to the same element in the collection
+ * FlIteratorPositionFunction isstart - Checks if an iterator is pointing to the first element in the collection
+ * FlIteratorPositionFunction isend - Checks if an iterator is pointing to the past-the-last-nth element in the collection
+ * FlIteratorFreeFunction delete - Frees the memory used by *itdata*
  *
  * {return: FlIterator} Iterator to traverse a collection of the type {FlIteratorType}
  *
@@ -115,17 +115,17 @@ typedef bool (*FlIteratorPosition)(void *it, void *container);
 FlIterator fl_iterator_new(
 	FlIteratorType type, 
 	void *itdata, 
-	FlIteratorMove next, 
-	FlIteratorMove prev, 
-	FlIteratorValue value, 
-	FlIteratorEquals equals, 
-	FlIteratorPosition isstart, 
-	FlIteratorPosition isend, 
-	FlIteratorDelete delete
+	FlIteratorMoveFunction next, 
+	FlIteratorMoveFunction prev, 
+	FlIteratorValueFunction value, 
+	FlIteratorEqualsFunction equals, 
+	FlIteratorPositionFunction isstart, 
+	FlIteratorPositionFunction isend, 
+	FlIteratorFreeFunction delete
 );
 
 /*
- * Function: fl_iterator_delete
+ * Function: fl_iterator_free
  *
  * Releases the memory used by {FlIterator}.
  *
@@ -134,7 +134,7 @@ FlIterator fl_iterator_new(
  * {return: void}
  *
  */
-void fl_iterator_delete(FlIterator it);
+void fl_iterator_free(FlIterator it);
 
 /*
  * Function: fl_iterator_next

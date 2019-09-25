@@ -23,37 +23,37 @@
  *
  * {member: FlIteratorType type} The type of iterator.
  * {member: void *itdata} The container needs to implement a data structure to keep track of the state of the iterator
- * {member: FlIteratorMove next} Moves the iterator to the next element in the collection
- * {member: FlIteratorMove prev} Moves the iterator to the previous element in the collection
- * {member: FlIteratorValue value} Retrieves the value of the current elment
- * {member: FlIteratorEquals equals} Comparision function to check if two iterators point to the same element in the collection
- * {member: FlIteratorPosition isstart} Checks if an iterator is pointing to the first element in the collection
- * {member: FlIteratorPosition isend} Checks if an iterator is pointing to the past-the-last-nth element in the collection
- * {member: FlIteratorDelete delete} Frees the memory used by {itdata}
+ * {member: FlIteratorMoveFunction next} Moves the iterator to the next element in the collection
+ * {member: FlIteratorMoveFunction prev} Moves the iterator to the previous element in the collection
+ * {member: FlIteratorValueFunction value} Retrieves the value of the current elment
+ * {member: FlIteratorEqualsFunction equals} Comparision function to check if two iterators point to the same element in the collection
+ * {member: FlIteratorPositionFunction isstart} Checks if an iterator is pointing to the first element in the collection
+ * {member: FlIteratorPositionFunction isend} Checks if an iterator is pointing to the past-the-last-nth element in the collection
+ * {member: FlIteratorFreeFunction delete} Frees the memory used by {itdata}
  *
  */
 struct FlIterator {
     FlIteratorType type;
     void *target;
-    FlIteratorMove next;
-    FlIteratorMove prev;
-    FlIteratorValue value;
-    FlIteratorPosition isstart;
-    FlIteratorEquals equals;
-    FlIteratorPosition isend;
-    FlIteratorDelete delete;
+    FlIteratorMoveFunction next;
+    FlIteratorMoveFunction prev;
+    FlIteratorValueFunction value;
+    FlIteratorPositionFunction isstart;
+    FlIteratorEqualsFunction equals;
+    FlIteratorPositionFunction isend;
+    FlIteratorFreeFunction delete;
 };
 
 FlIterator fl_iterator_new(
     FlIteratorType type, 
     void *itdata, 
-    FlIteratorMove next, 
-    FlIteratorMove prev, 
-    FlIteratorValue value, 
-    FlIteratorEquals equals, 
-    FlIteratorPosition isstart, 
-    FlIteratorPosition isend, 
-    FlIteratorDelete delete_handler
+    FlIteratorMoveFunction next, 
+    FlIteratorMoveFunction prev, 
+    FlIteratorValueFunction value, 
+    FlIteratorEqualsFunction equals, 
+    FlIteratorPositionFunction isstart, 
+    FlIteratorPositionFunction isend, 
+    FlIteratorFreeFunction delete_handler
 )
 {
     FlIterator it = fl_calloc(1, sizeof(struct FlIterator));
@@ -70,10 +70,10 @@ FlIterator fl_iterator_new(
 }
 
 /*
- * Function: fl_iterator_delete
+ * Function: fl_iterator_free
  *
  * Releases the memory used by {FlIterator} and calls the
- * {FlIteratorDelete} function to request to the container
+ * {FlIteratorFreeFunction} function to request to the container
  * module implementing the iterator to release the memory
  * allocated in the process.
  *
@@ -82,7 +82,7 @@ FlIterator fl_iterator_new(
  * {return: void}
  *
  */
-void fl_iterator_delete(FlIterator it)
+void fl_iterator_free(FlIterator it)
 {
     it->delete(it->target);
     fl_free(it);    

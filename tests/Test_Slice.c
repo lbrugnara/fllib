@@ -35,7 +35,7 @@ void test_slice_iterator()
     for (int j=10; !fl_iterator_is_end(sliceit, &slice); j--, fl_iterator_next(sliceit))
         fl_vexpect(j == flm_iterator_value(sliceit, int), "Iterator current value in slice must be equals to %d (j)", j);
 
-    fl_iterator_delete(sliceit);
+    fl_iterator_free(sliceit);
 
     // Backward
     sliceit = fl_slice_end(&slice);
@@ -46,7 +46,7 @@ void test_slice_iterator()
         fl_vexpect(j == flm_iterator_value(sliceit, int), "Iterator current value in slice must be equals to %d (j)", j);
     }
 
-    fl_iterator_delete(sliceit);
+    fl_iterator_free(sliceit);
 
 
     // Subslice Forward
@@ -57,7 +57,7 @@ void test_slice_iterator()
     for (int j=5; !fl_iterator_is_end(sliceit, &subslice); j--, fl_iterator_next(sliceit))
         fl_vexpect(j == flm_iterator_value(sliceit, int), "Iterator current value in subslice must be equals to %d (j)", j);
 
-    fl_iterator_delete(sliceit);
+    fl_iterator_free(sliceit);
 
     // Subslice Backward
     sliceit = fl_slice_end(&subslice);
@@ -68,5 +68,5 @@ void test_slice_iterator()
         fl_vexpect(j == flm_iterator_value(sliceit, int), "Iterator current value in subslice must be equals to %d (j)", j);
     }
 
-    fl_iterator_delete(sliceit);
+    fl_iterator_free(sliceit);
 }

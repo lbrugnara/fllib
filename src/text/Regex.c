@@ -1604,7 +1604,7 @@ bool fl_regex_match(FlRegex regex, char* text)
 }
 
 /*
- * Function: fl_regex_delete
+ * Function: fl_regex_free
  *
  * Free the memory used by an FlRegex struct. To free the memory
  * used by member states, this function uses the handler {delete_nfa}
@@ -1614,7 +1614,7 @@ bool fl_regex_match(FlRegex regex, char* text)
  * {return: void}
  *
  */
-void fl_regex_delete (FlRegex regex)
+void fl_regex_free (FlRegex regex)
 {
 	// Delete FlVector states with delete_nfa handler
 	fl_array_free_each(regex->states, delete_nfa);

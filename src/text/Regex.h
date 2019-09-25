@@ -20,6 +20,6 @@ bool fl_regex_match(FlRegex regex, char *text);
 /**
  * Deletes the memory used by a compiled {FlRegex}
  */
-void fl_regex_delete(FlRegex regex);
+void fl_regex_free(FlRegex regex);
 
 #endif /* FL_REGEX_H */

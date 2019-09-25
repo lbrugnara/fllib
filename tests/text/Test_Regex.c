@@ -80,7 +80,7 @@ bool fl_regex_match_test(char *pattern, char *input)
 		return false;
 
 	bool res = fl_regex_match(regex, input);
-	fl_regex_delete(regex);
+	fl_regex_free(regex);
 	return res;
 }
 

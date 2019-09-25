@@ -170,7 +170,7 @@ struct FlListNode* fl_list_insert_before(FlList list, struct FlListNode *target,
 
 
 /*
- * Function: fl_list_delete
+ * Function: fl_list_free
  *  Frees the resources allocated by the list, including the memory allocated 
  *  for the <struct FlListNode>s. If the list has a <FlContainerCleanupFunction>
  *  the nodes' value will be cleaned using it.
@@ -181,6 +181,6 @@ struct FlListNode* fl_list_insert_before(FlList list, struct FlListNode *target,
  * Returns:
  *  void - This function does not return a value
  */
-void fl_list_delete(FlList list);
+void fl_list_free(FlList list);
 
 #endif /* FL_LIST_H */

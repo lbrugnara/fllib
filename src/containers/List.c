@@ -147,7 +147,7 @@ struct FlListNode* fl_list_insert_before(FlList list, struct FlListNode *target,
 	return node;
 }
 
-void fl_list_delete(FlList list)
+void fl_list_free(FlList list)
 {
 	if (list->head != NULL)
 	{

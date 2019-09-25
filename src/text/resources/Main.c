@@ -220,10 +220,10 @@ void parse_derived_normalization_property(FlVector data, const char *buffer, Nor
         }
         fl_array_free(codes);
     }
-    fl_vector_delete(lines);
+    fl_vector_free(lines);
 
     fl_vector_concat(data, newcodepoints);
-    fl_vector_delete(newcodepoints);
+    fl_vector_free(newcodepoints);
     qsort(fl_vector_get(data, 0), fl_vector_length(data), sizeof(UnicodeData*), &unicodedata_comparer);
 }
 
@@ -513,5 +513,5 @@ int main(void)
     parse_unicode_data(data);
     parse_derived_normalization_properties(data);
     create_unicode_database_file(data);
-    fl_vector_delete(data);
+    fl_vector_free(data);
 }

@@ -56,7 +56,7 @@ struct FlVectorArgs {
 /*
  * Function: fl_vector_new
  *  Creates a vector with the provided *capacity* to store pointers, and if *cleaner*
- *  is provided, it will be used to free the pointers on <fl_vector_delete> or <fl_vector_remove>
+ *  is provided, it will be used to free the pointers on <fl_vector_free> or <fl_vector_remove>
  * 
  * Members:
  *  capacity - <FlVector>'s initial capacity
@@ -311,7 +311,7 @@ bool fl_vector_remove(FlVector vector, size_t pos, void *dest);
  * Free the memory reserved for vector 
  */
 /*
- * Function: fl_vector_delete
+ * Function: fl_vector_free
  *
  * Deletes {vector} releaseing its memory
  *
@@ -320,7 +320,7 @@ bool fl_vector_remove(FlVector vector, size_t pos, void *dest);
  * {return: void}
  *
  */
-void fl_vector_delete(FlVector vector);
+void fl_vector_free(FlVector vector);
 
 void* fl_vector_to_array(FlVector vector);
 

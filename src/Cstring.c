@@ -222,7 +222,7 @@ char *fl_cstring_vadup(const char *s, va_list args)
         }
     }
     char *sd = fl_char_join(parts, "");
-    fl_vector_delete(parts);
+    fl_vector_free(parts);
     return sd;
 }
 

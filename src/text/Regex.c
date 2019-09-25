@@ -634,7 +634,7 @@ FlVector parse_regex(char* regex, RegexFlags *flags)
 
 	if (didError)
 	{
-		fl_vector_delete(output);
+		fl_vector_free(output);
 		return NULL;
 	}
 	return output;
@@ -826,12 +826,12 @@ FlVector regex_to_postfix (char* regex, RegexFlags *flags)
 		didError = true;
 	}
 
-	fl_vector_delete(stack);
-	fl_vector_delete(tokens);
+	fl_vector_free(stack);
+	fl_vector_free(tokens);
 
 	if (didError)
 	{
-		fl_vector_delete(output);
+		fl_vector_free(output);
 		return NULL;
 	}
 
@@ -1103,9 +1103,9 @@ FlRegex fl_regex_compile (char* pattern)
 
 					// Delete nexttok, ascii_codes already mapped, display vector and tmptokens vector
 					fl_cstring_free(nexttok);
-					fl_vector_delete(ascii_codes);
-					fl_vector_delete(display);
-					fl_vector_delete(tmptokens);
+					fl_vector_free(ascii_codes);
+					fl_vector_free(display);
+					fl_vector_free(tmptokens);
 				}
 			}
 
@@ -1129,7 +1129,7 @@ clean_token:
 	}
 
 	fl_array_free(stack);
-	fl_vector_delete(tokens);
+	fl_vector_free(tokens);
 	return regex;
 }
 
@@ -1152,7 +1152,7 @@ void delete_nfa(FlByte *statebytes)
 	if (s->value)
 		fl_free(s->value);
 	if (s->to)
-		fl_vector_delete(s->to);
+		fl_vector_free(s->to);
 	fl_free(s);
 }
 
@@ -1588,7 +1588,7 @@ bool regex_match (FlRegex regex, char* text)
 	if (result.anyFinal && !result.anyMatch && HAS_FLAG_END(regex->flags))
 	 	result.anyFinal = false;
 
-	fl_vector_delete(input);
+	fl_vector_free(input);
 	fl_array_free(next_states);
 	fl_array_free(current_states);
 	return result.anyFinal;

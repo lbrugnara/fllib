@@ -90,13 +90,13 @@ FlVector fl_vector_new_args(struct FlVectorArgs args)
 
     if (vector->capacity > vector->max_capacity)
     {
-        fl_vector_delete(vector);
+        fl_vector_free(vector);
         return NULL;
     }
 
     if (fl_std_umult_wrap(vector->max_capacity, vector->element_size, SIZE_MAX))
     {
-        fl_vector_delete(vector);
+        fl_vector_free(vector);
         return NULL;
     }
 
@@ -379,7 +379,7 @@ bool fl_vector_remove(FlVector vector, size_t pos, void *dest)
 }
 
 /* Free the memory reserved for ar */
-void fl_vector_delete(FlVector vector) 
+void fl_vector_free(FlVector vector) 
 {
     if (vector->cleaner)
     {

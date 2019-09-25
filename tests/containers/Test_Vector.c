@@ -13,7 +13,7 @@ void test_fl_vector_new()
         fl_vexpect(fl_vector_max_capacity(vector) == SIZE_MAX / sizeof(void*), "Vector must have a maximum capacity of %zu elements (default)", SIZE_MAX / sizeof(void*));
         fl_expect("Vector must have a growth factor of 2.0 (default)", fl_vector_growth_factor(vector) == 2.0);
         fl_vexpect(fl_vector_element_size(vector) == sizeof(void*), "Vector must have an element_size of %zu (default)", sizeof(void*));
-        fl_vector_delete(vector);
+        fl_vector_free(vector);
 
         vector = fl_vector_new(100, NULL);
         fl_expect("Vector must have length == 0", fl_vector_length(vector) == 0);
@@ -21,7 +21,7 @@ void test_fl_vector_new()
         fl_vexpect(fl_vector_max_capacity(vector) == SIZE_MAX / sizeof(void*), "Vector must have a maximum capacity of %zu elements (default)", SIZE_MAX / sizeof(void*));
         fl_expect("Vector must have a growth factor of 2.0 (default)", fl_vector_growth_factor(vector) == 2.0);
         fl_vexpect(fl_vector_element_size(vector) == sizeof(void*), "Vector must have an element_size of %zu (default)", sizeof(void*));
-        fl_vector_delete(vector);
+        fl_vector_free(vector);
 
         vector = fl_vector_new(0, NULL);
         fl_expect("Vector must have length == 0", fl_vector_length(vector) == 0);
@@ -29,7 +29,7 @@ void test_fl_vector_new()
         fl_vexpect(fl_vector_max_capacity(vector) == SIZE_MAX / sizeof(void*), "Vector must have a maximum capacity of %zu elements (default)", SIZE_MAX / sizeof(void*));
         fl_expect("Vector must have a growth factor of 2.0 (default)", fl_vector_growth_factor(vector) == 2.0);
         fl_vexpect(fl_vector_element_size(vector) == sizeof(void*), "Vector must have an element_size of %zu (default)", sizeof(void*));
-        fl_vector_delete(vector);
+        fl_vector_free(vector);
 
         vector = fl_vector_new_args((struct FlVectorArgs) {
             .element_size = sizeof(int*),
@@ -42,7 +42,7 @@ void test_fl_vector_new()
         fl_expect("Vector must have a maximum capacity of 40 elements", fl_vector_max_capacity(vector) == 40);
         fl_expect("Vector must have a growth factor of 1.6", fl_vector_growth_factor(vector) == 1.6);
         fl_vexpect(fl_vector_element_size(vector) == sizeof(int*), "Vector must have an element_size of %zu", sizeof(int*));
-        fl_vector_delete(vector);
+        fl_vector_free(vector);
 
         vector = fl_vector_new_args((struct FlVectorArgs) {
             .element_size = sizeof(double),
@@ -54,7 +54,7 @@ void test_fl_vector_new()
         fl_vexpect(fl_vector_max_capacity(vector) == SIZE_MAX / sizeof(double), "Vector must have a maximum capacity of %zu elements", SIZE_MAX / sizeof(double));
         fl_expect("Vector must have a growth factor of 1.6", fl_vector_growth_factor(vector) == 1.6);
         fl_vexpect(fl_vector_element_size(vector) == sizeof(double), "Vector must have an element_size of %zu", sizeof(double));
-        fl_vector_delete(vector);
+        fl_vector_free(vector);
     }
 
     fl_test_description("New vectors with invalid configuration must return NULL")
@@ -91,7 +91,7 @@ void test_fl_vector_add()
 
     fl_expect("Vector must have length == 10", fl_vector_length(vector) == 10);
 
-    fl_vector_delete(vector);
+    fl_vector_free(vector);
 
     // Use a container writer
     vector = fl_vector_new_args((struct FlVectorArgs){
@@ -108,7 +108,7 @@ void test_fl_vector_add()
 
     fl_expect("Vector must have length == 10", fl_vector_length(vector) == 10);
 
-    fl_vector_delete(vector);
+    fl_vector_free(vector);
 
     // Use malloc'd pointers
     vector = fl_vector_new_args((struct FlVectorArgs){
@@ -133,7 +133,7 @@ void test_fl_vector_add()
         fl_vexpect(flm_cstring_equals(ptr, str), "Element at position %d must have value %s", i, str);
     }
 
-    fl_vector_delete(vector);
+    fl_vector_free(vector);
 }
 
 void test_fl_vector_insert()
@@ -160,7 +160,7 @@ void test_fl_vector_insert()
             fl_vexpect(ptr != NULL && *ptr == numbers[i], "Inserted value at position %zu must be equals to numbers[%zu] (%zu)", i, i, numbers[i]);
         }
 
-        fl_vector_delete(vector);
+        fl_vector_free(vector);
     }
 
     fl_test_description("A container writer should copy the inserted value instead of saving pointers")
@@ -186,7 +186,7 @@ void test_fl_vector_insert()
 
         fl_expect("Vector must have length == 10", fl_vector_length(vector) == 10);
 
-        fl_vector_delete(vector);
+        fl_vector_free(vector);
     }
 
     fl_test_description("On resize, the capacity must be round to the next higher integer after applying the growth factor")
@@ -204,7 +204,7 @@ void test_fl_vector_insert()
 
         fl_expect("Vector should have expanded its capacity to 40 elements", fl_vector_capacity(vector) == 35);
 
-        fl_vector_delete(vector);
+        fl_vector_free(vector);
 
         // Check growth factor not exceeds max. capacity
         size_t capacity = 5;
@@ -243,7 +243,7 @@ void test_fl_vector_insert()
         fl_expect("Insert must succeed at position 9", n != NULL);
         fl_vexpect(fl_vector_capacity(vector) == max_capacity, "Vector capacity must be %zu", max_capacity);
 
-        fl_vector_delete(vector);
+        fl_vector_free(vector);
     }
 
     fl_test_description("Once the vector has reached its maximum capacity, inserts on positions greather than max_capacity-1 should not thrive")
@@ -266,7 +266,7 @@ void test_fl_vector_insert()
                 fl_vexpect(ptr == NULL, "Element at position %zu cannot be inserted as the max. capacity has been reached", i);
         }
 
-        fl_vector_delete(vector);
+        fl_vector_free(vector);
     }
 }
 
@@ -292,7 +292,7 @@ void test_fl_vector_shift()
 
     fl_expect("Vector after shifting all the elements must be empty", fl_vector_length(vector) == 0);
 
-    fl_vector_delete(vector);
+    fl_vector_free(vector);
 
     // Use a container writer
     vector = fl_vector_new_args((struct FlVectorArgs){
@@ -318,7 +318,7 @@ void test_fl_vector_shift()
 
     fl_expect("Vector after shifting all the elements must be empty", fl_vector_length(vector) == 0);
 
-    fl_vector_delete(vector);
+    fl_vector_free(vector);
 }
 
 void test_fl_vector_pop()
@@ -343,7 +343,7 @@ void test_fl_vector_pop()
 
     fl_expect("Vector after popping all the elements must be empty", fl_vector_length(vector) == 0);
 
-    fl_vector_delete(vector);
+    fl_vector_free(vector);
 
     // Use a container writer
     vector = fl_vector_new_args((struct FlVectorArgs){
@@ -369,7 +369,7 @@ void test_fl_vector_pop()
 
     fl_expect("Vector after popping all the elements must be empty", fl_vector_length(vector) == 0);
 
-    fl_vector_delete(vector);
+    fl_vector_free(vector);
 }
 
 void test_fl_vector_get()

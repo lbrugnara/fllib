@@ -56,7 +56,7 @@ void test_cstring_split()
                 break;
         }
     }
-    fl_vector_delete(v);
+    fl_vector_free(v);
 }
 
 void test_cstring_replace_char()
@@ -186,7 +186,7 @@ void test_cstring_join()
     fl_expect("Join vector with three items 'one', 'two' and 'three' using ', ' as glue, results in 'one, two, three'", flm_cstring_equals(str, "one, two, three"));
     fl_expect("Length of previous joined string is 15 characters", strlen(str) == 15);
     fl_cstring_free(str);
-    fl_vector_delete(str_vector);
+    fl_vector_free(str_vector);
 }
 
 void test_cstring_misc()

@@ -8,7 +8,7 @@ FlPipe fl_process_pipe_new(void);
 void fl_process_pipe_delete(FlPipe pipe);
 
 FlProcess fl_process_create(const char *cmd, char **argv, char **envp, FlPipe in, FlPipe out, FlPipe err);
-void fl_process_delete(FlProcess process);
+void fl_process_free(FlProcess process);
 bool fl_process_wait(FlProcess process);
 char** fl_process_argv(FlProcess process);
 char** fl_process_environ(FlProcess process);

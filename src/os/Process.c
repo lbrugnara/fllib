@@ -281,13 +281,13 @@ FlProcess fl_process_create(const char *cmd, char **argv, char **envp, FlPipe in
     #ifdef _WIN32
     if (!win32_process_create(process))
     {
-        fl_process_delete(process);
+        fl_process_free(process);
         return NULL;
     }
     #elif defined(__linux__)
     if (!linux_process_create(process))
     {
-        fl_process_delete(process);
+        fl_process_free(process);
         return NULL;
     }
     #endif
@@ -311,7 +311,7 @@ bool fl_process_wait(FlProcess process)
     #endif
 }
 
-void fl_process_delete(FlProcess process)
+void fl_process_free(FlProcess process)
 {
     #ifdef _WIN32
     {

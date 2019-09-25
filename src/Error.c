@@ -87,7 +87,7 @@ void fl_error_push(int id, const char *format, ...)
     size_t length = min(FL_ERROR_MSG_SIZE, strlen(str) + 1);
     memcpy(error.message, str, length);
     error.message[length-1] = FL_EOS;
-    fl_cstring_delete(str);
+    fl_cstring_free(str);
 
     // Sync access to Errors hashtable
     fl_mutex_lock(&ErrMutex);
@@ -193,8 +193,8 @@ void fl_exit(enum FlErrorType errtype, const char *format, ...)
     fl_cstring_append(&errtypemsg, msg);
     vfprintf(stderr, errtypemsg, args);
     va_end(args);
-    fl_cstring_delete(msg);
-    fl_cstring_delete(errtypemsg);
+    fl_cstring_free(msg);
+    fl_cstring_free(errtypemsg);
     exit(-1);
 }
 

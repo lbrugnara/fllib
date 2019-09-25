@@ -23,7 +23,7 @@
 char* fl_cstring_new(size_t length);
 
 /*
- * Function: fl_cstring_delete
+ * Function: fl_cstring_free
  *  Frees the memory allocated in *str* with the <fl_cstring_new> function
  *
  * Parameters:
@@ -32,7 +32,7 @@ char* fl_cstring_new(size_t length);
  * Returns:
  *  void - This function does not return a value
  */
-void fl_cstring_delete(const char *str);
+void fl_cstring_free(const char *str);
 
 /**
  * {dst} String to resize

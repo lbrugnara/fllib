@@ -85,9 +85,9 @@ bool fl_io_dir_create_recursive(const char *pathname)
     }
 
 CLEANUP:
-    fl_cstring_delete(current);
+    fl_cstring_free(current);
     fl_vector_delete(parts);
-    fl_cstring_delete(path);
+    fl_cstring_free(path);
     return status;
 }
 
@@ -218,7 +218,7 @@ char* fl_io_file_read_all_text(const char *filename)
 
     if (read != length)
     {
-        fl_cstring_delete(buffer);
+        fl_cstring_free(buffer);
         fl_io_file_close(fd);
         return NULL;
     }
@@ -258,8 +258,8 @@ bool fl_io_file_get_modified_timestamp(const char *filename, unsigned long long 
 
             fh = CreateFile(fullname, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
 
-            fl_cstring_delete(fullname);
-            fl_cstring_delete(wdir);
+            fl_cstring_free(fullname);
+            fl_cstring_free(wdir);
 
             if (fh == INVALID_HANDLE_VALUE)
                 return false;

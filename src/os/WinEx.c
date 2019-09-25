@@ -241,7 +241,7 @@ void fl_winex_message_get(DWORD exceptionCode, char *destmsg, size_t maxlength)
 
     size_t strlength = strlen(msg);
     memcpy(destmsg, msg, strlength < maxlength ? strlength : maxlength);
-    fl_cstring_delete(msg);
+    fl_cstring_free(msg);
 }
 
 /*

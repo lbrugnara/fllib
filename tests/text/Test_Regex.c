@@ -34,13 +34,13 @@ void tokenize(char *regex, char *expect[])
             fl_cstring_append(&expectstr, expect[i]);
         fl_vexpect(pass, "Expected tokens '%s', received '%s'", expectstr, tokensstr);
         
-        fl_cstring_delete(expectstr);
+        fl_cstring_free(expectstr);
     }
     else
     {
         fl_vexpect(pass, "No expectations still received '%s'", tokensstr);
     }
-    fl_cstring_delete(tokensstr);
+    fl_cstring_free(tokensstr);
 	fl_vector_delete(tokens);
 }
 

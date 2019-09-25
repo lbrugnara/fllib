@@ -19,7 +19,7 @@ char *fl_cstring_new(size_t length)
     return str;
 }
 
-void fl_cstring_delete(const char *str)
+void fl_cstring_free(const char *str)
 {
     fl_free(str);
 }
@@ -350,7 +350,7 @@ char* fl_cstring_replace_realloc(char *source, const char *needle, const char *r
     if (!dst)
         return NULL;
 
-    fl_cstring_delete(source);
+    fl_cstring_free(source);
 
     return dst;
 }

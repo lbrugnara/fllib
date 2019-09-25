@@ -42,7 +42,7 @@ void test_file_rw_all_bytes()
     if (wdir != NULL)
     {
         fl_system_set_working_dir(wdir);
-        fl_cstring_delete(wdir);
+        fl_cstring_free(wdir);
     }
     fl_array_free(arr);
     fl_array_free(bytes);

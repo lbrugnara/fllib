@@ -169,7 +169,7 @@ bool fl_io_file_write_all_bytes(const char *filename, const FlArray content);
  * 
  * Notes:
  *  This function allocates memory therefore the returned pointer must be freed by the caller
- *  using the <fl_free> or the <fl_cstring_delete> function.
+ *  using the <fl_free> or the <fl_cstring_free> function.
  *
  */
 char* fl_io_file_read_all_text(const char *filename);

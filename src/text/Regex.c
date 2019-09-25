@@ -802,7 +802,7 @@ FlVector regex_to_postfix (char* regex, RegexFlags *flags)
 
 		if (didError)
 		{
-			fl_cstring_delete(token);
+			fl_cstring_free(token);
 			break;
 		}
 	}
@@ -1050,7 +1050,7 @@ FlRegex fl_regex_compile (char* pattern)
 								break;
 							fl_vector_add(tmptokens, tmptoken);
 						}
-						fl_cstring_delete(tmptoken);
+						fl_cstring_free(tmptoken);
 					}
 
 					size_t l = fl_vector_length(tmptokens);
@@ -1102,7 +1102,7 @@ FlRegex fl_regex_compile (char* pattern)
 					PUSH_STATE(s);
 
 					// Delete nexttok, ascii_codes already mapped, display vector and tmptokens vector
-					fl_cstring_delete(nexttok);
+					fl_cstring_free(nexttok);
 					fl_vector_delete(ascii_codes);
 					fl_vector_delete(display);
 					fl_vector_delete(tmptokens);
@@ -1113,7 +1113,7 @@ FlRegex fl_regex_compile (char* pattern)
 
 clean_token:
 		// Delete consumed token
-		fl_cstring_delete(token);
+		fl_cstring_free(token);
 		if (didError)
 			break;
 	}

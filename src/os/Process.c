@@ -151,7 +151,7 @@ bool win32_process_create(FlProcess process)
         &process->si,       // STARTUPINFO pointer 
         &process->pi);      // receives PROCESS_INFORMATION 
 
-    fl_cstring_delete(command_line);
+    fl_cstring_free(command_line);
 
     // If an error occurs, exit the application. 
     if (!result)
@@ -342,7 +342,7 @@ void fl_process_delete(FlProcess process)
         }
 
         if (process->winenvp)
-            fl_cstring_delete(process->winenvp);
+            fl_cstring_free(process->winenvp);
     }
     #elif defined(__linux__)
     {
@@ -663,14 +663,14 @@ char* fl_process_read_from_stdout(FlProcess process)
     if (!result)
     {
         // Something happened
-        fl_cstring_delete(msg);
+        fl_cstring_free(msg);
         return NULL;
     }
 
     if (read < available)
     {
         // Something happened
-        fl_cstring_delete(msg);
+        fl_cstring_free(msg);
         return NULL;
     }
 
@@ -693,7 +693,7 @@ char* fl_process_read_from_stdout(FlProcess process)
 
     if (read_bytes == -1)
     {
-        fl_cstring_delete(msg);
+        fl_cstring_free(msg);
         return NULL;
     }
 
@@ -723,14 +723,14 @@ char* fl_process_read_from_stderr(FlProcess process)
     if (!result)
     {
         // Something happened
-        fl_cstring_delete(msg);
+        fl_cstring_free(msg);
         return NULL;
     }
 
     if (read < available)
     {
         // Something happened
-        fl_cstring_delete(msg);
+        fl_cstring_free(msg);
         return NULL;
     }
 
@@ -753,7 +753,7 @@ char* fl_process_read_from_stderr(FlProcess process)
 
     if (read_bytes == -1)
     {
-        fl_cstring_delete(msg);
+        fl_cstring_free(msg);
         return NULL;
     }
 

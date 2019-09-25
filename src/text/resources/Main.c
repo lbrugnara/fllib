@@ -216,7 +216,7 @@ void parse_derived_normalization_property(FlVector data, const char *buffer, Nor
                     ud->nfkc_quick_check = propval;
                     break;
             }
-            fl_cstring_delete(codes[j]);
+            fl_cstring_free(codes[j]);
         }
         fl_array_free(codes);
     }
@@ -257,7 +257,7 @@ void parse_derived_normalization_properties(FlVector data)
 
     // NFKC_Quick_Check=Maybe
     parse_derived_normalization_property(data, (const char*)buffer, NORM_PROP_NFKC_QC_MAYBE);
-    fl_cstring_delete(buffer);
+    fl_cstring_free(buffer);
 }
 
 // This function parses the UnicodeData.txt file. It is expected to be called before
@@ -347,7 +347,7 @@ void parse_unicode_data(FlVector data)
             char *str;
             int strsize = (int)fl_cstring_replace_n(buf, bufsize, " ", 1, ", 0x", 4, &str);
             ud->decomposition_mapping = fl_cstring_dup_n(str, strsize);
-            fl_cstring_delete(str);
+            fl_cstring_free(str);
             fl_array_free(buf);
         }
 
@@ -385,31 +385,31 @@ void parse_unicode_data(FlVector data)
         fl_vector_add(data, &ud);
         base = endField15 + 1;
     } while (base < (const char*)buffer+size);
-    fl_cstring_delete(buffer);
+    fl_cstring_free(buffer);
 }
 
 void delete_data_handler(void *ptr)
 {
     UnicodeData *ud = (UnicodeData*)ptr;
-    if (ud->code) fl_cstring_delete(ud->code);
-    if (ud->name) fl_cstring_delete(ud->name);
-    if (ud->numerical_value_1) fl_cstring_delete(ud->numerical_value_1);
-    if (ud->numerical_value_2) fl_cstring_delete(ud->numerical_value_2);
-    if (ud->numerical_value_3) fl_cstring_delete(ud->numerical_value_3);
-    if (ud->decomposition_type) fl_cstring_delete(ud->decomposition_type);
-    if (ud->decomposition_mapping) fl_cstring_delete(ud->decomposition_mapping);
-    if (ud->general_category) fl_cstring_delete(ud->general_category);
-    if (ud->simple_uppercase_mapping) fl_cstring_delete(ud->simple_uppercase_mapping);
-    if (ud->simple_lowercase_mapping) fl_cstring_delete(ud->simple_lowercase_mapping);
-    if (ud->simple_titlecase_mapping) fl_cstring_delete(ud->simple_titlecase_mapping);
-    if (ud->canonical_combining_class) fl_cstring_delete(ud->canonical_combining_class);
-    if (ud->bidi_class) fl_cstring_delete(ud->bidi_class);
-    if (ud->bidi_mirrored) fl_cstring_delete(ud->bidi_mirrored);
-    if (ud->full_composition_exclusion) fl_cstring_delete(ud->full_composition_exclusion);
-    if (ud->nfd_quick_check) fl_cstring_delete(ud->nfd_quick_check);
-    if (ud->nfc_quick_check) fl_cstring_delete(ud->nfc_quick_check);
-    if (ud->nfkd_quick_check) fl_cstring_delete(ud->nfkd_quick_check);
-    if (ud->nfkc_quick_check) fl_cstring_delete(ud->nfkc_quick_check);
+    if (ud->code) fl_cstring_free(ud->code);
+    if (ud->name) fl_cstring_free(ud->name);
+    if (ud->numerical_value_1) fl_cstring_free(ud->numerical_value_1);
+    if (ud->numerical_value_2) fl_cstring_free(ud->numerical_value_2);
+    if (ud->numerical_value_3) fl_cstring_free(ud->numerical_value_3);
+    if (ud->decomposition_type) fl_cstring_free(ud->decomposition_type);
+    if (ud->decomposition_mapping) fl_cstring_free(ud->decomposition_mapping);
+    if (ud->general_category) fl_cstring_free(ud->general_category);
+    if (ud->simple_uppercase_mapping) fl_cstring_free(ud->simple_uppercase_mapping);
+    if (ud->simple_lowercase_mapping) fl_cstring_free(ud->simple_lowercase_mapping);
+    if (ud->simple_titlecase_mapping) fl_cstring_free(ud->simple_titlecase_mapping);
+    if (ud->canonical_combining_class) fl_cstring_free(ud->canonical_combining_class);
+    if (ud->bidi_class) fl_cstring_free(ud->bidi_class);
+    if (ud->bidi_mirrored) fl_cstring_free(ud->bidi_mirrored);
+    if (ud->full_composition_exclusion) fl_cstring_free(ud->full_composition_exclusion);
+    if (ud->nfd_quick_check) fl_cstring_free(ud->nfd_quick_check);
+    if (ud->nfc_quick_check) fl_cstring_free(ud->nfc_quick_check);
+    if (ud->nfkd_quick_check) fl_cstring_free(ud->nfkd_quick_check);
+    if (ud->nfkc_quick_check) fl_cstring_free(ud->nfkc_quick_check);
     fl_free(ud);
 }
 

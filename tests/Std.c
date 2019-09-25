@@ -57,7 +57,7 @@ void test_errors()
     fl_thread_join_all(threads, nthreads);
     
     for (int i=0; i < nthreads; i++)
-        fl_thread_delete(threads[i]);
+        fl_thread_free(threads[i]);
 
     fl_array_free(threads);
 }

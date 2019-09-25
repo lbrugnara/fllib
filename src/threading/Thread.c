@@ -17,7 +17,7 @@ FlThread fl_thread_create(FlThreadFunc routine, FlThreadArgs args)
     return thread;
 }
 
-void fl_thread_delete(FlThread thread)
+void fl_thread_free(FlThread thread)
 {
     #ifdef _WIN32
         if (!CloseHandle((HANDLE)(uintptr_t)thread))

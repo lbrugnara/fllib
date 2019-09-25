@@ -75,7 +75,7 @@ typedef void(*FlThreadFunc)(void*);
 typedef void* FlThreadArgs;
 
 FlThread fl_thread_create(FlThreadFunc routine, FlThreadArgs args);
-void fl_thread_delete(FlThread thread);
+void fl_thread_free(FlThread thread);
 FlThreadId fl_thread_current_id();
 void fl_thread_exit(void *retval);
 void fl_thread_join(FlThread thread);

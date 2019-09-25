@@ -5,7 +5,7 @@ typedef struct FlProcess *FlProcess;
 typedef struct FlPipe *FlPipe;
 
 FlPipe fl_process_pipe_new(void);
-void fl_process_pipe_delete(FlPipe pipe);
+void fl_process_pipe_free(FlPipe pipe);
 
 FlProcess fl_process_create(const char *cmd, char **argv, char **envp, FlPipe in, FlPipe out, FlPipe err);
 void fl_process_free(FlProcess process);

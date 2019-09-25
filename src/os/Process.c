@@ -46,7 +46,7 @@ FlPipe fl_process_pipe_new(void)
     return pipe;
 }
 
-void fl_process_pipe_delete(FlPipe pipe)
+void fl_process_pipe_free(FlPipe pipe)
 {
     fl_free(pipe);
 }
@@ -367,13 +367,13 @@ void fl_process_free(FlProcess process)
     #endif
 
     if (process->in)
-        fl_process_pipe_delete(process->in);
+        fl_process_pipe_free(process->in);
 
     if (process->out)
-        fl_process_pipe_delete(process->out);
+        fl_process_pipe_free(process->out);
 
     if (process->err)
-        fl_process_pipe_delete(process->err);
+        fl_process_pipe_free(process->err);
 
     fl_free(process);
 }

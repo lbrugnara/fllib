@@ -19,7 +19,7 @@ typedef struct FlTestSuite* FlTestSuite;
 
 FlTestSuite fl_test_suite_new(const char* suitename, const FlTest[], size_t ntests);
 
-void fl_test_suite_delete(FlTestSuite suite);
+void fl_test_suite_free(FlTestSuite suite);
 
 void fl_test_run_all(int argc, char **argv, FlTestSuite *suites);
 

@@ -66,7 +66,7 @@ FlTestSuite fl_test_suite_new(const char *name, const FlTest *tests, size_t ntes
 }
 
 /*
- * Function: fl_test_suite_delete
+ * Function: fl_test_suite_free
  *
  * Delete a suite freeing its memory
  *
@@ -75,7 +75,7 @@ FlTestSuite fl_test_suite_new(const char *name, const FlTest *tests, size_t ntes
  * {return: void}
  *
  */
-void fl_test_suite_delete(FlTestSuite suite)
+void fl_test_suite_free(FlTestSuite suite)
 {
     fl_free(suite);
 }
@@ -336,14 +336,14 @@ void fl_test_run_all(int argc, char **argv, FlTestSuite *suites)
     {
         if (!results[i].ran)
         {
-            fl_test_suite_delete(suites[i]);
+            fl_test_suite_free(suites[i]);
             continue;
         }
 
         ntests += suites[i]->ntests;
         nptests += results[i].passedTests;
         printf("| %-25s| %6zu/%-5zu | %-2s%3.2f%%%-1s | %7ld ms |\n", suites[i]->name, results[i].passedTests, suites[i]->ntests, "", (results[i].passedTests / (float)suites[i]->ntests)*100, "", results[i].elapsed);
-        fl_test_suite_delete(suites[i]);
+        fl_test_suite_free(suites[i]);
     }
     printf("+--------------------------+--------------+------------+------------+\n");
     printf("| %-25s| %6zu/%-5zu | %-2s%3.2f%%%-1s | %7llu ms |\n", "Total", nptests, ntests, "", (nptests/(float)ntests)*100, "", totalElapsedTime);

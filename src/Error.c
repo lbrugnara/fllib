@@ -70,7 +70,7 @@ FlThreadId* ttop(FlThreadId tid)
 
 void cleanup(void)
 {
-    fl_hashtable_delete(Errors);
+    fl_hashtable_free(Errors);
     fl_mutex_destroy(&ErrMutex);
 }
 

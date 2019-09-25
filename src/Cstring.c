@@ -416,7 +416,7 @@ size_t fl_cstring_replace_n(const char *src, size_t src_size, const char *needle
         }
         i += d;
     }
-    fl_hashtable_delete(table);
+    fl_hashtable_free(table);
 
     *dst = fl_cstring_new(newlength);
     // spi = source pointer index
@@ -508,7 +508,7 @@ char *fl_cstring_find(const char *str, const char *needle)
         result = strptr + k;
         break;
     }
-    fl_hashtable_delete(table);
+    fl_hashtable_free(table);
     return (char *)result;
 }
 

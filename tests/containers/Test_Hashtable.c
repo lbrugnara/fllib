@@ -46,7 +46,7 @@ void test_fl_hashtable_add()
         vp = fl_hashtable_add(ht, &k, &v);
         fl_expect("Call to hashtable_add('b', 66) by second time must return NULL", NULL == vp);
 
-        fl_hashtable_delete(ht);
+        fl_hashtable_free(ht);
     }
 
     // Using NULL as key or value
@@ -68,7 +68,7 @@ void test_fl_hashtable_add()
         double d2 = fl_hashtable_load_factor(ht2);
         fl_expect("Hashtable load factor after resize should be lesser", d2 < d);
 
-        fl_hashtable_delete(ht2);*/
+        fl_hashtable_free(ht2);*/
     }
 }
 
@@ -106,7 +106,7 @@ void test_fl_hashtable_add_fhash()
 
     fl_expect("Hashtable load factor after 'b' should be greater than before 'b'", d2 > d);
 
-    fl_hashtable_delete(ht);
+    fl_hashtable_free(ht);
 }
 
 void test_fl_hashtable_get()
@@ -152,7 +152,7 @@ void test_fl_hashtable_get()
                 fl_vexpect(*tmp == i, "Value with key %c must be equals to %d\n", c, i);   
         }
 
-        fl_hashtable_delete(ht);
+        fl_hashtable_free(ht);
     }
 }
 
@@ -226,7 +226,7 @@ void test_fl_hashtable_set()
     zp = (chr = 'z', fl_hashtable_get(ht, &chr));
     fl_expect("Expect letters {a, m, z} to have values {65, 77, 90}", *ap == 65 && *mp == 77 && *zp == 90);
     
-    fl_hashtable_delete(ht);
+    fl_hashtable_free(ht);
 }
 
 void test_fl_hashtable_clear()
@@ -250,7 +250,7 @@ void test_fl_hashtable_clear()
     fl_hashtable_clear(ht);
     fl_expect("Current length after clear the hashtable content must be 0", fl_hashtable_length(ht) == 0);
 
-    fl_hashtable_delete(ht);
+    fl_hashtable_free(ht);
 }
 
 void test_fl_hashtable_keys_and_values()
@@ -279,7 +279,7 @@ void test_fl_hashtable_keys_and_values()
 
     fl_array_free(keys);
     fl_array_free(values);
-    fl_hashtable_delete(ht);
+    fl_hashtable_free(ht);
 }
 
 void test_fl_hashtable_remove()
@@ -311,7 +311,7 @@ void test_fl_hashtable_remove()
     fl_expect("Current length after removing all the elements by key must be 0", fl_hashtable_length(ht) == 0);
 
     fl_array_free(keys);
-    fl_hashtable_delete(ht);
+    fl_hashtable_free(ht);
 }
 
 unsigned long hash_func2(const FlByte *key)
@@ -352,5 +352,5 @@ void test_fl_hashtable_resize()
     fl_timer_end(timer);
     printf("Elapsed milliseconds: %ld\n", fl_timer_elapsed_ms(timer));
     fl_timer_delete(timer);
-    fl_hashtable_delete(ht);
+    fl_hashtable_free(ht);
 }

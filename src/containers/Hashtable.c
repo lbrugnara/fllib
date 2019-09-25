@@ -513,7 +513,7 @@ void fl_hashtable_resize(FlHashtable ht, size_t nbuckets)
     }
 }
 
-void fl_hashtable_delete(FlHashtable ht)
+void fl_hashtable_free(FlHashtable ht)
 {
     flm_assert(ht != NULL, "Hashtable must not be null");
     if (ht->buckets)

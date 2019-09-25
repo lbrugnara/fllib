@@ -99,7 +99,7 @@ FlHashtable fl_hashtable_new(
 FlHashtable fl_hashtable_new_args(struct FlHashtableArgs args);
 
 /*
- * Function: fl_hashtable_delete
+ * Function: fl_hashtable_free
  *
  * Releases the memory used by the hashtable and also frees the
  * stored key and values. Use it when key and value are not mallocing
@@ -110,7 +110,7 @@ FlHashtable fl_hashtable_new_args(struct FlHashtableArgs args);
  * {return: void}
  *
  */
-void fl_hashtable_delete(FlHashtable ht);
+void fl_hashtable_free(FlHashtable ht);
 
 /*
  * Function: fl_hashtable_load_factor

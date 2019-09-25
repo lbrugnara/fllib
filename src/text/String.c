@@ -18,7 +18,7 @@ FlString fl_string_new_from_bytes(const FlByte *bytes, size_t length, FlEncoding
     return NULL;
 }
 
-void fl_string_delete(FlString str)
+void fl_string_free(FlString str)
 {
     // TODO
 }

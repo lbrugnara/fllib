@@ -41,7 +41,7 @@ FlString fl_string_new(const FlString str);
 FlString fl_string_new_from_bytes(const FlByte *bytes, size_t length, FlEncoding encoding);
 
 /*
- * Function: fl_string_delete
+ * Function: fl_string_free
  *
  * Releases the memory used by the object str
  *
@@ -50,7 +50,7 @@ FlString fl_string_new_from_bytes(const FlByte *bytes, size_t length, FlEncoding
  * {return: void}
  *
  */
-void fl_string_delete(FlString str);
+void fl_string_free(FlString str);
 
 /*
  * Function: fl_string_length

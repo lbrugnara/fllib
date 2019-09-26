@@ -60,3 +60,18 @@ void test_array_combine(void)
         fl_array_free(zero_to_nineteen);
     }
 }
+
+void test_array_append(void)
+{
+    int *numbers = fl_array_new(sizeof(int), 0);
+
+    for (int i=0; i < 10; i++)
+        numbers = fl_array_append(numbers, &i);
+
+    fl_expect("Numbers array must contain 10 elements", fl_array_length(numbers) == 10);
+
+    for (int i=0; i < 10; i++)
+            fl_vexpect(i == numbers[i], "Element at position %d must be equals to %d", i, i);
+
+    fl_array_free(numbers);
+}

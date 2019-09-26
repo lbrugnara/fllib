@@ -386,7 +386,7 @@ NfaState* create_nfa_state(int id, char* value);
 
 NfaState* create_char_class_nfa_state(int id, char* value, bool negated);
 
-void delete_nfa(FlByte *statebytes);
+void delete_nfa(void *statebytes);
 
 void nfa_print_operands(const char *operator, NfaState **states, short s, short m, short e);
 
@@ -1141,7 +1141,7 @@ clean_token:
  * {return: void}
  *
  */
-void delete_nfa(FlByte *statebytes)
+void delete_nfa(void *statebytes)
 {
 	if (statebytes == NULL)
 		return;

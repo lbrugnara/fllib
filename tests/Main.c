@@ -31,7 +31,8 @@ int main(int argc, char **argv)
             { "Global error handling thread safety", &test_errors }
         ),
         fl_test_suite("Array", 
-            { "Array combine", &test_array_combine }
+            { "Array combine", &test_array_combine },
+            { "Array append", &test_array_append }
         ),
         fl_test_suite("Slice", 
             { "Slice allocation", &test_slice },

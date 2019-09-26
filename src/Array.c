@@ -61,7 +61,7 @@ void fl_array_free(const FlArray array)
 	fl_free(header);
 }
 
-void fl_array_free_each(const FlArray array, void (*item_free_func)(FlByte*))
+void fl_array_free_each(const FlArray array, void (*item_free_func)(void*))
 {
 	FlArrayHeader *header = GetHeader(array);
 	size_t bytes = header->length * header->element_size;
@@ -98,6 +98,22 @@ FlArray fl_array_combine(FlArray dest_array, FlArray src_array)
 		memcpy((FlByte*)dest_array + (orig_length * dest_header->element_size), (FlByte*)src_array + (i * src_header->element_size), dest_header->element_size);
 
 	return dest_array;
+}
+
+FlArray fl_array_append(FlArray array, const void *element)
+{
+	FlArrayHeader *header = GetHeader(array);
+	FlArray tmp = fl_array_resize(array, header->length + 1);
+
+	if (!tmp)
+		return NULL;
+
+	array = tmp;
+	header = GetHeader(array);
+
+	memcpy((FlByte*)array + ((header->length - 1) * header->element_size), element, header->element_size);
+
+	return array;
 }
 
 size_t fl_array_length(const FlArray array)

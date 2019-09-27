@@ -181,6 +181,14 @@ struct FlDeferScope {
             return
 
 /*
+ * Macro: defer_leave
+ *  Runs the provided expression as the last expression before running all the deferred
+ *  expressions. Finally the flow continues where the defer_scope block ends.
+ */
+#define defer_leave(expr)                                                                       \
+    (FL_DEFER_ASSERT_RUNNING, (expr), FL_DEFER_LEAVE)
+
+/*
  * Macro: defer_statements
  *  The statements within the <defer_statements> block will be enqueued to be called
  *  before leaving the deferred scope.

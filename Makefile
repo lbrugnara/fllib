@@ -14,6 +14,7 @@ override CFLAGS += -std=gnu99 \
 					-Wno-unused-function \
 					-Wno-missing-braces \
 					-fstrict-aliasing \
+					-Wvla \
 					-finput-charset=UTF-8 \
 					-fexec-charset=UTF-8 \
 					-D_FORTIFY_SOURCE=2

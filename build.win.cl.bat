@@ -1,6 +1,6 @@
 set ARCH=%VSCMD_ARG_HOST_ARCH%
 
-set CFLAGS=/Zi /DEBUG:FULL /W1 /DFL_UNICODE_DB /DFL_DEBUG
+set CFLAGS=/Zi /DEBUG:FULL /DFL_UNICODE_DB /DFL_DEBUG /WX
 
 set LIBSPATH=
 set LIBS=build\debug\libfl.lib 
@@ -133,6 +133,7 @@ link.exe ^
     /DEFAULTLIB:libcmt ^
     /NOLOGO ^
     /DEBUG:FULL ^
+    /WX ^
     %LIBSPATH% ^
     %LIBS% ^
     tests\obj\debug\Main.o ^

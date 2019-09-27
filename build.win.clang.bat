@@ -12,6 +12,7 @@ set CFLAGS= -std=c99 ^
             -Wno-unused-function ^
             -Wno-missing-braces ^
             -fstrict-aliasing ^
+            -Wvla ^
             -finput-charset=UTF-8 ^
             -fexec-charset=UTF-8 ^
             -ggdb ^

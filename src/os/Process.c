@@ -95,7 +95,7 @@ bool win32_process_create(FlProcess process)
 
     if (process->err)
     {
-        process->si.hStdError = process->err;
+        process->si.hStdError = process->err->write;
     }
 
     process->si.dwFlags |= STARTF_USESTDHANDLES;

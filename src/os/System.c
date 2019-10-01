@@ -24,7 +24,7 @@ bool fl_system_set_working_dir(char *path)
     return false;
 }
 
-char* fl_system_get_working_dir()
+char* fl_system_get_working_dir(void)
 {
     size_t max_path_length = 255;
     char *cwd = fl_cstring_new(max_path_length);
@@ -33,9 +33,18 @@ char* fl_system_get_working_dir()
     return cwd;
 }
 
-bool fl_system_is_little_endian ()
+bool fl_system_is_little_endian (void)
 {
     int i = 1;
     char *p = (char *)&i;
     return p[0] == 1;
+}
+
+void fl_system_sleep(unsigned long milliseconds)
+{
+    #ifdef _WIN32
+    Sleep(milliseconds);
+    #elif defined(__linux__)
+    sleep(milliseconds / 1000);
+    #endif
 }

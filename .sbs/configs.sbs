@@ -1,0 +1,119 @@
+
+config clang-config {
+    compile: {
+        extension: ".o",
+        flags: [
+            "-std=gnu99",
+            "-Wall",
+            "-Werror",
+            "-Wextra",
+            "-pedantic",
+            "-Wmissing-field-initializers",
+            "-Wno-unused-value",
+            "-Wno-unused-parameter",
+            "-Wno-unused-variable",
+            "-Wno-unused-function",
+            "-Wno-missing-braces",
+            "-fstrict-aliasing",
+            "-Wvla",
+            "-finput-charset=UTF-8",
+            "-fexec-charset=UTF-8",
+            "-D_FORTIFY_SOURCE=2",
+            "-DFL_UNICODE_DB",
+            "-c ${source}",
+            "-o ${output}"
+        ]
+    },    
+
+    for linux-cmd {
+        compile: {
+            flags: [
+                "-fPIC"
+            ]
+        },
+        archive: {
+            extension: ".a",
+            flags: [
+                "rcs"
+            ]
+        },
+        shared: {
+            extension: ".so",
+            flags: [
+                "-shared",
+                "-o ${output}"
+            ]
+        },
+        executable: {
+            extension: "",
+            flags: [
+                "-o ${output}"
+            ]
+        }
+    },
+
+    for win-cmd {
+        compile: {
+            flags: [
+            ]
+        },
+        archive: {
+            extension: ".lib",
+            flags: [
+                "/NOLOGO",
+                "/OUT:${output}"
+            ]
+        },
+        shared: {
+            extension: ".dll",
+            flags: [
+                "/NOLOGO",
+                "/DLL",
+                "/OUT:${output}"
+            ]
+        },
+        executable: {
+            extension: ".exe",
+            flags: [
+                "/OUT:${output}",
+                "/DEFAULTLIB:libcmt.lib",
+                "/NOLOGO",
+                "/SUBSYSTEM:CONSOLE"
+            ]
+        }
+    }
+}
+
+config clang-sanitize extends clang-config {
+    compile: {
+        flags: [
+            "-fsanitize=address,undefined",
+            "-O3",
+            "-ggdb"
+        ]
+    },
+    executable: {
+        flags: [
+            "/DEBUG:FULL"
+        ]
+    }
+}
+
+config clang-debug extends clang-config {
+    compile: {
+        flags: [
+            "-ggdb",
+            "-DFL_DEBUG"
+        ]
+    }
+}
+
+
+config clang-release extends clang-config {
+    compile: {
+        flags: [
+            "-O3",
+            "-ggdb"
+        ]
+    }
+}

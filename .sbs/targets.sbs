@@ -1,0 +1,103 @@
+
+compile fl-objects {
+    includes: [ ],
+    output_dir: "obj/",
+    sources: [ 
+        "src/threading/Thread.c",
+        "src/Std.c",
+        "src/Slice.c",
+        "src/Error.c",
+        "src/Mem.c",
+        "src/text/resources/UnicodeData.c",
+        "src/text/Unicode.c",
+        "src/text/String.c",
+        "src/Cstring.c",
+        "src/Array.c",
+        "src/IO.c",
+        "src/containers/Container.c",
+        "src/containers/Iterator.c",
+        "src/containers/Vector.c",
+        "src/containers/List.c",
+        "src/containers/Hashtable.c",
+        "src/text/Regex.c",
+        "src/os/System.c",
+        "src/os/Process.c",
+        "src/os/Timer.c",
+        "src/os/Signal.c",
+    ],
+
+    for win-cmd {
+        sources: [
+            "src/os/WinEx.c"
+        ]
+    }
+}
+
+archive fllib-static {
+    output_name: "libfl",
+    output_dir: "build/",
+    actions: {
+        before: [],
+        after: []
+    },
+    objects: [
+        fl-objects
+    ]
+}
+
+compile fl-tests-objects {
+    includes: [ 
+        "./include"
+    ],
+    output_dir: "tests/obj",
+    sources: [
+        "tests/Main.c",
+        "tests/Test.c",
+        "tests/Std.c",
+        "tests/Test_Array.c",
+        "tests/Test_Defer.c",
+        "tests/Test_Slice.c",
+        "tests/IO.c",
+        "tests/Test_Cstring.c",
+        "tests/text/Test_Unicode.c",
+        "tests/text/Test_String.c",
+        "tests/text/Test_Regex.c",
+        "tests/containers/Test_Hashtable.c",
+        "tests/containers/Test_Vector.c",
+        "tests/containers/Test_List.c"
+    ]
+}
+
+executable fl-tests {
+    output_name: "tests",
+    output_dir: "tests/build",
+    actions: {
+        before: [],
+        after: []
+    },
+    objects: [
+        fl-tests-objects,
+        fllib-static
+    ]
+}
+
+executable fl-tests-sanitize {
+    output_name: "tests",
+    output_dir: "tests/build",
+    actions: {
+        before: [ clean, clean-tests ]
+        after: [ `.\tests\build\clang-sanitize\tests.exe` ]
+    }
+    libraries: [
+        {
+            path: "D:\dev\LLVM\x64\lib\clang\8.0.0\lib\windows"
+        }
+    ]
+    objects: [
+        fl-tests-objects,
+        fllib-static,
+        "clang_rt.ubsan_standalone-x86_64.lib",
+        "clang_rt.asan-x86_64.lib",
+        "clang_rt.builtins-x86_64.lib"
+    ]
+}

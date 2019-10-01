@@ -178,7 +178,8 @@ FlArray fl_array_combine(FlArray dest_array, FlArray src_array);
 
 /*
  * Function: fl_array_append
- *  Appends an element to the end of the *array* making room for it. Similarly
+ *  Appends an element to the end of the *array* making room for it. This
+ *  function returns a pointer to the new location of the array. Similarly
  *  to the <fl_realloc> function, if the resize operation fails, this
  *  function frees the memory used by *array*, that way
  *  the following snippet of code can be safely used (as far as *array*

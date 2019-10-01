@@ -38,6 +38,22 @@ void test_defer_expressions(void)
     
     for (int i=8; i >= 0; i--)
         fl_vexpect(i == numbers[i], "Numbers array is ordered (%d == %d)", i, numbers[i]);
+
+    volatile int numbers2[9] = {0};
+    defer_stack (9) {
+        defer_expression(numbers2[0] = 0);
+        defer_expression(numbers2[1] = 1);
+        defer_expression(numbers2[2] = 2);
+        defer_expression(numbers2[3] = 3);
+        defer_expression(numbers2[4] = 4);
+        defer_expression(numbers2[5] = 5);    
+        defer_expression(numbers2[6] = 6);
+        defer_expression(numbers2[7] = 7);
+        defer_expression(numbers2[8] = 8);
+    }
+
+    for (int i=8; i >= 0; i--)
+        fl_vexpect(i == numbers2[i], "Numbers2 array is ordered (%d == %d)", i, numbers2[i]);
 }
 
 void test_defer_expression_safety(void)
@@ -63,7 +79,7 @@ void test_defer_statements(void)
     }
 
     for (int i=0; i < 9; i++)
-        fl_vexpect(i == numbers[i], "Numbers array is ordered (%d == %d)", i, numbers[i]);
+        fl_vexpect(i == numbers[i], "1) Numbers array is ordered (%d == %d)", i, numbers[i]);
 
     for (int i=0; i < 9; i++)
         numbers[i] = 0;
@@ -88,7 +104,7 @@ void test_defer_statements(void)
     }
     
     for (int i=0; i < 9; i++)
-        fl_vexpect(i == numbers[i], "Numbers array is ordered (%d == %d)", i, numbers[i]);
+        fl_vexpect(i == numbers[i], "2) Numbers array is ordered (%d == %d)", i, numbers[i]);
 }
 
 void test_defer_stmts_and_exprs(void)

@@ -22,6 +22,20 @@ action clean-tests {
     }
 }
 
+preset win-release {
+    env: win-cmd,
+    toolchain: clang,
+    config: clang-release,
+    target: fl-tests
+}
+
+preset win-debug {
+    env: win-cmd,
+    toolchain: clang,
+    config: clang-debug,
+    target: fl-tests
+}
+
 include [
     "toolchains.sbs",
     "configs.sbs",

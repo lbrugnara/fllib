@@ -25,7 +25,7 @@ config clang-config {
         ]
     },    
 
-    for linux-cmd {
+    for linux-bash {
         compile: {
             flags: [
                 "-fPIC"
@@ -89,12 +89,10 @@ config clang-sanitize extends clang-config {
         flags: [
             "-fsanitize=address,undefined",
             "-O3",
-            "-ggdb"
         ]
     },
     executable: {
         flags: [
-            "/DEBUG:FULL"
         ]
     }
 }
@@ -106,14 +104,20 @@ config clang-debug extends clang-config {
             "-DFL_DEBUG"
         ]
     }
+    for win-cmd {
+        executable: {
+            flags: [ 
+                "/DEBUG:FULL"
+            ]
+        }
+    }
 }
 
 
 config clang-release extends clang-config {
     compile: {
         flags: [
-            "-O3",
-            "-ggdb"
+            "-O3"
         ]
     }
 }

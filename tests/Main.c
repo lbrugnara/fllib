@@ -85,7 +85,8 @@ int main(int argc, char **argv)
             { "fl_hashtable_clear", &test_fl_hashtable_clear },
             { "fl_hashtable_keys_and_values", &test_fl_hashtable_keys_and_values },
             { "fl_hashtable_remove", &test_fl_hashtable_remove },
-            { "fl_hashtable_resize", &test_fl_hashtable_resize }
+            { "fl_hashtable_resize", &test_fl_hashtable_resize },
+            { "fl_hashtable_values", &test_fl_hashtable_values },
         ),
         fl_test_suite("List",
             { "fl_list_head", &test_fl_list_head },

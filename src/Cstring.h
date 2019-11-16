@@ -144,6 +144,8 @@ char** fl_cstring_append(char **dst, const char *str);
  */
 char** fl_cstring_append_char(char **dst, char c);
 
+char** fl_cstring_vappend(char **dst, const char *format, ...);
+
 /**
  * {vector} Source vector of {char*}s
  * {glue} String used to link all the elements in {vector}

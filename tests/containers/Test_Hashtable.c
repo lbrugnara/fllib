@@ -354,3 +354,44 @@ void test_fl_hashtable_resize()
     fl_timer_free(timer);
     fl_hashtable_free(ht);
 }
+
+void allocate_struct(FlByte **dest, const FlByte *src)
+{
+    size_t size = sizeof( struct FlHashtableArgs);
+    *dest = fl_malloc(size);
+    memcpy(*dest, src, size);
+}
+
+void test_fl_hashtable_values()
+{
+    struct FlHashtableArgs args = {
+        .hash_function = fl_hashtable_hash_char,
+        .key_comparer = fl_container_equals_char,
+        .key_allocator = fl_container_allocator_char,
+        .key_cleaner = fl_container_cleaner_pointer,
+        .value_allocator = allocate_struct,
+        .value_cleaner = fl_container_cleaner_pointer,
+        .buckets_count = 10
+    };
+    FlHashtable ht = fl_hashtable_new_args(args);
+
+    // We use a pointer to char :grinning:
+    fl_hashtable_add(ht, "a", &args);
+
+    struct FlHashtableArgs **values = fl_hashtable_values(ht);
+
+    fl_expect("values variable must be a valid array", values != NULL);
+    fl_expect("values variable must contain 1 element", fl_array_length(values) == 1);
+    fl_expect("The only element in the values variable must be a pointer to a struct FlHashtableArgs equals to the struct FlHashtableArgs args variable", 
+        memcmp(&args, values[0], sizeof(struct FlHashtableArgs)) == 0);
+
+    values[0]->buckets_count = 20;
+    fl_expect("A modification to the element in the array must not impact on the args variable", memcmp(&args, values[0], sizeof(struct FlHashtableArgs)) != 0);
+
+    struct FlHashtableArgs *valueptr = fl_hashtable_get(ht, "a");
+    fl_expect("The modification to the element in the array impacts on the element in the hashtable (both point to the same element)", 
+        memcmp(valueptr, values[0], sizeof(struct FlHashtableArgs)) == 0);
+
+    fl_array_free(values);
+    fl_hashtable_free(ht);
+}

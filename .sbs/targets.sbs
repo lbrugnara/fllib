@@ -95,9 +95,9 @@ executable fl-tests-sanitize {
     ]
     objects: [
         fl-tests-objects,
-        fllib-static,
         "clang_rt.ubsan_standalone-x86_64.lib",
         "clang_rt.asan-x86_64.lib",
-        "clang_rt.builtins-x86_64.lib"
+        "clang_rt.builtins-x86_64.lib",
+        fllib-static,
     ]
 }

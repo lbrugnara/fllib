@@ -403,16 +403,13 @@ enum HashtableContent {
 
 FlArray ht_get_content(FlHashtable ht, enum HashtableContent content_type)
 {
-    if (ht->length == 0)
-        return NULL;
-
-    FlByte *content;
+    // This function returns always pointers to the requested elements (keys or values)
     size_t size = sizeof(void*);    
+    FlByte *content = fl_array_new(size, ht->length);
 
-    if (content_type == HT_KEYS)
-        content = fl_array_new(size, ht->length);
-    else
-        content = fl_array_new(size, ht->length);
+    // We always return a valid array even though it could be length == 0
+    if (ht->length == 0)
+        return content;
 
     size_t k = 0;
     if (ht->buckets)
@@ -431,10 +428,11 @@ FlArray ht_get_content(FlHashtable ht, enum HashtableContent content_type)
                     if (b->free)
                         continue;
 
-                    if (content_type == HT_KEYS)
-                        memcpy(content+(k * size), &b->key, size);
-                    else
-                        memcpy(content+(k * size), &b->value, size);
+                    FlByte *slot = content + k * size;
+                    void **target = content_type == HT_KEYS ? &b->key : &b->value;
+
+                    memcpy(slot, target, size);
+
                     k++;
                 }
             }

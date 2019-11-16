@@ -9,5 +9,6 @@ void test_fl_hashtable_clear();
 void test_fl_hashtable_keys_and_values();
 void test_fl_hashtable_remove();
 void test_fl_hashtable_resize();
+void test_fl_hashtable_values();
 
 #endif /* FL_HASHTABLE_TEST_H */

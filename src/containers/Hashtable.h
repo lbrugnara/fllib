@@ -220,27 +220,35 @@ size_t fl_hashtable_length(FlHashtable ht);
 
 /*
  * Function: fl_hashtable_keys
+ *  Returns an FlArray with pointers to the keys present in the hashtable.
  *
- * Returns an FlArray (dynamic array) containing all the keys
- * present in the hashtable.
+ * Parameters:
+ *  FlHashtable ht - Hashtable to retrieve its keys
  *
- * FlHashtable ht - Hashtable to retrieve its keys
+ * Return:
+ *  void* - Pointer to a dynamic array containing all the keys in *ht*
  *
- * {return: void*} Pointer to a dynamic array containing all the keys in {ht}
- *
+ * Notes:
+ *  The returned array contains pointers to the actual hashtable's keys, 
+ *  which means that modifications to the keys in the array impact in 
+ *  the hashtable.
  */
 FlArray fl_hashtable_keys(FlHashtable ht);
 
 /*
  * Function: fl_hashtable_values
+ *  Returns an FlArray with pointers to the values present in the hashtable.
  *
- * Returns an FlArray (dynamic array) containing all the values
- * present in the hashtable.
+ * Parameters:
+ *  FlHashtable ht - Hashtable to retrieve its values
  *
- * FlHashtable ht - Hashtable to retrieve its values
+ * Return:
+ *  void* - Pointer to a dynamic array containing all the values in *ht*
  *
- * {return: void*} Pointer to a dynamic array containing all the values in {ht}
- *
+ * Notes:
+ *  The returned array contains pointers to the actual hashtable's values, 
+ *  which means that modifications to the values in the array impact in 
+ *  the hashtable.
  */
 FlArray fl_hashtable_values(FlHashtable ht);
 

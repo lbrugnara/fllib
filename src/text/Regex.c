@@ -1575,6 +1575,12 @@ bool regex_match (FlRegex regex, char* text)
 	 		}
 	 		memset(next_states, -1, sizeof(CurrentState)*current_states_length);
 	 	}
+		else if (current_states[s0->id].id == -1)
+		{
+			// We already move out of the State 0, but we couldn't move to a next state
+			// from the last ones reached...
+			break;
+		}
 
 		// When full match is not necessary, short-circuit the execution if match is successful
 	 	if (result.anyFinal && !HAS_FLAG_END(regex->flags))

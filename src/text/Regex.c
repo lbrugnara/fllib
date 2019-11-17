@@ -1545,6 +1545,10 @@ bool regex_match (FlRegex regex, char* text)
 		stepresult = (NfaStepResult){ false, false };
 		// Clean result.anyMatch for the new iteration
 	 	result.anyMatch = false;
+		// Clean result.anyFinal for the new iteration if the END flag is set
+		// because it means there is still input and the reached final state is not valid
+		if (HAS_FLAG_END(regex->flags))
+			result.anyFinal = false;
 
 		// next_states will contain all the reached states after a nfa_step
 	 	for (size_t i=0; i < current_states_length; i++)

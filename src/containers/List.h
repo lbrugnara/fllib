@@ -168,6 +168,7 @@ struct FlListNode* fl_list_insert_after(FlList list, struct FlListNode *target, 
  */
 struct FlListNode* fl_list_insert_before(FlList list, struct FlListNode *target, const void *value);
 
+void fl_list_remove(FlList list, struct FlListNode *node);
 
 /*
  * Function: fl_list_free
@@ -182,5 +183,7 @@ struct FlListNode* fl_list_insert_before(FlList list, struct FlListNode *target,
  *  void - This function does not return a value
  */
 void fl_list_free(FlList list);
+
+size_t fl_list_length(FlList list);
 
 #endif /* FL_LIST_H */

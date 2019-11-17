@@ -59,7 +59,7 @@ void fl_array_free(const FlArray array)
 	fl_free(header);
 }
 
-void fl_array_free_each(const FlArray array, void (*item_free_func)(void*))
+void fl_array_free_each(const FlArray array, FlArrayFreeElementFunc item_free_func)
 {
 	FlArrayHeader *header = GetHeader(array);
 	size_t bytes = header->length * header->element_size;
@@ -68,6 +68,18 @@ void fl_array_free_each(const FlArray array, void (*item_free_func)(void*))
     {
         if (data+i)
             item_free_func(data+i);
+    }
+    fl_free(header);
+}
+
+void fl_array_free_each_pointer(const FlArray array, FlArrayFreeElementFunc item_free_func)
+{
+	FlArrayHeader *header = GetHeader(array);
+	void **data = array;
+    for (size_t i=0; i < header->length; i++)
+    {
+        if (data[i])
+            item_free_func(data[i]);
     }
     fl_free(header);
 }

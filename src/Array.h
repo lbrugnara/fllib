@@ -28,6 +28,8 @@ typedef void *FlArray;
 
 #define arrayof(type) (type*)
 
+typedef void(*FlArrayFreeElementFunc)(void*);
+
 /*
  * Macro: flm_array_length
  * ===== C =====
@@ -95,13 +97,15 @@ void fl_array_free(const FlArray array);
  *
  * Parameters:
  *  const FlArray array - A pointer to the memory to be realeased
- *  void (*)(FlByte*) item_free_func - Handler function to release the memory for each element of array
+ *  FlArrayFreeElementFunc item_free_func - Handler function to release the memory for each element of array
  *
  * Return:
  *  void - This function does not return a value.
  *
  */
-void fl_array_free_each(const FlArray array, void (*item_free_func)(void*));
+void fl_array_free_each(const FlArray array, FlArrayFreeElementFunc item_free_func);
+
+void fl_array_free_each_pointer(const FlArray array, FlArrayFreeElementFunc item_free_func);
 
 /*
  * Function: fl_array_resize

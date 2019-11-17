@@ -11,6 +11,10 @@
     #define FL_IO_DIR_SEPARATOR "/"
 #endif
 
+struct FlFile {
+    char *filename;
+};
+
 /*
  * Function: fl_io_file_open
  *  Wrapper for the fopen function.
@@ -50,6 +54,8 @@ bool fl_io_file_close(FILE *fd);
  */
 bool fl_io_file_exists(const char *filename);
 
+bool fl_io_is_file(const char *path);
+bool fl_io_is_dir(const char *path);
 
 /*
  * Function: fl_io_file_size
@@ -190,5 +196,8 @@ char* fl_io_file_read_all_text(const char *filename);
 bool fl_io_file_write_all_text(const char *filename, const char *content);
 
 bool fl_io_file_get_modified_timestamp(const char *filename, unsigned long long *timestamp);
+
+char** fl_io_dir_list(const char *directory);
+char** fl_io_glob(const char *pattern, const char *path_separator);
 
 #endif /* FL_IO_H */

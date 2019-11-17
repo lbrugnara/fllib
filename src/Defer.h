@@ -1,6 +1,7 @@
 #ifndef FL_DEFER_H
 #define FL_DEFER_H
 
+#include <setjmp.h>
 #include <limits.h>
 
 /*

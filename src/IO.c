@@ -7,7 +7,14 @@
 #include "Error.h"
 #include "Cstring.h"
 #include "Array.h"
+#include "Defer.h"
+#include "containers/List.h"
+#include "containers/Vector.h"
+#include "text/Regex.h"
 #include "os/System.h"
+
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #ifdef _WIN32
     #include <windows.h>
@@ -16,9 +23,8 @@
     #define access _access
     #define mkdir(path, mode) _mkdir((path))
 #elif defined(__linux__) || defined(__CYGWIN__)
-    #include <unistd.h>
-    #include <sys/stat.h>
-    #include <sys/types.h>
+    #include <unistd.h>    
+    #include <glob.h>
 #endif
 
 FILE * fl_io_file_open(const char *filename, const char *mode)
@@ -40,6 +46,36 @@ FILE * fl_io_file_open(const char *filename, const char *mode)
 bool fl_io_file_exists(const char *filename)
 {
     return access(filename, 0) != -1;
+}
+
+bool fl_io_is_file(const char *path)
+{
+    struct stat info;
+
+    if (stat(path, &info) != 0)
+        return false;
+
+    return (info.st_mode & S_IFREG);
+}
+
+bool fl_io_is_dir(const char *path)
+{
+    #ifdef _WIN32
+    {
+        DWORD file_attrs = GetFileAttributes(path);
+
+        return file_attrs != INVALID_FILE_ATTRIBUTES && (file_attrs & FILE_ATTRIBUTE_DIRECTORY);
+    }
+    #else
+    {
+        struct stat info;
+
+        if (stat(path, &info) != 0)
+            return false;
+
+        return (info.st_mode & S_IFDIR);
+    }
+    #endif
 }
 
 bool fl_io_dir_create(const char *pathname)
@@ -290,4 +326,138 @@ bool fl_io_file_get_modified_timestamp(const char *filename, unsigned long long 
         return true;
     }
     #endif
+}
+
+char** fl_io_dir_list(const char *directory)
+{
+    if (!fl_io_file_exists(directory))
+        return NULL;
+
+    char **files = fl_array_new(sizeof(char*), 0);
+
+    #ifdef _WIN32
+    {
+        char *directory_pattern = fl_cstring_dup(directory);
+
+        if (!flm_cstring_ends_with_char(directory_pattern, '\\') && !flm_cstring_ends_with_char(directory_pattern, '/'))
+            fl_cstring_append(&directory_pattern, "\\");
+
+        fl_cstring_append(&directory_pattern, "*");
+
+        WIN32_FIND_DATA data;
+        memset(&data, 0, sizeof(WIN32_FIND_DATA));
+        HANDLE find_handle = FindFirstFile(directory_pattern, &data);
+
+        fl_cstring_free(directory_pattern);
+
+        if (find_handle == INVALID_HANDLE_VALUE)
+            return files;
+
+        do {
+            if (flm_cstring_equals(data.cFileName, ".") || flm_cstring_equals(data.cFileName, ".."))
+                continue;
+
+            char *file = fl_cstring_dup(data.cFileName);
+            files = fl_array_append(files, &file);
+
+        } while (FindNextFile(find_handle, &data));
+
+        FindClose(find_handle);
+    }
+    #else
+    {
+    }
+    #endif
+
+    return files;
+}
+
+char** fl_io_glob(const char *pattern, const char *path_separator)
+{
+    char **files = fl_array_new(sizeof(char*), 0);
+
+    FlList matching_files = fl_list_new_args((struct FlListArgs){ .value_cleaner = fl_container_cleaner_pointer });
+
+    FlVector parts = fl_cstring_split_by(pattern, path_separator);
+
+    // Our starting point is the current directory
+    defer_scope {
+        char *base_dir = fl_cstring_vdup("%s%s", (char*)fl_vector_get(parts, 0), path_separator);
+        defer_expression(fl_cstring_free(base_dir));
+
+        char **dir_files = fl_io_dir_list(base_dir);
+        defer_expression(fl_array_free_each_pointer(dir_files, (FlArrayFreeElementFunc)fl_cstring_free));
+
+        for (size_t i=0; i < fl_array_length(dir_files); i++)
+            fl_list_append(matching_files, fl_cstring_vdup("%s%s", base_dir, dir_files[i]));        
+    }
+
+    // Now we need to start the match proccess.
+    char *current_path = fl_cstring_new(0);
+    for (size_t i=0; i < fl_vector_length(parts); i++)
+    {
+        if (i == 0)
+            fl_cstring_append(&current_path, fl_vector_get(parts, i));
+        else
+            fl_cstring_vappend(&current_path, "%s%s", path_separator, fl_vector_get(parts, i));
+
+        defer_scope {
+            FlRegex regex = fl_regex_compile(current_path);
+
+            if (regex == NULL)
+                break;
+
+            defer_expression(fl_regex_free(regex));
+
+            struct FlListNode *matching_file = fl_list_head(matching_files);
+
+            for (size_t i=0; matching_file; i++)
+            {
+                char *filepath = (char*)matching_file->value;
+                bool is_match = fl_regex_match(regex, filepath);
+                bool is_dir = fl_io_is_dir(filepath);
+                
+                if (is_match || is_dir)
+                {
+                    defer_scope {
+
+                        if (is_dir)
+                        {
+                            char **dir_files = fl_io_dir_list(filepath);
+                            defer_expression(fl_array_free_each_pointer(dir_files, (FlArrayFreeElementFunc)fl_cstring_free));
+
+                            for (size_t j=0; j < fl_array_length(dir_files); j++)
+                                fl_list_insert_before(matching_files, matching_file, fl_cstring_vdup("%s%s%s", filepath, path_separator, dir_files[j]));
+                        }
+                    }
+                }
+
+                struct FlListNode *to_remove = matching_file;
+                matching_file = matching_file->next;
+
+                if (!is_match || is_dir)
+                    fl_list_remove(matching_files, to_remove);
+            }
+        }
+    }
+    fl_cstring_free(current_path);
+    fl_vector_free(parts);
+
+    struct FlListNode *tmp = fl_list_head(matching_files);
+    FlRegex regex = fl_regex_compile((char*)pattern);
+    while (tmp)
+    {
+        // We need to make a last check against the full pattern
+        if (fl_regex_match(regex, (char*)tmp->value))
+        {
+            char *filename = fl_cstring_dup((char*)tmp->value);
+            files = fl_array_append(files, &filename);
+        }
+        tmp = tmp->next;
+    }
+
+    fl_regex_free(regex);
+    fl_list_free(matching_files);
+
+    return files;
 }

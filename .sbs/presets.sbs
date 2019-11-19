@@ -1,0 +1,36 @@
+preset win-clang-release {
+    env: win-cmd,
+    toolchain: clang,
+    config: clang-release,
+    target: fl-tests
+}
+
+preset win-clang-debug {
+    env: win-cmd,
+    toolchain: clang,
+    config: clang-debug,
+    target: fl-tests
+}
+
+preset linux-gcc-release {
+    env: linux-bash,
+    toolchain: gcc,
+    config: clang-release,
+    target: fl-tests
+}
+
+preset linux-gcc-debug {
+    env: linux-bash,
+    toolchain: gcc,
+    config: clang-debug,
+    target: fl-tests
+}
+
+preset clean {
+    toolchain: dummy,
+    config: dummy,
+    target: dummy,
+    actions: {
+        before: [ clean ]
+    }
+}

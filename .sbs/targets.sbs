@@ -79,6 +79,13 @@ executable fl-tests {
         fl-tests-objects,
         fllib-static
     ]
+
+    for linux-bash {
+        libraries: [
+            { name: "m" },
+            { name: "pthread" }
+        ]
+    }
 }
 
 executable fl-tests-sanitize {
@@ -90,14 +97,14 @@ executable fl-tests-sanitize {
     }
     libraries: [
         {
-            path: "D:\dev\LLVM\x64\lib\clang\8.0.0\lib\windows"
+            path: "D:\dev\LLVM\x86\lib\clang\8.0.0\lib\windows"
         }
     ]
     objects: [
         fl-tests-objects,
-        "clang_rt.ubsan_standalone-x86_64.lib",
-        "clang_rt.asan-x86_64.lib",
-        "clang_rt.builtins-x86_64.lib",
+        "clang_rt.ubsan_standalone-i386.lib",
+        "clang_rt.asan-i386.lib",
+        "clang_rt.builtins-i386.lib",
         fllib-static,
     ]
 }

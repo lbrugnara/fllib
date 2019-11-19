@@ -2,7 +2,6 @@
 #define FL_TIMER_H
 
 #include "../Types.h"
-//#include "../Std.h"
 
 typedef struct FlTimer* FlTimer;
 

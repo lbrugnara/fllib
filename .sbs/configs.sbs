@@ -3,7 +3,7 @@ config clang-config {
     compile: {
         extension: ".o",
         flags: [
-            "-std=gnu99",
+            "-std=c99",
             "-Wall",
             "-Werror",
             "-Wextra",
@@ -20,48 +20,43 @@ config clang-config {
             "-fexec-charset=UTF-8",
             "-D_FORTIFY_SOURCE=2",
             "-DFL_UNICODE_DB",
-            "-c ${source}",
-            "-o ${output}"
+            "-c ${INPUT_FILE}",
+            "-o ${OUTPUT_FILE}"
         ]
     },    
 
     for linux-bash {
         compile: {
-            flags: [
-                "-fPIC"
-            ]
+            flags: [ "-fPIC" ]
         },
         archive: {
             extension: ".a",
-            flags: [
-                "rcs"
-            ]
+            flags: [ "rcs", "${OUTPUT_FILE}" ]
         },
         shared: {
             extension: ".so",
             flags: [
                 "-shared",
-                "-o ${output}"
+                "-o ${OUTPUT_FILE}"
             ]
         },
         executable: {
             extension: "",
             flags: [
-                "-o ${output}"
+                "-o ${OUTPUT_FILE}"
             ]
         }
     },
 
     for win-cmd {
         compile: {
-            flags: [
-            ]
+            flags: [ ]
         },
         archive: {
             extension: ".lib",
             flags: [
                 "/NOLOGO",
-                "/OUT:${output}"
+                "/OUT:${OUTPUT_FILE}"
             ]
         },
         shared: {
@@ -69,13 +64,13 @@ config clang-config {
             flags: [
                 "/NOLOGO",
                 "/DLL",
-                "/OUT:${output}"
+                "/OUT:${OUTPUT_FILE}"
             ]
         },
         executable: {
             extension: ".exe",
             flags: [
-                "/OUT:${output}",
+                "/OUT:${OUTPUT_FILE}",
                 "/DEFAULTLIB:libcmt.lib",
                 "/NOLOGO",
                 "/SUBSYSTEM:CONSOLE"
@@ -84,35 +79,27 @@ config clang-config {
     }
 }
 
-config clang-sanitize extends clang-config {
-    compile: {
-        flags: [
-            "-fsanitize=address,undefined",
-            "-O3",
-        ]
-    },
-    executable: {
-        flags: [
-        ]
-    }
-}
-
 config clang-debug extends clang-config {
     compile: {
         flags: [
             "-ggdb",
+            "-O0",
             "-DFL_DEBUG"
         ]
     }
     for win-cmd {
+        shared: {
+            flags: [
+                "/DEBUG:FULL"
+            ]
+        },
         executable: {
-            flags: [ 
+            flags: [
                 "/DEBUG:FULL"
             ]
         }
     }
 }
-
 
 config clang-release extends clang-config {
     compile: {
@@ -121,3 +108,23 @@ config clang-release extends clang-config {
         ]
     }
 }
+
+config clang-debug-sanitize extends clang-debug {
+    compile: {
+        flags: [
+            "-fsanitize=address,undefined"
+        ]
+    }
+}
+
+
+
+config clang-release-sanitize extends clang-release {
+    compile: {
+        flags: [
+            "-fsanitize=address,undefined",
+            "-O3",
+        ]
+    }
+}
+

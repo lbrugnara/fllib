@@ -1,0 +1,7 @@
+# Bunch of dummy objects (or a hack of my own build system) to simulate "actions". ex:
+#   sbs build -e=win-cmd clean
+# If you check the clean preset you will notice it runs the clean actions but all the 
+# objects referenced by that target are dummy objects
+compile dummy {}
+toolchain dummy {}
+config dummy {}

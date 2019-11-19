@@ -6,6 +6,10 @@
 #ifdef _WIN32
     #include <windows.h>
 #elif defined(__linux__) || defined(__CYGWIN__)
+    #include <sys/time.h>
+    #ifndef __USE_POSIX199309
+    #define __USE_POSIX199309
+    #endif
     #include <time.h>
 #endif
 

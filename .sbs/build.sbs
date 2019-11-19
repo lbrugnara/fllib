@@ -1,43 +1,11 @@
 env win-cmd { }
-
 env linux-bash { }
 
-action clean {
-    for win-cmd {
-        `if exist .\obj (rd /s /q .\obj)`,
-        `if exist .\build (rd /s /q .\build)`
-    },
-    for linux-bash {
-        `/bin/rm -fr obj/ build/`
-    }
-}
-
-action clean-tests {
-    for win-cmd {
-        `if exist .\tests\obj (rd /s /q .\tests\obj)`,
-        `if exist .\tests\build (rd /s /q .\tests\build)`
-    },
-    for linux-bash {
-        `/bin/rm -fr tests/obj/ tests/build/`
-    }
-}
-
-preset win-release {
-    env: win-cmd,
-    toolchain: clang,
-    config: clang-release,
-    target: fl-tests
-}
-
-preset win-debug {
-    env: win-cmd,
-    toolchain: clang,
-    config: clang-debug,
-    target: fl-tests
-}
-
 include [
-    "toolchains.sbs",
+    "actions.sbs",
     "configs.sbs",
-    "targets.sbs"
+    "dummy.sbs",
+    "presets.sbs",
+    "targets.sbs",
+    "toolchains.sbs",
 ]

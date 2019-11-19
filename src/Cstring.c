@@ -526,18 +526,19 @@ fl_cstring_append_char(char **dst, char c)
 char** fl_cstring_vappend(char **dst, const char *format, ...)
 {
     va_list args;
-    va_start(args, format);
-    
+    va_start(args, format);    
     size_t length = vsnprintf(NULL, 0, format, args);
+    va_end(args);
 
     if (length == 0)
     {
-        va_end(args);
         return dst;
     }
 
     size_t original_length = strlen(*dst);
     fl_cstring_resize(dst, original_length + length);
+
+    va_start(args, format);
     vsnprintf((*dst + original_length), length + 1, format, args);
     va_end(args);
 

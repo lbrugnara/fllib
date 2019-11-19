@@ -28,3 +28,23 @@ toolchain clang {
         }
     }
 }
+
+toolchain gcc {
+
+    compiler: {
+        bin: "gcc",
+        include_dir_flag: "-I",
+        define_flag: "-D"
+    }    
+
+    for linux-bash {
+        archiver: {
+            bin: "ar"
+        },
+        linker: {
+            bin: "gcc",
+            lib_dir_flag: "-L",
+            lib_flag: "-l"
+        }
+    }
+}

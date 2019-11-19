@@ -7,7 +7,6 @@
 #include "Error.h"
 #include "Cstring.h"
 #include "Array.h"
-#include "Defer.h"
 #include "containers/List.h"
 #include "containers/Vector.h"
 #include "text/Regex.h"

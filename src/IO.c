@@ -372,7 +372,7 @@ char** fl_io_dir_list(const char *directory)
     return files;
 }
 
-char** fl_io_glob(const char *pattern, const char *path_separator)
+char** fl_io_file_find(const char *pattern, const char *path_separator)
 {
     char **files = fl_array_new(sizeof(char*), 0);
 

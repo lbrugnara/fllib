@@ -7,6 +7,11 @@
 #include "Types.h"
 #include "containers/Vector.h"
 
+
+#define flm_cstring_equals(cstr1, cstr2) (strcmp((cstr1), (cstr2)) == 0)
+#define flm_cstring_equals_n(cstr1, cstr2, n) (strncmp((cstr1), (cstr2), (n)) == 0)
+#define flm_cstring_ends_with_char(cstring, character) ((cstring) && (cstring)[strlen((cstring)) - 1] == character)
+
 /*
  * Function: fl_cstring_new
  *  Allocates *length*+1 bytes of memory to include the NULL character ('\0') and return a pointer
@@ -163,9 +168,5 @@ char* fl_cstring_join(FlVector vector, char* glue);
 char* fl_char_join(FlVector vector, char* glue);
 
 char* fl_cstring_concat(char **strings);
-
-#define flm_cstring_equals(cstr1, cstr2) (strcmp((cstr1), (cstr2)) == 0)
-#define flm_cstring_equals_n(cstr1, cstr2, n) (strncmp((cstr1), (cstr2), (n)) == 0)
-#define flm_cstring_ends_with_char(cstring, character) ((cstring) && (cstring)[strlen((cstring)) - 1] == character)
 
 #endif /* FL_C_STR_H */

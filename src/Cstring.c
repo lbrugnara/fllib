@@ -374,23 +374,20 @@ size_t fl_cstring_replace_n(const char *src, size_t src_size, const char *needle
         return rplc_size + src_size;
     }
 
-    FlHashtable table = fl_hashtable_new_args((struct FlHashtableArgs){
-        .hash_function = fl_hashtable_hash_char,
-        .key_comparer = fl_container_equals_char,
-        .key_cleaner = fl_container_cleaner_pointer,
-        .value_cleaner = fl_container_cleaner_pointer,
-        .key_allocator = fl_container_allocator_char,
-        .value_allocator = fl_container_allocator_sizet
-    });
+    size_t move_distance[255] = { 0 };
+    char exists[255] = { 0 };
 
     for (size_t i = 0; i < needle_size - 1; i++)
     {
-        size_t n = needle_size - i - 1;
-        fl_hashtable_set(table, needle + i, &n);
+        move_distance[(size_t)needle[i]] = needle_size - i - 1;
+        exists[(size_t)needle[i]] = 1;
     }
 
-    if (!fl_hashtable_has_key(table, needle + (needle_size - 1)))
-        fl_hashtable_set(table, needle + (needle_size - 1), &needle_size);
+    if (exists[(size_t)needle[needle_size - 1]] == 0)
+    {
+        move_distance[(size_t)needle[needle_size - 1]] = needle_size;
+        exists[(size_t)needle[needle_size - 1]] = 1;
+    }
 
     const char *strptr = src;
     char *result = NULL;
@@ -405,9 +402,8 @@ size_t fl_cstring_replace_n(const char *src, size_t src_size, const char *needle
         size_t k = i - (needle_size - 1);
         if (strptr[i] != needle[needle_size - 1] || (needle_size > 1 && !cstr_match_backw(strptr + k, needle, needle_size - 1)))
         {
-            size_t *pi = (size_t *)fl_hashtable_get(table, strptr + i);
-            if (pi != NULL)
-                d = *pi;
+            if (exists[(size_t)strptr[i]])
+                d = move_distance[(size_t)strptr[i]];
         }
         else
         {
@@ -416,7 +412,6 @@ size_t fl_cstring_replace_n(const char *src, size_t src_size, const char *needle
         }
         i += d;
     }
-    fl_hashtable_free(table);
 
     *dst = fl_cstring_new(newlength);
     // spi = source pointer index
@@ -462,24 +457,20 @@ char *fl_cstring_find(const char *str, const char *needle)
     if (needle_size == 0)
         return (char *)str;
 
-    FlHashtable table = fl_hashtable_new_args((struct FlHashtableArgs){
-        .hash_function = fl_hashtable_hash_char,
-        .key_comparer = fl_container_equals_char,
-        .key_cleaner = fl_container_cleaner_pointer,
-        .value_cleaner = fl_container_cleaner_pointer,
-        .key_allocator = fl_container_allocator_char,
-        .value_allocator = fl_container_allocator_sizet
-    });
+    size_t move_distance[255] = { 0 };
+    char exists[255] = { 0 };
 
-    // Last element will jump "needle_size"
     for (size_t i = 0; i < needle_size - 1; i++)
     {
-        size_t n = needle_size - 1 - i;
-        fl_hashtable_set(table, needle + i, &n);
+        move_distance[(size_t)needle[i]] = needle_size - i - 1;
+        exists[(size_t)needle[i]] = 1;
     }
 
-    if (!fl_hashtable_has_key(table, needle + (needle_size - 1)))
-        fl_hashtable_set(table, needle + (needle_size - 1), &needle_size);
+    if (exists[(size_t)needle[needle_size - 1]] == 0)
+    {
+        move_distance[(size_t)needle[needle_size - 1]] = needle_size;
+        exists[(size_t)needle[needle_size - 1]] = 1;
+    }
 
     const char *strptr = str;
     const char *result = NULL;
@@ -488,16 +479,15 @@ char *fl_cstring_find(const char *str, const char *needle)
         size_t k = i - (needle_size - 1);
         if (strptr[i] != needle[needle_size - 1] || (needle_size > 1 && !cstr_match_backw(strptr + k, needle, needle_size - 1)))
         {
-            size_t *pi = (size_t *)fl_hashtable_get(table, strptr + i);
-
-            if (pi)
+            if (exists[(size_t)strptr[i]])
             {
-                if (*pi == 0)
+                size_t dist = move_distance[(size_t)strptr[i]];
+                if (dist == 0)
                 {
                     result = strptr + i;
                     break;   
                 }
-                i += *pi;
+                i += dist;
             }
             else
             {
@@ -508,7 +498,7 @@ char *fl_cstring_find(const char *str, const char *needle)
         result = strptr + k;
         break;
     }
-    fl_hashtable_free(table);
+
     return (char *)result;
 }
 

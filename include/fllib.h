@@ -5,7 +5,7 @@
 #include "../src/threading/Thread.h"
 #include "../src/Std.h"
 #include "../src/Slice.h"
-#include "../src/text/resources/UnicodeData.h"
+#include "../src/text/UnicodeData.h"
 #include "../src/text/Unicode.h"
 #include "../src/text/String.h"
 #include "../src/text/Regex.h"

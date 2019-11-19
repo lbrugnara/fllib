@@ -22,7 +22,7 @@ override CFLAGS += -std=gnu99 \
 # Macros for target tests
 TESTS=
 
-ifneq ($(wildcard src/text/resources/UnicodeDataDb.h),) 
+ifneq ($(wildcard src/text/UnicodeDataDb.h),) 
     override CFLAGS += -DFL_UNICODE_DB
 endif
 
@@ -67,7 +67,7 @@ FL_OBJECTS=\
 	obj/$(TARGET)/src/Slice.o 						\
 	obj/$(TARGET)/src/Error.o 						\
 	obj/$(TARGET)/src/Mem.o 						\
-	obj/$(TARGET)/src/text/resources/UnicodeData.o 	\
+	obj/$(TARGET)/src/text/UnicodeData.o 			\
 	obj/$(TARGET)/src/text/Unicode.o 				\
 	obj/$(TARGET)/src/text/String.o 				\
 	obj/$(TARGET)/src/Cstring.o 					\
@@ -138,7 +138,7 @@ unicode-db: fllib unicode
 	./src/text/resources/gen || ./src/text/resources/gen.exe
 
 # Specific target for UnicodeData module to recompile if UnicodeDataDb.txt has changed
-obj/$(TARGET)/src/text/resources/UnicodeData.o: src/text/resources/UnicodeData.c src/text/resources/UnicodeDataDb.h
+obj/$(TARGET)/src/text/UnicodeData.o: src/text/UnicodeData.c src/text/UnicodeDataDb.h
 	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) $(LIBS) -c $< -o $@
 

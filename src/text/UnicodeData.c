@@ -1,8 +1,8 @@
 #include <string.h>
 #include <stdint.h>
 
-#include "../../Types.h"
-#include "../../Array.h"
+#include "../Types.h"
+#include "../Array.h"
 #include "UnicodeData.h"
 
 /*

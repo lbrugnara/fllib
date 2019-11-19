@@ -4,7 +4,7 @@
 #include "../Std.h"
 #include "../Mem.h"
 #include "Unicode.h"
-#include "resources/UnicodeData.h"
+#include "UnicodeData.h"
 
 /*
  * Last code point (inclusive) of each UTF-8 range (1-4 bytes)

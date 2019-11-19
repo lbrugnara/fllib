@@ -77,9 +77,9 @@ bool fl_io_is_dir(const char *path)
             return false;
 
         #ifdef S_IFREG
-        return (info.st_mode & S_IFDIR);
+        return (info.st_mode & S_IFDIR) ? true : false;
         #else
-        return S_ISDIR(info.st_mode);
+        return S_ISDIR(info.st_mode) ? true : false;
         #endif
     }
     #endif
@@ -396,13 +396,54 @@ char** fl_io_dir_list(const char *directory)
     return files;
 }
 
+static inline FlVector split_regex_by_path_separator(const char *regex, const char separator)
+{
+    flm_assert(regex != NULL, "char* argument to split cannot be NULL");
+
+    FlVector parts = fl_vector_new(1, fl_container_cleaner_pointer);
+
+    size_t length = strlen(regex);
+    size_t i=0;
+    size_t l=0;
+    for (; i < length; i++)
+    {
+        if (regex[i] == '[' && i > 0 && regex[i-1] != '\\')
+        {
+            while (i < length && regex[i] != ']')
+                i++;
+        }
+        else if (regex[i] == separator)
+        {
+            // Starting path separator
+            if (i == 0)
+            {
+                l++;
+                continue;
+            }
+            else
+            {
+                fl_vector_add(parts, fl_cstring_dup_n(regex + l, i-l));
+                l = i+1; // Consume the path separator
+            }
+        }
+    }
+
+    if (i != l)
+        fl_vector_add(parts, fl_cstring_dup_n(regex + l, i-l));
+
+    return parts;
+}
+
 char** fl_io_file_find(const char *pattern, const char *path_separator)
 {
+    if (!path_separator || !path_separator[0])
+        return NULL;
+
     char **files = fl_array_new(sizeof(char*), 0);
 
     FlList matching_files = fl_list_new_args((struct FlListArgs){ .value_cleaner = fl_container_cleaner_pointer });
 
-    FlVector parts = fl_cstring_split_by(pattern, path_separator);
+    FlVector parts = split_regex_by_path_separator(pattern, path_separator[0]);
 
     // Our starting point is the current directory
     char *base_dir = fl_cstring_vdup("%s%s", (char*)fl_vector_get(parts, 0), path_separator);

@@ -88,6 +88,9 @@ void* fl_copy(const void *var, size_t nbytes);
 #define container_of fl_container_of
 #endif
 
+#define scoped_resource(type, resource, init, free) \
+    for (type resource = init; resource != NULL; (free, resource = NULL))
+
 /*
  * Macro: FLBIT
  * ===== C =====

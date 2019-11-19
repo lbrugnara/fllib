@@ -261,4 +261,8 @@ void test_fl_regex_match()
 	fl_expect("Pattern /[\\(\\)]/ to match '()'", fl_regex_match_test("[\\(\\)]", "()"));
 	fl_expect("Pattern /nes/(opcode|rom)\\.c/ to match 'nes/rom.c'", fl_regex_match_test("nes/(opcode|rom)\\.c", "nes/rom.c"));
 	fl_expect("Pattern /nes/(opcode|rom)\\.c/ to not match 'nes/nesrom.c'", !fl_regex_match_test("nes/(opcode|rom)\\.c", "nes/nesrom.c"));
+	fl_expect("Pattern /[^/]/ to not match '/'", !fl_regex_match_test("[^/]", "/"));
+	fl_expect("Pattern /[.]/ to not match 'a'", !fl_regex_match_test("[.]", "a"));
+	fl_expect("Pattern /[.]/ to match '.'", fl_regex_match_test("[.]", "."));
+	fl_expect("Pattern /[^.]/ to match 'a'", fl_regex_match_test("[^.]", "a"));
 }

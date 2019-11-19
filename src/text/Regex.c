@@ -1480,13 +1480,14 @@ bool can_reach_state (NfaState *state, unsigned char value)
 		return false;
 	
 	// Common states with a single value
-	if ((state->value[0] == '\\' && state->value[1] == value) 
-		|| (state->value[0] == '.' && value != '\n')
-		|| state->value[0] == value)
-		return true;
-
 	if (state->type == NFA_STATE)
+	{
+		if ((state->value[0] == '\\' && state->value[1] == value) 
+			|| (state->value[0] == '.' && value != '\n')
+			|| state->value[0] == value)
+			return true;
 		return false;
+	}
 	
 	NfaStateCharClass *statecc = (NfaStateCharClass*)state;
 	// Characeter classes like [] operator and \d, \w, etc OR Negated characeter classes like [^] operator and \D, \W, etc

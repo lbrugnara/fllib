@@ -507,7 +507,7 @@ fl_cstring_append(char **dst, const char *str)
 {
     size_t length_dst = strlen(*dst);
     size_t length_str = strlen(str);
-    fl_cstring_resize(dst, length_dst + length_str + 1);
+    fl_cstring_resize(dst, length_dst + length_str);
     fl_cstring_copy_n((*dst) + length_dst, str, length_str);
     (*dst)[length_dst + length_str] = FL_EOS;
     return dst;

@@ -31,6 +31,6 @@ preset clean {
     config: dummy,
     target: dummy,
     actions: {
-        before: [ clean ]
+        before: [ clean, clean-tests ]
     }
 }

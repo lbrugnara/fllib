@@ -447,7 +447,7 @@ char** fl_io_file_find(const char *pattern, const char *path_separator)
 
     // Our starting point is the current directory
     char *base_dir = fl_cstring_vdup("%s%s", (char*)fl_vector_get(parts, 0), path_separator);
-    char **dir_files = fl_io_dir_list(base_dir);
+    char **dir_files = fl_io_dir_list(base_dir[0] == '^' ? base_dir + 1 : base_dir);
 
     for (size_t i=0; i < fl_array_length(dir_files); i++)
         fl_list_append(matching_files, fl_cstring_vdup("%s%s", base_dir, dir_files[i]));

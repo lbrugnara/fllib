@@ -13,7 +13,7 @@ toolchain clang {
         linker: {
             bin: "link.exe",
             lib_dir_flag: "/LIBPATH:",
-            lib_flag: "/LIB:"
+            lib_flag: "/DEFAULTLIB:"
         }
     },
 

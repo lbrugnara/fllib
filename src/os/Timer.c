@@ -50,6 +50,25 @@ void fl_timer_start(FlTimer timer)
     #endif
 }
 
+
+long fl_timer_tick(FlTimer timer)
+{
+    flm_assert(timer != NULL, "Timer must not be null");
+
+    // Tick (re)starts the timer
+    if (timer->status == TIMER_STOPPED || timer->status == TIMER_ENDED)
+    {
+        fl_timer_start(timer);
+        return 0;
+    }
+
+    fl_timer_end(timer);
+    long elapsed = fl_timer_elapsed_ms(timer);
+    fl_timer_start(timer);
+
+    return elapsed;
+}
+
 void fl_timer_end(FlTimer timer)
 {
     flm_assert(timer != NULL, "Timer must not be null");

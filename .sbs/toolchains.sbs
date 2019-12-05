@@ -22,7 +22,7 @@ toolchain clang {
             bin: "ar"
         },
         linker: {
-            bin: "lld-link",
+            bin: "clang",
             lib_dir_flag: "-L",
             lib_flag: "-l"
         }

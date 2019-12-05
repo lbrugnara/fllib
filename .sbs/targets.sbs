@@ -63,19 +63,31 @@ executable fl-tests-sanitize {
     output_name: "tests",
     output_dir: "tests/build",
     actions: {
-        before: [ clean, clean-tests ]
-        after: [ `.\tests\build\clang-sanitize\tests.exe` ]
+        # before: [ clean, clean-tests ]
+        after: [ `.\tests\build\clang-debug-sanitize\tests.exe` ]
     }
-    libraries: [
-        {
-            path: "D:\dev\LLVM\x86\lib\clang\8.0.0\lib\windows"
-        }
-    ]
+    for win-cmd {
+        libraries: [
+            {
+                path: "D:\dev\LLVM\x86\lib\clang\8.0.0\lib\windows"
+            }
+        ]
+        objects: [
+            "clang_rt.ubsan_standalone-i386.lib",
+            "clang_rt.asan-i386.lib",
+            "clang_rt.builtins-i386.lib",
+        ]
+    }
+
+    for linux-bash {
+        libraries: [
+            { name: "m" },
+            { name: "pthread" }
+        ]
+    }
+
     objects: [
         fl-tests-objects,
-        "clang_rt.ubsan_standalone-i386.lib",
-        "clang_rt.asan-i386.lib",
-        "clang_rt.builtins-i386.lib",
         fllib-static,
     ]
 }

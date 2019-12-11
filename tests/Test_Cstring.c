@@ -4,8 +4,21 @@
 #include "Test.h"
 #include "Test_Cstring.h"
 
-extern size_t integer_length(long long i);
-extern size_t uinteger_length(unsigned long long i);
+static inline size_t integer_length(long long i)
+{
+    size_t l = i >= 0 ? 1 : 2;
+    while (i /= 10)
+        l++;
+    return l;
+}
+
+static inline size_t uinteger_length(unsigned long long i)
+{
+    size_t l = 1;
+    while (i /= 10)
+        l++;
+    return l;
+}
 
 void test_cstring_new()
 {

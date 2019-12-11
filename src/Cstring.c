@@ -120,7 +120,7 @@ char *fl_cstring_vdup(const char *s, ...)
     return str;
 }
 
-size_t integer_length(long long i)
+static inline size_t integer_length(long long i)
 {
     size_t l = i >= 0 ? 1 : 2;
     while (i /= 10)
@@ -128,7 +128,15 @@ size_t integer_length(long long i)
     return l;
 }
 
-size_t uinteger_length(unsigned long long i)
+static inline size_t uinteger_length(unsigned long long i)
+{
+    size_t l = 1;
+    while (i /= 10)
+        l++;
+    return l;
+}
+
+static inline size_t size_t_length(size_t i)
 {
     size_t l = 1;
     while (i /= 10)
@@ -211,6 +219,25 @@ char *fl_cstring_vadup(const char *s, va_list args)
                 size_t strlength = strlen(str);
                 for (size_t j = 0; j < strlength; j++)
                     fl_vector_add(parts, str + j);
+                break;
+            }
+            case 'z':
+            {
+                char *dst = NULL;
+                size_t t = 0;
+                if (s[i+1] == 'u')
+                {
+                    sc = s[++i];
+                    size_t size_t_integer = va_arg(args, size_t);
+                    t = size_t_length(size_t_integer) + 1;
+                    dst = fl_array_new(sizeof(char), t);
+                    snprintf(dst, t, "%zu", size_t_integer);
+                }
+
+                for (size_t j = 0; j < t; j++)
+                    fl_vector_add(parts, dst + j);
+                fl_array_free(dst);
+
                 break;
             }
             case '%':

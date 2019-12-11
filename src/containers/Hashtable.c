@@ -477,38 +477,59 @@ void fl_hashtable_resize(FlHashtable ht, size_t nbuckets)
 {
     flm_assert(nbuckets > 0, "Number of buckets must be greater than 0");
 
-    struct FlHashtable newht = {
+    // We use a temporal hashtable that only uses the key hasher and key comparer functions
+    // that way we can lookup the new buckets entries using the new number of buckets, and once
+    // we have that bucket we copy the old one into the new one, that way we keep the keys and values
+    struct FlHashtable temp_hashtable = {
         .buckets = fl_array_new(sizeof(struct FlBucketEntry*), nbuckets),
         .key_hasher = ht->key_hasher,
         .key_comparer = ht->key_comparer,
-        .key_cleaner = ht->key_cleaner,
-        .value_cleaner = ht->value_cleaner
+        .key_cleaner = NULL,
+        .key_allocator = NULL,
+        .value_cleaner = NULL,
+        .value_allocator  = NULL,
     };
 
-    if (ht->buckets)
+    // Get the current buckets count in the hashtable
+    size_t cbc = fl_array_length(ht->buckets);
+    for (size_t i=0; i < cbc ; i++)
     {
-        size_t l = fl_array_length(ht->buckets);
-        for (size_t i=0; i < l ; i++)
+        if (!ht->buckets[i])
+            continue;
+
+        // If the bucket is not NULL, we get the current bucket's entries count
+        size_t cbec = fl_array_length(ht->buckets[i]);
+        for (size_t j=0; j < cbec; j++)
         {
-            if (!ht->buckets[i])
-                continue;
-            size_t l2 = fl_array_length(ht->buckets[i]);
-            for (size_t j=0; j < l2; j++)
+            if ((ht->buckets[i]+j))
             {
-                if ((ht->buckets[i]+j))
-                {
-                    struct FlBucketEntry *b = ht->buckets[i]+j;
-                    if (b->free)
-                        continue;
-                    ht_internal_add(&newht, b->key, b->value, BUCKET_LOOKUP_UNUSED, false);
-                }
+                struct FlBucketEntry *b = ht->buckets[i]+j;
+
+                if (b->free)
+                    continue;
+
+                // We need to lookup the new bucket for this entry
+                struct FlBucketEntry *newb = lookup_bucket(&temp_hashtable, b->key, BUCKET_LOOKUP_UNUSED);
+
+                // FIXME: we should add an error status
+                if (newb == NULL)
+                    continue;
+
+                // We copy the current bucket entry to the new bucket, keeping the key and value untouched
+                memcpy(newb, b, sizeof(struct FlBucketEntry));
             }
         }
-        fl_hashtable_clear(ht);
-        fl_array_free(ht->buckets);
-        ht->buckets = newht.buckets;
-        ht->length = newht.length;
+
+        // We free the memory for the current bucket
+        fl_array_free(ht->buckets[i]);
     }
+
+    // We free the array containing the current buckets
+    fl_array_free(ht->buckets);
+
+    // We just use the new buckets array from the temporal hashtable
+    ht->buckets = temp_hashtable.buckets;
+    ht->length = temp_hashtable.length;
 }
 
 void fl_hashtable_free(FlHashtable ht)

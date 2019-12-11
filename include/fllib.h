@@ -23,5 +23,9 @@
 #include "../src/os/Timer.h"
 #include "../src/os/Signal.h"
 
+#ifdef _WIN32
+#include "../src/os/WinEx.h"
+#endif
+
 
 #endif /* FL_LIB */

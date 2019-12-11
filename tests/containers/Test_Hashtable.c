@@ -339,7 +339,7 @@ void test_fl_hashtable_resize()
         .value_cleaner = fl_container_cleaner_pointer,
         .key_allocator = size_t_writer,
         .value_allocator = size_t_writer,
-        .buckets_count = 52736,
+        .buckets_count = 52735,
         .load_factor = 1.0
     });
 

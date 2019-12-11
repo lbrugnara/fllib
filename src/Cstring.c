@@ -147,110 +147,24 @@ static inline size_t size_t_length(size_t i)
 char *fl_cstring_vadup(const char *s, va_list args)
 {
     flm_assert(s != NULL, "char* argument to duplicate cannot be NULL");
-    size_t length = strlen(s);
-    FlVector parts = fl_vector_new_args((struct FlVectorArgs){
-        .capacity = length,
-        .element_size = sizeof(char),
-        .writer = fl_container_writer
-    });
-    char sc;
-    for (size_t i = 0; i < length; i++)
-    {
-        sc = s[i];
-        if (sc != '%')
-        {
-            fl_vector_add(parts, &sc);
-        }
-        else
-        {
-            sc = s[++i];
-            switch (sc)
-            {
-            case 'c':
-            {
-                char c = (char)va_arg(args, int);
-                fl_vector_add(parts, &c);
-                break;
-            }
-            case 'd':
-            {
-                int integer = va_arg(args, int);
-                size_t t = integer_length(integer) + 1;
-                char *dst = fl_array_new(sizeof(char), t);
-                snprintf(dst, t, "%d", integer);
-                for (size_t j = 0; j < t; j++)
-                    fl_vector_add(parts, dst + j);
-                fl_array_free(dst);
-                break;
-            }
-            case 'l':
-            {
-                char *dst = NULL;
-                size_t t = 0;
-                if (s[i+1] == 'u')
-                {
-                    sc = s[++i];
-                    unsigned long ulong_integer = va_arg(args, unsigned long);
-                    t = uinteger_length(ulong_integer) + 1;
-                    dst = fl_array_new(sizeof(char), t);
-                    snprintf(dst, t, "%lu", ulong_integer);
-                }
-                else if (s[i+1] == 'd')
-                {
-                    sc = s[++i];
-                    long long_integer = va_arg(args, long);
-                    t = integer_length(long_integer) + 1;
-                    dst = fl_array_new(sizeof(char), t);
-                    snprintf(dst, t, "%ld", long_integer);
-                }
-                else
-                {
-                    break;
-                }
 
-                for (size_t j = 0; j < t; j++)
-                    fl_vector_add(parts, dst + j);
-                fl_array_free(dst);
-                break;
-            }
-            case 's':
-            {
-                char *str = va_arg(args, char *);
-                size_t strlength = strlen(str);
-                for (size_t j = 0; j < strlength; j++)
-                    fl_vector_add(parts, str + j);
-                break;
-            }
-            case 'z':
-            {
-                char *dst = NULL;
-                size_t t = 0;
-                if (s[i+1] == 'u')
-                {
-                    sc = s[++i];
-                    size_t size_t_integer = va_arg(args, size_t);
-                    t = size_t_length(size_t_integer) + 1;
-                    dst = fl_array_new(sizeof(char), t);
-                    snprintf(dst, t, "%zu", size_t_integer);
-                }
+    va_list args_length;
+    va_copy(args_length, args);
+    size_t length = vsnprintf(NULL, 0, s, args_length);
+    va_end(args_length);
 
-                for (size_t j = 0; j < t; j++)
-                    fl_vector_add(parts, dst + j);
-                fl_array_free(dst);
+    if (length == 0)
+        return fl_cstring_new(0);
 
-                break;
-            }
-            case '%':
-            {
-                fl_vector_add(parts, &sc);
-                break;
-            }
-            }
-        }
-    }
-    char *sd = fl_char_join(parts, "");
-    fl_vector_free(parts);
-    return sd;
+    char *string = fl_cstring_new(length);
+
+    va_list args_format;
+    va_copy(args_format, args);
+    vsnprintf(string, length + 1, s, args_format);
+    va_end(args_format);
+    string[length] = '\0';
+
+    return string;
 }
 
 char *fl_cstring_copy(char *dest, const char *source)

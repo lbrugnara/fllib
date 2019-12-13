@@ -529,7 +529,6 @@ void fl_hashtable_resize(FlHashtable ht, size_t nbuckets)
 
     // We just use the new buckets array from the temporal hashtable
     ht->buckets = temp_hashtable.buckets;
-    ht->length = temp_hashtable.length;
 }
 
 void fl_hashtable_free(FlHashtable ht)

@@ -335,7 +335,7 @@ void* fl_hashtable_get(FlHashtable ht, const void *key)
     return target_bucket != NULL ? target_bucket->value : NULL;
 }
 
-bool fl_hashtable_remove(FlHashtable ht, const void *key, bool clean)
+bool fl_hashtable_remove(FlHashtable ht, const void *key, bool clean_key, bool clean_value)
 {
     flm_assert(ht != NULL, "Hashtable must not be null");
 
@@ -344,14 +344,11 @@ bool fl_hashtable_remove(FlHashtable ht, const void *key, bool clean)
     if (!target_bucket)
         return false;
 
-    if (clean)
-    {
-        if (ht->key_cleaner)
-            ht->key_cleaner(target_bucket->key);
+    if (clean_key && ht->key_cleaner)
+        ht->key_cleaner(target_bucket->key);
 
-        if (ht->value_cleaner)
-            ht->value_cleaner(target_bucket->value);
-    }
+    if (clean_value && ht->value_cleaner)
+        ht->value_cleaner(target_bucket->value);
 
     // Mark this bucket as free
     target_bucket->free = 1;

@@ -177,20 +177,20 @@ void* fl_hashtable_set(FlHashtable ht, const void *key, const void *value);
 /*
  * Function: fl_hashtable_remove
  *
- *  This function removes the value mapped by key. If key exists and
- *  *clean* is true, both key and value will be cleaned up using the {cleanup_function}.
+ *  This function removes the value mapped by key. If key exists, *clean_key* is true, and a key_cleaner function was provided, the key
+ *  is cleaned up. The same way, if *clean_value* is true and a value_cleaner was provided, the value is cleaned up.
  *
  * Parameters:
  *  ht - Container to remove the key-value pair
  *  key - Pointer to a key element
- *  clean - Boolean to indicate if both key and value should be cleaned up
+ *  clean_key - Boolean to indicate if the key should be cleaned up (in case a key_cleaner function was provided on creation)
+ *  clean_value - Boolean to indicate if the value should be cleaned up (in case a value_cleaner function was provided on creation)
  *
  * Returns:
- *  bool - *true* if key exists and in case *clean* is true, also when both key and value are deleted.
- *   *false* otherwise.
+ *  bool - *true* if key exists and the entry is removed. Otherwise it returns *false*
  *
  */
-bool fl_hashtable_remove(FlHashtable ht, const void *key, bool clean);
+bool fl_hashtable_remove(FlHashtable ht, const void *key, bool clean_key, bool clean_value);
 
 /*
  * Function: fl_hashtable_clear

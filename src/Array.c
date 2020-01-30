@@ -38,7 +38,7 @@ void* fl_array_new(size_t element_size, size_t length)
 	return GetArray(header);
 }
 
-FlArray fl_array_resize(FlArray array, size_t length)
+FlArray* fl_array_resize(FlArray *array, size_t length)
 {
 	FlArrayHeader *header = GetHeader(array);
 
@@ -53,13 +53,13 @@ FlArray fl_array_resize(FlArray array, size_t length)
 	return GetArray(header);
 }
 
-void fl_array_free(const FlArray array)
+void fl_array_free(FlArray *array)
 {
 	FlArrayHeader *header = GetHeader(array);
 	fl_free(header);
 }
 
-void fl_array_free_each(const FlArray array, FlArrayFreeElementFunc item_free_func)
+void fl_array_free_each(FlArray *array, FlArrayFreeElementFunc item_free_func)
 {
 	FlArrayHeader *header = GetHeader(array);
 	size_t bytes = header->length * header->element_size;
@@ -72,7 +72,7 @@ void fl_array_free_each(const FlArray array, FlArrayFreeElementFunc item_free_fu
     fl_free(header);
 }
 
-void fl_array_free_each_pointer(const FlArray array, FlArrayFreeElementFunc item_free_func)
+void fl_array_free_each_pointer(FlArray *array, FlArrayFreeElementFunc item_free_func)
 {
 	FlArrayHeader *header = GetHeader(array);
 	void **data = array;
@@ -84,7 +84,7 @@ void fl_array_free_each_pointer(const FlArray array, FlArrayFreeElementFunc item
     fl_free(header);
 }
 
-FlArray fl_array_combine(FlArray dest_array, FlArray src_array)
+FlArray* fl_array_combine(FlArray *dest_array, const FlArray * const src_array)
 {
 	FlArrayHeader *dest_header = GetHeader(dest_array);
 	FlArrayHeader *src_header = GetHeader(src_array);
@@ -110,10 +110,10 @@ FlArray fl_array_combine(FlArray dest_array, FlArray src_array)
 	return dest_array;
 }
 
-FlArray fl_array_append(FlArray array, const void *element)
+FlArray* fl_array_append(FlArray *array, const void *element)
 {
 	FlArrayHeader *header = GetHeader(array);
-	FlArray tmp = fl_array_resize(array, header->length + 1);
+	FlArray *tmp = fl_array_resize(array, header->length + 1);
 
 	if (!tmp)
 		return NULL;
@@ -126,19 +126,19 @@ FlArray fl_array_append(FlArray array, const void *element)
 	return array;
 }
 
-size_t fl_array_length(const FlArray array)
+size_t fl_array_length(const FlArray * const array)
 {
 	FlArrayHeader *header = GetHeader(array);
 	return header->length;
 }
 
-size_t fl_array_element_size(const FlArray array)
+size_t fl_array_element_size(const FlArray * const array)
 {
 	FlArrayHeader *header = GetHeader(array);
 	return header->element_size;
 }
 
-bool fl_array_contains(const FlArray array, const void *needle) 
+bool fl_array_contains(const FlArray * const array, const void *needle) 
 {
 	FlArrayHeader *header = GetHeader(array);
 	size_t nelems = header->length;
@@ -163,10 +163,10 @@ bool fl_array_contains_n(const void *array, size_t nelems, const void *needle, s
 	return false;
 }
 
-FlVector fl_array_to_vector(const FlArray array)
+FlVector* fl_array_to_vector(const FlArray * const array)
 {
 	FlArrayHeader *header = GetHeader(array);
-	FlVector vector = fl_vector_new(header->length, NULL);
+	FlVector *vector = fl_vector_new(header->length, NULL);
 
 	const FlByte *data = array;
 	size_t l = header->length * header->element_size;

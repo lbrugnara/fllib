@@ -7,7 +7,7 @@ void test_fl_vector_new()
 {
     fl_test_description("New vectors with valid parameters should return valid vectors")
     {
-        FlVector vector = fl_vector_new(10, NULL);
+        FlVector *vector = fl_vector_new(10, NULL);
         fl_expect("Vector must have length == 0", fl_vector_length(vector) == 0);
         fl_expect("Vector must have capacity for 10 elements", fl_vector_capacity(vector) == 10);
         fl_vexpect(fl_vector_max_capacity(vector) == SIZE_MAX / sizeof(void*), "Vector must have a maximum capacity of %zu elements (default)", SIZE_MAX / sizeof(void*));
@@ -59,7 +59,7 @@ void test_fl_vector_new()
 
     fl_test_description("New vectors with invalid configuration must return NULL")
     {
-        FlVector vector = fl_vector_new(SIZE_MAX, NULL);
+        FlVector *vector = fl_vector_new(SIZE_MAX, NULL);
         fl_expect("Vector initialization with capacity == SIZE_MAX returns NULL (default element_size is sizeof(void*) which results in overflow)", vector == NULL);
 
         vector = fl_vector_new_args((struct FlVectorArgs) {
@@ -81,7 +81,7 @@ void test_fl_vector_add()
     // Use pointers
     size_t numbers[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
 
-    FlVector vector = fl_vector_new(10, NULL);
+    FlVector *vector = fl_vector_new(10, NULL);
 
     for (size_t i=0; i < (size_t)(sizeof(numbers) / sizeof(numbers[0])); i++)
     {
@@ -144,7 +144,7 @@ void test_fl_vector_insert()
 
     fl_test_description("Insert on sequential positions must result in an ordedered vector")
     {
-        FlVector vector = fl_vector_new(10, NULL);
+        FlVector *vector = fl_vector_new(10, NULL);
         
         for (size_t i=0; i < array_length; i++)
         {
@@ -165,7 +165,7 @@ void test_fl_vector_insert()
 
     fl_test_description("A container writer should copy the inserted value instead of saving pointers")
     {
-        FlVector vector = fl_vector_new_args((struct FlVectorArgs) {
+        FlVector *vector = fl_vector_new_args((struct FlVectorArgs) {
             // Use a container writer
             .writer = fl_container_writer,
             .element_size = sizeof(size_t),
@@ -191,7 +191,7 @@ void test_fl_vector_insert()
 
     fl_test_description("On resize, the capacity must be round to the next higher integer after applying the growth factor")
     {
-        FlVector vector = fl_vector_new_args((struct FlVectorArgs) {
+        FlVector *vector = fl_vector_new_args((struct FlVectorArgs) {
             .capacity = 10,
             .growth_factor = 1.5
         });
@@ -249,7 +249,7 @@ void test_fl_vector_insert()
     fl_test_description("Once the vector has reached its maximum capacity, inserts on positions greather than max_capacity-1 should not thrive")
     {
         // Check insert failures if the max. capacity is reached
-        FlVector vector = fl_vector_new_args((struct FlVectorArgs) {
+        FlVector *vector = fl_vector_new_args((struct FlVectorArgs) {
             .capacity = 1,
             .max_capacity = 5,
             .growth_factor = 1.5,
@@ -276,7 +276,7 @@ void test_fl_vector_shift()
     int numbers[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
     int size = (int)(sizeof(numbers) / sizeof(numbers[0]));
 
-    FlVector vector = fl_vector_new(10, NULL);
+    FlVector *vector = fl_vector_new(10, NULL);
 
     for (int i=0; i < size; i++)
         fl_vector_add(vector, numbers+i);
@@ -327,7 +327,7 @@ void test_fl_vector_pop()
     int numbers[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
     int size = (int)(sizeof(numbers) / sizeof(numbers[0]));
 
-    FlVector vector = fl_vector_new(10, NULL);
+    FlVector *vector = fl_vector_new(10, NULL);
 
     for (int i=0; i < size; i++)
         fl_vector_add(vector, numbers+i);

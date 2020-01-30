@@ -6,7 +6,7 @@
 void tokenize(char *regex, char *expect[])
 {
 	RegexFlags flags;
-	FlVector tokens = parse_regex(regex, &flags);
+	FlVector *tokens = parse_regex(regex, &flags);
 
 	if (tokens == NULL)
 		return;
@@ -74,7 +74,7 @@ void test_fl_regex_tokenize()
 
 bool fl_regex_match_test(char *pattern, char *input)
 {
-	FlRegex regex = fl_regex_compile(pattern);
+	FlRegex *regex = fl_regex_compile(pattern);
 
 	if (regex == NULL)
 		return false;

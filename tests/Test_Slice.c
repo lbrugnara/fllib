@@ -30,7 +30,7 @@ void test_slice_iterator()
     struct FlSlice slice = fl_slice_new((const FlByte*)numbers, sizeof(int), 0, 10);
 
     // Forward
-    FlIterator sliceit = fl_slice_begin(&slice);
+    FlIterator *sliceit = fl_slice_begin(&slice);
 
     for (int j=10; !fl_iterator_is_end(sliceit, &slice); j--, fl_iterator_next(sliceit))
         fl_vexpect(j == flm_iterator_value(sliceit, int), "Iterator current value in slice must be equals to %d (j)", j);

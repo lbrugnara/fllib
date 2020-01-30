@@ -29,7 +29,7 @@
  * Typedef of the opaque struct FlIterator
  *
  */
-typedef struct FlIterator* FlIterator;
+typedef struct FlIterator FlIterator;
 
 /*
  * Type: enum FlIteratorType
@@ -112,7 +112,7 @@ typedef bool (*FlIteratorPositionFunction)(void *it, void *container);
  * {return: FlIterator} Iterator to traverse a collection of the type {FlIteratorType}
  *
  */
-FlIterator fl_iterator_new(
+FlIterator* fl_iterator_new(
 	FlIteratorType type, 
 	void *itdata, 
 	FlIteratorMoveFunction next, 
@@ -134,43 +134,43 @@ FlIterator fl_iterator_new(
  * {return: void}
  *
  */
-void fl_iterator_free(FlIterator it);
+void fl_iterator_free(FlIterator *it);
 
 /*
  * Function: fl_iterator_next
  *
  * Moves the iterator to the next element in the collection
  *
- * FlIterator it - Target iterator
+ * FlIterator *it - Target iterator
  *
  * {return: FlIterator} Reference to the target iterator
  *
  */
-FlIterator fl_iterator_next(FlIterator it);
+FlIterator* fl_iterator_next(FlIterator *it);
 
 /*
  * Function: fl_iterator_prev
  *
  * Moves the iterator to the previous element in the collection
  *
- * FlIterator it - Target iterator
+ * FlIterator *it - Target iterator
  *
- * {return: FlIterator} Reference to the target iterator
+ * {return: FlIterator*} Reference to the target iterator
  *
  */
-FlIterator fl_iterator_prev(FlIterator it);
+FlIterator* fl_iterator_prev(FlIterator *it);
 
 /*
  * Function: fl_iterator_value
  *
  * Returns the value of the current pointed element
  *
- * FlIterator it - Target iterator
+ * FlIterator *it - Target iterator
  *
  * {return: void*} Pointer to the element data
  *
  */
-void* fl_iterator_value(FlIterator it);
+void* fl_iterator_value(FlIterator *it);
 
 /*
  * Macro: flm_iterator_value
@@ -180,7 +180,7 @@ void* fl_iterator_value(FlIterator it);
  * this more friendly by taking a data type and doing the
  * casting.
  *
- * FlIterator it - Pointer to an interator
+ * FlIterator *it - Pointer to an interator
  * DataType Keyword type - C data type
  *
  */
@@ -191,26 +191,26 @@ void* fl_iterator_value(FlIterator it);
  *
  * Check if the iterator is pointing 1 element
  *
- * FlIterator it - Target iterator
+ * FlIterator *it - Target iterator
  * void *container - Collection of elements
  *
  * {return: bool} True if iterator points to the 1 element in the container
  *
  */
-bool fl_iterator_is_start(FlIterator it, void *container);
+bool fl_iterator_is_start(FlIterator *it, void *container);
 
 /*
  * Function: fl_iterator_is_end
  *
  * Check if the iterator is pointing to the nth+1 element (actually, not an element)
  *
- * FlIterator it - Target iterator
+ * FlIterator *it - Target iterator
  * void *container - Collection of elements
  *
  * {return: bool} True if iterator points to the nth+1 element in the container
  *
  */
-bool fl_iterator_is_end(FlIterator it, void *container);
+bool fl_iterator_is_end(FlIterator *it, void *container);
 
 /*
  * Function: fl_iterator_equals
@@ -218,12 +218,12 @@ bool fl_iterator_is_end(FlIterator it, void *container);
  * Check if both iterators are pointing to the same element
  * in the container
  *
- * FlIterator i1 - Target iterator
- * FlIterator i2 - Target iterator
+ * FlIterator *i1 - Target iterator
+ * FlIterator *i2 - Target iterator
  *
  * {return: bool}
  *
  */
-bool fl_iterator_equals(FlIterator i1, FlIterator i2);
+bool fl_iterator_equals(FlIterator *i1, FlIterator *i2);
 
 #endif /* FL_ITERATOR_H */

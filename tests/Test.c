@@ -225,7 +225,7 @@ void run_suite(FlTestSuite suite, struct FlTestSuiteResult *result)
 
         volatile bool failed = false;
 
-        FlTimer timer = fl_timer_create();
+        FlTimer *timer = fl_timer_create();
         fl_timer_start(timer);
 
         Try (&testctx)

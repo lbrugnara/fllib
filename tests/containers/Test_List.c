@@ -4,7 +4,7 @@
 
 void test_fl_list_head(void)
 {
-    FlList list = fl_list_new();
+    FlList *list = fl_list_new();
 
     struct FlListNode *head = fl_list_head(list);
     fl_expect("The head of a newly created list must be NULL", head == NULL);
@@ -28,7 +28,7 @@ void test_fl_list_head(void)
 
 void test_fl_list_tail(void)
 {
-    FlList list = fl_list_new();
+    FlList *list = fl_list_new();
 
     struct FlListNode *tail = fl_list_tail(list);
     fl_expect("The tail of a newly created list must be NULL", tail == NULL);
@@ -52,7 +52,7 @@ void test_fl_list_tail(void)
 
 void test_fl_list_append(void)
 {
-    FlList list = fl_list_new_args((struct FlListArgs) {
+    FlList *list = fl_list_new_args((struct FlListArgs) {
         .value_allocator = fl_container_allocator_sizet,
         .value_cleaner = fl_container_cleaner_pointer
     });
@@ -73,7 +73,7 @@ void test_fl_list_append(void)
 
 void test_fl_list_prepend(void)
 {
-    FlList list = fl_list_new_args((struct FlListArgs) {
+    FlList *list = fl_list_new_args((struct FlListArgs) {
         .value_allocator = fl_container_allocator_sizet,
         .value_cleaner = fl_container_cleaner_pointer
     });
@@ -94,7 +94,7 @@ void test_fl_list_prepend(void)
 
 void test_fl_list_insert_after(void)
 {
-    FlList list = fl_list_new_args((struct FlListArgs) {
+    FlList *list = fl_list_new_args((struct FlListArgs) {
         .value_allocator = fl_container_allocator_sizet,
         .value_cleaner = fl_container_cleaner_pointer
     });
@@ -123,7 +123,7 @@ void test_fl_list_insert_after(void)
 
 void test_fl_list_insert_before(void)
 {
-    FlList list = fl_list_new_args((struct FlListArgs) {
+    FlList *list = fl_list_new_args((struct FlListArgs) {
         .value_allocator = fl_container_allocator_sizet,
         .value_cleaner = fl_container_cleaner_pointer
     });

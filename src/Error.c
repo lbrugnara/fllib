@@ -34,7 +34,7 @@ typedef struct FlErrQueue {
  * up to FL_ERROR_QUEUE_MAX errors for each thread.
  *
  */
-FlHashtable Errors;
+FlHashtable *Errors;
 
 FlMutex ErrMutex = FL_MUTEX_INIT_STATIC;
 

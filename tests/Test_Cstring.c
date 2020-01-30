@@ -44,7 +44,7 @@ void test_cstring_dup()
 
 void test_cstring_split()
 {
-    FlVector v = fl_cstring_split("Hello");
+    FlVector *v = fl_cstring_split("Hello");
     size_t length = fl_vector_length(v);
     fl_expect("Split resulted in a vector with length 5", length == 5);
     for(size_t i=0; i < length; i++)
@@ -187,7 +187,7 @@ void test_cstring_append()
 
 void test_cstring_join()
 {
-    FlVector str_vector = fl_vector_new(3, fl_container_cleaner_pointer);
+    FlVector *str_vector = fl_vector_new(3, fl_container_cleaner_pointer);
     char *str1 = fl_cstring_dup("one");
     char *str2 = fl_cstring_dup("two");
     char *str3 = fl_cstring_dup("three");

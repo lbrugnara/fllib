@@ -12,11 +12,11 @@ struct FlList {
 	FlContainerCleanupFunction cleaner;
 };
 
-FlList fl_list_new(void) {
+FlList* fl_list_new(void) {
 	return fl_list_new_args((struct FlListArgs){ 0 });
 }
 
-FlList fl_list_new_args(struct FlListArgs args)
+FlList* fl_list_new_args(struct FlListArgs args)
 {
 	struct FlList *list = fl_malloc(sizeof(struct FlList));
 	
@@ -28,17 +28,17 @@ FlList fl_list_new_args(struct FlListArgs args)
 	return list;
 }
 
-struct FlListNode* fl_list_head(FlList list)
+struct FlListNode* fl_list_head(FlList *list)
 {
 	return list->head;	
 }
 
-struct FlListNode* fl_list_tail(FlList list)
+struct FlListNode* fl_list_tail(FlList *list)
 {
 	return list->tail;
 }
 
-struct FlListNode* fl_list_append(FlList list, const void *value)
+struct FlListNode* fl_list_append(FlList *list, const void *value)
 {
 	struct FlListNode *node = fl_malloc(sizeof(struct FlListNode));
 	node->prev = NULL;
@@ -62,7 +62,7 @@ struct FlListNode* fl_list_append(FlList list, const void *value)
 	return node;
 }
 
-struct FlListNode* fl_list_prepend(FlList list, const void *value)
+struct FlListNode* fl_list_prepend(FlList *list, const void *value)
 {
 	struct FlListNode *node = fl_malloc(sizeof(struct FlListNode));
 	node->prev = NULL;
@@ -86,7 +86,7 @@ struct FlListNode* fl_list_prepend(FlList list, const void *value)
 	return node;
 }
 
-void fl_list_remove(FlList list, struct FlListNode *node)
+void fl_list_remove(FlList *list, struct FlListNode *node)
 {
 	bool isHead = node == list->head;
 	bool isTail = node == list->tail;
@@ -108,7 +108,7 @@ void fl_list_remove(FlList list, struct FlListNode *node)
 	fl_free(node);
 }
 
-struct FlListNode* fl_list_insert_after(FlList list, struct FlListNode *target, const void *value)
+struct FlListNode* fl_list_insert_after(FlList *list, struct FlListNode *target, const void *value)
 {
 	struct FlListNode *node = fl_malloc(sizeof(struct FlListNode));
 	node->prev = NULL;
@@ -138,7 +138,7 @@ struct FlListNode* fl_list_insert_after(FlList list, struct FlListNode *target, 
 	return node;
 }
 
-struct FlListNode* fl_list_insert_before(FlList list, struct FlListNode *target, const void *value)
+struct FlListNode* fl_list_insert_before(FlList *list, struct FlListNode *target, const void *value)
 {
 	struct FlListNode *node = fl_malloc(sizeof(struct FlListNode));
 	node->prev = NULL;
@@ -169,7 +169,7 @@ struct FlListNode* fl_list_insert_before(FlList list, struct FlListNode *target,
 	return node;
 }
 
-size_t fl_list_length(FlList list)
+size_t fl_list_length(FlList *list)
 {
 	size_t length = 0;
 	struct FlListNode *tmp = list->head;
@@ -180,7 +180,7 @@ size_t fl_list_length(FlList list)
 	return length;
 }
 
-void fl_list_free(FlList list)
+void fl_list_free(FlList *list)
 {
 	if (list->head != NULL)
 	{

@@ -4,7 +4,7 @@
 #include "../Array.h"
 #include "Container.h"
 
-typedef struct FlHashtable* FlHashtable;
+typedef struct FlHashtable FlHashtable;
 
 /*
  * Type: unsigned long(*FlHashtableHashFunction)(const FlByte *key)
@@ -75,7 +75,7 @@ struct FlHashtableArgs {
 * {return: FlHashtable} The new hashtable
 * -------------------------------------------------------------
 */
-FlHashtable fl_hashtable_new(
+FlHashtable* fl_hashtable_new(
     FlHashtableHashFunction hash_func, 
     FlContainerEqualsFunction key_comparer, 
     FlContainerCleanupFunction key_cleaner, 
@@ -96,7 +96,7 @@ FlHashtable fl_hashtable_new(
  * {return: FlHashtable} Newly created hashtable
  *
  */
-FlHashtable fl_hashtable_new_args(struct FlHashtableArgs args);
+FlHashtable* fl_hashtable_new_args(struct FlHashtableArgs args);
 
 /*
  * Function: fl_hashtable_free
@@ -110,7 +110,7 @@ FlHashtable fl_hashtable_new_args(struct FlHashtableArgs args);
  * {return: void}
  *
  */
-void fl_hashtable_free(FlHashtable ht);
+void fl_hashtable_free(FlHashtable *ht);
 
 /*
  * Function: fl_hashtable_load_factor
@@ -122,7 +122,7 @@ void fl_hashtable_free(FlHashtable ht);
  * {return: double} Load factor
  *
  */
-double fl_hashtable_load_factor(FlHashtable ht);
+double fl_hashtable_load_factor(FlHashtable *ht);
 
 /*
  * Function: fl_hashtable_add
@@ -139,7 +139,7 @@ double fl_hashtable_load_factor(FlHashtable ht);
  * NULL instead.
  *
  */
-void* fl_hashtable_add(FlHashtable ht, const void *key, const void *value);
+void* fl_hashtable_add(FlHashtable *ht, const void *key, const void *value);
 
 /*
  * Function: fl_hashtable_get
@@ -154,7 +154,7 @@ void* fl_hashtable_add(FlHashtable ht, const void *key, const void *value);
  * {return: void*} Pointer to the element mapped from the key value {key}
  *
  */
-void* fl_hashtable_get(FlHashtable ht, const void *key);
+void* fl_hashtable_get(FlHashtable *ht, const void *key);
 
 /*
  * Function: fl_hashtable_set
@@ -172,7 +172,7 @@ void* fl_hashtable_get(FlHashtable ht, const void *key);
  * {return: void*} Pointer to the inserted value
  *
  */
-void* fl_hashtable_set(FlHashtable ht, const void *key, const void *value);
+void* fl_hashtable_set(FlHashtable *ht, const void *key, const void *value);
 
 /*
  * Function: fl_hashtable_remove
@@ -190,7 +190,7 @@ void* fl_hashtable_set(FlHashtable ht, const void *key, const void *value);
  *  bool - *true* if key exists and the entry is removed. Otherwise it returns *false*
  *
  */
-bool fl_hashtable_remove(FlHashtable ht, const void *key, bool clean_key, bool clean_value);
+bool fl_hashtable_remove(FlHashtable *ht, const void *key, bool clean_key, bool clean_value);
 
 /*
  * Function: fl_hashtable_clear
@@ -204,7 +204,7 @@ bool fl_hashtable_remove(FlHashtable ht, const void *key, bool clean_key, bool c
  * {return: void}
  *
  */
-void fl_hashtable_clear(FlHashtable ht);
+void fl_hashtable_clear(FlHashtable *ht);
 
 /*
  * Function: fl_hashtable_length
@@ -216,7 +216,7 @@ void fl_hashtable_clear(FlHashtable ht);
  * {return: size_t} Number of elements stored in {ht}
  *
  */
-size_t fl_hashtable_length(FlHashtable ht);
+size_t fl_hashtable_length(FlHashtable *ht);
 
 /*
  * Function: fl_hashtable_keys
@@ -233,7 +233,7 @@ size_t fl_hashtable_length(FlHashtable ht);
  *  which means that modifications to the keys in the array impact in 
  *  the hashtable.
  */
-FlArray fl_hashtable_keys(FlHashtable ht);
+FlArray* fl_hashtable_keys(FlHashtable *ht);
 
 /*
  * Function: fl_hashtable_values
@@ -250,7 +250,7 @@ FlArray fl_hashtable_keys(FlHashtable ht);
  *  which means that modifications to the values in the array impact in 
  *  the hashtable.
  */
-FlArray fl_hashtable_values(FlHashtable ht);
+FlArray* fl_hashtable_values(FlHashtable *ht);
 
 /*
  * Function: fl_hashtable_has_key
@@ -263,7 +263,7 @@ FlArray fl_hashtable_values(FlHashtable ht);
  * {return: bool} true if {key} is present in hashtable, otherwise false.
  *
  */
-bool fl_hashtable_has_key(FlHashtable ht, const void *key);
+bool fl_hashtable_has_key(FlHashtable *ht, const void *key);
 
 /*
  * Function: fl_hashtable_resize
@@ -276,7 +276,7 @@ bool fl_hashtable_has_key(FlHashtable ht, const void *key);
  * {return: void}
  *
  */
-void fl_hashtable_resize(FlHashtable ht, size_t nbuckets);
+void fl_hashtable_resize(FlHashtable *ht, size_t nbuckets);
 
 /*
  * Function: fl_hashtable_buckets_count
@@ -288,7 +288,7 @@ void fl_hashtable_resize(FlHashtable ht, size_t nbuckets);
  * {return: size_t} Number of buckets allocated into {ht}
  *
  */
-size_t fl_hashtable_buckets_count(FlHashtable ht);
+size_t fl_hashtable_buckets_count(FlHashtable *ht);
 
 /*
  * Function: fl_hashtable_hash_pointer

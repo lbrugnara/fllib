@@ -35,24 +35,24 @@ struct FlProcess {
     #endif
     char **argv;
     char **envp;
-    struct FlPipe *in;
-    struct FlPipe *out;
-    struct FlPipe *err;
+    FlPipe *in;
+    FlPipe *out;
+    FlPipe *err;
 };
 
-FlPipe fl_process_pipe_new(void)
+FlPipe* fl_process_pipe_new(void)
 {
-    struct FlPipe *pipe = fl_malloc(sizeof(struct FlPipe));
+    FlPipe *pipe = fl_malloc(sizeof(struct FlPipe));
     return pipe;
 }
 
-void fl_process_pipe_free(FlPipe pipe)
+void fl_process_pipe_free(FlPipe *pipe)
 {
     fl_free(pipe);
 }
 
 #ifdef _WIN32
-bool win32_process_create(FlProcess process)
+bool win32_process_create(FlProcess *process)
 {
     // Set the bInheritHandle flag so pipe handles are inherited.  
     process->sec_attrs.nLength = sizeof(SECURITY_ATTRIBUTES); 
@@ -162,7 +162,7 @@ bool win32_process_create(FlProcess process)
 #endif
 
 #if defined(__linux__)
-bool linux_process_create(FlProcess process)
+bool linux_process_create(FlProcess *process)
 {
     if (process->in)
     {
@@ -259,9 +259,9 @@ bool linux_process_create(FlProcess process)
 }
 #endif
 
-FlProcess fl_process_create(const char *cmd, char **argv, char **envp, FlPipe in, FlPipe out, FlPipe err)
+FlProcess* fl_process_create(const char *cmd, char **argv, char **envp, FlPipe *in, FlPipe *out, FlPipe *err)
 {
-    struct FlProcess *process = fl_malloc(sizeof(struct FlProcess));
+    FlProcess *process = fl_malloc(sizeof(struct FlProcess));
 
     process->command = cmd;
     process->argv = argv;
@@ -295,7 +295,7 @@ FlProcess fl_process_create(const char *cmd, char **argv, char **envp, FlPipe in
     return process;
 }
 
-bool fl_process_wait(FlProcess process)
+bool fl_process_wait(FlProcess *process)
 {
     #ifdef _WIN32
 
@@ -311,7 +311,7 @@ bool fl_process_wait(FlProcess process)
     #endif
 }
 
-void fl_process_free(FlProcess process)
+void fl_process_free(FlProcess *process)
 {
     #ifdef _WIN32
     {
@@ -378,17 +378,17 @@ void fl_process_free(FlProcess process)
     fl_free(process);
 }
 
-char** fl_process_argv(FlProcess process)
+char** fl_process_argv(FlProcess *process)
 {
     return process->argv;
 }
 
-char** fl_process_environ(FlProcess process)
+char** fl_process_environ(FlProcess *process)
 {
     return process->envp;
 }
 
-size_t fl_process_write_to_stdin(FlProcess process, const char *message, size_t length) 
+size_t fl_process_write_to_stdin(FlProcess *process, const char *message, size_t length) 
 {
     #ifdef _WIN32
     DWORD written;
@@ -423,7 +423,7 @@ size_t fl_process_write_to_stdin(FlProcess process, const char *message, size_t 
     #endif
 }
 
-bool fl_process_poll_stdout(FlProcess process, unsigned long sleep_milliseconds, int max_tries)
+bool fl_process_poll_stdout(FlProcess *process, unsigned long sleep_milliseconds, int max_tries)
 {
     flm_assert(process, "Process cannot be NULL");
 
@@ -489,7 +489,7 @@ bool fl_process_poll_stdout(FlProcess process, unsigned long sleep_milliseconds,
     #endif
 }
 
-bool fl_process_poll_stderr(FlProcess process, unsigned long sleep_milliseconds, int max_tries)
+bool fl_process_poll_stderr(FlProcess *process, unsigned long sleep_milliseconds, int max_tries)
 {
     flm_assert(process, "Process cannot be NULL");
 
@@ -555,7 +555,7 @@ bool fl_process_poll_stderr(FlProcess process, unsigned long sleep_milliseconds,
     #endif
 }
 
-bool fl_process_pending_stdout(FlProcess process)
+bool fl_process_pending_stdout(FlProcess *process)
 {
     flm_assert(process, "Process cannot be NULL");
 
@@ -598,7 +598,7 @@ bool fl_process_pending_stdout(FlProcess process)
     #endif
 }
 
-bool fl_process_pending_stderr(FlProcess process)
+bool fl_process_pending_stderr(FlProcess *process)
 {
     flm_assert(process, "Process cannot be NULL");
 
@@ -641,7 +641,7 @@ bool fl_process_pending_stderr(FlProcess process)
     #endif
 }
 
-char* fl_process_read_from_stdout(FlProcess process)
+char* fl_process_read_from_stdout(FlProcess *process)
 {
     if (!fl_process_pending_stdout(process))
         return NULL;
@@ -703,7 +703,7 @@ char* fl_process_read_from_stdout(FlProcess process)
     #endif
 }
 
-char* fl_process_read_from_stderr(FlProcess process)
+char* fl_process_read_from_stderr(FlProcess *process)
 {
     if (!fl_process_pending_stderr(process))
         return NULL;

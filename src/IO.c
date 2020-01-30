@@ -106,7 +106,7 @@ bool fl_io_dir_create_recursive(const char *pathname)
     bool status = true;
 
     char *path = fl_cstring_replace(pathname, "/", FL_IO_DIR_SEPARATOR);
-    FlVector parts = fl_cstring_split_by(path, FL_IO_DIR_SEPARATOR);
+    FlVector *parts = fl_cstring_split_by(path, FL_IO_DIR_SEPARATOR);
     size_t count = fl_vector_length(parts);
 
     // TODO: Handle errors
@@ -174,7 +174,7 @@ size_t fl_io_file_write_bytes(FILE *file, size_t nbytes, const FlByte *bytes)
     return fwrite(bytes, 1, nbytes, file);
 }
 
-FlArray fl_io_file_read_all_bytes(const char *filename)
+FlArray* fl_io_file_read_all_bytes(const char *filename)
 {
     FILE * fd = fl_io_file_open(filename, "rb");
 
@@ -216,7 +216,7 @@ FlArray fl_io_file_read_all_bytes(const char *filename)
     return buffer;
 }
 
-bool fl_io_file_write_all_bytes(const char *filename, const FlArray bytes)
+bool fl_io_file_write_all_bytes(const char *filename, const FlArray * const bytes)
 {
     FILE *fd = fl_io_file_open(filename, "wb");
     
@@ -396,11 +396,11 @@ char** fl_io_dir_list(const char *directory)
     return files;
 }
 
-static inline FlVector split_regex_by_path_separator(const char *regex, const char separator)
+static inline FlVector* split_regex_by_path_separator(const char *regex, const char separator)
 {
     flm_assert(regex != NULL, "char* argument to split cannot be NULL");
 
-    FlVector parts = fl_vector_new(1, fl_container_cleaner_pointer);
+    FlVector *parts = fl_vector_new(1, fl_container_cleaner_pointer);
 
     size_t length = strlen(regex);
     size_t i=0;
@@ -441,9 +441,9 @@ char** fl_io_file_find(const char *pattern, const char *path_separator)
 
     char **files = fl_array_new(sizeof(char*), 0);
 
-    FlList matching_files = fl_list_new_args((struct FlListArgs){ .value_cleaner = fl_container_cleaner_pointer });
+    FlList *matching_files = fl_list_new_args((struct FlListArgs){ .value_cleaner = fl_container_cleaner_pointer });
 
-    FlVector parts = split_regex_by_path_separator(pattern, path_separator[0]);
+    FlVector *parts = split_regex_by_path_separator(pattern, path_separator[0]);
 
     // Our starting point is the current directory
     char *base_dir = fl_cstring_vdup("%s%s", (char*)fl_vector_get(parts, 0), path_separator);
@@ -464,7 +464,7 @@ char** fl_io_file_find(const char *pattern, const char *path_separator)
         else
             fl_cstring_vappend(&current_path, "%s%s", path_separator, fl_vector_get(parts, i));
 
-        FlRegex regex = fl_regex_compile(current_path);
+        FlRegex *regex = fl_regex_compile(current_path);
 
         if (regex == NULL)
             break;
@@ -500,7 +500,7 @@ char** fl_io_file_find(const char *pattern, const char *path_separator)
     fl_vector_free(parts);
 
     struct FlListNode *tmp = fl_list_head(matching_files);
-    FlRegex regex = fl_regex_compile((char*)pattern);
+    FlRegex *regex = fl_regex_compile((char*)pattern);
     while (tmp)
     {
         // We need to make a last check against the full pattern

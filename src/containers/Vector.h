@@ -14,7 +14,7 @@
  *  typedef struct FlVector *FlVector;
  * =============
  */
-typedef struct FlVector* FlVector;
+typedef struct FlVector FlVector;
 
 /*
  * Type: struct FlVectorArgs
@@ -68,7 +68,7 @@ struct FlVectorArgs {
  * Notes:
  *  Check <struct FlVectorArgs> for the default values used to configure the vector
  */
-FlVector fl_vector_new(size_t capacity, FlContainerCleanupFunction cleaner);
+FlVector* fl_vector_new(size_t capacity, FlContainerCleanupFunction cleaner);
 
 /*
  * Function: fl_vector_new_args
@@ -83,7 +83,7 @@ FlVector fl_vector_new(size_t capacity, FlContainerCleanupFunction cleaner);
  * Notes:
  *  Check <struct FlVectorArgs> for the default values used to configure the vector
  */
-FlVector fl_vector_new_args(struct FlVectorArgs args);
+FlVector* fl_vector_new_args(struct FlVectorArgs args);
 
 /*
  * Function: fl_vector_length
@@ -96,7 +96,7 @@ FlVector fl_vector_new_args(struct FlVectorArgs args);
  *  size_t - Number of elements currently stored in the *vector*
  *
  */
-size_t fl_vector_length(FlVector vector);
+size_t fl_vector_length(FlVector *vector);
 
 /*
  * Function: fl_vector_growth_factor
@@ -109,7 +109,7 @@ size_t fl_vector_length(FlVector vector);
  *  double - growth factor
  *
  */
-double fl_vector_growth_factor(FlVector vector);
+double fl_vector_growth_factor(FlVector *vector);
 
 /*
  * Function: fl_vector_capacity
@@ -122,7 +122,7 @@ double fl_vector_growth_factor(FlVector vector);
  *  size_t - Current capacity of the *vector*
  *
  */
-size_t fl_vector_capacity(FlVector vector);
+size_t fl_vector_capacity(FlVector *vector);
 
 
 /*
@@ -138,7 +138,7 @@ size_t fl_vector_capacity(FlVector vector);
  *  size_t - Maximum capacity
  *
  */
-size_t fl_vector_max_capacity(FlVector vector);
+size_t fl_vector_max_capacity(FlVector *vector);
 
 /*
  * Function: fl_vector_element_size
@@ -151,7 +151,7 @@ size_t fl_vector_max_capacity(FlVector vector);
  *  size_t - Size of the element type the vector accepts
  *
  */
-size_t fl_vector_element_size(FlVector vector);
+size_t fl_vector_element_size(FlVector *vector);
 
 /*
  * Function: fl_vector_add
@@ -164,7 +164,7 @@ size_t fl_vector_element_size(FlVector vector);
  * Return:
  *   void* - Pointer to the added element
  */
-void* fl_vector_add(FlVector vector, const void *element);
+void* fl_vector_add(FlVector *vector, const void *element);
 
 /*
  * Function: fl_vector_insert
@@ -183,7 +183,7 @@ void* fl_vector_add(FlVector vector, const void *element);
  *  expanded to make root for the new element. The created positions will 
  *  be zero'd out
  */
-void* fl_vector_insert(FlVector vector, const void *element, size_t index);
+void* fl_vector_insert(FlVector *vector, const void *element, size_t index);
 
 /*
  * Function: fl_vector_get
@@ -198,7 +198,7 @@ void* fl_vector_insert(FlVector vector, const void *element, size_t index);
  *  void* - Pointer to the element stored at vector's _index-nth_ position
  *
  */
-void* fl_vector_get(FlVector vector, size_t index);
+void* fl_vector_get(FlVector *vector, size_t index);
 
 /*
  * Function: fl_vector_last
@@ -213,20 +213,20 @@ void* fl_vector_get(FlVector vector, size_t index);
  * Notes:
  *  If vector is empty, this function returns NULL
  */
-void* fl_vector_last(FlVector vector);
+void* fl_vector_last(FlVector *vector);
 
 /*
  * Function: fl_vector_shift
  *  Removes the first element of the <FlVector>, and
  *
- * FlVector vector - Vector to remove its first element
+ * FlVector *vector - Vector to remove its first element
  * void *dest - Destination to copy the element to be removed
  *
  * {return: bool} If vector length is 0, this function returns 0,
  * if not true
  *
  */
-void* fl_vector_shift(FlVector vector, void *dest);
+void* fl_vector_shift(FlVector *vector, void *dest);
 
 /*
  * Function: fl_vector_pop
@@ -243,7 +243,7 @@ void* fl_vector_shift(FlVector vector, void *dest);
  *  bool - *false* if vector length is 0, true otherwise
  *
  */
-void* fl_vector_pop(FlVector vector, void *dest);
+void* fl_vector_pop(FlVector *vector, void *dest);
 
 /**
  * Return true if {vector} contains {elem}
@@ -253,39 +253,39 @@ void* fl_vector_pop(FlVector vector, void *dest);
  *
  * Returns true of {vector} contains {elem}.
  *
- * FlVector vector} Vector where to search {elem -
+ * FlVector *vector} Vector where to search {elem -
  * const void *elem - Element to search in vector
  *
  * {return: bool} true if {elem} is present in {vector}
  *
  */
-bool fl_vector_contains(FlVector vector, const void *elem);
+bool fl_vector_contains(FlVector *vector, const void *elem);
 
 /*
  * Function: fl_vector_concat
  *
  * Appends {vector2} elements at the end of {vector}
  *
- * FlVector vector} Vector where to insert the elements of {vector2 -
- * FlVector vector2} Vector where to retrieve its elements to be inserted into {vector -
+ * FlVector *vector} Vector where to insert the elements of {vector2 -
+ * FlVector *vector2} Vector where to retrieve its elements to be inserted into {vector -
  *
  * {return: void}
  *
  */
-void fl_vector_concat(FlVector vector, FlVector vector2);
+void fl_vector_concat(FlVector *vector, FlVector *vector2);
 
 /*
  * Function: fl_vector_concat
  *
  * Creates a new vector with the elements of {vector} and {vector2}
  *
- * FlVector vector - First vector to be copied in the new vector
- * FlVector vector2} Second vector to be copied (after {vector -) in the new vector
+ * FlVector *vector - First vector to be copied in the new vector
+ * FlVector *vector2} Second vector to be copied (after {vector -) in the new vector
  *
  * {return: FlVector} New vector that contains {vector}'s elements and {vector2}'s elements
  *
  */
-FlVector fl_vector_merge(FlVector vector, FlVector vector2);
+FlVector* fl_vector_merge(FlVector *vector, FlVector *vector2);
 
 /**
  * Removes the {pos}-th element in {vector}.
@@ -297,7 +297,7 @@ FlVector fl_vector_merge(FlVector vector, FlVector vector2);
  * Removes the element at position {pos}, and if {dest} is not null,
  * the target element will be copied into it.
  *
- * FlVector vector} Vector where to remove element at position {pos -
+ * FlVector *vector} Vector where to remove element at position {pos -
  * size_t pos - Index of the element to be removed
  * void *dest - Element to be removed will be copied to it if it is not null
  *
@@ -305,7 +305,7 @@ FlVector fl_vector_merge(FlVector vector, FlVector vector2);
  * this function returns false. Otherwise it returns true.
  *
  */
-bool fl_vector_remove(FlVector vector, size_t pos, void *dest);
+bool fl_vector_remove(FlVector *vector, size_t pos, void *dest);
 
 /**
  * Free the memory reserved for vector 
@@ -315,14 +315,14 @@ bool fl_vector_remove(FlVector vector, size_t pos, void *dest);
  *
  * Deletes {vector} releaseing its memory
  *
- * FlVector vector - Vector to be deleted
+ * FlVector *vector - Vector to be deleted
  *
  * {return: void}
  *
  */
-void fl_vector_free(FlVector vector);
+void fl_vector_free(FlVector *vector);
 
-void* fl_vector_to_array(FlVector vector);
+void* fl_vector_to_array(FlVector *vector);
 
 /* Datatype specifics getters/setters. (Can be extended by each datatype created in the same way here) */
 
@@ -331,12 +331,12 @@ void* fl_vector_to_array(FlVector vector);
  *
  * Returns an {FlIterator} that points to the first element in vector -
  *
- * const FlVector vector - Vector handle to be pointed by the iterator
+ * const FlVector *vector - Vector handle to be pointed by the iterator
  *
- * {return: FlIterator} Iterator pointing to the first element in vector -
+ * {return: FlIterator*} Iterator pointing to the first element in vector -
  *
  */
-FlIterator fl_vector_begin(const FlVector vector);
+FlIterator* fl_vector_begin(const FlVector *vector);
 
 /*
  * Function: fl_vector_end
@@ -344,11 +344,11 @@ FlIterator fl_vector_begin(const FlVector vector);
  * Returns an {FlIterator} that points to the past-last-nth element in vector -
  * The FlIterator returned by this function MUST NOT be dereferenced by fl_iterator_value.
  *
- * const FlVector vector - Vector handle to be pointed by the iterator
+ * const FlVector *vector - Vector handle to be pointed by the iterator
  *
- * {return: FlIterator} Iterator pointing beyond the last element in vector -
+ * {return: FlIterator*} Iterator pointing beyond the last element in vector -
  *
  */
-FlIterator fl_vector_end(const FlVector vector);
+FlIterator* fl_vector_end(const FlVector *vector);
 
 #endif /* FL_VECTOR_H */

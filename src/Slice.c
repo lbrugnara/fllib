@@ -79,7 +79,7 @@ static void it_delete(void *it)
     fl_free(it);
 }
 
-FlIterator fl_slice_begin(const struct FlSlice *slice)
+FlIterator* fl_slice_begin(const struct FlSlice *slice)
 {
     FlSliceIterator *sliceIterator = fl_calloc(1, sizeof(struct FlSliceIterator));
 
@@ -92,7 +92,7 @@ FlIterator fl_slice_begin(const struct FlSlice *slice)
     return fl_iterator_new(IT_SPAN, sliceIterator, &it_next, &it_prev, &it_value, &it_equals, &it_is_start, &it_is_end, &it_delete);
 }
 
-FlIterator fl_slice_end(const struct FlSlice *slice)
+FlIterator* fl_slice_end(const struct FlSlice *slice)
 {
     FlSliceIterator *sliceIterator = fl_calloc(1, sizeof(struct FlSliceIterator));
 

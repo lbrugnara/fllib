@@ -31,14 +31,14 @@ struct FlTimer {
     enum TimerStatus status;
 };
 
-FlTimer fl_timer_create()
+FlTimer* fl_timer_create()
 {
-    FlTimer timer = fl_malloc(sizeof(struct FlTimer));
+    FlTimer *timer = fl_malloc(sizeof(struct FlTimer));
     timer->status = TIMER_STOPPED;
     return timer;
 }
 
-void fl_timer_start(FlTimer timer)
+void fl_timer_start(FlTimer *timer)
 {
     flm_assert(timer != NULL, "Timer must not be null");
     timer->status = TIMER_STARTED;
@@ -51,7 +51,7 @@ void fl_timer_start(FlTimer timer)
 }
 
 
-long fl_timer_tick(FlTimer timer)
+long fl_timer_tick(FlTimer *timer)
 {
     flm_assert(timer != NULL, "Timer must not be null");
 
@@ -69,7 +69,7 @@ long fl_timer_tick(FlTimer timer)
     return elapsed;
 }
 
-void fl_timer_end(FlTimer timer)
+void fl_timer_end(FlTimer *timer)
 {
     flm_assert(timer != NULL, "Timer must not be null");
     flm_assert(timer->status == TIMER_STARTED, "Timer needs to be running");
@@ -81,7 +81,7 @@ void fl_timer_end(FlTimer timer)
     timer->status = TIMER_ENDED;
 }
 
-long fl_timer_elapsed_ms(FlTimer timer)
+long fl_timer_elapsed_ms(FlTimer *timer)
 {
     flm_assert(timer != NULL, "Timer must not be null");
     flm_assert(timer->status == TIMER_ENDED, "Timer stopped or already running");
@@ -99,7 +99,7 @@ long fl_timer_elapsed_ms(FlTimer timer)
     #endif
 }
 
-void fl_timer_free(FlTimer timer)
+void fl_timer_free(FlTimer *timer)
 {
     flm_assert(timer != NULL, "Timer must not be null");
     fl_free(timer);

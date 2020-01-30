@@ -30,12 +30,12 @@ void fl_cstring_resize(char **dst, size_t length)
     *dst = fl_realloc(*dst, length + 1);
 }
 
-FlVector fl_cstring_split(const char *str)
+FlVector* fl_cstring_split(const char *str)
 {
     flm_assert(str != NULL, "char* argument to split cannot be NULL");
 
     size_t length = strlen(str);
-    FlVector vector = fl_vector_new_args((struct FlVectorArgs){
+    FlVector *vector = fl_vector_new_args((struct FlVectorArgs){
         .writer = fl_container_writer,
         .element_size = sizeof(char),
         .capacity = length,
@@ -50,11 +50,11 @@ FlVector fl_cstring_split(const char *str)
     return vector;
 }
 
-FlVector fl_cstring_split_by(const char *string, const char *separator)
+FlVector* fl_cstring_split_by(const char *string, const char *separator)
 {
     flm_assert(string != NULL, "char* argument to split cannot be NULL");
 
-    FlVector parts = fl_vector_new(1, fl_container_cleaner_pointer);
+    FlVector *parts = fl_vector_new(1, fl_container_cleaner_pointer);
 
     size_t separatorLength = strlen(separator);
     size_t index = 0;
@@ -486,7 +486,7 @@ char** fl_cstring_vappend(char **dst, const char *format, ...)
     return dst;
 }
 
-char *fl_cstring_join(FlVector vector, char *glue)
+char *fl_cstring_join(FlVector *vector, char *glue)
 {
     size_t glue_length = strlen(glue);
     char *str = fl_cstring_new(0);
@@ -514,7 +514,7 @@ char *fl_cstring_join(FlVector vector, char *glue)
     return str;
 }
 
-char *fl_char_join(FlVector vector, char *glue)
+char *fl_char_join(FlVector *vector, char *glue)
 {
     size_t glue_length = strlen(glue);
     char *str = fl_cstring_new(0);

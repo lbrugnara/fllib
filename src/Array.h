@@ -24,7 +24,7 @@
  *  An FlArray is a pointer to the allocated memory
  *
  */
-typedef void *FlArray;
+typedef void FlArray;
 
 #define arrayof(type) (type*)
 
@@ -73,20 +73,20 @@ typedef void(*FlArrayFreeElementFunc)(void*);
  *  The pointer returned by this function MUST BE freed with the <fl_array_free> function
  *
  */
-FlArray fl_array_new(size_t size, size_t n);
+FlArray* fl_array_new(size_t size, size_t n);
 
 /*
  * Function: fl_array_free
  *  Releases the memory allocated with the <fl_array_new> function
  *
  * Parameters:
- *  const FlArray array - A pointer to the memory to be freed
+ *  FlArray * const array - A pointer to the memory to be freed
  *
  * Return:
  *  void - This function does not return a value
  *
  */
-void fl_array_free(const FlArray array);
+void fl_array_free(FlArray *array);
 
 /*
  * Function: fl_array_free_each
@@ -96,16 +96,16 @@ void fl_array_free(const FlArray array);
  *  element.
  *
  * Parameters:
- *  const FlArray array - A pointer to the memory to be realeased
+ *  FlArray * const array - A pointer to the memory to be realeased
  *  FlArrayFreeElementFunc item_free_func - Handler function to release the memory for each element of array
  *
  * Return:
  *  void - This function does not return a value.
  *
  */
-void fl_array_free_each(const FlArray array, FlArrayFreeElementFunc item_free_func);
+void fl_array_free_each(FlArray *array, FlArrayFreeElementFunc item_free_func);
 
-void fl_array_free_each_pointer(const FlArray array, FlArrayFreeElementFunc item_free_func);
+void fl_array_free_each_pointer(FlArray *array, FlArrayFreeElementFunc item_free_func);
 
 /*
  * Function: fl_array_resize
@@ -122,40 +122,40 @@ void fl_array_free_each_pointer(const FlArray array, FlArrayFreeElementFunc item
  * =============
  *
  * Parameters:
- *  FlArray array - A pointer to the memory to be reallocated
+ *  FlArray *array - A pointer to the memory to be reallocated
  *  size_t n - Number of elements to allocate in *array*
  *
  * Return:
  *  FlArray - A pointer to the new allocated memory, or NULL on failure
  *
  */
-FlArray fl_array_resize(FlArray array, size_t n);
+FlArray* fl_array_resize(FlArray *array, size_t n);
 
 /*
  * Function: fl_array_length
  *  Returns the number of elements the *array* contains
  *
  * Parameters:
- *  FlArray array - Target array to get its capacity
+ *  FlArray *array - Target array to get its capacity
  *
  * Return:
  *  size_t - Number of elements the array can contain
  *
  */
-size_t fl_array_length(const FlArray array);
+size_t fl_array_length(const FlArray * const array);
 
 /*
  * Function: fl_array_element_size
  *  Returns the size of the elements the array can hold
  *
  * Parameters:
- *  FlArray array - Target array
+ *  FlArray *array - Target array
  *
  * Return:
  *  size_t - Size of the elements the array can hold
  *
  */
-size_t fl_array_element_size(const FlArray array);
+size_t fl_array_element_size(const FlArray * const array);
 
 /*
  * Function: fl_array_combine
@@ -178,7 +178,7 @@ size_t fl_array_element_size(const FlArray array);
  *  FlArray - A pointer to the destination array, or NULL on failure
  *
  */
-FlArray fl_array_combine(FlArray dest_array, FlArray src_array);
+FlArray* fl_array_combine(FlArray *dest_array, const FlArray * const src_array);
 
 /*
  * Function: fl_array_append
@@ -194,14 +194,14 @@ FlArray fl_array_combine(FlArray dest_array, FlArray src_array);
  * =============
  * 
  * Parameters:
- * FlArray array - Destination array that will contain the new element
+ * FlArray *array - Destination array that will contain the new element
  * const void *element - New element to append to the end of the *array*
  *
  * Returns:
  *  FlArray - A pointer to the destination array, or NULL on failure
  *
  */
-FlArray fl_array_append(FlArray array, const void *element);
+FlArray* fl_array_append(FlArray *array, const void *element);
 
 /*
  * Function: fl_array_contains
@@ -209,14 +209,14 @@ FlArray fl_array_append(FlArray array, const void *element);
  *  only with arrays allocated with <fl_array_new>.
  *
  * Parameters:
- *  const FlArray array - Target array to look for *needle*
+ *  FlArray * const array - Target array to look for *needle*
  *  const void *needle - Pointer to the memory to search in *array*
  *
  * Return:
  *  bool - *true* if *needle* is present in the *array*
  *
  */
-bool fl_array_contains(const FlArray array, const void *needle);
+bool fl_array_contains(const FlArray * const array, const void *needle);
 
 /*
  * Function: fl_array_contains_n
@@ -245,12 +245,12 @@ bool fl_array_contains_n(const void *array, size_t nelems, const void *needle, s
  *  Creates an <FlVector> using as the source of elements the provided *array*
  *
  * Parameters:
- *  const FlArray array - Array of elements
+ *  FlArray * const array - Array of elements
  *
  * Return:
- *  FlVector - Pointer to a new vector with the array's elements on it
+ *  FlVector* - Pointer to a new vector with the array's elements on it
  *
  */
-FlVector fl_array_to_vector(const FlArray array);
+FlVector* fl_array_to_vector(const FlArray * const array);
 
 #endif /* FL_ARRAY_H */

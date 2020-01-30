@@ -8,13 +8,13 @@
 /*
  * Type: FlList
  *  
- *  An opaque pointer to a doubly linked list instance.
+ *  A typedef to an opaque struct that represents a doubly linked list instance.
  *
  * ===== C =====
- *  typedef struct FlList *FlList;
+ *  typedef struct FlList FlList;
  * =============
  */
-typedef struct FlList *FlList;
+typedef struct FlList FlList;
 
 /*
  * Type: struct FlListNode
@@ -62,7 +62,7 @@ struct FlListArgs {
  *  FlList - an opaque pointer to a list
  *
  */
-FlList fl_list_new(void);
+FlList* fl_list_new(void);
 
 /*
  * Function: fl_list_new_args
@@ -76,7 +76,7 @@ FlList fl_list_new(void);
  *  FlList - an opaque pointer to a list
  *
  */
-FlList fl_list_new_args(struct FlListArgs args);
+FlList* fl_list_new_args(struct FlListArgs args);
 
 /*
  * Function: fl_list_head
@@ -89,7 +89,7 @@ FlList fl_list_new_args(struct FlListArgs args);
  * struct FlListNode* - The list's head
  *
  */
-struct FlListNode* fl_list_head(FlList list);
+struct FlListNode* fl_list_head(FlList *list);
 
 /*
  * Function: fl_list_tail
@@ -102,7 +102,7 @@ struct FlListNode* fl_list_head(FlList list);
  * struct FlListNode* - The list's tail
  *
  */
-struct FlListNode* fl_list_tail(FlList list);
+struct FlListNode* fl_list_tail(FlList *list);
 
 /*
  * Function: fl_list_append
@@ -117,7 +117,7 @@ struct FlListNode* fl_list_tail(FlList list);
  *  struct FlListNode* - Pointer to the newly inserted node
  *
  */
-struct FlListNode* fl_list_append(FlList list, const void *value);
+struct FlListNode* fl_list_append(FlList *list, const void *value);
 
 /*
  * Function: fl_list_prepend
@@ -132,7 +132,7 @@ struct FlListNode* fl_list_append(FlList list, const void *value);
  *  struct FlListNode* - Pointer to the newly inserted node
  *
  */
-struct FlListNode* fl_list_prepend(FlList list, const void *value);
+struct FlListNode* fl_list_prepend(FlList *list, const void *value);
 
 /*
  * Function: fl_list_insert_after
@@ -149,7 +149,7 @@ struct FlListNode* fl_list_prepend(FlList list, const void *value);
  *  struct FlListNode* - Pointer to the newly inserted node
  *
  */
-struct FlListNode* fl_list_insert_after(FlList list, struct FlListNode *target, const void *value);
+struct FlListNode* fl_list_insert_after(FlList *list, struct FlListNode *target, const void *value);
 
 /*
  * Function: fl_list_insert_before
@@ -166,9 +166,9 @@ struct FlListNode* fl_list_insert_after(FlList list, struct FlListNode *target, 
  *  struct FlListNode* - Pointer to the newly inserted node
  *
  */
-struct FlListNode* fl_list_insert_before(FlList list, struct FlListNode *target, const void *value);
+struct FlListNode* fl_list_insert_before(FlList *list, struct FlListNode *target, const void *value);
 
-void fl_list_remove(FlList list, struct FlListNode *node);
+void fl_list_remove(FlList *list, struct FlListNode *node);
 
 /*
  * Function: fl_list_free
@@ -182,8 +182,8 @@ void fl_list_remove(FlList list, struct FlListNode *node);
  * Returns:
  *  void - This function does not return a value
  */
-void fl_list_free(FlList list);
+void fl_list_free(FlList *list);
 
-size_t fl_list_length(FlList list);
+size_t fl_list_length(FlList *list);
 
 #endif /* FL_LIST_H */

@@ -84,11 +84,11 @@ char* fl_cstring_vadup (const char *s, va_list args);
 
 /**
  * {input} Source string
- * Returns a {FlVector} containing all the chars of the input at each index
+ * Returns a {FlVector*} containing all the chars of the input at each index
  */
-FlVector fl_cstring_split(const char *input);
+FlVector* fl_cstring_split(const char *input);
 
-FlVector fl_cstring_split_by(const char *input, const char *separator);
+FlVector* fl_cstring_split_by(const char *input, const char *separator);
 
 /**
  * {input} Source string
@@ -157,7 +157,7 @@ char** fl_cstring_vappend(char **dst, const char *format, ...);
  * Joins all the char* elements of {vector} with char* {glue}
  * Alloc the memory to return a new char*
  */
-char* fl_cstring_join(FlVector vector, char* glue);
+char* fl_cstring_join(FlVector *vector, char* glue);
 
 /**
  * {vector} Source vector of chars
@@ -165,7 +165,7 @@ char* fl_cstring_join(FlVector vector, char* glue);
  * Joins all the char elements of {vector} with char* {glue}
  * Alloc the memory to return a new char*
  */
-char* fl_char_join(FlVector vector, char* glue);
+char* fl_char_join(FlVector *vector, char* glue);
 
 char* fl_cstring_concat(char **strings);
 

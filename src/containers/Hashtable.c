@@ -91,7 +91,7 @@ unsigned long fl_hashtable_hash_sizet(const FlByte *key)
     return *(size_t*)key;
 }
 
-FlHashtable fl_hashtable_new(
+FlHashtable* fl_hashtable_new(
     FlHashtableHashFunction hash_func, 
     FlContainerEqualsFunction key_comparer, 
     FlContainerCleanupFunction key_cleaner, 
@@ -110,7 +110,7 @@ FlHashtable fl_hashtable_new(
     });
 }
 
-FlHashtable fl_hashtable_new_args(struct FlHashtableArgs args)
+FlHashtable* fl_hashtable_new_args(struct FlHashtableArgs args)
 {    
     struct FlHashtable *ht = fl_calloc(1, sizeof(struct FlHashtable));
 
@@ -139,7 +139,7 @@ enum BucketLookupOperation {
 };
 
 // This functions returns a bucket for the hashed key based on the lookup operation
-struct FlBucketEntry* lookup_bucket(FlHashtable ht, const void *key, enum BucketLookupOperation lookup_op)
+struct FlBucketEntry* lookup_bucket(FlHashtable *ht, const void *key, enum BucketLookupOperation lookup_op)
 {
     // Get the key hash and the bucket (hash_bucket is an element in ht->buckets, that points to a dynamic array of
     // pointers to struct FlBucketEntry)
@@ -262,7 +262,7 @@ struct FlBucketEntry* lookup_bucket(FlHashtable ht, const void *key, enum Bucket
     return target_bucket;
 }
 
-void* ht_internal_add(FlHashtable ht, const void *key, const void *value, enum BucketLookupOperation lookup_type, bool allowResize)
+void* ht_internal_add(FlHashtable *ht, const void *key, const void *value, enum BucketLookupOperation lookup_type, bool allowResize)
 {
     flm_assert(ht != NULL, "Hashtable must not be null");
 
@@ -316,17 +316,17 @@ void* ht_internal_add(FlHashtable ht, const void *key, const void *value, enum B
     return target_bucket->value;
 }
 
-void* fl_hashtable_add(FlHashtable ht, const void *key, const void *value)
+void* fl_hashtable_add(FlHashtable *ht, const void *key, const void *value)
 {
     return ht_internal_add(ht, key, value, BUCKET_LOOKUP_UNUSED, true);
 }
 
-void* fl_hashtable_set(FlHashtable ht, const void *key, const void *value)
+void* fl_hashtable_set(FlHashtable *ht, const void *key, const void *value)
 {
     return ht_internal_add(ht, key, value, BUCKET_LOOKUP_ANY, true);
 }
 
-void* fl_hashtable_get(FlHashtable ht, const void *key)
+void* fl_hashtable_get(FlHashtable *ht, const void *key)
 {
     flm_assert(ht != NULL, "Hashtable must not be null");
     
@@ -335,7 +335,7 @@ void* fl_hashtable_get(FlHashtable ht, const void *key)
     return target_bucket != NULL ? target_bucket->value : NULL;
 }
 
-bool fl_hashtable_remove(FlHashtable ht, const void *key, bool clean_key, bool clean_value)
+bool fl_hashtable_remove(FlHashtable *ht, const void *key, bool clean_key, bool clean_value)
 {
     flm_assert(ht != NULL, "Hashtable must not be null");
 
@@ -358,7 +358,7 @@ bool fl_hashtable_remove(FlHashtable ht, const void *key, bool clean_key, bool c
     return true;
 }
 
-void fl_hashtable_clear(FlHashtable ht)
+void fl_hashtable_clear(FlHashtable *ht)
 {
     flm_assert(ht != NULL, "Hashtable must not be null");
     if (ht->buckets)
@@ -398,7 +398,7 @@ enum HashtableContent {
     HT_VALUES
 };
 
-FlArray ht_get_content(FlHashtable ht, enum HashtableContent content_type)
+FlArray* ht_get_content(FlHashtable *ht, enum HashtableContent content_type)
 {
     // This function returns always pointers to the requested elements (keys or values)
     size_t size = sizeof(void*);    
@@ -438,39 +438,39 @@ FlArray ht_get_content(FlHashtable ht, enum HashtableContent content_type)
     return content;
 }
 
-FlArray fl_hashtable_keys(FlHashtable ht)
+FlArray* fl_hashtable_keys(FlHashtable *ht)
 {
     return ht_get_content(ht, HT_KEYS);
 }
 
-FlArray fl_hashtable_values(FlHashtable ht)
+FlArray* fl_hashtable_values(FlHashtable *ht)
 {
     return ht_get_content(ht, HT_VALUES);
 }
 
-bool fl_hashtable_has_key(FlHashtable ht, const void *key)
+bool fl_hashtable_has_key(FlHashtable *ht, const void *key)
 {
     return fl_hashtable_get(ht, key) != NULL;
 }
 
-size_t fl_hashtable_length(FlHashtable ht)
+size_t fl_hashtable_length(FlHashtable *ht)
 {
     flm_assert(ht != NULL, "Hashtable must not be null");
     return ht->length;
 }
 
-double fl_hashtable_load_factor(FlHashtable ht)
+double fl_hashtable_load_factor(FlHashtable *ht)
 {
     flm_assert(ht != NULL, "Hashtable must not be null");
     return ht->length / (double)fl_array_length(ht->buckets);
 }
 
-size_t fl_hashtable_buckets_count(FlHashtable ht)
+size_t fl_hashtable_buckets_count(FlHashtable *ht)
 {
     return fl_array_length(ht->buckets);
 }
 
-void fl_hashtable_resize(FlHashtable ht, size_t nbuckets)
+void fl_hashtable_resize(FlHashtable *ht, size_t nbuckets)
 {
     flm_assert(nbuckets > 0, "Number of buckets must be greater than 0");
 
@@ -528,7 +528,7 @@ void fl_hashtable_resize(FlHashtable ht, size_t nbuckets)
     ht->buckets = temp_hashtable.buckets;
 }
 
-void fl_hashtable_free(FlHashtable ht)
+void fl_hashtable_free(FlHashtable *ht)
 {
     flm_assert(ht != NULL, "Hashtable must not be null");
     if (ht->buckets)

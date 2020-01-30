@@ -145,7 +145,7 @@ size_t fl_io_file_write_bytes(FILE *file, size_t nbytes, const FlByte *bytes);
  *  therefore after usage it needs to be deleted using the <fl_array_free> function
  *
  */
-FlArray fl_io_file_read_all_bytes(const char *filename);
+FlArray* fl_io_file_read_all_bytes(const char *filename);
 
 /*
  * Function: fl_io_file_write_all_bytes
@@ -160,7 +160,7 @@ FlArray fl_io_file_read_all_bytes(const char *filename);
  *  bool - *true* on success, otherwise *false*.
  *
  */
-bool fl_io_file_write_all_bytes(const char *filename, const FlArray content);
+bool fl_io_file_write_all_bytes(const char *filename, const FlArray * const content);
 
 /*
  * Function: fl_io_file_read_all_text

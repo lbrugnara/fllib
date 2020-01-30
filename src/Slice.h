@@ -79,10 +79,10 @@ bool fl_slice_equals_sequence(const struct FlSlice *slice, const FlByte * const 
  *  const struct FlSlice *slice - The iterator will point to the begining of the slice
  *
  * Return: 
- *  <FlIterator> - Iterator pointing to the first element in the slice
+ *  <FlIterator*> - Iterator pointing to the first element in the slice
  *
  */
-FlIterator fl_slice_begin(const struct FlSlice *slice);
+FlIterator* fl_slice_begin(const struct FlSlice *slice);
 
 /*
  * Function: fl_slice_end
@@ -93,9 +93,9 @@ FlIterator fl_slice_begin(const struct FlSlice *slice);
  *  const <struct FlSlice> *slice - The iterator will point to the past-last-nth element in the slice
  *
  * Return:
- *  <FlIterator> - Iterator pointing beyond the last element in the slice
+ *  <FlIterator*> - Iterator pointing beyond the last element in the slice
  *
  */
-FlIterator fl_slice_end(const struct FlSlice *slice);
+FlIterator* fl_slice_end(const struct FlSlice *slice);
 
 #endif /* fl_slice_H */

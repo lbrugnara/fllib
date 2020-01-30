@@ -7,7 +7,7 @@ void test_fl_hashtable_add()
 {
     // Common use cases
     {
-        FlHashtable ht = fl_hashtable_new_args((struct FlHashtableArgs) {
+        FlHashtable *ht = fl_hashtable_new_args((struct FlHashtableArgs) {
             .hash_function = fl_hashtable_hash_char,
             .key_comparer = fl_container_equals_char,
             .key_cleaner = fl_container_cleaner_pointer,
@@ -51,7 +51,7 @@ void test_fl_hashtable_add()
 
     // Using NULL as key or value
     {
-        /*FlHashtable ht2 = fl_hashtable_new(fl_hashtable_hash_string, fl_container_equals_string, NULL, NULL, NULL, NULL);
+        /*FlHashtable *ht2 = fl_hashtable_new(fl_hashtable_hash_string, fl_container_equals_string, NULL, NULL, NULL, NULL);
         char *key = "one";
         int *val = NULL;
         int **vp = (int**)fl_hashtable_add(ht2, &key, &val);
@@ -79,7 +79,7 @@ unsigned long hash_func(const FlByte *key)
 
 void test_fl_hashtable_add_fhash()
 {
-    FlHashtable ht = fl_hashtable_new(hash_func, fl_container_equals_char, NULL, NULL, NULL, NULL);
+    FlHashtable *ht = fl_hashtable_new(hash_func, fl_container_equals_char, NULL, NULL, NULL, NULL);
     
     char k='a';
     int v=97;
@@ -113,7 +113,7 @@ void test_fl_hashtable_get()
 {
     // Normal usage
     {
-        FlHashtable ht = fl_hashtable_new_args((struct FlHashtableArgs) {
+        FlHashtable *ht = fl_hashtable_new_args((struct FlHashtableArgs) {
             .hash_function = fl_hashtable_hash_char,
             .key_comparer = fl_container_equals_char,
             .key_cleaner = fl_container_cleaner_pointer,
@@ -158,7 +158,7 @@ void test_fl_hashtable_get()
 
 void test_fl_hashtable_set()
 {
-    FlHashtable ht = fl_hashtable_new_args((struct FlHashtableArgs) {
+    FlHashtable *ht = fl_hashtable_new_args((struct FlHashtableArgs) {
         .hash_function = fl_hashtable_hash_char,
         .key_comparer = fl_container_equals_char,
         .key_cleaner = fl_container_cleaner_pointer,
@@ -231,7 +231,7 @@ void test_fl_hashtable_set()
 
 void test_fl_hashtable_clear()
 {
-    FlHashtable ht = fl_hashtable_new_args((struct FlHashtableArgs) {
+    FlHashtable *ht = fl_hashtable_new_args((struct FlHashtableArgs) {
             .hash_function = fl_hashtable_hash_char,
             .key_comparer = fl_container_equals_char,
             .key_cleaner = fl_container_cleaner_pointer,
@@ -255,7 +255,7 @@ void test_fl_hashtable_clear()
 
 void test_fl_hashtable_keys_and_values()
 {
-    FlHashtable ht = fl_hashtable_new_args((struct FlHashtableArgs) {
+    FlHashtable *ht = fl_hashtable_new_args((struct FlHashtableArgs) {
         .hash_function = fl_hashtable_hash_char,
         .key_comparer = fl_container_equals_char,
         .key_cleaner = fl_container_cleaner_pointer,
@@ -284,7 +284,7 @@ void test_fl_hashtable_keys_and_values()
 
 void test_fl_hashtable_remove()
 {
-    FlHashtable ht = fl_hashtable_new_args((struct FlHashtableArgs) {
+    FlHashtable *ht = fl_hashtable_new_args((struct FlHashtableArgs) {
         .hash_function = fl_hashtable_hash_char,
         .key_comparer = fl_container_equals_char,
         .key_cleaner = fl_container_cleaner_pointer,
@@ -332,7 +332,7 @@ void size_t_writer(FlByte **dest, const FlByte *src)
 
 void test_fl_hashtable_resize()
 {
-    FlHashtable ht = fl_hashtable_new_args((struct FlHashtableArgs){
+    FlHashtable *ht = fl_hashtable_new_args((struct FlHashtableArgs){
         .hash_function = hash_func2,
         .key_comparer = key_comparer2,
         .key_cleaner = fl_container_cleaner_pointer,
@@ -343,7 +343,7 @@ void test_fl_hashtable_resize()
         .load_factor = 1.0
     });
 
-    FlTimer timer = fl_timer_create();
+    FlTimer *timer = fl_timer_create();
     fl_timer_start(timer);
     for (size_t i=0; i < 52736; i++)
     {
@@ -373,7 +373,7 @@ void test_fl_hashtable_values()
         .value_cleaner = fl_container_cleaner_pointer,
         .buckets_count = 10
     };
-    FlHashtable ht = fl_hashtable_new_args(args);
+    FlHashtable *ht = fl_hashtable_new_args(args);
 
     // We use a pointer to char :grinning:
     fl_hashtable_add(ht, "a", &args);

@@ -79,9 +79,9 @@ int unicodedata_comparer(const void *a, const void *b)
 // Splits {source} (with length {length}) by character {chr} ignoring
 // empty lines and lines starting with '#' (UCD comment).
 // It returns a vector of char*, caller must free the memory.
-FlStringVector split_text(const char *source, size_t length, char chr)
+FlStringVector* split_text(const char *source, size_t length, char chr)
 {
-    FlStringVector lines = fl_vector_new(10, fl_container_cleaner_pointer);
+    FlStringVector *lines = fl_vector_new(10, fl_container_cleaner_pointer);
     size_t s = 0;
     char *tmp = NULL;
     for (size_t i=0; i < length; i++)
@@ -130,7 +130,7 @@ FlStringArray get_codes_from_dnp(char *line)
     }
 }
 
-void parse_derived_normalization_property(FlVector data, const char *buffer, NormProperty property)
+void parse_derived_normalization_property(FlVector *data, const char *buffer, NormProperty property)
 {
     const char *startv = NULL;
     const char *endv = "# ================================================";
@@ -167,11 +167,11 @@ void parse_derived_normalization_property(FlVector data, const char *buffer, Nor
             break;
     }
 
-    FlVector newcodepoints = fl_vector_new(1000, NULL);
+    FlVector *newcodepoints = fl_vector_new(1000, NULL);
 
     char* start = strstr((const char*)buffer, startv);
     char* end = strstr(start, endv);
-    FlStringVector lines = split_text((const char*)start, (end-start), '\n');
+    FlStringVector *lines = split_text((const char*)start, (end-start), '\n');
     size_t nlines = fl_vector_length(lines);
     for (size_t i=0; i < nlines; i++)
     {
@@ -229,10 +229,10 @@ void parse_derived_normalization_property(FlVector data, const char *buffer, Nor
 
 // This function parses DerivedNormalizationProps and set some of these properties in {data}
 // that contains UnicodeData pointers.
-void parse_derived_normalization_properties(FlVector data)
+void parse_derived_normalization_properties(FlVector *data)
 {
     flm_assert(data != NULL && fl_vector_length(data) > 0, "Vector with UnicodeData.txt information must be populated before calling this function");
-    FlArray tmpbuffer = fl_io_file_read_all_bytes("src/text/resources/DerivedNormalizationProps-9.0.0.txt");
+    FlArray *tmpbuffer = fl_io_file_read_all_bytes("src/text/resources/DerivedNormalizationProps-9.0.0.txt");
     char *buffer = NULL;
     size_t size = fl_cstring_replace_n((char*)tmpbuffer, fl_array_length(tmpbuffer), "\r\n", 2, "\n", 1, &buffer);
     fl_array_free(tmpbuffer);    
@@ -262,9 +262,9 @@ void parse_derived_normalization_properties(FlVector data)
 
 // This function parses the UnicodeData.txt file. It is expected to be called before
 // any other parsing function to populate {data} with the UCD
-void parse_unicode_data(FlVector data)
+void parse_unicode_data(FlVector *data)
 {
-    FlArray tmpbuffer = fl_io_file_read_all_bytes("src/text/resources/UnicodeData-9.0.0.txt");
+    FlArray *tmpbuffer = fl_io_file_read_all_bytes("src/text/resources/UnicodeData-9.0.0.txt");
     //FlByte *buffer = (FlByte*)fl_cstring_replace((char*)tmpbuffer, "\r\n", "\n");
     char *buffer = NULL;
     size_t size = fl_cstring_replace_n((char*)tmpbuffer, fl_array_length(tmpbuffer), "\r\n", 2, "\n", 1, &buffer);
@@ -413,7 +413,7 @@ void delete_data_handler(void *ptr)
     fl_free(ud);
 }
 
-void create_unicode_database_file(FlVector data)
+void create_unicode_database_file(FlVector *data)
 {
     FILE * outfd = fl_io_file_open("src/text/resources/UnicodeDataDb.h", "w");
     size_t data_length = fl_vector_length(data);
@@ -509,7 +509,7 @@ void create_unicode_database_file(FlVector data)
 
 int main(void)
 {
-    FlVector data = fl_vector_new(30000, delete_data_handler);
+    FlVector *data = fl_vector_new(30000, delete_data_handler);
     parse_unicode_data(data);
     parse_derived_normalization_properties(data);
     create_unicode_database_file(data);

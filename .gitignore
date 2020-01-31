@@ -5,3 +5,5 @@ conventions.md
 src/text/resources/gen*
 docs/config/Working Data/*
 docs/build/*
+.vscode/*
+*.pdb

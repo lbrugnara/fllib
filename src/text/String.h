@@ -10,6 +10,8 @@
 #include "../Types.h"
 #include "Unicode.h"
 
+#define FlString char*
+
 /*
  * Function: fl_string_new
  *

@@ -12,18 +12,6 @@
  */
 typedef unsigned char FlByte;
 
-
-/*
- * define: FlString
- * ===== C =====
- *  #define FlString char*
- * =============
- * 
- *   Represents an UTF8 string
- * 
- */
-#define FlString char*
-
 #ifndef NULL
     /*
     * define: NULL

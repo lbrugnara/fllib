@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include "../Test.h"
 #include "Test_Regex.h"
 

@@ -9,6 +9,7 @@
  *
  */
 
+#include <stdbool.h>
 #include "../Std.h"
 #include "../Mem.h"
 #include "Iterator.h"

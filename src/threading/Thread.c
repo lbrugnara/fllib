@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdbool.h>
 #include "../Types.h"
 #include "../Mem.h"
 #include "Thread.h"

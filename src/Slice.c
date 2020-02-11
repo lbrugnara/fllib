@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include "Std.h"
 #include "Slice.h"
 

@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <errno.h>
+#include <stdbool.h>
 
 #include "System.h"
 #include "../Error.h"

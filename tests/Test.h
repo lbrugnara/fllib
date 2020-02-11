@@ -1,6 +1,7 @@
 #ifndef FL_TEST_H
 #define FL_TEST_H
 
+#include <stdbool.h>
 #include "../src/Std.h"
 
 #define fl_test_suite(name, ...) fl_test_suite_new(name, ((const FlTest[]){__VA_ARGS__}), sizeof(((const FlTest[]){__VA_ARGS__})) / sizeof(((const FlTest[]){__VA_ARGS__}))[0])

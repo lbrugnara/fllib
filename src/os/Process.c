@@ -1,3 +1,5 @@
+#include <stdbool.h>
+
 #ifdef _WIN32
     #include <windows.h>
     #include <userenv.h>

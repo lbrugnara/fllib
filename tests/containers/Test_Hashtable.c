@@ -1,5 +1,7 @@
 #include <time.h>
+#include <stdbool.h>
 #include <fllib.h>
+
 #include "../Test.h"
 #include "Test_Hashtable.h"
 

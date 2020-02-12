@@ -2,6 +2,7 @@
 #define FL_CONTAINER_H
 
 #include "../Types.h"
+#include <stdlib.h>
 
 /*
  * Type: void(*FlContainerCleanupFunction)(void *key)

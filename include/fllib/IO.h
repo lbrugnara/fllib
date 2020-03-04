@@ -1,6 +1,7 @@
 #ifndef FL_IO_H
 #define FL_IO_H
 
+#include <stdbool.h>
 #include "Types.h"
 #include "Std.h"
 #include "Array.h"

@@ -1,6 +1,7 @@
 #ifndef FL_REGEX_H
 #define FL_REGEX_H
 
+#include <stdbool.h>
 #include "../Std.h"
 
 typedef struct FlRegex FlRegex;

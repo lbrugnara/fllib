@@ -1,6 +1,7 @@
 #ifndef FL_HASHTABLE_H
 #define FL_HASHTABLE_H
 
+#include <stdbool.h>
 #include "../Array.h"
 #include "Container.h"
 

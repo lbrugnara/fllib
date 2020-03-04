@@ -1,6 +1,7 @@
 #ifndef FL_SYSTEM_H
 #define FL_SYSTEM_H
 
+#include <stdbool.h>
 #include "../Types.h"
 #include "../Std.h"
 

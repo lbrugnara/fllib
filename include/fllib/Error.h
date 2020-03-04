@@ -15,6 +15,7 @@
 
 #include <stddef.h>
 #include <setjmp.h>
+#include <stdbool.h>
 #include "Types.h"
 
 

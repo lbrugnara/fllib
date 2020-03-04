@@ -3,6 +3,7 @@
 
 #include <stdarg.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include "Types.h"
 #include "containers/Vector.h"

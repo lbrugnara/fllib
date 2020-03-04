@@ -49,50 +49,27 @@ Modules that work with different OS primitives
 
 ## Compiling
 
-Below are the dependencies and steps to compile the library and build the tests on every platform. The build process is very "handcrafted" (especially for MSVC and Clang on Windows), but the make command accepts a couple of useful flags:
+To compile the project you need to get the latest release version of the **sbs** build system [from here](https://github.com/lbrugnara/sbs/releases) based on your platform.
 
-- `CC`: Compiler (default is GCC)
-- `AR`: Archive utility
-- `CFLAGS`: Compilation flags (check default flags in Makefile)
-- `TARGET`: `debug` or `release`. By default, `debug`
-- `LINKAGE`: `static` or `shared`. By default, `static`
+### Dependencies
 
-For all the platforms, using the default flags, the compiled library should be placed in `build/debug` (`libfl.a` or `libfl.dll`) and the tests in `tests/build/debug` (`tests.exe`)
-
-### Linux
-
-#### Dependencies
-- make
+#### Linux
 - GCC or Clang
 
-#### Build 
-```
-make tests CC=[gcc|clang]
-```
+#### Windows
 
-### Windows
+- Clang
+- Visual Studio Developer Command Prompt: You will need the Microsoft C++ (MSVC) compiler toolset for the particular architecture you want to compile for. For more information check this Microsoft page: [Build C/C++ code on the command line](https://docs.microsoft.com/en-us/cpp/build/building-on-the-command-line?view=vs-2017).
 
-#### Dependencies
-- MSVC or Clang
-- MinGW, Cygwin, WSL
+### Building
 
-#### Build
-To compile on Windows using MSVC or Clang you can run one the following `.bat` files in the [x86 or x64 Native Tools Command Prompt](https://docs.microsoft.com/en-us/cpp/build/walkthrough-compiling-a-native-cpp-program-on-the-command-line?view=vs-2017). If you want to compile it in an existing command window, you will need to load the environment variables for the particular architecture. For more information check this Microsoft page: [Build C/C++ code on the command line](https://docs.microsoft.com/en-us/cpp/build/building-on-the-command-line?view=vs-2017).
+Based on your platform run `sbs build linux-gcc-release` or `sbs build win-clang-release` (or the `-debug` version if needed).
 
-MSVC:
-```
-build.win.cl.bat
-```
-Clang:
-```
-build.win.clang.bat
-```
+If you want to compile with Clang under Linux, you can run:
 
-If you want to use any other alternative under Windows, like MinGW, Cygwin or WSL, it should be as easy as running the following on each specific env:
+```bash
+sbs build linux-gcc-release -tc=clang
 ```
-make tests CC=[gcc|clang]
-```
-
 ## Frequently Asked Questions
 
 #### What motivated you to create this library?
@@ -113,7 +90,7 @@ On every module, I try to document the functions and data structures, but the tr
 
 #### Are there usage examples?
 
-Yes, check the `tests` folder and navigate through the different test suites. There you will find usages of the different modules functions.
+Yes, check the `tests` folder and navigate through the different test suites. There you will find usages of the different modules functions. Also projects like [**sbs**](https://github.com/lbrugnara/sbs) and [**Zenit**](https://github.com/lbrugnara/zenit) heavily rely on **fllib**.
 
 #### License?
 

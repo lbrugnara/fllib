@@ -1,6 +1,7 @@
 #ifndef FL_VECTOR_H
 #define FL_VECTOR_H
 
+#include <stdbool.h>
 #include "../Types.h"
 #include "Container.h"
 #include "Iterator.h"

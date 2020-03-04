@@ -17,3 +17,11 @@ action clean-tests {
         `rm -fr tests/obj/ tests/build/`
     }
 }
+
+action export-headers {
+    for win-cmd {
+        `if not exist .\include (mkdir .\include)`
+        `if not exist .\include\fllib (mkdir .\include\fllib)`
+        `xcopy /y /s .\src\*.h .\include\fllib`
+    }
+}

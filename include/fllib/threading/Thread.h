@@ -1,6 +1,8 @@
 #ifndef FL_THREADS_H
 #define FL_THREADS_H
 
+#include <stdbool.h>
+
 // MinGW supports a pthreads implementation
 // if FL_PTHREADS is defined we will use it, if not
 // we will use Windows threads

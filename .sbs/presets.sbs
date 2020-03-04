@@ -12,6 +12,21 @@ preset win-clang-debug {
     target: fl-tests
 }
 
+preset win-clang-all {
+    env: win-cmd,
+    toolchain: dummy,
+    config: dummy,
+    target: dummy,
+    actions: {
+        before: [
+            `.\\sbs build win-clang-debug`,
+            `.\\sbs build win-clang-release`,
+            `.\\sbs build win-clang-debug -t=fl-tests-sanitize -c=clang-debug-sanitize`
+            `.\\sbs build win-clang-release -t=fl-tests-sanitize -c=clang-release-sanitize`
+        ]
+    }
+}
+
 preset linux-gcc-release {
     env: linux-bash,
     toolchain: gcc,
@@ -32,5 +47,23 @@ preset clean {
     target: dummy,
     actions: {
         before: [ clean, clean-tests ]
+    }
+}
+
+preset export-headers {
+    toolchain: dummy,
+    config: dummy,
+    target: dummy,
+    actions: {
+        before: [ export-headers ]
+    }
+}
+
+preset win-clang-debug-export {
+    toolchain: clang,
+    config: clang-debug,
+    target: dummy,
+    actions: {
+        before: [ export-headers ]
     }
 }

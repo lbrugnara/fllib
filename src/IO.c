@@ -327,6 +327,7 @@ bool fl_io_file_get_modified_timestamp(const char *filename, unsigned long long 
     #else
     {
         struct stat attr;
+        memset(&attr, 0, sizeof(attr));
         if (stat(filename, &attr) == 1)
             return false;
 

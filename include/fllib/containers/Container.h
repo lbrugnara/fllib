@@ -1,8 +1,8 @@
 #ifndef FL_CONTAINER_H
 #define FL_CONTAINER_H
 
+#include <stdbool.h>
 #include "../Types.h"
-#include <stdlib.h>
 
 /*
  * Type: void(*FlContainerCleanupFunction)(void *key)

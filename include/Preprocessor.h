@@ -1,8 +1,0 @@
-#ifndef FL_PREPROCESSOR_H
-#define FL_PREPROCESSOR_H
-
-#define CONCAT(a,b) a##b
-#define INDIRECT_CONCAT(a,b) CONCAT(a,b)
-#define LINE_BASED_ID() INDIRECT_CONCAT(LINE_, __LINE__)
-
-#endif /*FL_PREPROCESSOR_H */

@@ -1,6 +1,8 @@
 #ifndef FL_PROCESS_H
 #define FL_PROCESS_H
 
+#include <stdbool.h>
+
 typedef struct FlProcess FlProcess;
 typedef struct FlPipe FlPipe;
 

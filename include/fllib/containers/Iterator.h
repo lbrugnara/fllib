@@ -19,6 +19,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include "../Types.h"
 #include "../Std.h"
 #include "../Mem.h"

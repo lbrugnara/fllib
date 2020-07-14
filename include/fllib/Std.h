@@ -13,6 +13,7 @@
 
 #include <stdbool.h>
 #include <string.h>
+#include <limits.h>
 #include "Types.h"
 #include "Error.h"
 
@@ -184,7 +185,27 @@ void* fl_copy(const void *var, size_t nbytes);
  */
 #define FLBIT_IS_OFF(t,b)   (!((t) & (b)))
 
-static inline bool fl_std_mult_wrap(long long a, long long b, long long min, long long max)
+static inline bool fl_std_int_add_overflow(long long a, long long b, long long min, long long max)
+{
+    return (b > 0 && a > max - b) || (b < 0 && a < min - b);
+}
+
+static inline bool fl_std_uint_add_overflow(unsigned long long a, unsigned long long b, unsigned long long max)
+{
+    return max - a < b;
+}
+
+static inline bool fl_std_int_sub_overflow(long long a, long long b, long long min, long long max)
+{
+    return (b > 0 && a < min + b) || (b < 0 && a > max + b);
+}
+
+static inline bool fl_std_uint_sub_overflow(unsigned long long a, unsigned long long b)
+{
+    return a < b;
+}
+
+static inline bool fl_std_int_mult_overflow(long long a, long long b, long long min, long long max)
 {
     if (a > 0) {  /* a is positive */
         if (b > 0) {  /* a and b are positive */
@@ -211,9 +232,19 @@ static inline bool fl_std_mult_wrap(long long a, long long b, long long min, lon
     return false;
 }
 
-static inline bool fl_std_umult_wrap(unsigned long long a, unsigned long long b, unsigned long long max)
+static inline bool fl_std_uint_mult_overflow(unsigned long long a, unsigned long long b, unsigned long long max)
 {
     return b > 0 && a > max / b;
+}
+
+static inline bool fl_std_int_div_overflow(long long a, long long b, long long min)
+{
+    return (b == 0) || ((a == min) && (b == -1));
+}
+
+static inline bool fl_std_int_mod_overflow(long long a, long long b, long long min)
+{
+    return (b == 0 ) || ((a == min) && (b == -1));
 }
 
 #endif /* FL_STD_H */

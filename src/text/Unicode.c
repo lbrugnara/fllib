@@ -159,7 +159,7 @@ static inline size_t utf8_codepoint_size(const FlByte *src, const FlByte *end)
     // Check if first byte is the lead byte of 4-bytes code points
     // Check if first byte is a valid lead byte value for 4-bytes code points
     // Check if second, third and fourth bytes are continuation bytes (0x80)
-    // Check for invalid octets greather than F5 (F5-FF)
+    // Check for invalid octets greater than F5 (F5-FF)
     if ((src[0] >= UTF8_CODEPOINT_LEADBYTE_4) && src[0] <= UTF8_CODEPOINT_LEADBYTE_4_MAX && ((src[0] == UTF8_CODEPOINT_LEADBYTE_4 && src[1] >= 0x90 && src[1] <= 0xBF) || (src[0] == 0xF4 && src[1] >= 0x80 && src[1] <= 0x8F) || (src[0] > UTF8_CODEPOINT_LEADBYTE_4 && src[0] < 0xF4 && src[1] >= 0x80 && src[1] <= 0xBF)) && (src[2] >= 0x80 && src[2] <= 0xBF) && (src[3] >= 0x80 && src[3] <= 0xBF))
     {
         if (memcmp(src, UTF8_MAX_CODEPOINT, 4) > 0)

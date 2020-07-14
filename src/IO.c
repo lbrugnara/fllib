@@ -519,3 +519,12 @@ char** fl_io_file_find(const char *pattern, const char *path_separator)
 
     return files;
 }
+
+bool fl_io_file_unlink(const char *filename)
+{
+    #ifdef _WIN32
+    return _unlink(filename) == 0;
+    #else
+    return unlink(filename) == 0;
+    #endif
+}

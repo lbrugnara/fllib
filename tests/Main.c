@@ -9,6 +9,7 @@
 #include "text/Test_Unicode.h"
 #include "text/Test_String.h"
 #include "text/Test_Regex.h"
+#include "containers/Test_BinaryHeap.h"
 #include "containers/Test_Hashtable.h"
 #include "containers/Test_Vector.h"
 #include "containers/Test_List.h"
@@ -94,6 +95,10 @@ int main(int argc, char **argv)
             { "fl_list_prepend", &test_fl_list_prepend },
             { "fl_list_insert_after", &test_fl_list_insert_after },
             { "fl_list_insert_before", &test_fl_list_insert_before }
+        ),
+        fl_test_suite("Binary Heap",
+            { "fl_binheap_new", &test_fl_binheap_new },
+            { "fl_binheap_insert", &test_fl_binheap_insert },
         ),
         NULL
     );

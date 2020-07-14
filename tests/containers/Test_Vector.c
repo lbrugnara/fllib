@@ -66,13 +66,13 @@ void test_fl_vector_new()
             .capacity = 10,
             .max_capacity = 5
         });
-        fl_expect("Vector initialization with a capacity greather than the maximum capacity returns NULL;", vector == NULL);
+        fl_expect("Vector initialization with a capacity greater than the maximum capacity returns NULL;", vector == NULL);
 
         vector = fl_vector_new_args((struct FlVectorArgs) {
             .element_size = SIZE_MAX,
             .max_capacity = 10
         });
-        fl_expect("Vector initialization with element_size == SIZE_MAX and capacity greather than 1 returns NULL (results in overflow)", vector == NULL);
+        fl_expect("Vector initialization with element_size == SIZE_MAX and capacity greater than 1 returns NULL (results in overflow)", vector == NULL);
     }
 }
 
@@ -246,7 +246,7 @@ void test_fl_vector_insert()
         fl_vector_free(vector);
     }
 
-    fl_test_description("Once the vector has reached its maximum capacity, inserts on positions greather than max_capacity-1 should not thrive")
+    fl_test_description("Once the vector has reached its maximum capacity, inserts on positions greater than max_capacity-1 should not thrive")
     {
         // Check insert failures if the max. capacity is reached
         FlVector *vector = fl_vector_new_args((struct FlVectorArgs) {

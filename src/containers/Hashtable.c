@@ -40,11 +40,11 @@ struct FlBucketEntry {
  */
 struct FlHashtable {
     FlHashtableHashFunction key_hasher;
-    FlContainerEqualsFunction key_comparer;
-    FlContainerCleanupFunction key_cleaner;
-    FlContainerCleanupFunction value_cleaner;
-    FlContainerAllocatorFunction key_allocator;
-    FlContainerAllocatorFunction value_allocator;
+    FlContainerEqualsFn key_comparer;
+    FlContainerCleanupFn key_cleaner;
+    FlContainerCleanupFn value_cleaner;
+    FlContainerAllocatorFn key_allocator;
+    FlContainerAllocatorFn value_allocator;
     struct FlBucketEntry **buckets; // fl_array
     double load_factor;
     size_t length;
@@ -94,11 +94,11 @@ unsigned long fl_hashtable_hash_sizet(const FlByte *key)
 
 FlHashtable* fl_hashtable_new(
     FlHashtableHashFunction hash_func, 
-    FlContainerEqualsFunction key_comparer, 
-    FlContainerCleanupFunction key_cleaner, 
-    FlContainerCleanupFunction value_cleaner, 
-    FlContainerAllocatorFunction key_allocator, 
-    FlContainerAllocatorFunction value_allocator
+    FlContainerEqualsFn key_comparer, 
+    FlContainerCleanupFn key_cleaner, 
+    FlContainerCleanupFn value_cleaner, 
+    FlContainerAllocatorFn key_allocator, 
+    FlContainerAllocatorFn value_allocator
 )
 {
     return fl_hashtable_new_args((struct FlHashtableArgs){

@@ -5,13 +5,13 @@
 #include "../Types.h"
 
 /*
- * Type: void(*FlContainerCleanupFunction)(void *key)
+ * Type: void(*FlContainerCleanupFn)(void *key)
  *
  * This module provides the fl_container_cleaner_pointer function
  * that simply frees the value pointer by {obj}.
  *
  */
-typedef void(*FlContainerCleanupFunction)(void *obj);
+typedef void(*FlContainerCleanupFn)(void *obj);
 
 /*
  * Function: fl_container_cleaner_pointer
@@ -25,42 +25,8 @@ typedef void(*FlContainerCleanupFunction)(void *obj);
  */
 void fl_container_cleaner_pointer(void *obj);
 
-/*
- * Type: void(*FlContainerWriterFunction)(FlByte **dest, const FlByte *src)
- *
- * Functions that writes the sequence of bytes in {src} to the 
- * destination object {dest}. This function MUST allocate the 
- * memory before writing to the object.
- * By default containers work with pointers.
- * In order to use the actual value behind the pointers, the caller
- * must provide a writer function to know how to save/restore the
- * value from within the container.
- * This module provides a family of writers functions with the name structure
- * fl_container_writer_*. These functions are:
- *   string
- *   int
- *   char
- *   sizet
- *
- */
-// typedef void(*FlContainerWriterFunction)(FlByte **dest, const FlByte *src);
-
-/*
- * Function: fl_container_writer_string
- *
- * Copies the char* pointed by {src} into {dest} by allocating
- * space to make {src} and the NULL terminator fit in {dest}
- *
- * FlByte** dest - Destination object. It is allocated by this function
- * const FlByte* src - Sequence of bytes containing a NULL terminated string
- *
- * {return: void}
- *
- */
-// void fl_container_writer_string(FlByte **dest, const FlByte *src);
-
 /* -------------------------------------------------------------
-* {datatype: void(*FlContainerAllocatorFunction)(FlByte **dest, const FlByte *src)}
+* {datatype: void(*FlContainerAllocatorFn)(FlByte **dest, const FlByte *src)}
 * -------------------------------------------------------------
 * Functions that allocates and writes the sequence of bytes in {src} to the 
 * destination object {dest}. This function MUST allocate the 
@@ -77,7 +43,7 @@ void fl_container_cleaner_pointer(void *obj);
 *   sizet
 * -------------------------------------------------------------
 */
-typedef void(*FlContainerAllocatorFunction)(FlByte **dest, const FlByte *src);
+typedef void(*FlContainerAllocatorFn)(FlByte **dest, const FlByte *src);
 
 /* -------------------------------------------------------------
 * {function: fl_container_allocator_string}
@@ -136,7 +102,7 @@ void fl_container_allocator_char(FlByte **dest, const FlByte *src);
 void fl_container_allocator_sizet(FlByte **dest, const FlByte *src);
 
 /* -------------------------------------------------------------
-* {datatype: void(*FlContainerWriterFunction)(FlByte **dest, const FlByte *src)}
+* {datatype: void(*FlContainerWriterFn)(FlByte **dest, const FlByte *src)}
 * -------------------------------------------------------------
 * Functions that writes the sequence of bytes in {src} to the 
 * destination object {dest}. This function MUST NOT allocate dest's memory.
@@ -151,12 +117,12 @@ void fl_container_allocator_sizet(FlByte **dest, const FlByte *src);
 *   sizet
 * -------------------------------------------------------------
 */
-typedef void(*FlContainerWriterFunction)(FlByte *dest, const FlByte *src, size_t size);
+typedef void(*FlContainerWriterFn)(FlByte *dest, const FlByte *src, size_t size);
 
 void fl_container_writer(FlByte *dest, const FlByte *src, size_t size);
 
 /*
- * Type: bool(*FlContainerEqualsFunction)(const FlByte *val1, const FlByte *val2)
+ * Type: bool(*FlContainerEqualsFn)(const FlByte *val1, const FlByte *val2)
  *
  * Function that compares two sequence of bytes.
  * This module provides a family of equality comparer functions with the name structure
@@ -168,7 +134,7 @@ void fl_container_writer(FlByte *dest, const FlByte *src, size_t size);
  *   sizet
  *
  */
-typedef bool(*FlContainerEqualsFunction)(const FlByte *val1, const FlByte *val2);
+typedef bool(*FlContainerEqualsFn)(const FlByte *val1, const FlByte *val2);
 
 /*
  * Function: fl_container_equals_pointer
@@ -238,5 +204,96 @@ bool fl_container_equals_char(const FlByte *val1, const FlByte *val2);
  *
  */
 bool fl_container_equals_sizet(const FlByte *val1, const FlByte *val2);
+
+/*
+ * Type: FlContainerCompareFn
+ *  A function that compares two objects and returns an integer equals to 0 if both elements
+ *  are equals, a negative integer if *obj1* is lesser than *obj2* or a positive integer if *obj1* is
+ *  greater than *obj2*.
+ * 
+ * Parameters:
+ *  <const FlByte> *obj1: First object to compare
+ *  <const FlByte> *obj2: Second object to compare
+ * 
+ * Return:
+ * <int>: A negative integer if *obj1* is lesser than *obj2*, a positive integer if *obj1* is greather
+ *        than *obj2* or 0 if both objects are equals.
+ */
+typedef int(*FlContainerCompareFn)(const FlByte *obj1, const FlByte *obj2);
+
+/*
+ * Function: fl_container_compare_pointer
+ *  A function that compares two pointers and returns 0 if both pointers are equals, a negative number if *obj1* 
+ *  is lesser than *obj2* or a positive number if *obj1* is greater than *obj2*.
+ * 
+ * Parameters:
+ *  <const FlByte> *obj1: First pointer to compare
+ *  <const FlByte> *obj2: Second pointer to compare
+ * 
+ * Return:
+ * <int>: A negative integer if *obj1* is lesser than *obj2*, a positive integer if *obj1* is greather
+ *        than *obj2* or 0 if both pointers are equals.
+ */
+int fl_container_compare_pointer(const FlByte *obj1, const FlByte *obj2);
+
+/*
+ * Function: fl_container_compare_string
+ *  A function that compares two strings and returns 0 if both strings are equals, a negative number if *obj1* 
+ *  is lesser than *obj2* or a positive number if *obj1* is greater than *obj2*.
+ * 
+ * Parameters:
+ *  <const FlByte> *obj1: First string to compare
+ *  <const FlByte> *obj2: Second string to compare
+ * 
+ * Return:
+ * <int>: A negative integer if *obj1* is lesser than *obj2*, a positive integer if *obj1* is greather
+ *        than *obj2* or 0 if both strings are equals.
+ */
+int fl_container_compare_string(const FlByte *obj1, const FlByte *obj2);
+
+/*
+ * Function: fl_container_compare_int
+ *  A function that compares two integers and returns 0 if both integers are equals, a negative number if *obj1* 
+ *  is lesser than *obj2* or a positive number if *obj1* is greater than *obj2*.
+ * 
+ * Parameters:
+ *  <const FlByte> *obj1: First integer to compare
+ *  <const FlByte> *obj2: Second integer to compare
+ * 
+ * Return:
+ * <int>: A negative integer if *obj1* is lesser than *obj2*, a positive integer if *obj1* is greather
+ *        than *obj2* or 0 if both integers are equals.
+ */
+int fl_container_compare_int(const FlByte *obj1, const FlByte *obj2);
+
+/*
+ * Function: fl_container_compare_char
+ *  A function that compares two chars and returns 0 if both chars are equals, a negative number if *obj1* 
+ *  is lesser than *obj2* or a positive number if *obj1* is greater than *obj2*.
+ * 
+ * Parameters:
+ *  <const FlByte> *obj1: First char to compare
+ *  <const FlByte> *obj2: Second char to compare
+ * 
+ * Return:
+ * <int>: A negative integer if *obj1* is lesser than *obj2*, a positive integer if *obj1* is greather
+ *        than *obj2* or 0 if both chars are equals.
+ */
+int fl_container_compare_char(const FlByte *obj1, const FlByte *obj2);
+
+/*
+ * Function: fl_container_compare_sizet
+ *  A function that compares two size_t objects and returns 0 if both size_t objects are equals, a negative number if *obj1* 
+ *  is lesser than *obj2* or a positive number if *obj1* is greater than *obj2*.
+ * 
+ * Parameters:
+ *  <const FlByte> *obj1: First size_t object to compare
+ *  <const FlByte> *obj2: Second size_t object to compare
+ * 
+ * Return:
+ * <int>: A negative integer if *obj1* is lesser than *obj2*, a positive integer if *obj1* is greather
+ *        than *obj2* or 0 if both size_t objects are equals.
+ */
+int fl_container_compare_sizet(const FlByte *obj1, const FlByte *obj2);
 
 #endif // FL_CONTAINER_H

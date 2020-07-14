@@ -40,13 +40,13 @@ struct FlListNode {
  * 
  * ===== C ===== 
  * struct FlListArgs {
- *     FlContainerAllocatorFunction value_allocator;
- *     FlContainerCleanupFunction value_cleaner;
+ *     FlContainerAllocatorFn value_allocator;
+ *     FlContainerCleanupFn value_cleaner;
  * };
  */
 struct FlListArgs {
-    FlContainerAllocatorFunction value_allocator;
-    FlContainerCleanupFunction value_cleaner;
+    FlContainerAllocatorFn value_allocator;
+    FlContainerCleanupFn value_cleaner;
 };
 
 /*
@@ -66,8 +66,8 @@ FlList* fl_list_new(void);
 
 /*
  * Function: fl_list_new_args
- *  Creates a new list using the provided <FlContainerAllocatorFunction> and
- *  <FlContainerCleanupFunction> functions to save and clean nodes' values
+ *  Creates a new list using the provided <FlContainerAllocatorFn> and
+ *  <FlContainerCleanupFn> functions to save and clean nodes' values
  *
  * Parameters:
  *  args - The arguments to configure the list instance (<struct FlListArgs>)
@@ -173,7 +173,7 @@ void fl_list_remove(FlList *list, struct FlListNode *node);
 /*
  * Function: fl_list_free
  *  Frees the resources allocated by the list, including the memory allocated 
- *  for the <struct FlListNode>s. If the list has a <FlContainerCleanupFunction>
+ *  for the <struct FlListNode>s. If the list has a <FlContainerCleanupFn>
  *  the nodes' value will be cleaned using it.
  *
  * Parameters:

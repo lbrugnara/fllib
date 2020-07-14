@@ -9,8 +9,8 @@
 struct FlList {
 	struct FlListNode *head;
 	struct FlListNode *tail;
-	FlContainerAllocatorFunction allocator;
-	FlContainerCleanupFunction cleaner;
+	FlContainerAllocatorFn allocator;
+	FlContainerCleanupFn cleaner;
 };
 
 FlList* fl_list_new(void) {

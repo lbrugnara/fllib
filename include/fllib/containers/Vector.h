@@ -37,8 +37,8 @@ typedef struct FlVector FlVector;
  * 
  * ===== C ===== 
  * struct FlVectorArgs {
- *      FlContainerWriterFunction writer;
- *      FlContainerCleanupFunction cleaner;
+ *      FlContainerWriterFn writer;
+ *      FlContainerCleanupFn cleaner;
  *      double growth_factor;
  *      size_t element_size;
  *      size_t capacity;
@@ -46,8 +46,8 @@ typedef struct FlVector FlVector;
  * };
  */
 struct FlVectorArgs {
-    FlContainerWriterFunction writer;
-    FlContainerCleanupFunction cleaner;
+    FlContainerWriterFn writer;
+    FlContainerCleanupFn cleaner;
     double growth_factor;
     size_t element_size;
     size_t capacity;
@@ -61,7 +61,7 @@ struct FlVectorArgs {
  * 
  * Members:
  *  capacity - <FlVector>'s initial capacity
- *  cleaner - <FlContainerCleanupFunction> to free the memory of the pointers (if provided)
+ *  cleaner - <FlContainerCleanupFn> to free the memory of the pointers (if provided)
  *
  * Return:
  *  <FlVector> - Instance to the newly created vector
@@ -69,7 +69,7 @@ struct FlVectorArgs {
  * Notes:
  *  Check <struct FlVectorArgs> for the default values used to configure the vector
  */
-FlVector* fl_vector_new(size_t capacity, FlContainerCleanupFunction cleaner);
+FlVector* fl_vector_new(size_t capacity, FlContainerCleanupFn cleaner);
 
 /*
  * Function: fl_vector_new_args

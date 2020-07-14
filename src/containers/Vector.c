@@ -11,8 +11,8 @@
 #include "../Array.h"
 
 struct FlVector {
-    FlContainerWriterFunction writer;
-    FlContainerCleanupFunction cleaner;
+    FlContainerWriterFn writer;
+    FlContainerCleanupFn cleaner;
     double growth_factor;
     size_t element_size;
     size_t capacity;
@@ -42,7 +42,7 @@ static inline size_t calculate_growth(FlVector *vector, size_t reqcapacity)
 bool resize_vector(FlVector *vector, size_t capacity)
 {
     // Check if the number of bytes will overflow
-    if (fl_std_umult_wrap(vector->element_size, capacity, SIZE_MAX))
+    if (fl_std_uint_mult_overflow(vector->element_size, capacity, SIZE_MAX))
         return false;
 
     // Try to reallocate 
@@ -57,7 +57,7 @@ bool resize_vector(FlVector *vector, size_t capacity)
     return true;
 }
 
-FlVector* fl_vector_new(size_t capacity, FlContainerCleanupFunction cleaner) 
+FlVector* fl_vector_new(size_t capacity, FlContainerCleanupFn cleaner) 
 {
     return fl_vector_new_args((struct FlVectorArgs){
         .capacity = capacity,
@@ -95,7 +95,7 @@ FlVector* fl_vector_new_args(struct FlVectorArgs args)
         return NULL;
     }
 
-    if (fl_std_umult_wrap(vector->max_capacity, vector->element_size, SIZE_MAX))
+    if (fl_std_uint_mult_overflow(vector->max_capacity, vector->element_size, SIZE_MAX))
     {
         fl_vector_free(vector);
         return NULL;

@@ -2,7 +2,7 @@
 #include <stdbool.h>
 #include <fllib.h>
 
-#include "../Test.h"
+#include <flut/flut.h>
 #include "Test_Hashtable.h"
 
 void test_fl_hashtable_add()
@@ -21,32 +21,32 @@ void test_fl_hashtable_add()
         char k='a';
         int v=97;
         void* vp = fl_hashtable_add(ht, &k, &v);
-        fl_expect("hashtable_add('a', 97) result must be equals to 97", v == *(int*)vp);
+        flut_expect_compat("hashtable_add('a', 97) result must be equals to 97", v == *(int*)vp);
 
         char k2='a';
         int v2 = 97;
         vp = fl_hashtable_add(ht, &k2, &v2);
-        fl_expect("Call to hashtable_add('a', 97) by second time must return NULL", NULL == vp);
+        flut_expect_compat("Call to hashtable_add('a', 97) by second time must return NULL", NULL == vp);
 
         v=65;
         vp = fl_hashtable_add(ht, &k, &v);
-        fl_expect("Call to hashtable_add('a', 65) by second time must return NULL", NULL == vp);
+        flut_expect_compat("Call to hashtable_add('a', 65) by second time must return NULL", NULL == vp);
 
 
         //
         k='b';
         v=98;
         vp = fl_hashtable_add(ht, &k, &v);
-        fl_expect("hashtable_add('b', 98) result must be equals to 98", v == *(int*)vp);
+        flut_expect_compat("hashtable_add('b', 98) result must be equals to 98", v == *(int*)vp);
 
         k2='b';
         v2 = 98;
         vp = fl_hashtable_add(ht, &k2, &v2);
-        fl_expect("Call to hashtable_add('b', 98) by second time must return NULL", NULL == vp);
+        flut_expect_compat("Call to hashtable_add('b', 98) by second time must return NULL", NULL == vp);
 
         v=65;
         vp = fl_hashtable_add(ht, &k, &v);
-        fl_expect("Call to hashtable_add('b', 66) by second time must return NULL", NULL == vp);
+        flut_expect_compat("Call to hashtable_add('b', 66) by second time must return NULL", NULL == vp);
 
         fl_hashtable_free(ht);
     }
@@ -57,18 +57,18 @@ void test_fl_hashtable_add()
         char *key = "one";
         int *val = NULL;
         int **vp = (int**)fl_hashtable_add(ht2, &key, &val);
-        fl_expect("Call to hashtable_add(\"one\", NULL) must return NULL", NULL == *vp);
+        flut_expect_compat("Call to hashtable_add(\"one\", NULL) must return NULL", NULL == *vp);
         
         key = NULL;
         int v = 95;
         val = &v;
         vp = (int**)fl_hashtable_add(ht2, &key, &val);
-        fl_expect("Call to hashtable_add(NULL, 95) must return 95", v == **vp);
+        flut_expect_compat("Call to hashtable_add(NULL, 95) must return 95", v == **vp);
 
         double d = fl_hashtable_load_factor(ht2);
         fl_hashtable_resize(ht2, fl_hashtable_buckets_count(ht2) * 2);
         double d2 = fl_hashtable_load_factor(ht2);
-        fl_expect("Hashtable load factor after resize should be lesser", d2 < d);
+        flut_expect_compat("Hashtable load factor after resize should be lesser", d2 < d);
 
         fl_hashtable_free(ht2);*/
     }
@@ -86,27 +86,27 @@ void test_fl_hashtable_add_fhash()
     char k='a';
     int v=97;
     void* vp = fl_hashtable_add(ht, &k, &v);
-    fl_expect("hashtable_add('a', 97) result must be equals to 97", v == *(int*)vp);
+    flut_expect_compat("hashtable_add('a', 97) result must be equals to 97", v == *(int*)vp);
 
     char k2='a';
     int v2 = 97;
     vp = fl_hashtable_add(ht, &k2, &v2);
-    fl_expect("Call to hashtable_add('a', 97) by second time must return NULL", NULL == vp);
+    flut_expect_compat("Call to hashtable_add('a', 97) by second time must return NULL", NULL == vp);
     double d = fl_hashtable_load_factor(ht);
 
     //
     char k3='b';
     v=98;
     vp = fl_hashtable_add(ht, &k3, &v);
-    fl_expect("hashtable_add('b', 98) result must be equals to 98", v == *(int*)vp);
+    flut_expect_compat("hashtable_add('b', 98) result must be equals to 98", v == *(int*)vp);
 
     char k4='b';
     v2 = 98;
     vp = fl_hashtable_add(ht, &k4, &v2);
-    fl_expect("Call to hashtable_add('b', 98) by second time must return NULL", NULL == vp);
+    flut_expect_compat("Call to hashtable_add('b', 98) by second time must return NULL", NULL == vp);
     double d2 = fl_hashtable_load_factor(ht);
 
-    fl_expect("Hashtable load factor after 'b' should be greater than before 'b'", d2 > d);
+    flut_expect_compat("Hashtable load factor after 'b' should be greater than before 'b'", d2 > d);
 
     fl_hashtable_free(ht);
 }
@@ -128,14 +128,14 @@ void test_fl_hashtable_get()
         for (char c = 'A'; c <= 'Z'; c++, i++)
         {
             int *tmp = fl_hashtable_add(ht, &c, &i);
-            fl_vexpect(tmp != NULL, "Value %d under key %c must be inserted into the hashtable (%d)", i, c, *tmp);
+            flut_vexpect_compat(tmp != NULL, "Value %d under key %c must be inserted into the hashtable (%d)", i, c, *tmp);
         }
         
         i = 97;
         for (char c = 'a'; c <= 'z'; c++, i++)
         {
             int *tmp = fl_hashtable_add(ht, &c, &i);
-            fl_vexpect(tmp != NULL, "Value %d under key %c must be inserted into the hashtable (%d)", i, c, *tmp);
+            flut_vexpect_compat(tmp != NULL, "Value %d under key %c must be inserted into the hashtable (%d)", i, c, *tmp);
         }
 
         int *v;
@@ -144,14 +144,14 @@ void test_fl_hashtable_get()
         {
             int *tmp = fl_hashtable_get(ht, &c);
             if (tmp)
-                fl_vexpect(*tmp == i, "Value with key %c must be equals to %d\n", c, i);
+                flut_vexpect_compat(*tmp == i, "Value with key %c must be equals to %d\n", c, i);
         }
         i = 97;
         for (char c = 'a'; c <= 'z'; c++, i++)
         {
             int *tmp = fl_hashtable_get(ht, &c);
             if (tmp)
-                fl_vexpect(*tmp == i, "Value with key %c must be equals to %d\n", c, i);   
+                flut_vexpect_compat(*tmp == i, "Value with key %c must be equals to %d\n", c, i);   
         }
 
         fl_hashtable_free(ht);
@@ -178,12 +178,12 @@ void test_fl_hashtable_set()
         fl_hashtable_add(ht, &c, &i);
     }
 
-    fl_expect("Current length after adding the alphabet letters A to Z with codes 65-90 must be 26", fl_hashtable_length(ht) == 26);
+    flut_expect_compat("Current length after adding the alphabet letters A to Z with codes 65-90 must be 26", fl_hashtable_length(ht) == 26);
 
     int *ap = (chr = 'A', fl_hashtable_get(ht, &chr));
     int *mp = (chr = 'M', fl_hashtable_get(ht, &chr));
     int *zp = (chr = 'Z', fl_hashtable_get(ht, &chr));
-    fl_expect("Expect letters {A, M, Z} to have values {65, 77, 90}", *ap == 65 && *mp == 77 && *zp == 90);
+    flut_expect_compat("Expect letters {A, M, Z} to have values {65, 77, 90}", *ap == 65 && *mp == 77 && *zp == 90);
 
     // Replace A-Z by its lowercase codes
     i = 97;
@@ -192,7 +192,7 @@ void test_fl_hashtable_set()
         fl_hashtable_set(ht, &c, &i);
     }
 
-    fl_expect("Current length after replacing the alphabet letters A to Z with codes 97-122 must be 26", fl_hashtable_length(ht) == 26);
+    flut_expect_compat("Current length after replacing the alphabet letters A to Z with codes 97-122 must be 26", fl_hashtable_length(ht) == 26);
 
     // Add a-z with its codes
     i = 97;
@@ -201,12 +201,12 @@ void test_fl_hashtable_set()
         fl_hashtable_set(ht, &c, &i);
     }
 
-    fl_expect("Current length after adding the alphabet letters a to z with codes 97-122 must be 52", fl_hashtable_length(ht) == 52);
+    flut_expect_compat("Current length after adding the alphabet letters a to z with codes 97-122 must be 52", fl_hashtable_length(ht) == 52);
 
     ap = (chr = 'a', fl_hashtable_get(ht, &chr));
     mp = (chr = 'm', fl_hashtable_get(ht, &chr));
     zp = (chr = 'z', fl_hashtable_get(ht, &chr));
-    fl_expect("Expect letters {a, m, z} to have values {97, 109, 122}", *ap == 97 && *mp == 109 && *zp == 122);
+    flut_expect_compat("Expect letters {a, m, z} to have values {97, 109, 122}", *ap == 97 && *mp == 109 && *zp == 122);
 
     // Replace a-z by its uppercase codes
     i = 65;
@@ -215,18 +215,18 @@ void test_fl_hashtable_set()
         fl_hashtable_set(ht, &c, &i);
     }
 
-    fl_expect("Current length after replacing the alphabet letters a to z with codes 65-90 must be 52", fl_hashtable_length(ht) == 52);
+    flut_expect_compat("Current length after replacing the alphabet letters a to z with codes 65-90 must be 52", fl_hashtable_length(ht) == 52);
 
     // Check mappings
     ap = (chr = 'A', fl_hashtable_get(ht, &chr));
     mp = (chr = 'M', fl_hashtable_get(ht, &chr));
     zp = (chr = 'Z', fl_hashtable_get(ht, &chr));
-    fl_expect("Expect letters {A, M, Z} to have values {97, 109, 122}", *ap == 97 && *mp == 109 && *zp == 122);
+    flut_expect_compat("Expect letters {A, M, Z} to have values {97, 109, 122}", *ap == 97 && *mp == 109 && *zp == 122);
 
     ap = (chr = 'a', fl_hashtable_get(ht, &chr));
     mp = (chr = 'm', fl_hashtable_get(ht, &chr));
     zp = (chr = 'z', fl_hashtable_get(ht, &chr));
-    fl_expect("Expect letters {a, m, z} to have values {65, 77, 90}", *ap == 65 && *mp == 77 && *zp == 90);
+    flut_expect_compat("Expect letters {a, m, z} to have values {65, 77, 90}", *ap == 65 && *mp == 77 && *zp == 90);
     
     fl_hashtable_free(ht);
 }
@@ -247,10 +247,10 @@ void test_fl_hashtable_clear()
     for (char c = 'A'; c <= 'Z'; c++, i++)
         fl_hashtable_add(ht, &c, &i);
 
-    fl_expect("Current length after adding the alphabet letters A to Z with codes 65-90 must be 26", fl_hashtable_length(ht) == 26);
+    flut_expect_compat("Current length after adding the alphabet letters A to Z with codes 65-90 must be 26", fl_hashtable_length(ht) == 26);
 
     fl_hashtable_clear(ht);
-    fl_expect("Current length after clear the hashtable content must be 0", fl_hashtable_length(ht) == 0);
+    flut_expect_compat("Current length after clear the hashtable content must be 0", fl_hashtable_length(ht) == 0);
 
     fl_hashtable_free(ht);
 }
@@ -271,13 +271,13 @@ void test_fl_hashtable_keys_and_values()
     for (char c = 'A'; c <= 'Z'; c++, i++)
         fl_hashtable_add(ht, &c, &i);
     
-    fl_expect("Current length after adding the alphabet letters A to Z with codes 65-90 must be 26", fl_hashtable_length(ht) == 26);
+    flut_expect_compat("Current length after adding the alphabet letters A to Z with codes 65-90 must be 26", fl_hashtable_length(ht) == 26);
     
     char **keys = fl_hashtable_keys(ht);
-    fl_expect("Keys array must contain 26 elements", fl_array_length(keys) == 26);
+    flut_expect_compat("Keys array must contain 26 elements", fl_array_length(keys) == 26);
 
     char **values = fl_hashtable_values(ht);
-    fl_expect("Values array must contain 26 elements", fl_array_length(values) == 26);
+    flut_expect_compat("Values array must contain 26 elements", fl_array_length(values) == 26);
 
     fl_array_free(keys);
     fl_array_free(values);
@@ -300,7 +300,7 @@ void test_fl_hashtable_remove()
     for (char c = 'A'; c <= 'Z'; c++, i++)
         fl_hashtable_add(ht, &c, &i);
     
-    fl_expect("Current length after adding the alphabet letters A to Z with codes 65-90 must be 26", fl_hashtable_length(ht) == 26);
+    flut_expect_compat("Current length after adding the alphabet letters A to Z with codes 65-90 must be 26", fl_hashtable_length(ht) == 26);
     
     char **keys = fl_hashtable_keys(ht);
     size_t keys_length = fl_array_length(keys);
@@ -310,7 +310,7 @@ void test_fl_hashtable_remove()
         fl_hashtable_remove(ht, keys[j], true, true);
     }
 
-    fl_expect("Current length after removing all the elements by key must be 0", fl_hashtable_length(ht) == 0);
+    flut_expect_compat("Current length after removing all the elements by key must be 0", fl_hashtable_length(ht) == 0);
 
     fl_array_free(keys);
     fl_hashtable_free(ht);
@@ -382,16 +382,16 @@ void test_fl_hashtable_values()
 
     struct FlHashtableArgs **values = fl_hashtable_values(ht);
 
-    fl_expect("values variable must be a valid array", values != NULL);
-    fl_expect("values variable must contain 1 element", fl_array_length(values) == 1);
-    fl_expect("The only element in the values variable must be a pointer to a struct FlHashtableArgs equals to the struct FlHashtableArgs args variable", 
+    flut_expect_compat("values variable must be a valid array", values != NULL);
+    flut_expect_compat("values variable must contain 1 element", fl_array_length(values) == 1);
+    flut_expect_compat("The only element in the values variable must be a pointer to a struct FlHashtableArgs equals to the struct FlHashtableArgs args variable", 
         memcmp(&args, values[0], sizeof(struct FlHashtableArgs)) == 0);
 
     values[0]->buckets_count = 20;
-    fl_expect("A modification to the element in the array must not impact on the args variable", memcmp(&args, values[0], sizeof(struct FlHashtableArgs)) != 0);
+    flut_expect_compat("A modification to the element in the array must not impact on the args variable", memcmp(&args, values[0], sizeof(struct FlHashtableArgs)) != 0);
 
     struct FlHashtableArgs *valueptr = fl_hashtable_get(ht, "a");
-    fl_expect("The modification to the element in the array impacts on the element in the hashtable (both point to the same element)", 
+    flut_expect_compat("The modification to the element in the array impacts on the element in the hashtable (both point to the same element)", 
         memcmp(valueptr, values[0], sizeof(struct FlHashtableArgs)) == 0);
 
     fl_array_free(values);

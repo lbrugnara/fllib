@@ -18,14 +18,14 @@ typedef enum FlBinaryHeapType {
  *  to the <fl_binheap_new_args> function.
  * 
  * Members:
- *  <FlContainerCompareFn> comparer: Function that compares items of the binary heap
- *  <FlContainerCleanupFn> cleaner: Function that, if present, frees the memory used by an item when removed from the binary heap
- *  <FlContainerWriterFn> writer: Function that, if present, writes an item into the binary heap.
- *  <size_t> element_size: The size of the elements to store in the heap. It is required if the <FlContainerWriterFn> is provided.
- *  <size_t> capacity: The initial capacity of the heap. If it is not provided, the default value is 15
- *  <size_t> max_capacity: If specified, the heap will limit the number of elements that can be stored to this number
- *  <double> growth_factor: Factor to apply in growth of the internal vector
- *  <FlBinaryHeapType> type: A binary heap can be a max-heap (FL_BINHEAP_MAX) or a min-heap (FL_BINHEAP_MIN). Default is max-heap
+ *  - <FlContainerCompareFn> comparer: Function that compares items of the binary heap.
+ *  - <FlContainerCleanupFn> cleaner: Function that, if present, frees the memory used by an item when removed from the binary heap
+ *  - <FlContainerWriterFn> writer: Function that, if present, writes an item into the binary heap.
+ *  - <size_t> element_size: The size of the elements to store in the heap. It is required if the <FlContainerWriterFn> is provided.
+ *  - <size_t> capacity: The initial capacity of the heap. If it is not provided, the default value is 15
+ *  - <size_t> max_capacity: If specified, the heap will limit the number of elements that can be stored to this number
+ *  - <double> growth_factor: Factor to apply in growth of the internal vector
+ *  - <FlBinaryHeapType> type: A binary heap can be a max-heap (FL_BINHEAP_MAX) or a min-heap (FL_BINHEAP_MIN). Default is max-heap
  */
 struct FlBinaryHeapArgs {
     FlContainerCompareFn comparer;

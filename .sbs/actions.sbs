@@ -22,6 +22,8 @@ action export-headers {
     for win-cmd {
         `if not exist .\include (mkdir .\include)`
         `if not exist .\include\fllib (mkdir .\include\fllib)`
-        `xcopy /y /s .\src\*.h .\include\fllib`
+        `if not exist .\include\flut (mkdir .\include\flut)`
+        `xcopy /y /d /s .\src\*.h .\include\fllib`
+        `xcopy /y /d /s .\flut\src\*.h .\include\flut`
     }
 }

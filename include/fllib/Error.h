@@ -339,28 +339,39 @@ struct FlContext* fl_ctx_new(void);
 void fl_ctx_free(struct FlContext *ctx);
 
 /*
- * Macro: fl_ctx_frame
+ * Macro: fl_ctx_frame_current
  * ===== C =====
- *  #define fl_ctx_frame(tryctx) ((tryctx)->frames + ((tryctx)->fp - 1))
+ *  #define fl_ctx_frame_current(tryctx) ((tryctx)->frames + ((tryctx)->fp - 1))
  * =============
  * 
  *  Returns a pointer to the current active <struct FlContextFrame> in the <struct FlContext>
  *  (the one that belongs to a Try-EndTry block)
  *  
  */
-#define fl_ctx_frame(tryctx) ((tryctx)->frames + ((tryctx)->fp - 1))
+#define fl_ctx_frame_current(tryctx) ((tryctx)->frames + ((tryctx)->fp - 1))
+
+#define fl_ctx_frame_push(tryctx) (                                                 \
+    (tryctx)->fp++, /* push frame onto the stack */                                 \
+    fl_ctx_frame_current((tryctx))->exception=0,                                    \
+    memset((void*)fl_ctx_frame_current((tryctx))->message, 0, FL_CTX_MSG_SIZE),     \
+    fl_ctx_frame_current((tryctx))                                                  \
+)
+
+#define fl_ctx_frame_activate(tryctx) fl_ctx_storage_save(&fl_ctx_frame_current(tryctx)->ctx)
+
+#define fl_ctx_frame_pop(tryctx) (tryctx)->fp--
 
 /*
- * Macro: fl_ctx_last_frame
+ * Macro: fl_ctx_frame_last
  * ===== C =====
- *  #define fl_ctx_last_frame(tryctx) ((tryctx)->frames + (tryctx)->fp)
+ *  #define fl_ctx_frame_last(tryctx) ((tryctx)->frames + (tryctx)->fp)
  * =============
  * 
  *  Returns a pointer to the <struct FlContextFrame> that was previously active in the <struct FlContext>
  *  before the current frame (the one that could have thrown an exception)
  *  
  */
-#define fl_ctx_last_frame(tryctx) ((tryctx)->frames + ((tryctx)->fp))
+#define fl_ctx_frame_last(tryctx) ((tryctx)->frames + ((tryctx)->fp))
 
 /*
  * Macro: fl_ctx_storage_save
@@ -431,9 +442,9 @@ void fl_ctx_free(struct FlContext *ctx);
  *      if ((tryctx)->fp >= FL_CTX_FRAME_NUM)                                   \
  *          fl_exit(ERR_FATAL, "Frame limit reached");                          \
  *      (tryctx)->fp++; // push frame onto the stack                            \
- *      fl_ctx_frame(tryctx)->exception=0;                                      \
- *      memset((void*)fl_ctx_frame(tryctx)->message, 0, FL_CTX_MSG_SIZE);       \
- *      int res = fl_ctx_storage_save(&fl_ctx_frame(tryctx)->ctx);              \
+ *      fl_ctx_frame_current(tryctx)->exception=0;                                      \
+ *      memset((void*)fl_ctx_frame_current(tryctx)->message, 0, FL_CTX_MSG_SIZE);       \
+ *      int res = fl_ctx_storage_save(&fl_ctx_frame_current(tryctx)->ctx);              \
  *      if (res != 0) (tryctx)->fp--; // pop frame off the stack                \
  *      switch(res)                                                             \
  *      {                                                                       \
@@ -445,13 +456,12 @@ void fl_ctx_free(struct FlContext *ctx);
 #define Try(tryctx)                                                         \
 do                                                                          \
 {                                                                           \
-    if ((tryctx)->fp >= FL_CTX_FRAME_NUM)                                   \
+    struct FlContext *tryctxptr = (tryctx);                                 \
+    if (tryctxptr->fp >= FL_CTX_FRAME_NUM)                                  \
         fl_exit(ERR_FATAL, "Frame limit reached");                          \
-    (tryctx)->fp++; /* push frame onto the stack */                         \
-    fl_ctx_frame(tryctx)->exception=0;                                      \
-    memset((void*)fl_ctx_frame(tryctx)->message, 0, FL_CTX_MSG_SIZE);       \
-    int res = fl_ctx_storage_save(&fl_ctx_frame(tryctx)->ctx);                  \
-    if (res != 0) (tryctx)->fp--; /* pop frame off the stack */             \
+    fl_ctx_frame_push(tryctxptr);                                           \
+    int res = fl_ctx_frame_activate(tryctx);                                \
+    if (res != 0) fl_ctx_frame_pop(tryctxptr);                              \
     switch(res)                                                             \
     {                                                                       \
         case 0:                                                             \
@@ -542,9 +552,10 @@ do                                                                          \
  *      }           \
  *  } while (0)
  */
-#define EndTry  \
-        }       \
-    }           \
+#define EndTry                                                                      \
+        if (res == 0) fl_ctx_frame_pop(tryctxptr);                                  \
+        }                                                                           \
+    }                                                                               \
 } while (0)
 
 /*
@@ -563,28 +574,28 @@ do                                                                          \
  *  do                                                                                      \
  *  {                                                                                       \
  *      flm_assert(ex != 0, "setjmp will return 1 after longjmp because int val == 0");     \
- *      fl_ctx_frame(tryctx)->exception = ex;                                               \
+ *      fl_ctx_frame_current(tryctx)->exception = ex;                                               \
  *      if (msg)                                                                            \
  *      {                                                                                   \
  *          size_t msglength = strlen(msg);                                                 \
- *          memcpy(fl_ctx_frame(tryctx)->message, msg, msglength < FL_CTX_MSG_SIZE          \
+ *          memcpy(fl_ctx_frame_current(tryctx)->message, msg, msglength < FL_CTX_MSG_SIZE          \
  *              ? msglength : FL_CTX_MSG_SIZE);                                             \
  *      }                                                                                   \
- *      fl_ctx_storage_restore(&fl_ctx_frame(tryctx)->ctx, ex);                             \
+ *      fl_ctx_storage_restore(&fl_ctx_frame_current(tryctx)->ctx, ex);                             \
  *  } while (0)
  */
 #define Throw(tryctx, ex, msg)                                                          \
 do                                                                                      \
 {                                                                                       \
     flm_assert(ex != 0, "setjmp will return 1 after longjmp because int val == 0");     \
-    fl_ctx_frame(tryctx)->exception = ex;                                               \
-    if (msg != NULL)                                                                            \
+    fl_ctx_frame_current(tryctx)->exception = ex;                                               \
+    if (msg != NULL)                                                                    \
     {                                                                                   \
         size_t msglength = strlen(msg);                                                 \
-        memcpy(fl_ctx_frame(tryctx)->message, msg, msglength < FL_CTX_MSG_SIZE          \
+        memcpy(fl_ctx_frame_current(tryctx)->message, msg, msglength < FL_CTX_MSG_SIZE          \
             ? msglength : FL_CTX_MSG_SIZE);                                             \
     }                                                                                   \
-    fl_ctx_storage_restore(&fl_ctx_frame(tryctx)->ctx, ex);                                 \
+    fl_ctx_storage_restore(&fl_ctx_frame_current(tryctx)->ctx, ex);                             \
 } while (0)
 
 /*
@@ -631,10 +642,10 @@ do                                                                              
  * 
  *      (&tryctx)->fp++; // push frame onto the stack
  * 
- *      fl_ctx_frame(&tryctx)->exception=0;
- *      memset((void*)fl_ctx_frame(&tryctx)->message, 0, FL_CTX_MSG_SIZE);
+ *      fl_ctx_frame_current(&tryctx)->exception=0;
+ *      memset((void*)fl_ctx_frame_current(&tryctx)->message, 0, FL_CTX_MSG_SIZE);
  * 
- *      int res = fl_ctx_storage_save(&fl_ctx_frame(&tryctx)->ctx);
+ *      int res = fl_ctx_storage_save(&fl_ctx_frame_current(&tryctx)->ctx);
  * 
  *      // If it is non-0, is the context restore action, pop the frame off the stack
  *      if (res != 0) 
@@ -651,14 +662,14 @@ do                                                                              
  *            do
  *            {
  *                  flm_assert(1 != 0, "setjmp will return 1 after longjmp because int val == 0");
- *                  fl_ctx_frame(tryctx)->exception = 1;
+ *                  fl_ctx_frame_current(tryctx)->exception = 1;
  *                  if ("Exception One")
  *                  {
  *                      size_t msglength = strlen("Exception One");
- *                      memcpy(fl_ctx_frame(tryctx)->message, "Exception One", msglength < FL_CTX_MSG_SIZE
+ *                      memcpy(fl_ctx_frame_current(tryctx)->message, "Exception One", msglength < FL_CTX_MSG_SIZE
  *                          ? msglength : FL_CTX_MSG_SIZE);
  *                  }
- *                  fl_ctx_storage_restore(&fl_ctx_frame(tryctx)->ctx, 1);
+ *                  fl_ctx_storage_restore(&fl_ctx_frame_current(tryctx)->ctx, 1);
  *            } while (0);
  * 
  * // -----------------------------------------------------------------------------

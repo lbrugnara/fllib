@@ -310,7 +310,8 @@ static inline bool is_escape_seq(char c)
 static inline void* vector_add_cstr(FlVector *vector, const char *src)
 {
     char *copy = fl_cstring_dup(src);
-    return fl_vector_add(vector, copy);
+    fl_vector_add(vector, &copy);
+	return copy;
 }
 
 enum {	 
@@ -455,7 +456,7 @@ FlVector* parse_regex(char* regex, RegexFlags *flags)
 	RegexAnalysis analysis;
 	analyze_regex(regex, flags, &analysis);
 
-	FlVector *output = fl_vector_new(analysis.patternEnd+1, fl_container_cleaner_pointer);
+	FlVector *output = flm_vector_new_with(.capacity = analysis.patternEnd + 1, .cleaner = fl_container_cleaner_pointer);
 	
 	// Contains the backslash for escaped characters
 	bool bslash = false;
@@ -605,7 +606,7 @@ FlVector* parse_regex(char* regex, RegexFlags *flags)
 		} else {
 			tmpstr[0] = cur;
 		}
-		fl_vector_add(output, tmpstr);
+		fl_vector_add(output, &tmpstr);
 
 		// Save current token as previous for next iteration (save also prev_blash)
 		prev = cur;
@@ -668,8 +669,8 @@ FlVector* regex_to_postfix (char* regex, RegexFlags *flags)
 	if (tokens == NULL)
 		return NULL;
 
-	FlVector *stack = fl_vector_new(fl_vector_length(tokens), fl_container_cleaner_pointer);
-	FlVector *output = fl_vector_new(fl_vector_length(tokens), fl_container_cleaner_pointer);
+	FlVector *stack = flm_vector_new_with(.capacity = fl_vector_length(tokens), .cleaner = fl_container_cleaner_pointer);
+	FlVector *output = flm_vector_new_with(.capacity = fl_vector_length(tokens), .cleaner = fl_container_cleaner_pointer);
 
 	/* Use the shunting-yard algorithm, with the particularity of doesn't discard the
 	 * parentheses, instead use it as a unary operator. This way, we can implement
@@ -690,8 +691,8 @@ FlVector* regex_to_postfix (char* regex, RegexFlags *flags)
 			case '[':
 				// Character [ starts a char class group
 				inCharClass = true;
-				fl_vector_add(output, token);
-				fl_vector_add(stack, token);
+				fl_vector_add(output, &token);
+				fl_vector_add(stack, &token);
 				break;
 			case ']':
 				// Character ] closes a char class group
@@ -699,43 +700,43 @@ FlVector* regex_to_postfix (char* regex, RegexFlags *flags)
 				// Consume from the stack and send to the output until reach the starting character
 				while(fl_vector_pop(stack, &stackedtoken) && stackedtoken[0] != '[')
 				{
-					fl_vector_add(output, stackedtoken);
+					fl_vector_add(output, &stackedtoken);
 				}
 				// Prevent /[]/ and /[^]/
-				if ((fl_vector_length(output) == 1 && *(char*)fl_vector_get(output, 0) == '[')
-					|| (fl_vector_length(output) == 2 && *(char*)fl_vector_get(output, 0) == '[' && *(char*)fl_vector_get(output, 1) == '^'))
+				if ((fl_vector_length(output) == 1 && **(char**) fl_vector_ref_get(output, 0) == '[')
+					|| (fl_vector_length(output) == 2 && **(char**) fl_vector_ref_get(output, 0) == '[' && **(char**) fl_vector_ref_get(output, 1) == '^'))
 				{
 					fl_error_push(-1, "Empty character class is not allowed");
 					didError = true;
 					break;
 				}
 				// parse_regex escapes ] when no [ is found, so this does not need validation like capturing groups
-				fl_vector_add(output, token);
+				fl_vector_add(output, &token);
 				break;
 			case '-':
 				// If we ARE NOT in a char class, consume the character - as a literal value
 				if (!inCharClass) {
-					fl_vector_add(output, token);
+					fl_vector_add(output, &token);
 					break;
 				}
 				// If not we transform a range like [0-9] to [09-]
 				char* next = NULL;
 				fl_vector_shift(tokens, &next);
-				fl_vector_add(output, next);
-				fl_vector_add(output, token);
+				fl_vector_add(output, &next);
+				fl_vector_add(output, &token);
 				break;
 			case '(':
 				// Consume the parentheses. It is not only used for group operands and change operators
 				// precedence, we use it as an operator
 				currentGroup++;
-				fl_vector_add(output, token);
-				fl_vector_add(stack, token);
+				fl_vector_add(output, &token);
+				fl_vector_add(stack, &token);
 				break;
 			case ')':
 				// Consume from the stack and send to the output until reach the starting character
 				while (fl_vector_pop(stack, &stackedtoken) && stackedtoken[0] != '(')
 				{
-					fl_vector_add(output, stackedtoken);
+					fl_vector_add(output, &stackedtoken);
 				}
 				if (stackedtoken[0] != '(')
 				{
@@ -744,7 +745,7 @@ FlVector* regex_to_postfix (char* regex, RegexFlags *flags)
 					break;
 				}
 				currentGroup--;
-				fl_vector_add(output, token);
+				fl_vector_add(output, &token);
 				break;
 			case '*':
 			case '+':
@@ -754,12 +755,12 @@ FlVector* regex_to_postfix (char* regex, RegexFlags *flags)
 			{
 				// When we obtain an operator, we need to check where we will send it (output or stack)
 				char o1 = c;
-				char o2 = fl_vector_length(stack) == 0 ? FL_EOS : ((char*)fl_vector_get(stack, fl_vector_length(stack)-1))[0]; // First char
+				char o2 = fl_vector_length(stack) == 0 ? FL_EOS : (*(char**) fl_vector_ref_get(stack, fl_vector_length(stack)-1))[0]; // First char
 
 				// If in the stack there's NOT a previous operator, we send the current operator to the stack
 				if (o2 == FL_EOS || !regex_operator_exists(o2))
 				{
-					fl_vector_add(stack, token);
+					fl_vector_add(stack, &token);
 					break;
 				}
 
@@ -769,7 +770,7 @@ FlVector* regex_to_postfix (char* regex, RegexFlags *flags)
 
 
 				while (true) {
-					o2 = fl_vector_length(stack) == 0 ? FL_EOS : ((char*)fl_vector_get(stack, fl_vector_length(stack)-1))[0]; // First char
+					o2 = fl_vector_length(stack) == 0 ? FL_EOS : (*(char**) fl_vector_ref_get(stack, fl_vector_length(stack)-1))[0]; // First char
 					
 					// Break the loop when we find the end of the stack or a grouping operator
 					if (o2 == FL_EOS || !regex_operator_exists(o2))
@@ -791,14 +792,14 @@ FlVector* regex_to_postfix (char* regex, RegexFlags *flags)
 					
 					char* o2s = NULL;
 					fl_vector_pop(stack, &o2s);
-					fl_vector_add(output, o2s);
+					fl_vector_add(output, &o2s);
 				}
-				fl_vector_add(stack, token);
+				fl_vector_add(stack, &token);
 				break;
 			}
 			default:
 				// Literal chars are sended directly to the output
-				fl_vector_add(output, token);
+				fl_vector_add(output, &token);
 		}
 
 		if (didError)
@@ -813,7 +814,7 @@ FlVector* regex_to_postfix (char* regex, RegexFlags *flags)
 	{
 		char* sc = NULL;
 		fl_vector_pop(stack, &sc);
-		fl_vector_add(output, sc);
+		fl_vector_add(output, &sc);
 	}
 
 	if (inCharClass)
@@ -1018,9 +1019,9 @@ FlRegex* fl_regex_compile (char* pattern)
 				}
 				case '[':
 				{
-					FlVector *tmptokens = fl_vector_new(0, fl_container_cleaner_pointer);
-					FlVector *ascii_codes = fl_vector_new(0, fl_container_cleaner_pointer);
-					FlVector *display = fl_vector_new(0, fl_container_cleaner_pointer);
+					FlVector *tmptokens = flm_vector_new_with(.capacity = 0, .cleaner = fl_container_cleaner_pointer);
+					FlVector *ascii_codes = flm_vector_new_with(.capacity = 0, .cleaner = fl_container_cleaner_pointer);
+					FlVector *display = flm_vector_new_with(.capacity = 0, .cleaner = fl_container_cleaner_pointer);
 					// Temporary variable to look ahead the next token
 					char* nexttok = NULL;
 
@@ -1049,7 +1050,7 @@ FlRegex* fl_regex_compile (char* pattern)
 						{
 							if (flm_cstring_equals(tmptoken, "]"))
 								break;
-							fl_vector_add(tmptokens, tmptoken);
+							fl_vector_add(tmptokens, &tmptoken);
 						}
 						fl_cstring_free(tmptoken);
 					}
@@ -1057,7 +1058,7 @@ FlRegex* fl_regex_compile (char* pattern)
 					size_t l = fl_vector_length(tmptokens);
 					for (size_t i = 0; i < l; i++)
 					{
-						char* tmptoken = fl_vector_get(tmptokens, i);
+						char* tmptoken = *(char**) fl_vector_ref_get(tmptokens, i);
 						if (flm_cstring_equals(tmptoken, "-"))
 						{
 							char *eic = NULL, *sic = NULL;
@@ -1071,17 +1072,18 @@ FlRegex* fl_regex_compile (char* pattern)
 							char* endchar = NULL;
 							fl_vector_pop(display, &endchar);
 							vector_add_cstr(display, "-");
-							fl_vector_add(display, endchar);
+							fl_vector_add(display, &endchar);
 						}
 						else 
 						{
 							if (tmptoken[0] == '\\')
 							{
-								fl_vector_add(ascii_codes, tmptoken + 1);
+								char *c = tmptoken + 1;
+								fl_vector_add(ascii_codes, &c);
 							}
 							else
 							{
-								fl_vector_add(ascii_codes, tmptoken);
+								fl_vector_add(ascii_codes, &tmptoken);
 							}
 							vector_add_cstr(display, tmptoken);
 						}
@@ -1094,7 +1096,7 @@ FlRegex* fl_regex_compile (char* pattern)
 					}
 
 					char *tmp = fl_cstring_dup("/[");
-					fl_vector_insert(display, tmp, 0);
+					fl_vector_insert(display, &tmp, 0);
 
 					vector_add_cstr(display, "]/");
 					((NfaStateCharClass*)s)->value = fl_cstring_join(display, "");
@@ -1176,7 +1178,7 @@ NfaState* create_nfa_state(int id, char* value)
 	s->id = id;
 	STATE_SET_INITIAL(s);
 	STATE_SET_FINAL(s);
-	s->to = fl_vector_new(0, NULL);
+	s->to = fl_vector_new();
 	s->type = NFA_STATE;
 	return s;
 }
@@ -1200,7 +1202,7 @@ NfaState* create_char_class_nfa_state(int id, char* value, bool negated)
 	s->id = id;
 	STATE_SET_INITIAL(s);
 	STATE_SET_FINAL(s);
-	s->to = fl_vector_new(0, NULL);
+	s->to = fl_vector_new();
 	s->negated = negated;
 	memset(s->map, 0, sizeof(int)*256);
 	s->type = NFA_CHARCLASS_STATE;
@@ -1270,7 +1272,7 @@ void nfa_concat(NfaState **states, short ls, short le, short rs, short re)
 			right = states[j];
 			if (!STATE_IS_INITIAL(right))
 				continue;
-			fl_vector_add(left->to, right);
+			fl_vector_add(left->to, &right);
 		}
 	}
 
@@ -1310,7 +1312,7 @@ void nfa_repeat (NfaState **states, short ls, short le)
 			left2 = states[j];
 			if (!STATE_IS_INITIAL(left2))
 				continue;
-			fl_vector_add(left->to, left2);
+			fl_vector_add(left->to, &left2);
 		}
 	}
 }
@@ -1393,7 +1395,7 @@ void print_nfa_state(NfaState *state)
 		size_t l = fl_vector_length(state->to);
 		for (size_t i = 0; i < l; i++)
 		{
-			NfaState *dest = fl_vector_get(state->to, i);
+			NfaState *dest = *(NfaState**) fl_vector_ref_get(state->to, i);
 			printf("%s->%d", dest->value, dest->id);
 			if (i < l-1)
 				printf(", ");
@@ -1429,7 +1431,7 @@ NfaStepResult nfa_step (NfaState *state, CurrentState nextstates[], unsigned cha
 	size_t l = fl_vector_length(state->to);
 	for (size_t i = 0; i < l; i++)
 	{
-		NfaState *t = fl_vector_get(state->to, i);
+		NfaState *t = *(NfaState**) fl_vector_ref_get(state->to, i);
 	 	// If e-transition reach an state that already is in the next states, avoid it to prevent loops
 	 	// We can have e-transitions reaching each one to the other here.
 	 	if (nextstates[t->id].id != -1 && nextstates[t->id].e)

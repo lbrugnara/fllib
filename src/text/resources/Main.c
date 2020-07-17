@@ -81,7 +81,7 @@ int unicodedata_comparer(const void *a, const void *b)
 // It returns a vector of char*, caller must free the memory.
 FlStringVector* split_text(const char *source, size_t length, char chr)
 {
-    FlStringVector *lines = fl_vector_new(10, fl_container_cleaner_pointer);
+    FlStringVector *lines = flm_vector_new_with(.capacity = 10, .cleaner = fl_container_cleaner_pointer);
     size_t s = 0;
     char *tmp = NULL;
     for (size_t i=0; i < length; i++)
@@ -167,7 +167,7 @@ void parse_derived_normalization_property(FlVector *data, const char *buffer, No
             break;
     }
 
-    FlVector *newcodepoints = fl_vector_new(1000, NULL);
+    FlVector *newcodepoints = flm_vector_new_with(.capacity = 1000);
 
     char* start = strstr((const char*)buffer, startv);
     char* end = strstr(start, endv);
@@ -175,16 +175,16 @@ void parse_derived_normalization_property(FlVector *data, const char *buffer, No
     size_t nlines = fl_vector_length(lines);
     for (size_t i=0; i < nlines; i++)
     {
-        char* line = *(char**)fl_vector_get(lines, i);
+        char* line = *(char**)fl_vector_ref_get(lines, i);
         FlStringArray codes = get_codes_from_dnp(line);
         size_t codes_length = fl_array_length(codes);
         for (size_t j=0; j < codes_length; j++)
         {
             UnicodeData *ud = NULL;
-            UnicodeData **ptr = (UnicodeData**)bsearch(codes[j], fl_vector_get(data, 0), fl_vector_length(data), sizeof(UnicodeData*), &code_comparer);
+            UnicodeData **ptr = (UnicodeData**)bsearch(codes[j], fl_vector_ref_get(data, 0), fl_vector_length(data), sizeof(UnicodeData*), &code_comparer);
             if (!ptr)
             {
-                ptr = (UnicodeData**)bsearch(codes[j], fl_vector_get(newcodepoints, 0), fl_vector_length(newcodepoints), sizeof(UnicodeData*), &code_comparer);
+                ptr = (UnicodeData**)bsearch(codes[j], fl_vector_ref_get(newcodepoints, 0), fl_vector_length(newcodepoints), sizeof(UnicodeData*), &code_comparer);
             }
             if (ptr) ud = *ptr;
 
@@ -224,7 +224,7 @@ void parse_derived_normalization_property(FlVector *data, const char *buffer, No
 
     fl_vector_concat(data, newcodepoints);
     fl_vector_free(newcodepoints);
-    qsort(fl_vector_get(data, 0), fl_vector_length(data), sizeof(UnicodeData*), &unicodedata_comparer);
+    qsort(fl_vector_ref_get(data, 0), fl_vector_length(data), sizeof(UnicodeData*), &unicodedata_comparer);
 }
 
 // This function parses DerivedNormalizationProps and set some of these properties in {data}
@@ -420,7 +420,7 @@ void create_unicode_database_file(FlVector *data)
     UnicodeData *prevud = NULL;
     for (size_t i=0; i < data_length; i++)
     {
-        UnicodeData *ud = *(UnicodeData**)fl_vector_get(data, i);
+        UnicodeData *ud = *(UnicodeData**)fl_vector_ref_get(data, i);
         if (prevud != NULL)
         {
             size_t lp = strlen(prevud->code);
@@ -507,11 +507,16 @@ void create_unicode_database_file(FlVector *data)
     fl_io_file_close(outfd);
 }
 
-int main(void)
+int main(int argc, char **argv)
 {
-    FlVector *data = fl_vector_new(30000, delete_data_handler);
+    // TODO: Fix this (actually, all this...)
+    int dry_run = argc > 1 && strncmp("--dry-run", argv[1], 9);
+    FlVector *data = flm_vector_new_with(.capacity = 30000, .cleaner = delete_data_handler);
     parse_unicode_data(data);
     parse_derived_normalization_properties(data);
-    create_unicode_database_file(data);
+
+    if (!dry_run)
+        create_unicode_database_file(data);
+
     fl_vector_free(data);
 }

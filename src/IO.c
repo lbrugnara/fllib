@@ -114,7 +114,7 @@ bool fl_io_dir_create_recursive(const char *pathname)
     char *current = fl_cstring_dup("");
     for (size_t i=0; i < count; i++)
     {
-        fl_cstring_append(&current, (const char*)fl_vector_get(parts, i));
+        fl_cstring_append(&current, *(const char**) fl_vector_ref_get(parts, i));
         fl_cstring_append(&current, FL_IO_DIR_SEPARATOR);
         
         if (fl_io_file_exists(current))
@@ -402,7 +402,7 @@ static inline FlVector* split_regex_by_path_separator(const char *regex, const c
 {
     flm_assert(regex != NULL, "char* argument to split cannot be NULL");
 
-    FlVector *parts = fl_vector_new(1, fl_container_cleaner_pointer);
+    FlVector *parts = flm_vector_new_with(.capacity = 1, .cleaner = fl_container_cleaner_pointer);
 
     size_t length = strlen(regex);
     size_t i=0;
@@ -424,14 +424,17 @@ static inline FlVector* split_regex_by_path_separator(const char *regex, const c
             }
             else
             {
-                fl_vector_add(parts, fl_cstring_dup_n(regex + l, i-l));
+                char *part = fl_cstring_dup_n(regex + l, i-l);
+                fl_vector_add(parts, &part);
                 l = i+1; // Consume the path separator
             }
         }
     }
 
-    if (i != l)
-        fl_vector_add(parts, fl_cstring_dup_n(regex + l, i-l));
+    if (i != l) {
+        char *part = fl_cstring_dup_n(regex + l, i-l);
+        fl_vector_add(parts, &part);
+    }
 
     return parts;
 }
@@ -448,7 +451,7 @@ char** fl_io_file_find(const char *pattern, const char *path_separator)
     FlVector *parts = split_regex_by_path_separator(pattern, path_separator[0]);
 
     // Our starting point is the current directory
-    char *base_dir = fl_cstring_vdup("%s%s", (char*)fl_vector_get(parts, 0), path_separator);
+    char *base_dir = fl_cstring_vdup("%s%s", *(char**) fl_vector_ref_get(parts, 0), path_separator);
     char **dir_files = fl_io_dir_list(base_dir[0] == '^' ? base_dir + 1 : base_dir);
 
     for (size_t i=0; i < fl_array_length(dir_files); i++)
@@ -462,9 +465,9 @@ char** fl_io_file_find(const char *pattern, const char *path_separator)
     for (size_t i=0; i < fl_vector_length(parts); i++)
     {
         if (i == 0)
-            fl_cstring_append(&current_path, fl_vector_get(parts, i));
+            fl_cstring_append(&current_path, *(char**) fl_vector_ref_get(parts, i));
         else
-            fl_cstring_vappend(&current_path, "%s%s", path_separator, fl_vector_get(parts, i));
+            fl_cstring_vappend(&current_path, "%s%s", path_separator, *(char**) fl_vector_ref_get(parts, i));
 
         FlRegex *regex = fl_regex_compile(current_path);
 

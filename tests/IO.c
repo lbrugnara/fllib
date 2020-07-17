@@ -1,7 +1,7 @@
 #include <fllib.h>
 
 #include "IO.h"
-#include "Test.h"
+#include <flut/flut.h>
 
 void test_file_rw_all_bytes()
 {
@@ -27,15 +27,15 @@ void test_file_rw_all_bytes()
     // Write all thebytes to the test_file.txt file and check if it exists
     fl_io_file_write_all_bytes("test_file.txt", arr);
     #ifndef _WIN32
-    fl_expect("File /tmp/test_file.txt exists", fl_io_file_exists("/tmp/test_file.txt"));
+    flut_expect_compat("File /tmp/test_file.txt exists", fl_io_file_exists("/tmp/test_file.txt"));
     #else
-    fl_expect("File C:\\tmp\\test_file.txt exists", fl_io_file_exists("C:\\tmp\\test_file.txt"));
+    flut_expect_compat("File C:\\tmp\\test_file.txt exists", fl_io_file_exists("C:\\tmp\\test_file.txt"));
     #endif
 
     // Read all the bytes back, and check if the contet is the same as the str variable
     FlArray *bytes = fl_io_file_read_all_bytes("test_file.txt");
-    fl_expect("Amount of bytes written are the same amount of bytes read", strlen(str) == fl_array_length(bytes));
-    fl_expect("File content equals to 'Hello world.\nBye.\n'", flm_cstring_equals_n(str, (char*)bytes, strlen(str)));
+    flut_expect_compat("Amount of bytes written are the same amount of bytes read", strlen(str) == fl_array_length(bytes));
+    flut_expect_compat("File content equals to 'Hello world.\nBye.\n'", flm_cstring_equals_n(str, (char*)bytes, strlen(str)));
 
     // Cleanup
     // Restore working dir

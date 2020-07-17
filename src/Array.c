@@ -167,7 +167,7 @@ bool fl_array_contains_n(const void *array, size_t nelems, const void *needle, s
 FlVector* fl_array_to_vector(const FlArray * const array)
 {
 	FlArrayHeader *header = GetHeader(array);
-	FlVector *vector = fl_vector_new(header->length, NULL);
+	FlVector *vector = flm_vector_new_with(.capacity = header->length);
 
 	const FlByte *data = array;
 	size_t l = header->length * header->element_size;

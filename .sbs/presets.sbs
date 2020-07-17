@@ -2,14 +2,24 @@ preset win-clang-release {
     env: win-cmd,
     toolchain: clang,
     config: clang-release,
-    target: fl-tests
+    target: fl-tests,
+    actions: {
+        before: [
+            export-headers
+        ]
+    }
 }
 
 preset win-clang-debug {
     env: win-cmd,
     toolchain: clang,
     config: clang-debug,
-    target: fl-tests
+    target: fl-tests,
+    actions: {
+        before: [
+            export-headers
+        ]
+    }
 }
 
 preset win-clang-all {
@@ -23,6 +33,9 @@ preset win-clang-all {
             `.\\sbs build win-clang-release`,
             `.\\sbs build win-clang-debug -t=fl-tests-sanitize -c=clang-debug-sanitize`
             `.\\sbs build win-clang-release -t=fl-tests-sanitize -c=clang-release-sanitize`
+        ],
+        after: [
+            export-headers
         ]
     }
 }

@@ -5,11 +5,14 @@
 #include "../Types.h"
 
 /*
- * Type: void(*FlContainerCleanupFn)(void *key)
+ * Type: FlContainerCleanupFn
  *
  * This module provides the fl_container_cleaner_pointer function
  * that simply frees the value pointer by {obj}.
  *
+ * ===== C =====
+ * void(*FlContainerCleanupFn)(void *key)
+ * =============
  */
 typedef void(*FlContainerCleanupFn)(void *obj);
 

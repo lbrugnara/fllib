@@ -1,136 +1,171 @@
 #include <fllib.h>
 #include <math.h>
-#include "../Test.h"
+#include <flut/flut.h>
 #include "Test_Vector.h"
 
-void test_fl_vector_new()
+void test_fl_vector_new(FlutContext *ctx, FlutAssertUtils *assert)
 {
-    fl_test_description("New vectors with valid parameters should return valid vectors")
+    flut_describe(ctx, "Passing a list of designated initializers to flm_vector_new_with must return a valid vector (.capacity = 1)")
     {
-        FlVector *vector = fl_vector_new(10, NULL);
-        fl_expect("Vector must have length == 0", fl_vector_length(vector) == 0);
-        fl_expect("Vector must have capacity for 10 elements", fl_vector_capacity(vector) == 10);
-        fl_vexpect(fl_vector_max_capacity(vector) == SIZE_MAX / sizeof(void*), "Vector must have a maximum capacity of %zu elements (default)", SIZE_MAX / sizeof(void*));
-        fl_expect("Vector must have a growth factor of 2.0 (default)", fl_vector_growth_factor(vector) == 2.0);
-        fl_vexpect(fl_vector_element_size(vector) == sizeof(void*), "Vector must have an element_size of %zu (default)", sizeof(void*));
-        fl_vector_free(vector);
+        FlVector *vector = flm_vector_new_with(.capacity = 1);
 
-        vector = fl_vector_new(100, NULL);
-        fl_expect("Vector must have length == 0", fl_vector_length(vector) == 0);
-        fl_expect("Vector must have capacity for 100 elements", fl_vector_capacity(vector) == 100);
-        fl_vexpect(fl_vector_max_capacity(vector) == SIZE_MAX / sizeof(void*), "Vector must have a maximum capacity of %zu elements (default)", SIZE_MAX / sizeof(void*));
-        fl_expect("Vector must have a growth factor of 2.0 (default)", fl_vector_growth_factor(vector) == 2.0);
-        fl_vexpect(fl_vector_element_size(vector) == sizeof(void*), "Vector must have an element_size of %zu (default)", sizeof(void*));
-        fl_vector_free(vector);
+        flut_expect(ctx, assert->not_null(vector));
+        flut_expect(ctx, assert->size_t.equals(0, fl_vector_length(vector)));
+        flut_expect(ctx, assert->size_t.equals(1, fl_vector_capacity(vector)));
+        flut_expect(ctx, assert->size_t.equals(SIZE_MAX / sizeof(void*), fl_vector_max_capacity(vector)));
+        flut_expect(ctx, assert->is_true(fl_vector_growth_factor(vector) == 2.0));
+        flut_expect(ctx, assert->size_t.equals(sizeof(void*), fl_vector_element_size(vector)));
 
-        vector = fl_vector_new(0, NULL);
-        fl_expect("Vector must have length == 0", fl_vector_length(vector) == 0);
-        fl_expect("Vector must have capacity for 1 element", fl_vector_capacity(vector) == 1);
-        fl_vexpect(fl_vector_max_capacity(vector) == SIZE_MAX / sizeof(void*), "Vector must have a maximum capacity of %zu elements (default)", SIZE_MAX / sizeof(void*));
-        fl_expect("Vector must have a growth factor of 2.0 (default)", fl_vector_growth_factor(vector) == 2.0);
-        fl_vexpect(fl_vector_element_size(vector) == sizeof(void*), "Vector must have an element_size of %zu (default)", sizeof(void*));
-        fl_vector_free(vector);
-
-        vector = fl_vector_new_args((struct FlVectorArgs) {
-            .element_size = sizeof(int*),
-            .capacity = 20,
-            .max_capacity = 40,
-            .growth_factor = 1.6
-        });
-        fl_expect("Vector must have length == 0", fl_vector_length(vector) == 0);
-        fl_expect("Vector must have capacity for 20 element", fl_vector_capacity(vector) == 20);
-        fl_expect("Vector must have a maximum capacity of 40 elements", fl_vector_max_capacity(vector) == 40);
-        fl_expect("Vector must have a growth factor of 1.6", fl_vector_growth_factor(vector) == 1.6);
-        fl_vexpect(fl_vector_element_size(vector) == sizeof(int*), "Vector must have an element_size of %zu", sizeof(int*));
-        fl_vector_free(vector);
-
-        vector = fl_vector_new_args((struct FlVectorArgs) {
-            .element_size = sizeof(double),
-            .capacity = 20,
-            .growth_factor = 1.6
-        });
-        fl_expect("Vector must have length == 0", fl_vector_length(vector) == 0);
-        fl_expect("Vector must have capacity for 20 element", fl_vector_capacity(vector) == 20);
-        fl_vexpect(fl_vector_max_capacity(vector) == SIZE_MAX / sizeof(double), "Vector must have a maximum capacity of %zu elements", SIZE_MAX / sizeof(double));
-        fl_expect("Vector must have a growth factor of 1.6", fl_vector_growth_factor(vector) == 1.6);
-        fl_vexpect(fl_vector_element_size(vector) == sizeof(double), "Vector must have an element_size of %zu", sizeof(double));
         fl_vector_free(vector);
     }
 
-    fl_test_description("New vectors with invalid configuration must return NULL")
+    flut_describe(ctx, "Passing a list of positional initializers to flm_vector_new_with must return a valid vector (fl_container_writer, fl_container_cleaner_pointer, 1.5, 16, 15, 30)")
     {
-        FlVector *vector = fl_vector_new(SIZE_MAX, NULL);
-        fl_expect("Vector initialization with capacity == SIZE_MAX returns NULL (default element_size is sizeof(void*) which results in overflow)", vector == NULL);
+        FlVector *vector = flm_vector_new_with(fl_container_writer, fl_container_cleaner_pointer, 1.5, 16, 15, 30);
 
-        vector = fl_vector_new_args((struct FlVectorArgs) {
-            .capacity = 10,
-            .max_capacity = 5
-        });
-        fl_expect("Vector initialization with a capacity greater than the maximum capacity returns NULL;", vector == NULL);
+        flut_expect(ctx, assert->not_null(vector));
+        flut_expect(ctx, assert->size_t.equals(0, fl_vector_length(vector)));
+        flut_expect(ctx, assert->size_t.equals(15, fl_vector_capacity(vector)));
+        flut_expect(ctx, assert->size_t.equals(30, fl_vector_max_capacity(vector)));
+        flut_expect(ctx, assert->is_true(fl_vector_growth_factor(vector) == 1.5));
+        flut_expect(ctx, assert->size_t.equals(16, fl_vector_element_size(vector)));
 
-        vector = fl_vector_new_args((struct FlVectorArgs) {
-            .element_size = SIZE_MAX,
-            .max_capacity = 10
-        });
-        fl_expect("Vector initialization with element_size == SIZE_MAX and capacity greater than 1 returns NULL (results in overflow)", vector == NULL);
+        fl_vector_free(vector);
+    }
+
+    flut_describe(ctx, "flm_vector_new_with(.capacity = 10) should create a valid vector")
+    {
+        FlVector *vector = flm_vector_new_with(.capacity = 10);
+
+        flut_expect(ctx, assert->not_null(vector));
+        flut_expect(ctx, assert->size_t.equals(0, fl_vector_length(vector)));
+        flut_expect(ctx, assert->size_t.equals(10, fl_vector_capacity(vector)));
+        flut_expect(ctx, assert->size_t.equals(SIZE_MAX / sizeof(void*), fl_vector_max_capacity(vector)));
+        flut_expect(ctx, assert->is_true(fl_vector_growth_factor(vector) == 2.0));
+        flut_expect(ctx, assert->size_t.equals(sizeof(void*), fl_vector_element_size(vector)));
+
+        fl_vector_free(vector);
+    }
+
+    flut_describe(ctx, "flm_vector_new_with(.capacity = 100) should create a valid vector")
+    {
+        FlVector *vector = flm_vector_new_with(.capacity = 100);
+
+        flut_expect(ctx, assert->not_null(vector));
+        flut_expect(ctx, assert->size_t.equals(0, fl_vector_length(vector)));
+        flut_expect(ctx, assert->size_t.equals(100, fl_vector_capacity(vector)));
+        flut_expect(ctx, assert->size_t.equals(SIZE_MAX / sizeof(void*), fl_vector_max_capacity(vector)));
+        flut_expect(ctx, assert->is_true(fl_vector_growth_factor(vector) == 2.0));
+        flut_expect(ctx, assert->size_t.equals(sizeof(void*), fl_vector_element_size(vector)));
+
+        fl_vector_free(vector);
+    }
+
+    flut_describe(ctx, "flm_vector_new_with(.capacity = 0) should create a valid vector")
+    {
+        FlVector *vector = flm_vector_new_with(.capacity = 0);
+
+        flut_expect(ctx, assert->not_null(vector));
+        flut_expect(ctx, assert->size_t.equals(0, fl_vector_length(vector)));
+        flut_expect(ctx, assert->size_t.equals(1, fl_vector_capacity(vector)));
+        flut_expect(ctx, assert->size_t.equals(SIZE_MAX / sizeof(void*), fl_vector_max_capacity(vector)));
+        flut_expect(ctx, assert->is_true(fl_vector_growth_factor(vector) == 2.0));
+        flut_expect(ctx, assert->size_t.equals(sizeof(void*), fl_vector_element_size(vector)));
+
+        fl_vector_free(vector);
+    }
+
+    flut_describe(ctx, "flm_vector_new_with(.element_size = sizeof(int*), .capacity = 20, .max_capacity = 40, .growth_factor = 1.6) should create a valid vector")
+    {
+        FlVector *vector = flm_vector_new_with(.element_size = sizeof(int*), .capacity = 20, .max_capacity = 40, .growth_factor = 1.6);
+
+        flut_expect(ctx, assert->not_null(vector));
+        flut_expect(ctx, assert->size_t.equals(0, fl_vector_length(vector)));
+        flut_expect(ctx, assert->size_t.equals(20, fl_vector_capacity(vector)));
+        flut_expect(ctx, assert->size_t.equals(40, fl_vector_max_capacity(vector)));
+        flut_expect(ctx, assert->is_true(fl_vector_growth_factor(vector) == 1.6));
+        flut_expect(ctx, assert->size_t.equals(sizeof(int*), fl_vector_element_size(vector)));
+
+        fl_vector_free(vector);
+    }
+
+    flut_describe(ctx, "flm_vector_new_with(.element_size = sizeof(double), .capacity = 20, .growth_factor = 1.6) should create a valid vector")
+    {
+        FlVector *vector = flm_vector_new_with(.element_size = sizeof(double), .capacity = 20, .growth_factor = 1.6);
+
+        flut_expect(ctx, assert->not_null(vector));
+        flut_expect(ctx, assert->size_t.equals(0, fl_vector_length(vector)));
+        flut_expect(ctx, assert->size_t.equals(20, fl_vector_capacity(vector)));
+        flut_expect(ctx, assert->size_t.equals(SIZE_MAX / sizeof(double), fl_vector_max_capacity(vector)));
+        flut_expect(ctx, assert->is_true(fl_vector_growth_factor(vector) == 1.6));
+        flut_expect(ctx, assert->size_t.equals(sizeof(double), fl_vector_element_size(vector)));
+
+        fl_vector_free(vector);
+    }
+
+    flut_describe(ctx, "flm_vector_new_with(.capacity = SIZE_MAX, .element_size = sizeof(void*)) must return NULL (cannot be allocated)")
+    {
+        FlVector *vector = flm_vector_new_with(.capacity = SIZE_MAX, .element_size = sizeof(void*));
+        flut_expect(ctx, assert->null(vector));
+    }
+
+    flut_describe(ctx, "flm_vector_new_with(.element_size = SIZE_MAX, .max_capacity = 10) must return NULL (cannot be allocated")
+    {
+        FlVector *vector = flm_vector_new_with(.element_size = SIZE_MAX, .max_capacity = 10);
+        flut_expect(ctx, assert->null(vector));
+    }
+
+    flut_describe(ctx, "flm_vector_new_with(.capacity = 10, .max_capacity = 5) must return NULL")
+    {
+        FlVector *vector = flm_vector_new_with(.capacity = 10, .max_capacity = 5);
+        flut_expect(ctx, assert->null(vector));
     }
 }
 
 void test_fl_vector_add()
 {
-    // Use pointers
+    /*// Use pointers
     size_t numbers[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
 
-    FlVector *vector = fl_vector_new(10, NULL);
+    FlVector *vector = flm_vector_new_with(.capacity = 10);
 
     for (size_t i=0; i < (size_t)(sizeof(numbers) / sizeof(numbers[0])); i++)
     {
-        size_t *ptr = fl_vector_add(vector, numbers+i);
-        fl_vexpect(*ptr == i+1, "Element at position %d must have value %d", i, i+1);
+        flut_vexpect_compat(fl_vector_add(vector, numbers+i), "Add (at position %zu) must success", i);
     }
 
-    fl_expect("Vector must have length == 10", fl_vector_length(vector) == 10);
+    flut_expect_compat("Vector must have length == 10", fl_vector_length(vector) == 10);
 
-    fl_vector_free(vector);
+    fl_vector_free(vector);*/
 
-    // Use a container writer
-    vector = fl_vector_new_args((struct FlVectorArgs){
-        .writer = fl_container_writer,
-        .element_size = sizeof(size_t),
-        .capacity = 10
-    });
+    FlVector *vector = flm_vector_new_with(.element_size = sizeof(size_t), .capacity = 10);
 
     for (size_t i=0; i < 10; i++)
     {
-        size_t *ptr = fl_vector_add(vector, &i);
-        fl_vexpect(*ptr == i, "Element at position %d must have value %d", i, i);
+        flut_vexpect_compat(fl_vector_add(vector, &i), "Add (at position %zu) must success", i);
     }
 
-    fl_expect("Vector must have length == 10", fl_vector_length(vector) == 10);
+    flut_expect_compat("Vector must have length == 10", fl_vector_length(vector) == 10);
 
     fl_vector_free(vector);
 
     // Use malloc'd pointers
-    vector = fl_vector_new_args((struct FlVectorArgs){
-        .element_size = sizeof(char*),
-        .cleaner = fl_container_cleaner_pointer,
-        .capacity = 10
-    });
+    vector = flm_vector_new_with(.element_size = sizeof(char*), .cleaner = fl_container_cleaner_pointer, .capacity = 10);
 
     for (int i=0; i < 10; i++)
     {
         char *str = fl_cstring_vdup("Test%d", i);
-        fl_vector_add(vector, str);
+        fl_vector_add(vector, &str);
     }
 
-    fl_expect("Vector must have length == 10", fl_vector_length(vector) == 10);
+    flut_expect_compat("Vector must have length == 10", fl_vector_length(vector) == 10);
 
     for (int i=0; i < 10; i++)
     {
         char str[6];
         snprintf(str, 6, "Test%d", i);
-        char *ptr = fl_vector_get(vector, i);
-        fl_vexpect(flm_cstring_equals(ptr, str), "Element at position %d must have value %s", i, str);
+        char **ptr = fl_vector_ref_get(vector, i);
+        flut_vexpect_compat(flm_cstring_equals(*ptr, str), "Element at position %d must have value %s", i, str);
     }
 
     fl_vector_free(vector);
@@ -142,67 +177,61 @@ void test_fl_vector_insert()
     size_t numbers[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
     size_t array_length = sizeof(numbers) / sizeof(numbers[0]);
 
-    fl_test_description("Insert on sequential positions must result in an ordedered vector")
+    flut_println("Insert on sequential positions must result in an ordedered vector")
     {
-        FlVector *vector = fl_vector_new(10, NULL);
+        FlVector *vector = flm_vector_new_with(.capacity = 10, .element_size = sizeof(size_t));
         
         for (size_t i=0; i < array_length; i++)
         {
-            size_t *ptr = fl_vector_insert(vector, numbers+i, i);
-            fl_vexpect(ptr != NULL, "Insert at position %zu must return a valid pointer", i);
+            flut_vexpect_compat(fl_vector_insert(vector, numbers + i, i), "Insert at position %zu must success", i);
         }
 
-        fl_expect("Vector must have length == 10", fl_vector_length(vector) == 10);
+        flut_expect_compat("Vector must have length == 10", fl_vector_length(vector) == 10);
 
         for (size_t i=0; i < array_length; i++)
         {
-            size_t *ptr = fl_vector_get(vector, i);
-            fl_vexpect(ptr != NULL && *ptr == numbers[i], "Inserted value at position %zu must be equals to numbers[%zu] (%zu)", i, i, numbers[i]);
+            size_t *ptr = fl_vector_ref_get(vector, i);
+            flut_vexpect_compat(ptr != NULL && *ptr == numbers[i], "Inserted value at position %zu must be equals to numbers[%zu] (%zu)", i, i, numbers[i]);
         }
 
         fl_vector_free(vector);
     }
 
-    fl_test_description("A container writer should copy the inserted value instead of saving pointers")
+    flut_println("A container writer should copy the inserted value instead of saving pointers")
     {
-        FlVector *vector = fl_vector_new_args((struct FlVectorArgs) {
-            // Use a container writer
-            .writer = fl_container_writer,
-            .element_size = sizeof(size_t),
-            .capacity = 10
-        });
+        FlVector *vector = flm_vector_new_with(.element_size = sizeof(size_t), .capacity = 10);
 
-        size_t *lnumbers[10] = { 0 };
+        size_t *vector_numbers[10] = { 0 };
         for (size_t i=0; i < 10; i++)
         {
-            lnumbers[i] = fl_vector_insert(vector, &i, i);
+            fl_vector_insert(vector, &i, i);
+            vector_numbers[i] = fl_vector_ref_get(vector, i);
             
-            fl_vexpect(lnumbers[i] != NULL, "Element at position %zu must return a valid pointer", i);
+            flut_vexpect_compat(vector_numbers[i] != NULL, "Element at position %zu must return a valid pointer", i);
 
-            *lnumbers[i] = *lnumbers[i] + 10;
+            *vector_numbers[i] += 10;
 
-            fl_vexpect(*lnumbers[i] != numbers[i], "Vector element at position %zu, modified to be equals to %zu should not affect original numbers array (%zu)", i, *lnumbers[i], numbers[i]);
+            flut_vexpect_compat(*vector_numbers[i] != numbers[i], 
+                "Vector element at position %zu, modified to be equals to %zu should not affect original numbers array (%zu)", 
+                i, *vector_numbers[i], numbers[i]);
         }
 
-        fl_expect("Vector must have length == 10", fl_vector_length(vector) == 10);
+        flut_expect_compat("Vector must have length == 10", fl_vector_length(vector) == 10);
 
         fl_vector_free(vector);
     }
 
-    fl_test_description("On resize, the capacity must be round to the next higher integer after applying the growth factor")
+    flut_println("On resize, the capacity must be round to the next higher integer after applying the growth factor")
     {
-        FlVector *vector = fl_vector_new_args((struct FlVectorArgs) {
-            .capacity = 10,
-            .growth_factor = 1.5
-        });
+        FlVector *vector = flm_vector_new_with(.capacity = 10, .growth_factor = 1.5);
 
         fl_vector_insert(vector, numbers + 0, 16);
 
-        fl_expect("Vector should have expanded its capacity to 20 elements", fl_vector_capacity(vector) == 23);
+        flut_expect_compat("Vector should have expanded its capacity to 20 elements", fl_vector_capacity(vector) == 23);
 
         fl_vector_insert(vector, numbers + 0, 26);
 
-        fl_expect("Vector should have expanded its capacity to 40 elements", fl_vector_capacity(vector) == 35);
+        flut_expect_compat("Vector should have expanded its capacity to 40 elements", fl_vector_capacity(vector) == 35);
 
         fl_vector_free(vector);
 
@@ -211,59 +240,46 @@ void test_fl_vector_insert()
         size_t max_capacity = 10;
         double growth_factor = 1.2;
 
-        vector = fl_vector_new_args((struct FlVectorArgs) {
-            .capacity = capacity,
-            .max_capacity = max_capacity,
-            .growth_factor = growth_factor,
-        });
+        vector = flm_vector_new_with(.capacity = capacity, .max_capacity = max_capacity, .growth_factor = growth_factor);
 
-        fl_vexpect(fl_vector_capacity(vector) == capacity, "Vector maximum capacity should be %zu", capacity);
-        fl_vexpect(fl_vector_max_capacity(vector) == max_capacity, "Vector maximum capacity should be %zu", max_capacity);
-        fl_vexpect(fl_vector_growth_factor(vector) == growth_factor, "Vector maximum capacity should be %f", growth_factor);
+        flut_vexpect_compat(fl_vector_capacity(vector) == capacity, "Vector maximum capacity should be %zu", capacity);
+        flut_vexpect_compat(fl_vector_max_capacity(vector) == max_capacity, "Vector maximum capacity should be %zu", max_capacity);
+        flut_vexpect_compat(fl_vector_growth_factor(vector) == growth_factor, "Vector maximum capacity should be %f", growth_factor);
 
         size_t expected_capacity = ceil(capacity * growth_factor);
-        int *n = fl_vector_insert(vector, numbers+0, 5);
-        fl_expect("Insert must succeed at position 5", n != NULL);
-        fl_vexpect(fl_vector_capacity(vector) == expected_capacity, "Vector capacity must be %zu", expected_capacity);
+        flut_expect_compat("Insert must succeed at position 5", fl_vector_insert(vector, numbers+0, 5));
+        flut_vexpect_compat(fl_vector_capacity(vector) == expected_capacity, "Vector capacity must be %zu", expected_capacity);
 
         capacity = expected_capacity;
         expected_capacity = ceil(capacity * growth_factor);
-        n = fl_vector_insert(vector, numbers+0, 6);
-        fl_expect("Insert must succeed at position 6", n != NULL);
-        fl_vexpect(fl_vector_capacity(vector) == expected_capacity, "Vector capacity must be %zu", expected_capacity);
+        flut_expect_compat("Insert must succeed at position 6", fl_vector_insert(vector, numbers+0, 6));
+        flut_vexpect_compat(fl_vector_capacity(vector) == expected_capacity, "Vector capacity must be %zu", expected_capacity);
 
         capacity = expected_capacity;
         expected_capacity = ceil(capacity * growth_factor);
-        n = fl_vector_insert(vector, numbers+0, 8);
-        fl_expect("Insert must succeed at position 8", n != NULL);
-        fl_vexpect(fl_vector_capacity(vector) == expected_capacity, "Vector capacity must be %zu", expected_capacity);
+        flut_expect_compat("Insert must succeed at position 8", fl_vector_insert(vector, numbers+0, 8));
+        flut_vexpect_compat(fl_vector_capacity(vector) == expected_capacity, "Vector capacity must be %zu", expected_capacity);
 
-
-        n = fl_vector_insert(vector, numbers+0, 9);
-        fl_expect("Insert must succeed at position 9", n != NULL);
-        fl_vexpect(fl_vector_capacity(vector) == max_capacity, "Vector capacity must be %zu", max_capacity);
+        flut_expect_compat("Insert must succeed at position 9", fl_vector_insert(vector, numbers+0, 9));
+        flut_vexpect_compat(fl_vector_capacity(vector) == max_capacity, "Vector capacity must be %zu", max_capacity);
 
         fl_vector_free(vector);
     }
 
-    fl_test_description("Once the vector has reached its maximum capacity, inserts on positions greater than max_capacity-1 should not thrive")
+    flut_println("Once the vector has reached its maximum capacity, inserts on positions greater than max_capacity-1 should not thrive")
     {
         // Check insert failures if the max. capacity is reached
-        FlVector *vector = fl_vector_new_args((struct FlVectorArgs) {
-            .capacity = 1,
-            .max_capacity = 5,
-            .growth_factor = 1.5,
-        });
+        FlVector *vector = flm_vector_new_with(.capacity = 1, .max_capacity = 5, .growth_factor = 1.5);
 
-        fl_expect("Vector maximum capacity should be 5", fl_vector_max_capacity(vector) == 5);
+        flut_expect_compat("Vector maximum capacity should be 5", fl_vector_max_capacity(vector) == 5);
 
         for (size_t i=0; i < 10; i++)
         {
-            size_t *ptr = fl_vector_insert(vector, &i, i);
+            bool result = fl_vector_insert(vector, &i, i);
             if (i < fl_vector_max_capacity(vector))
-                fl_vexpect(*ptr == i, "Element at position %zu must have value %zu", i, i);
+                flut_vexpect_compat(result, "Element at position %zu must be correctly inserted", i, i);
             else
-                fl_vexpect(ptr == NULL, "Element at position %zu cannot be inserted as the max. capacity has been reached", i);
+                flut_vexpect_compat(!result, "Element at position %zu cannot be inserted as the max. capacity has been reached", i);
         }
 
         fl_vector_free(vector);
@@ -273,50 +289,56 @@ void test_fl_vector_insert()
 void test_fl_vector_shift()
 {
     // Use pointers
-    int numbers[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
-    int size = (int)(sizeof(numbers) / sizeof(numbers[0]));
+    int *numbers[10] = { 0 };
+    size_t size = 10;
 
-    FlVector *vector = fl_vector_new(10, NULL);
+    for (size_t i=0; i < size; i++)
+    {
+        numbers[i] = fl_malloc(sizeof(int));
+        *(numbers[i]) = i;
+    }
 
-    for (int i=0; i < size; i++)
-        fl_vector_add(vector, numbers+i);
+    FlVector *vector = flm_vector_new_with(.capacity = 10);
 
-    fl_expect("Vector must have length == 10", fl_vector_length(vector) == 10);
+    for (size_t i=0; i < size; i++)
+    {
+        // Store a pointer
+        fl_vector_add(vector, numbers + i);
+    }
 
-    for (int i=0; i < size; i++)
+    flut_expect_compat("Vector must have length == 10", fl_vector_length(vector) == 10);
+
+    for (size_t i=0; i < size; i++)
     {
         int *number = NULL;
         fl_vector_shift(vector, &number);
-        fl_vexpect(number && *number == numbers[i], "Shifted element must be equals to %d", numbers[i]);
+        flut_vexpect_compat(number && *number == *(numbers[i]), "Shifted element must be equals to %d", *(numbers[i]));
     }
 
-    fl_expect("Vector after shifting all the elements must be empty", fl_vector_length(vector) == 0);
+    flut_expect_compat("Vector after shifting all the elements must be empty", fl_vector_length(vector) == 0);
+
+    for (size_t i=0; i < size; i++)
+        fl_free(numbers[i]);
 
     fl_vector_free(vector);
 
-    // Use a container writer
-    vector = fl_vector_new_args((struct FlVectorArgs){
-        .writer = fl_container_writer,
-        .element_size = sizeof(int),
-        .capacity = 10
-    });
+    vector = flm_vector_new_with(.element_size = sizeof(int), .capacity = 10);
 
     for (int i=0; i < 10; i++)
     {
-        int *ptr = fl_vector_add(vector, &i);
-        fl_vexpect(*ptr == i, "Element at position %d must have value %d", i, i);
+        flut_vexpect_compat(fl_vector_add(vector, &i), "Element at position %d must be added successfully", i);
     }
 
-    fl_expect("Vector must have length == 10", fl_vector_length(vector) == 10);
+    flut_expect_compat("Vector must have length == 10", fl_vector_length(vector) == 10);
 
     for (int i=0; i < 10; i++)
     {
         int number = -1;
         fl_vector_shift(vector, &number);
-        fl_vexpect(number == i, "Shifted element must be equals to %d", i);
+        flut_vexpect_compat(number == i, "Shifted element must be equals to %d", i);
     }
 
-    fl_expect("Vector after shifting all the elements must be empty", fl_vector_length(vector) == 0);
+    flut_expect_compat("Vector after shifting all the elements must be empty", fl_vector_length(vector) == 0);
 
     fl_vector_free(vector);
 }
@@ -324,55 +346,93 @@ void test_fl_vector_shift()
 void test_fl_vector_pop()
 {
     // Use pointers
-    int numbers[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
-    int size = (int)(sizeof(numbers) / sizeof(numbers[0]));
+    int *numbers[10] = { 0 };
+    size_t size = 10;
 
-    FlVector *vector = fl_vector_new(10, NULL);
+    for (size_t i=0; i < size; i++)
+    {
+        numbers[i] = fl_malloc(sizeof(int));
+        *(numbers[i]) = i;
+    }
 
-    for (int i=0; i < size; i++)
+    FlVector *vector = flm_vector_new_with(.capacity = 10);
+
+    for (size_t i=0; i < size; i++)
         fl_vector_add(vector, numbers+i);
 
-    fl_expect("Vector must have length == 10", fl_vector_length(vector) == 10);
+    flut_expect_compat("Vector must have length == 10", fl_vector_length(vector) == 10);
 
-    for (int i=0; i < size; i++)
+    for (size_t i=0; i < size; i++)
     {
         int *number = NULL;
         fl_vector_pop(vector, &number);
-        fl_vexpect(number && *number == numbers[size-1-i], "Shifted element must be equals to %d", numbers[size-1-i]);
+        flut_vexpect_compat(number && *number == *(numbers[size-1-i]), "Shifted element must be equals to %d", *(numbers[size-1-i]));
     }
 
-    fl_expect("Vector after popping all the elements must be empty", fl_vector_length(vector) == 0);
+    flut_expect_compat("Vector after popping all the elements must be empty", fl_vector_length(vector) == 0);
+
+    for (size_t i=0; i < size; i++)
+        fl_free(numbers[i]);
 
     fl_vector_free(vector);
 
-    // Use a container writer
-    vector = fl_vector_new_args((struct FlVectorArgs){
-        .writer = fl_container_writer,
-        .element_size = sizeof(int),
-        .capacity = 10
-    });
+    vector = flm_vector_new_with(.element_size = sizeof(int), .capacity = 10);
 
     for (int i=0; i < 10; i++)
     {
-        int *ptr = fl_vector_add(vector, &i);
-        fl_vexpect(*ptr == i, "Element at position %d must have value %d", i, i);
+        flut_vexpect_compat(fl_vector_add(vector, &i), "Add (at position %zu) must success", i);
     }
 
-    fl_expect("Vector must have length == 10", fl_vector_length(vector) == 10);
+    flut_expect_compat("Vector must have length == 10", fl_vector_length(vector) == 10);
 
     for (int i=0; i < 10; i++)
     {
         int number = -1;
         fl_vector_pop(vector, &number);
-        fl_vexpect(number == 9-i, "Shifted element must be equals to %d", 9-i);
+        flut_vexpect_compat(number == 9-i, "Shifted element must be equals to %d", 9-i);
     }
 
-    fl_expect("Vector after popping all the elements must be empty", fl_vector_length(vector) == 0);
+    flut_expect_compat("Vector after popping all the elements must be empty", fl_vector_length(vector) == 0);
 
     fl_vector_free(vector);
 }
 
 void test_fl_vector_get()
 {
-    // TODO
+    flut_println("fl_vector_ref_get should return \"pointers to\" int for a vector that stores integers") {
+        FlVector *vector_of_ints = flm_vector_new_with(.element_size = sizeof(int));
+
+        int x = 10, y = 20;
+
+        fl_vector_add(vector_of_ints, &x);              // Accepts "pointer to" integer
+        fl_vector_insert(vector_of_ints, &y, 0);        // Accepts "pointer to" integer
+
+        int *py = fl_vector_ref_get(vector_of_ints, 0);     // Returns "pointer to" integer
+        int *px = fl_vector_ref_get(vector_of_ints, 1);     // Returns "pointer to" integer
+
+        flut_vexpect_compat(*py == y, "Element at index 0 must be equals to variable y (%d)", y);
+        flut_vexpect_compat(*px == x, "Element at index 1 must be equals to variable x (%d)", x);
+
+        fl_vector_free(vector_of_ints);
+    }
+
+    flut_println("fl_vector_ref_get should return \"pointers to\" pointers to int for a vector that stores pointers to integer") {
+        FlVector *vector_of_int_ptrs = flm_vector_new_with(.capacity = 2);
+
+        int x = 10, y = 20;
+        int *px = &x, *py = &y;
+
+        fl_vector_add(vector_of_int_ptrs, &px);             // Accepts "pointer to" pointer to integer
+        fl_vector_insert(vector_of_int_ptrs, &py, 0);       // Accepts "pointer to" pointer to integer
+
+        int **ppy = fl_vector_ref_get(vector_of_int_ptrs, 0);   // Returns "pointer to" pointer to integer
+        int **ppx = fl_vector_ref_get(vector_of_int_ptrs, 1);   // Returns "pointer to" pointer to integer
+
+        flut_vexpect_compat(*ppy == py, "Element at index 0 must be equals to pointer py (0x%x)", py);
+        flut_vexpect_compat(**ppy == y, "Dereferencing element at index 0 must be equals to variable y (%d)", y);
+        flut_vexpect_compat(*ppx == px, "Element at index 1 must be equals to pointer px (0x%x)", px);
+        flut_vexpect_compat(**ppx == x, "Dereferencing element at index 1 must be equals to variable x (%d)", x);
+
+        fl_vector_free(vector_of_int_ptrs);
+    }
 }

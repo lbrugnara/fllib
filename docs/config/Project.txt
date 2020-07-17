@@ -43,7 +43,12 @@ Title: fllib
 # Source Code
 # ------------------------------------------------------------------------
 
-Source Folder: ..\..
+Source Folder: ..\..\src
+   Name: fllib
+
+Source Folder 2: ..\..\flut\src
+   Name: flut
+
 
 
 

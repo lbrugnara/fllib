@@ -36,17 +36,13 @@ FlVector* fl_cstring_split(const char *str)
     flm_assert(str != NULL, "char* argument to split cannot be NULL");
 
     size_t length = strlen(str);
-    FlVector *vector = fl_vector_new_args((struct FlVectorArgs){
-        .writer = fl_container_writer,
-        .element_size = sizeof(char),
-        .capacity = length,
-    });
+    FlVector *vector = flm_vector_new_with(.element_size = sizeof(char), .capacity = length);
     
     if (length == 0)
         return vector;
 
     for (size_t i = 0; i < length; i++)
-        fl_vector_add(vector, (void *)&str[i]);
+        fl_vector_add(vector, str + i);
 
     return vector;
 }
@@ -55,7 +51,7 @@ FlVector* fl_cstring_split_by(const char *string, const char *separator)
 {
     flm_assert(string != NULL, "char* argument to split cannot be NULL");
 
-    FlVector *parts = fl_vector_new(1, fl_container_cleaner_pointer);
+    FlVector *parts = flm_vector_new_with(.capacity = 1, .cleaner = fl_container_cleaner_pointer);
 
     size_t separatorLength = strlen(separator);
     size_t index = 0;
@@ -66,7 +62,7 @@ FlVector* fl_cstring_split_by(const char *string, const char *separator)
         size_t length = temp - string - index;
 
         char *part = fl_cstring_dup_n(string + index, length);
-        fl_vector_add(parts, part);
+        fl_vector_add(parts, &part);
         
         index += length + separatorLength;
     }
@@ -76,7 +72,7 @@ FlVector* fl_cstring_split_by(const char *string, const char *separator)
     if (stringLength - index != 0)
     {
         char *part = fl_cstring_dup(string + index);
-        fl_vector_add(parts, part);
+        fl_vector_add(parts, &part);
     }
 
     return parts;
@@ -495,7 +491,7 @@ char *fl_cstring_join(FlVector *vector, char *glue)
     while (i < end)
     {
         // Current element and its length
-        char *el = (char*)fl_vector_get(vector, i);
+        char *el = *(char**) fl_vector_ref_get(vector, i);
         size_t el_length = strlen(el);
         // Str current length
         size_t str_length = strlen(str);
@@ -523,7 +519,7 @@ char *fl_char_join(FlVector *vector, char *glue)
     while (i < end)
     {
         // Current element and its length
-        char el = *(char*)fl_vector_get(vector, i);
+        char el = *(char*)fl_vector_ref_get(vector, i);
         // Str current length
         size_t str_length = strlen(str);
         // Glue length depends on end variable, when el is the final element, glue won't be appended

@@ -17,6 +17,27 @@ compile fl-objects {
     }
 }
 
+compile flut-objects {
+    includes: [ 
+        "./include"
+    ],
+    output_dir: "obj/",
+    sources: [
+        "flut/src/.*[.]c$"
+    ]
+}
+
+
+compile fl-tests-objects {
+    includes: [ 
+        "./include"
+    ],
+    output_dir: "tests/obj",
+    sources: [
+        "tests/.*[.]c$"
+    ]
+}
+
 archive fllib-static {
     output_name: "libfl",
     output_dir: "build/",
@@ -29,13 +50,16 @@ archive fllib-static {
     ]
 }
 
-compile fl-tests-objects {
-    includes: [ 
-        "./include"
-    ],
-    output_dir: "tests/obj",
-    sources: [
-        "tests/.*[.]c$"
+archive flut-static {
+    output_name: "libflut",
+    output_dir: "build/",
+    actions: {
+        before: [],
+        after: []
+    },
+    objects: [
+        fl-objects,
+        flut-objects
     ]
 }
 
@@ -48,7 +72,7 @@ executable fl-tests {
     },
     objects: [
         fl-tests-objects,
-        fllib-static
+        flut-static
     ]
 
     for linux-bash {
@@ -88,6 +112,6 @@ executable fl-tests-sanitize {
 
     objects: [
         fl-tests-objects,
-        fllib-static,
+        flut-static,
     ]
 }

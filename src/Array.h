@@ -1,6 +1,15 @@
 #ifndef FL_ARRAY_H
 #define FL_ARRAY_H
 
+#include <stdbool.h>
+
+/*
+ * Type: FlArray
+ *  An FlArray is a pointer to the allocated memory
+ *
+ */
+typedef void FlArray;
+
 /*
  * File: Array
  *  Provides a simple mechanism to allocate arrays on heap, keep track of its size and 
@@ -16,16 +25,8 @@
  *
  */
 
-#include <stdbool.h>
 #include "Types.h"
 #include "containers/Vector.h"
-
-/*
- * Type: FlArray
- *  An FlArray is a pointer to the allocated memory
- *
- */
-typedef void FlArray;
 
 #define arrayof(type) (type*)
 
@@ -252,6 +253,6 @@ bool fl_array_contains_n(const void *array, size_t nelems, const void *needle, s
  *  FlVector* - Pointer to a new vector with the array's elements on it
  *
  */
-FlVector* fl_array_to_vector(const FlArray * const array);
+struct FlVector* fl_array_to_vector(const FlArray * const array);
 
 #endif /* FL_ARRAY_H */

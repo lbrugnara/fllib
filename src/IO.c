@@ -161,6 +161,58 @@ long fl_io_file_size(FILE * fd)
     return size;
 }
 
+bool fl_io_path_is_relative(const char *path)
+{
+    return strlen(path) > 0 && !fl_io_path_is_absolute(path);
+}
+
+bool fl_io_path_is_absolute(const char *path)
+{
+    flm_assert(path != NULL, "Path cannot be NULL");
+    #ifdef _WIN32
+
+    size_t length = strlen(path);
+
+    if (length == 0)
+        return false;
+
+    // Drive letter
+    if (length >= 3 && ((path[0] >= (int)'A' && path[0] <= (int) 'Z') || (path[0] >= (int)'a' && path[0] <= (int) 'z')))
+    {
+        return path[1] == ':' && path[2] == '\\';
+    }
+
+    // Root: '\' 
+    // Devices: '\\?' or '\\.'
+    // UNC Paths: '\\'
+    // Absolute path from the root of the current drive: '\Program Files\Custom Utilities\StringFinder.exe'
+    return path[0] == '\\';
+
+    #else
+    return path && strlen(path) > 0 && path[0] == '/';
+    #endif
+}
+
+char* fl_io_realpath(const char *relpath)
+{
+    #ifdef _WIN32
+    return _fullpath(NULL, relpath, 0);
+    #else
+    return realpath(relpath, NULL);
+    #endif
+}
+
+char* fl_io_realpath_realloc(const char *relpath)
+{
+    char *abspath = fl_io_realpath(relpath);
+
+    if (abspath == NULL)
+        return NULL;
+
+    fl_cstring_free(relpath);
+    return abspath;
+}
+
 size_t fl_io_file_read_bytes(FILE * file, size_t nbytes, FlByte *destination)
 {
     flm_assert(file != NULL, "File descriptor cannot be NULL");
@@ -444,8 +496,6 @@ char** fl_io_file_find(const char *pattern, const char *path_separator)
     if (!path_separator || !path_separator[0])
         return NULL;
 
-    char **files = fl_array_new(sizeof(char*), 0);
-
     FlList *matching_files = fl_list_new_args((struct FlListArgs){ .value_cleaner = fl_container_cleaner_pointer });
 
     FlVector *parts = split_regex_by_path_separator(pattern, path_separator[0]);
@@ -504,6 +554,7 @@ char** fl_io_file_find(const char *pattern, const char *path_separator)
     fl_cstring_free(current_path);
     fl_vector_free(parts);
 
+    char **files = fl_array_new(sizeof(char*), 0);
     struct FlListNode *tmp = fl_list_head(matching_files);
     FlRegex *regex = fl_regex_compile((char*)pattern);
     while (tmp)
@@ -511,7 +562,11 @@ char** fl_io_file_find(const char *pattern, const char *path_separator)
         // We need to make a last check against the full pattern
         if (fl_regex_match(regex, (char*)tmp->value))
         {
-            char *filename = fl_cstring_dup((char*)tmp->value);
+            char *tmpfname = (char*)tmp->value;
+            
+            bool needs_dot = fl_io_path_is_relative(tmpfname) && tmpfname[0] != '.';
+            char *filename = fl_cstring_vdup("%s%s%s", (needs_dot ? "." : ""), (needs_dot ? path_separator : ""), tmpfname);
+            
             files = fl_array_append(files, &filename);
         }
         tmp = tmp->next;

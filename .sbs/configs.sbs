@@ -27,7 +27,7 @@ config clang-config {
 
     for linux-bash {
         compile: {
-            flags: [ "-fPIC" ]
+            flags: [ "-fPIC", "-std=gnu99", ]
         },
         archive: {
             extension: ".a",

@@ -99,7 +99,7 @@ static bool binheap_exchange(FlBinaryHeap *heap, size_t child_index, size_t pare
         if (binheap_compare(heap, child, parent) <= 0)
             return false;
 
-        scoped_resource(FlByte*, tmp, fl_calloc(1, element_size), fl_free(tmp)) {
+        fl_scoped_resource(FlByte*, tmp, fl_calloc(1, element_size), fl_free(tmp)) {
             memcpy(tmp, child, element_size);
             memcpy(child, parent, element_size);
             memcpy(parent, tmp, element_size);

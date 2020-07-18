@@ -7,7 +7,8 @@
 
 #include "result.h"
 
-FlutAssertResult* flut_assert_size_t_equals(size_t expected, size_t actual) {
+FlutAssertResult* flut_assert_size_t_equals(size_t expected, size_t actual)
+{
     struct FlutAssertResult *result = fl_malloc(sizeof(struct FlutAssertResult));
 
     result->success = expected == actual;

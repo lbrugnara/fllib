@@ -97,6 +97,13 @@ bool fl_io_dir_create(const char *pathname);
  */
 bool fl_io_dir_create_recursive(const char *pathname);
 
+bool fl_io_path_is_relative(const char *path);
+bool fl_io_path_is_absolute(const char *path);
+
+char* fl_io_realpath(const char *relpath);
+
+char* fl_io_realpath_realloc(const char *relpath);
+
 /*
  * Function: fl_io_file_read_bytes
  *  This function is a wrapper of the fread function. It reads *nbytes* bytes from the *file* 

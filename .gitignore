@@ -7,3 +7,5 @@ docs/config/Working Data/*
 docs/build/*
 .vscode/*
 *.pdb
+*.exe
+sbs

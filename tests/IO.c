@@ -1,7 +1,64 @@
 #include <fllib.h>
+#include <flut/flut.h>
 
 #include "IO.h"
-#include <flut/flut.h>
+
+void test_io_path(FlutContext *ctx, FlutAssertUtils *assert)
+{
+    #ifdef _WIN32
+    flut_describe(ctx, "Windows paths should be all relative paths")
+    {
+        flut_expect(ctx, assert->is_true(fl_io_path_is_relative(".")));
+        flut_expect(ctx, assert->is_false(fl_io_path_is_absolute(".")));
+
+        flut_expect(ctx, assert->is_true(fl_io_path_is_relative("..")));
+        flut_expect(ctx, assert->is_false(fl_io_path_is_absolute("..")));
+
+        flut_expect(ctx, assert->is_true(fl_io_path_is_relative(".\\")));
+        flut_expect(ctx, assert->is_false(fl_io_path_is_absolute(".\\")));
+
+        flut_expect(ctx, assert->is_true(fl_io_path_is_relative("..\\")));
+        flut_expect(ctx, assert->is_false(fl_io_path_is_absolute("..\\")));
+
+        flut_expect(ctx, assert->is_true(fl_io_path_is_relative(".\\test")));
+        flut_expect(ctx, assert->is_false(fl_io_path_is_absolute(".\\test")));
+
+        flut_expect(ctx, assert->is_true(fl_io_path_is_relative("..\\test")));
+        flut_expect(ctx, assert->is_false(fl_io_path_is_absolute("..\\test")));
+
+        flut_expect(ctx, assert->is_true(fl_io_path_is_relative(".\\test\\2")));
+        flut_expect(ctx, assert->is_false(fl_io_path_is_absolute(".\\test\\2")));
+
+        flut_expect(ctx, assert->is_true(fl_io_path_is_relative("..\\test\\2")));
+        flut_expect(ctx, assert->is_false(fl_io_path_is_absolute("..\\test\\2")));
+
+        flut_expect(ctx, assert->is_true(fl_io_path_is_relative("C:test\\2")));
+        flut_expect(ctx, assert->is_false(fl_io_path_is_absolute("C:test\\2")));
+
+        flut_expect(ctx, assert->is_true(fl_io_path_is_relative("test\\2")));
+        flut_expect(ctx, assert->is_false(fl_io_path_is_absolute("test\\2")));
+    }
+
+    flut_describe(ctx, "Windows paths should be all absolute paths")
+    {
+        flut_expect(ctx, assert->is_true(fl_io_path_is_absolute("C:\\test")));
+        flut_expect(ctx, assert->is_false(fl_io_path_is_relative("C:\\test")));
+
+        flut_expect(ctx, assert->is_true(fl_io_path_is_absolute("\\test")));
+        flut_expect(ctx, assert->is_false(fl_io_path_is_relative("\\test")));
+
+        flut_expect(ctx, assert->is_true(fl_io_path_is_absolute("\\\\?\\UNC")));
+        flut_expect(ctx, assert->is_false(fl_io_path_is_relative("\\\\?\\UNC")));
+
+        flut_expect(ctx, assert->is_true(fl_io_path_is_absolute("\\\\?\\D:\\something")));
+        flut_expect(ctx, assert->is_false(fl_io_path_is_relative("\\\\?\\D:\\something")));
+
+        flut_expect(ctx, assert->is_true(fl_io_path_is_absolute("\\\\.\\pipe\\my-pipe")));
+        flut_expect(ctx, assert->is_false(fl_io_path_is_relative("\\\\.\\pipe\\my-pipe")));
+    }
+
+    #endif
+}
 
 void test_file_rw_all_bytes()
 {

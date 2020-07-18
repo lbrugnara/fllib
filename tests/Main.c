@@ -47,7 +47,8 @@ int main(int argc, char **argv)
             { "cstr_misc_functions", &test_cstring_misc }
         ),
         flut_suite("IO", 
-            { "fl_io_file_write_all_bytes and fl_io_file_read_all_bytes", &test_file_rw_all_bytes }
+            { "fl_io_file_write_all_bytes and fl_io_file_read_all_bytes", &test_file_rw_all_bytes },
+            { "IO Paths", &test_io_path },
         ),
         flut_suite("Unicode",
             { "fl_unicode_codepoint_at", &test_fl_unicode_codepoint_at },

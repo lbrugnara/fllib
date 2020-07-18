@@ -7,7 +7,8 @@
 
 #include "result.h"
 
-FlutAssertResult* flut_assert_null(void *obj) {
+FlutAssertResult* flut_assert_null(void *obj)
+{
     struct FlutAssertResult *result = fl_malloc(sizeof(struct FlutAssertResult));
 
     result->success = obj == NULL;
@@ -19,7 +20,8 @@ FlutAssertResult* flut_assert_null(void *obj) {
     return result;
 }
 
-FlutAssertResult* flut_assert_not_null(void *obj) {
+FlutAssertResult* flut_assert_not_null(void *obj)
+{
     struct FlutAssertResult *result = fl_malloc(sizeof(struct FlutAssertResult));
 
     result->success = obj != NULL;

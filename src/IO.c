@@ -45,6 +45,9 @@ FILE * fl_io_file_open(const char *filename, const char *mode)
 
 bool fl_io_file_exists(const char *filename)
 {
+    if (filename == NULL)
+        return false;
+
     return access(filename, 0) != -1;
 }
 
@@ -206,10 +209,9 @@ char* fl_io_realpath_realloc(const char *relpath)
 {
     char *abspath = fl_io_realpath(relpath);
 
-    if (abspath == NULL)
-        return NULL;
-
+    // relpath is deallocated no matter what happen with abspath
     fl_cstring_free(relpath);
+
     return abspath;
 }
 
@@ -450,35 +452,37 @@ char** fl_io_dir_list(const char *directory)
     return files;
 }
 
-static inline FlVector* split_regex_by_path_separator(const char *regex, const char separator)
+static inline FlVector* split_regex_by_path_separator(const char *regex, const char *separator)
 {
     flm_assert(regex != NULL, "char* argument to split cannot be NULL");
 
     FlVector *parts = flm_vector_new_with(.capacity = 1, .cleaner = fl_container_cleaner_pointer);
 
     size_t length = strlen(regex);
+    size_t sep_length = strlen(separator);
     size_t i=0;
     size_t l=0;
     for (; i < length; i++)
     {
-        if (regex[i] == '[' && i > 0 && regex[i-1] != '\\')
+        if (regex[i] == '[' && ((i > 1 && regex[i-1] != '\\') || (i > 2 && regex[i-2] == '\\')))
         {
             while (i < length && regex[i] != ']')
                 i++;
         }
-        else if (regex[i] == separator)
+        else if (flm_cstring_equals_n(regex + i, separator, sep_length))
         {
             // Starting path separator
             if (i == 0)
             {
-                l++;
+                l += sep_length;
                 continue;
             }
             else
             {
                 char *part = fl_cstring_dup_n(regex + l, i-l);
                 fl_vector_add(parts, &part);
-                l = i+1; // Consume the path separator
+                l = i + sep_length; // Consume the path separator
+                i += sep_length - 1; // the 'i' increments in the for
             }
         }
     }
@@ -491,17 +495,16 @@ static inline FlVector* split_regex_by_path_separator(const char *regex, const c
     return parts;
 }
 
-char** fl_io_file_find(const char *pattern, const char *path_separator)
+char** fl_io_file_find(const char *pattern, const char path_separator)
 {
-    if (!path_separator || !path_separator[0])
-        return NULL;
-
     FlList *matching_files = fl_list_new_args((struct FlListArgs){ .value_cleaner = fl_container_cleaner_pointer });
 
-    FlVector *parts = split_regex_by_path_separator(pattern, path_separator[0]);
+    FlVector *parts = path_separator == '\\' 
+        ? split_regex_by_path_separator(pattern, "\\\\")
+        : split_regex_by_path_separator(pattern, (char[]) { path_separator, '\0' });
 
     // Our starting point is the current directory
-    char *base_dir = fl_cstring_vdup("%s%s", *(char**) fl_vector_ref_get(parts, 0), path_separator);
+    char *base_dir = fl_cstring_vdup("%s%c", *(char**) fl_vector_ref_get(parts, 0), path_separator);
     char **dir_files = fl_io_dir_list(base_dir[0] == '^' ? base_dir + 1 : base_dir);
 
     for (size_t i=0; i < fl_array_length(dir_files); i++)
@@ -515,9 +518,18 @@ char** fl_io_file_find(const char *pattern, const char *path_separator)
     for (size_t i=0; i < fl_vector_length(parts); i++)
     {
         if (i == 0)
+        {
             fl_cstring_append(&current_path, *(char**) fl_vector_ref_get(parts, i));
+        }
+        else if (path_separator == '\\')
+        {
+            // Escape the backslash
+            fl_cstring_vappend(&current_path, "%c%c%s", path_separator, path_separator, *(char**) fl_vector_ref_get(parts, i));
+        }
         else
-            fl_cstring_vappend(&current_path, "%s%s", path_separator, *(char**) fl_vector_ref_get(parts, i));
+        {
+            fl_cstring_vappend(&current_path, "%c%s", path_separator, *(char**) fl_vector_ref_get(parts, i));
+        }
 
         FlRegex *regex = fl_regex_compile(current_path);
 
@@ -537,7 +549,7 @@ char** fl_io_file_find(const char *pattern, const char *path_separator)
                 char **dir_files = fl_io_dir_list(filepath);
 
                 for (size_t j=0; j < fl_array_length(dir_files); j++)
-                    fl_list_insert_before(matching_files, matching_file, fl_cstring_vdup("%s%s%s", filepath, path_separator, dir_files[j]));
+                    fl_list_insert_before(matching_files, matching_file, fl_cstring_vdup("%s%c%s", filepath, path_separator, dir_files[j]));
 
                 fl_array_free_each_pointer(dir_files, (FlArrayFreeElementFunc)fl_cstring_free);
             }
@@ -564,8 +576,16 @@ char** fl_io_file_find(const char *pattern, const char *path_separator)
         {
             char *tmpfname = (char*)tmp->value;
             
+            char *filename = NULL;
             bool needs_dot = fl_io_path_is_relative(tmpfname) && tmpfname[0] != '.';
-            char *filename = fl_cstring_vdup("%s%s%s", (needs_dot ? "." : ""), (needs_dot ? path_separator : ""), tmpfname);
+            if (needs_dot)
+            {
+                filename = fl_cstring_vdup("%s%c%s", ".", path_separator, tmpfname);
+            }
+            else
+            {
+                filename = fl_cstring_dup(tmpfname);
+            }
             
             files = fl_array_append(files, &filename);
         }

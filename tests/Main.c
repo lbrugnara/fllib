@@ -44,10 +44,12 @@ int main(int argc, char **argv)
             { "fl_cstring_replace", &test_cstring_replace },
             { "fl_cstring_append{_char}", &test_cstring_append },
             { "fl_cstring_join", &test_cstring_join },
-            { "cstr_misc_functions", &test_cstring_misc }
+            { "cstr_misc_functions", &test_cstring_misc },
+            { "fl_cstring_find", &test_cstring_find }
         ),
         flut_suite("IO", 
             { "fl_io_file_write_all_bytes and fl_io_file_read_all_bytes", &test_file_rw_all_bytes },
+            { "IO realpath", &test_io_realpath },
             { "IO Paths", &test_io_path },
         ),
         flut_suite("Unicode",

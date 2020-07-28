@@ -42,6 +42,8 @@ FILE* fl_io_file_open(const char *filename, const char *mode);
  */
 bool fl_io_file_close(FILE *fd);
 
+bool fl_io_file_unlink(const char *filename);
+
 /*
  * Function: fl_io_file_exists
  *  Check if a file exists.
@@ -206,6 +208,6 @@ bool fl_io_file_write_all_text(const char *filename, const char *content);
 bool fl_io_file_get_modified_timestamp(const char *filename, unsigned long long *timestamp);
 
 char** fl_io_dir_list(const char *directory);
-char** fl_io_file_find(const char *pattern, const char *path_separator);
+char** fl_io_file_find(const char *pattern, const char path_separator);
 
 #endif /* FL_IO_H */

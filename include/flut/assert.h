@@ -10,9 +10,17 @@ typedef struct FlutAssertUtils {
     FlutAssertResult* (*not_null)(void *obj);
     FlutAssertResult* (*is_true)(bool condition);
     FlutAssertResult* (*is_false)(bool condition);
+
     struct {
         FlutAssertResult* (*equals)(size_t expected, size_t actual);
+        FlutAssertResult* (*not_equals)(size_t expected, size_t actual);
     } size_t;
+
+    struct {
+        FlutAssertResult* (*equals)(const char *expected, const char *actual, bool free_mem);
+        FlutAssertResult* (*equals_n)(const char *expected, const char *actual, size_t n, bool free_mem);
+        FlutAssertResult* (*not_equals)(const char *expected, const char *actual, bool free_mem);
+    } str;
 } FlutAssertUtils;
 
 FlutAssertUtils* flut_assert_utils_new(void);

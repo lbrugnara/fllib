@@ -237,3 +237,20 @@ void test_cstring_misc()
     length = uinteger_length(unumber);
     flut_vexpect_compat(1 == length, "Integer %llu (ULLONG_MIN) to string is %d chars (length = %d)", unumber, 1, length);
 }
+
+void test_cstring_find(FlutContext *ctx, FlutAssertUtils *assert)
+{
+    flut_describe(ctx, "Find should find ASCII chars within UTF-8 strings")
+    {
+        char *a = fl_cstring_find("兔¡¢£¤¥a¦§¨©ª«¬­®", "a");
+        flut_expect(ctx, assert->not_null(a));
+        flut_expect(ctx, assert->is_true(*a == 'a'));
+    }
+
+    flut_describe(ctx, "Find should find literal UTF-8 chars within UTF-8 strings")
+    {
+        char *rabbit = fl_cstring_find("兔¡¢£¤¥兔¦§¨©ª«¬­®", "兔");
+        flut_expect(ctx, assert->not_null(rabbit));
+        flut_expect(ctx, assert->str.equals_n(rabbit, "兔", strlen("兔"), false));
+    }
+}

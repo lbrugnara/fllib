@@ -22,6 +22,12 @@ FlutAssertUtils* flut_assert_utils_new(void)
 
     // size_t
     asserts->size_t.equals = flut_assert_size_t_equals;
+    asserts->size_t.not_equals = flut_assert_size_t_not_equals;
+
+    // str
+    asserts->str.equals = flut_assert_str_equals;
+    asserts->str.equals_n = flut_assert_str_equals_n;
+    asserts->str.not_equals = flut_assert_str_not_equals;
 
     return asserts;
 }

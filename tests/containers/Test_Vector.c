@@ -162,8 +162,8 @@ void test_fl_vector_add()
 
     for (int i=0; i < 10; i++)
     {
-        char str[6];
-        snprintf(str, 6, "Test%d", i);
+        char str[7];
+        snprintf(str, 7, "Test%d", i);
         char **ptr = fl_vector_ref_get(vector, i);
         flut_vexpect_compat(flm_cstring_equals(*ptr, str), "Element at position %d must have value %s", i, str);
     }

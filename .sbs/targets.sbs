@@ -1,7 +1,7 @@
 
 compile fl-objects {
     includes: [ ],
-    output_dir: "obj/",
+    output_dir: "obj/${sbs.env}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/",
     sources: [ 
         "src/containers/[^/]*[.]c$"
         "src/os/[^W/]*[.]c$"
@@ -10,7 +10,7 @@ compile fl-objects {
         "src/[^/]*[.]c$"
     ],
 
-    for win-cmd {
+    if env(win-cmd) {
         sources: [
             "src/os/WinEx.c"
         ]
@@ -21,7 +21,7 @@ compile flut-objects {
     includes: [ 
         "./include"
     ],
-    output_dir: "obj/",
+    output_dir: "obj/${sbs.env}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/",
     sources: [
         "flut/src/.*[.]c$"
     ]
@@ -32,7 +32,7 @@ compile fl-tests-objects {
     includes: [ 
         "./include"
     ],
-    output_dir: "tests/obj",
+    output_dir: "obj/${sbs.env}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/",
     sources: [
         "tests/.*[.]c$"
     ]
@@ -40,7 +40,7 @@ compile fl-tests-objects {
 
 archive fllib-static {
     output_name: "libfl",
-    output_dir: "build/",
+    output_dir: "build/${sbs.env}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/",
     actions: {
         before: [],
         after: []
@@ -52,7 +52,7 @@ archive fllib-static {
 
 archive flut-static {
     output_name: "libflut",
-    output_dir: "build/",
+    output_dir: "build/${sbs.env}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/",
     actions: {
         before: [],
         after: []
@@ -65,7 +65,7 @@ archive flut-static {
 
 executable fl-tests {
     output_name: "tests",
-    output_dir: "tests/build",
+    output_dir: "build/${sbs.env}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/",
     actions: {
         before: [],
         after: []
@@ -75,7 +75,7 @@ executable fl-tests {
         flut-static
     ]
 
-    for linux-bash {
+    if env(linux-bash) {
         libraries: [
             { name: "m" },
             { name: "pthread" }
@@ -90,7 +90,7 @@ executable fl-tests-sanitize {
         # before: [ clean, clean-tests ]
         after: [ `.\tests\build\clang-debug-sanitize\tests.exe` ]
     }
-    for win-cmd {
+    if env(win-cmd) {
         libraries: [
             {
                 path: "D:\dev\LLVM\x86\lib\clang\8.0.0\lib\windows"
@@ -103,7 +103,7 @@ executable fl-tests-sanitize {
         ]
     }
 
-    for linux-bash {
+    if env(linux-bash) {
         libraries: [
             { name: "m" },
             { name: "pthread" }

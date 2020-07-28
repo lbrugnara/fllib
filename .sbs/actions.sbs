@@ -1,25 +1,25 @@
 action clean {
-    for win-cmd {
+    if env(win-cmd) {
         `if exist .\obj (rd /s /q .\obj)`,
         `if exist .\build (rd /s /q .\build)`
     },
-    for linux-bash {
+    if env(linux-bash) {
         `rm -fr obj/ build/`
     }
 }
 
 action clean-tests {
-    for win-cmd {
+    if env(win-cmd) {
         `if exist .\tests\obj (rd /s /q .\tests\obj)`,
         `if exist .\tests\build (rd /s /q .\tests\build)`
     },
-    for linux-bash {
+    if env(linux-bash) {
         `rm -fr tests/obj/ tests/build/`
     }
 }
 
 action export-headers {
-    for win-cmd {
+    if env(win-cmd) {
         `if not exist .\include (mkdir .\include)`
         `if not exist .\include\fllib (mkdir .\include\fllib)`
         `if not exist .\include\flut (mkdir .\include\flut)`

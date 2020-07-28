@@ -1,5 +1,5 @@
 
-config clang-config {
+config clang-config for toolchain(clang, gcc) {
     compile: {
         extension: ".o",
         flags: [
@@ -20,35 +20,35 @@ config clang-config {
             "-fexec-charset=UTF-8",
             "-D_FORTIFY_SOURCE=2",
             "-DFL_UNICODE_DB",
-            "-c ${INPUT_FILE}",
-            "-o ${OUTPUT_FILE}"
+            "-c ${sbs.input_file}",
+            "-o ${sbs.output_file}"
         ]
     },    
 
-    for linux-bash {
+    if env(linux-bash) {
         compile: {
             flags: [ "-fPIC", "-std=gnu99", ]
         },
         archive: {
             extension: ".a",
-            flags: [ "rcs", "${OUTPUT_FILE}" ]
+            flags: [ "rcs", "${sbs.output_file}" ]
         },
         shared: {
             extension: ".so",
             flags: [
                 "-shared",
-                "-o ${OUTPUT_FILE}"
+                "-o ${sbs.output_file}"
             ]
         },
         executable: {
             extension: "",
             flags: [
-                "-o ${OUTPUT_FILE}"
+                "-o ${sbs.output_file}"
             ]
         }
     },
 
-    for win-cmd {
+    if env(win-cmd) {
         compile: {
             flags: [ ]
         },
@@ -56,7 +56,7 @@ config clang-config {
             extension: ".lib",
             flags: [
                 "/NOLOGO",
-                "/OUT:${OUTPUT_FILE}"
+                "/OUT:${sbs.output_file}"
             ]
         },
         shared: {
@@ -64,13 +64,13 @@ config clang-config {
             flags: [
                 "/NOLOGO",
                 "/DLL",
-                "/OUT:${OUTPUT_FILE}"
+                "/OUT:${sbs.output_file}"
             ]
         },
         executable: {
             extension: ".exe",
             flags: [
-                "/OUT:${OUTPUT_FILE}",
+                "/OUT:${sbs.output_file}",
                 "/DEFAULTLIB:libcmt.lib",
                 "/NOLOGO",
                 "/SUBSYSTEM:CONSOLE"
@@ -87,7 +87,7 @@ config clang-debug extends clang-config {
             "-DFL_DEBUG"
         ]
     }
-    for win-cmd {
+    if env(win-cmd) {
         shared: {
             flags: [
                 "/DEBUG:FULL"
@@ -104,8 +104,22 @@ config clang-debug extends clang-config {
 config clang-release extends clang-config {
     compile: {
         flags: [
+            "-ggdb",
+            "-DFL_DEBUG"
             "-O3"
         ]
+    }
+    if env(win-cmd) {
+        shared: {
+            flags: [
+                "/DEBUG:FULL"
+            ]
+        },
+        executable: {
+            flags: [
+                "/DEBUG:FULL"
+            ]
+        }
     }
 }
 
@@ -116,7 +130,7 @@ config clang-debug-sanitize extends clang-debug {
         ]
     }
 
-    for linux-bash {
+    if env(linux-bash) {
         compile: {
             flags: [
                 "-fsanitize=address,undefined,function",
@@ -140,7 +154,7 @@ config clang-release-sanitize extends clang-release {
         ]
     }
 
-    for linux-bash {
+    if env(linux-bash) {
         compile: {
             flags: [
                 "-fsanitize=address,undefined,function",
@@ -154,3 +168,33 @@ config clang-release-sanitize extends clang-release {
     }
 }
 
+# The MSVC configuration is valid only for the MSVC toolchain
+config msvc-config for toolchain(msvc) {
+    compile: {
+        extension: ".o",
+        flags: [ "/Zi", "/W1", "/c ${sbs.input_file}", "/Fo.\\${sbs.output_file}" ]
+    },    
+    archive: {
+        extension: ".lib",
+        flags: [ "/NOLOGO", "/OUT:${sbs.output_file}" ]
+    },
+    shared: {
+        extension: ".dll",
+        flags: [ "/NOLOGO", "/DLL", "/OUT:${sbs.output_file}" ]
+    },
+    executable: {
+        extension: ".exe",
+        flags: [ "/OUT:${sbs.output_file}", "/DEFAULTLIB:libcmt.lib", "/NOLOGO", "/SUBSYSTEM:CONSOLE" ]
+    }
+}
+
+# Configurations extending from msvc-config inherit all the for clauses too, which means
+# both msvc-debug and msvc-release are available just for the msvc toolchain
+config msvc-debug extends msvc-config {
+    compile: { flags : [  "/Od", "/DEBUG:FULL" ] }
+}
+
+
+config msvc-release extends msvc-config {
+    compile: { flags : [ "/GL", "/Gw" ] }
+}

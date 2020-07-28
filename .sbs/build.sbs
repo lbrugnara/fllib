@@ -1,5 +1,11 @@
-env win-cmd { }
-env linux-bash { }
+env win-cmd { 
+    os: $sbs.win,
+    arch: [ $sbs.x86, $sbs.x86_64 ]
+}
+env linux-bash { 
+    os: $sbs.linux,
+    arch: [ $sbs.x86, $sbs.x86_64 ]
+}
 
 include [
     "actions.sbs",

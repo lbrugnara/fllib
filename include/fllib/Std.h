@@ -17,6 +17,12 @@
 #include "Types.h"
 #include "Error.h"
 
+#ifdef _WIN32
+    #define FL_OS_WIN
+#elif defined(__linux__)
+    #define FL_OS_LINUX
+#endif
+
 /*
  * Function: fl_copy
  *  Allocates and returns a new pointer to an element of *nbytes*

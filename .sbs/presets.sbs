@@ -1,8 +1,8 @@
-preset win-clang-release {
-    env: win-cmd,
-    toolchain: clang,
-    config: clang-release,
-    target: fl-tests,
+preset release {
+    envs: [ win-cmd, linux-bash ],
+    toolchains: [ clang, gcc, msvc ],
+    configs: [ clang-release, msvc-release ],
+    targets: [ fllib-static, fl-tests ],
     actions: {
         before: [
             export-headers
@@ -10,53 +10,22 @@ preset win-clang-release {
     }
 }
 
-preset win-clang-debug {
-    env: win-cmd,
-    toolchain: clang,
-    config: clang-debug,
-    target: fl-tests,
+preset debug {
+    envs: [ win-cmd, linux-bash ],
+    toolchains: [ clang, gcc, msvc ],
+    configs: [ clang-debug, msvc-debug ],
+    targets: [ fllib-static, fl-tests ],
     actions: {
         before: [
             export-headers
         ]
     }
-}
-
-preset win-clang-all {
-    env: win-cmd,
-    toolchain: dummy,
-    config: dummy,
-    target: dummy,
-    actions: {
-        before: [
-            `.\\sbs build win-clang-debug`,
-            `.\\sbs build win-clang-release`,
-            `.\\sbs build win-clang-debug -t=fl-tests-sanitize -c=clang-debug-sanitize`
-            `.\\sbs build win-clang-release -t=fl-tests-sanitize -c=clang-release-sanitize`
-        ],
-        after: [
-            export-headers
-        ]
-    }
-}
-
-preset linux-gcc-release {
-    env: linux-bash,
-    toolchain: gcc,
-    config: clang-release,
-    target: fl-tests
-}
-
-preset linux-gcc-debug {
-    env: linux-bash,
-    toolchain: gcc,
-    config: clang-debug,
-    target: fl-tests
 }
 
 preset clean {
-    toolchain: dummy,
-    config: dummy,
+    envs: [ win-cmd, linux-bash ],
+    toolchains: [ clang, gcc, msvc ],
+    configs: [ clang-debug, clang-release, msvc-debug, msvc-release ],
     target: dummy,
     actions: {
         before: [ clean, clean-tests ]
@@ -64,17 +33,9 @@ preset clean {
 }
 
 preset export-headers {
-    toolchain: dummy,
-    config: dummy,
-    target: dummy,
-    actions: {
-        before: [ export-headers ]
-    }
-}
-
-preset win-clang-debug-export {
-    toolchain: clang,
-    config: clang-debug,
+    envs: [ win-cmd, linux-bash ],
+    toolchains: [ clang, gcc, msvc ],
+    configs: [ clang-debug, clang-release, msvc-debug, msvc-release ],
     target: dummy,
     actions: {
         before: [ export-headers ]

@@ -3,6 +3,53 @@
 
 #include "IO.h"
 
+void test_io_realpath(FlutContext *ctx, FlutAssertUtils *assert)
+{
+    #ifdef _WIN32
+    flut_describe(ctx, "realpath should convert all paths to absolute paths and all should be valid.")
+    {
+        const char *files[][3] = { 
+            { "a.test", NULL,                               NULL    },
+            { "b.test", NULL,                               NULL    },
+            { "c.test", NULL,                               NULL    },
+            { "d.test", "folder",                           NULL    },
+            { "e.test", "folder" FL_IO_DIR_SEPARATOR "1",   NULL    },
+            { NULL,     NULL,                               NULL    },
+        };
+
+        for (size_t i=0; files[i][0] != NULL; i++)
+        {
+            if (files[i][1])
+                fl_io_dir_create_recursive(files[i][1]);
+
+            const char *folder = (files[i][1] != NULL ? files[i][1] : "");
+            const char *separator = (files[i][1] != NULL ? FL_IO_DIR_SEPARATOR : "");
+            files[i][2] = fl_cstring_vdup("%s%s%s", folder, separator, files[i][0]);
+
+            fl_io_file_write_all_text(files[i][2], files[i][0]);
+        }
+        
+        for (size_t i=0; files[i][0] != NULL; i++)
+        {
+            const char *file_abspath = fl_io_realpath(files[i][2]);
+
+            flut_expect_vexplain(ctx, assert->not_null((void*) file_abspath), "File \"%s\" must be a valid path: \"%s\"", files[i][2], file_abspath);
+            
+            const char *text = fl_io_file_read_all_text(file_abspath);
+            flut_expect_vexplain(ctx, assert->str.equals(files[i][0], text, true), "Content of file \"%s\" must be equals to \"%s\"", file_abspath, files[i][0]);
+
+            fl_cstring_free(file_abspath);
+        }
+
+        for (size_t i=0; files[i][0] != NULL; i++)
+        {
+            fl_io_file_unlink(files[i][2]);
+            fl_cstring_free(files[i][2]);
+        }
+    }
+    #endif
+}
+
 void test_io_path(FlutContext *ctx, FlutAssertUtils *assert)
 {
     #ifdef _WIN32

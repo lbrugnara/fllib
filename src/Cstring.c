@@ -393,21 +393,32 @@ char *fl_cstring_find(const char *str, const char *needle)
         return NULL;
 
     if (needle_size == 0)
-        return (char *)str;
+        return (char*) str;
 
-    size_t move_distance[255] = { 0 };
-    char exists[255] = { 0 };
+    // We need room to work with the 255 signed values of char because of 
+    // that we place the "middle" of the array at index 128:
+    //  Array:       [  0 , ..., 128, ..., 255 ]
+    //  Char range:  [-128, ...,  0 , ..., 127 ]
+    //
+    //  FL_INDEX_AT(arr, CHAR_MIN)  => arr[-128 + 127 + 1] => arr[ 0 ]
+    //  FL_INDEX_AT(arr, 0)         => arr[   0 + 127 + 1] => arr[128]
+    //  FL_INDEX_AT(arr, CHAR_MAX)  => arr[ 127 + 127 + 1] => arr[255]
+    //
+    #define FL_INDEX_AT(arr, i) ((arr)[ (size_t) ((i) + CHAR_MAX + 1 )])
+
+    size_t move_distance[256] = { 0 };
+    char exists[256] = { 0 };
 
     for (size_t i = 0; i < needle_size - 1; i++)
     {
-        move_distance[(size_t)needle[i]] = needle_size - i - 1;
-        exists[(size_t)needle[i]] = 1;
+        FL_INDEX_AT(move_distance, needle[i]) = needle_size - i - 1;
+        FL_INDEX_AT(exists, needle[i]) = 1;
     }
 
-    if (exists[(size_t)needle[needle_size - 1]] == 0)
+    if (FL_INDEX_AT(exists, needle[needle_size - 1]) == 0)
     {
-        move_distance[(size_t)needle[needle_size - 1]] = needle_size;
-        exists[(size_t)needle[needle_size - 1]] = 1;
+        FL_INDEX_AT(move_distance, needle[needle_size - 1]) = needle_size;
+        FL_INDEX_AT(exists, needle[needle_size - 1]) = 1;
     }
 
     const char *strptr = str;
@@ -417,9 +428,9 @@ char *fl_cstring_find(const char *str, const char *needle)
         size_t k = i - (needle_size - 1);
         if (strptr[i] != needle[needle_size - 1] || (needle_size > 1 && !cstr_match_backw(strptr + k, needle, needle_size - 1)))
         {
-            if (exists[(size_t)strptr[i]])
+            if (FL_INDEX_AT(exists, strptr[i]) != 0)
             {
-                size_t dist = move_distance[(size_t)strptr[i]];
+                size_t dist = FL_INDEX_AT(move_distance, strptr[i]);
                 if (dist == 0)
                 {
                     result = strptr + i;
@@ -436,6 +447,8 @@ char *fl_cstring_find(const char *str, const char *needle)
         result = strptr + k;
         break;
     }
+
+    #undef FL_INDEX_AT
 
     return (char *)result;
 }

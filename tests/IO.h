@@ -3,6 +3,7 @@
 
 #include <flut/flut.h>
 
+void test_io_realpath(FlutContext *ctx, FlutAssertUtils *assert);
 void test_io_path(FlutContext *ctx, FlutAssertUtils *assert);
 void test_file_rw_all_bytes();
 

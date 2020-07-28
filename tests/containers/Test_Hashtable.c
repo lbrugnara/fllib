@@ -366,15 +366,15 @@ void allocate_struct(FlByte **dest, const FlByte *src)
 
 void test_fl_hashtable_values()
 {
-    struct FlHashtableArgs args = {
-        .hash_function = fl_hashtable_hash_char,
-        .key_comparer = fl_container_equals_char,
-        .key_allocator = fl_container_allocator_char,
-        .key_cleaner = fl_container_cleaner_pointer,
-        .value_allocator = allocate_struct,
-        .value_cleaner = fl_container_cleaner_pointer,
-        .buckets_count = 10
-    };
+    struct FlHashtableArgs args = { 0 };
+    args.hash_function = fl_hashtable_hash_char;
+    args.key_comparer = fl_container_equals_char;
+    args.key_allocator = fl_container_allocator_char;
+    args.key_cleaner = fl_container_cleaner_pointer;
+    args.value_allocator = allocate_struct;
+    args.value_cleaner = fl_container_cleaner_pointer;
+    args.buckets_count = 10;
+
     FlHashtable *ht = fl_hashtable_new_args(args);
 
     // We use a pointer to char :grinning:

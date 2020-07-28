@@ -71,8 +71,7 @@ void test_fl_binheap_insert(void)
         int numbers[] = { 10, 20, 30, 40, 15, 35, 83, 12, 74, 27 };
         size_t length = sizeof(numbers) / sizeof(numbers[0]);
 
-        size_t i;
-        for (i = 0; i < length - 1; i++) 
+        for (size_t i = 0; i < length - 1; i++) 
         {
             size_t j = i + rand() / (RAND_MAX / (length - i) + 1);
             int t = numbers[j];
@@ -109,8 +108,7 @@ void test_fl_binheap_insert(void)
         int numbers[] = { 10, 20, 30, 40, 15, 35, 83, 12, 74, 27 };
         size_t length = sizeof(numbers) / sizeof(numbers[0]);
 
-        size_t i;
-        for (i = 0; i < length - 1; i++) 
+        for (size_t i = 0; i < length - 1; i++) 
         {
             size_t j = i + rand() / (RAND_MAX / (length - i) + 1);
             int t = numbers[j];
@@ -148,8 +146,7 @@ void test_fl_binheap_insert(void)
         int numbers[] = { 10, 20, 30, INT_MAX, 40, 15, 35, INT_MIN, 83, 12, 74, 27 };
         size_t length = sizeof(numbers) / sizeof(numbers[0]);
 
-        size_t i;
-        for (i = 0; i < length - 1; i++) 
+        for (size_t i = 0; i < length - 1; i++) 
         {
             size_t j = i + rand() / (RAND_MAX / (length - i) + 1);
             int t = numbers[j];
@@ -186,8 +183,7 @@ void test_fl_binheap_insert(void)
         int numbers[] = { 10, 20, 30, INT_MAX, 40, 15, 35, INT_MIN, 83, 12, 74, 27 };
         size_t length = sizeof(numbers) / sizeof(numbers[0]);
 
-        size_t i;
-        for (i = 0; i < length - 1; i++) 
+        for (size_t i = 0; i < length - 1; i++) 
         {
             size_t j = i + rand() / (RAND_MAX / (length - i) + 1);
             int t = numbers[j];

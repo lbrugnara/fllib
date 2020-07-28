@@ -538,7 +538,7 @@ char** fl_io_file_find(const char *pattern, const char path_separator)
 
         struct FlListNode *matching_file = fl_list_head(matching_files);
 
-        for (size_t i=0; matching_file; i++)
+        for (size_t j=0; matching_file; j++)
         {
             char *filepath = (char*)matching_file->value;
             bool is_match = fl_regex_match(regex, filepath);
@@ -546,12 +546,12 @@ char** fl_io_file_find(const char *pattern, const char path_separator)
             
             if (is_dir)
             {
-                char **dir_files = fl_io_dir_list(filepath);
+                char **cur_dir_files = fl_io_dir_list(filepath);
 
-                for (size_t j=0; j < fl_array_length(dir_files); j++)
-                    fl_list_insert_before(matching_files, matching_file, fl_cstring_vdup("%s%c%s", filepath, path_separator, dir_files[j]));
+                for (size_t k=0; k < fl_array_length(cur_dir_files); k++)
+                    fl_list_insert_before(matching_files, matching_file, fl_cstring_vdup("%s%c%s", filepath, path_separator, cur_dir_files[k]));
 
-                fl_array_free_each_pointer(dir_files, (FlArrayFreeElementFunc)fl_cstring_free);
+                fl_array_free_each_pointer(cur_dir_files, (FlArrayFreeElementFunc)fl_cstring_free);
             }
 
             struct FlListNode *to_remove = matching_file;

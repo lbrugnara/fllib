@@ -22,6 +22,30 @@ preset debug {
     }
 }
 
+preset debug-sanitize {
+    envs: [ win-cmd, linux-bash ],
+    toolchains: [ clang ],
+    configs: [ clang-debug-sanitize ],
+    targets: [ fl-tests-sanitize ],
+    actions: {
+        before: [
+            export-headers
+        ]
+    }
+}
+
+preset release-sanitize {
+    envs: [ win-cmd, linux-bash ],
+    toolchains: [ clang ],
+    configs: [ clang-release-sanitize ],
+    targets: [ fl-tests-sanitize ],
+    actions: {
+        before: [
+            export-headers
+        ]
+    }
+}
+
 preset clean {
     envs: [ win-cmd, linux-bash ],
     toolchains: [ clang, gcc, msvc ],

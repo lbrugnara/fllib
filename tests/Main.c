@@ -17,8 +17,6 @@
 #include <locale.h>
 #include <time.h>
 
-void voidvoid(void){ printf("void\n"); }
-
 int main(int argc, char **argv) 
 {
     flut_run_tests(

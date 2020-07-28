@@ -286,7 +286,7 @@ bool fl_vector_shift(FlVector *vector, void *dest)
 bool fl_vector_pop(FlVector *vector, void *dest)
 {
     if (vector->length == 0)
-        return NULL;
+        return false;
 
     vector->length--;
     
@@ -295,7 +295,7 @@ bool fl_vector_pop(FlVector *vector, void *dest)
     if (dest != NULL)
     {
         vector->writer(dest, vector->data + offset, vector->element_size);
-        return dest;
+        return true;
     }
 
     if (vector->cleaner)
@@ -303,7 +303,7 @@ bool fl_vector_pop(FlVector *vector, void *dest)
         vector->cleaner(*(void**)(vector->data + offset));
     }
 
-    return NULL;
+    return true;
 }
 
 bool fl_vector_contains(FlVector *vector, const void *needle)

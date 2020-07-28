@@ -5,6 +5,7 @@
 #include "../Types.h"
 #include "../Array.h"
 #include "UnicodeData.h"
+#include "UnicodeDataDbLength.h"
 
 /*
  * Private DataTypes
@@ -43,39 +44,35 @@ typedef enum
 // iso_comment deprecated                   // 11
 typedef struct
 {
-    double numerical_value_3;               // 8- nt, nv | -1 default value (NULL)
-    int numerical_value_1;                  // 6- nt, nv | -1 default value (NULL)
-    int numerical_value_2;                  // 7- nt, nv | -1 default value (NULL)
-    FlDecompositionType decomposition_type; // 5
-    FlNormQuickCheckResult nfd_quick_check; // (DerivedNormalizationProps: NFD_Quick_Check)
-    FlNormQuickCheckResult nfc_quick_check; // (DerivedNormalizationProps: NFC_Quick_Check)
-    FlNormQuickCheckResult nfkd_quick_check;// (DerivedNormalizationProps: NFKD_Quick_Check)
-    FlNormQuickCheckResult nfkc_quick_check;// (DerivedNormalizationProps: NFKC_Quick_Check)
+    const char *name;                       // 1
+    const char *general_category;           // 2- gc
+    const char *bidi_class;                 // 4- bc
     const uint32_t* decomposition_mapping;  // 5
+    double numerical_value_3;               // 8- nt, nv | -1 default value (NULL)
     const uint32_t code;                    // 0
-    const char *name;                      // 1
-    const char *general_category;          // 2- gc
-    const char *bidi_class;                // 4- bc
     uint32_t simple_uppercase_mapping;      // 12- suc | 0 is default value (NULL)
     uint32_t simple_lowercase_mapping;      // 13- slc | 0 is default value (NULL)
     uint32_t simple_titlecase_mapping;      // 14- stc | 0 is default value (NULL)
+    int numerical_value_1;                  // 6- nt, nv | -1 default value (NULL)
+    int numerical_value_2;                  // 7- nt, nv | -1 default value (NULL)
+    FlDecompositionType decomposition_type; // 5
+    FlNormQuickCheckResult nfd_quick_check; // (DerivedNormalizationProps: NFD_Quick_Check | Default NORM_QC_YES)
+    FlNormQuickCheckResult nfc_quick_check; // (DerivedNormalizationProps: NFC_Quick_Check | Default NORM_QC_YES)
+    FlNormQuickCheckResult nfkd_quick_check;// (DerivedNormalizationProps: NFKD_Quick_Check | Default NORM_QC_YES)
+    FlNormQuickCheckResult nfkc_quick_check;// (DerivedNormalizationProps: NFKC_Quick_Check | Default NORM_QC_YES)
     bool bidi_mirrored;                     // 9
     bool full_composition_exclusion;        // (DerivedNormalizationProps: Full_Composition_Exclusion)
     FlByte canonical_combining_class;       // 3- ccc | 0 is default value
 } FlUnicodeData;
 
 static FlUnicodeData UnicodeData[] = {
-    #ifdef FL_UNICODE_DB
-        #include "UnicodeDataDb.h"
-    #else
-        0
-    #endif
+    #include "UnicodeDataDb.h"
 };
 
 // TODO: Use Interpolation
 size_t lookup_data(uint32_t codepoint)
 {
-    uint32_t max = flm_array_length(UnicodeData);
+    uint32_t max = UnicodeDbLength;
     uint32_t min = 0;
     do
     {

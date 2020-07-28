@@ -27,3 +27,13 @@ action export-headers {
         `xcopy /y /d /s .\flut\src\*.h .\include\flut`
     }
 }
+
+action generate-unicode-db {
+    if env(win-cmd) {
+        `.\build\${sbs.env}\${sbs.arch}\${sbs.toolchain}\${sbs.config}\unicodedb.exe`
+    }
+
+    if env(linux-bash) {
+        `./build/${sbs.env}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/unicodedb`
+    }
+}

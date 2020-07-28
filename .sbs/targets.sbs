@@ -85,10 +85,10 @@ executable fl-tests {
 
 executable fl-tests-sanitize {
     output_name: "tests",
-    output_dir: "tests/build",
+    output_dir: "build/${sbs.env}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/",
     actions: {
         # before: [ clean, clean-tests ]
-        after: [ `.\tests\build\clang-debug-sanitize\tests.exe` ]
+        # after: [ `.\tests\build\clang-debug-sanitize\tests.exe` ]
     }
     if env(win-cmd) {
         libraries: [
@@ -114,4 +114,20 @@ executable fl-tests-sanitize {
         fl-tests-objects,
         flut-static,
     ]
+}
+
+
+compile fl-unicode-db-objs {
+    includes: [ "./include" ],
+    output_dir: "obj/${sbs.env}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/",
+    sources: [ "resources/unicode/main.c" ]
+}
+
+executable fl-unicode-db {
+    output_name: "unicodedb",
+    output_dir: "build/${sbs.env}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/",
+    objects: [ fl-unicode-db-objs, fllib-static ],
+    actions: {
+        after: [ generate-unicode-db ]
+    }
 }

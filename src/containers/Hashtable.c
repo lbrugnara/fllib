@@ -271,7 +271,7 @@ void* ht_internal_add(FlHashtable *ht, const void *key, const void *value, enum 
     // exist, in that case
     struct FlBucketEntry *target_bucket = lookup_bucket(ht, key, lookup_type);
     
-    if (target_bucket == NULL && lookup_type == BUCKET_LOOKUP_UNUSED)
+    if (target_bucket == NULL /* && lookup_type == BUCKET_LOOKUP_UNUSED */)
     {
         return NULL;
     }
@@ -364,13 +364,15 @@ void fl_hashtable_clear(FlHashtable *ht)
     flm_assert(ht != NULL, "Hashtable must not be null");
     if (ht->buckets)
     {
-        size_t l = fl_array_length(ht->buckets);
-        for (size_t i=0; i < l ; i++)
+        size_t buckets_length = fl_array_length(ht->buckets);
+        for (size_t i=0; i < buckets_length ; i++)
         {
             if (!ht->buckets[i])
                 continue;
-            size_t l = fl_array_length(ht->buckets[i]);
-            for (size_t j=0; j < l; j++)
+
+            size_t bucket_length = fl_array_length(ht->buckets[i]);
+
+            for (size_t j=0; j < bucket_length; j++)
             {
                 if ((ht->buckets[i]+j))
                 {
@@ -412,13 +414,14 @@ FlArray* ht_get_content(FlHashtable *ht, enum HashtableContent content_type)
     size_t k = 0;
     if (ht->buckets)
     {
-        size_t l = fl_array_length(ht->buckets);
-        for (size_t i=0; i < l ; i++)
+        size_t buckets_length = fl_array_length(ht->buckets);
+        for (size_t i=0; i < buckets_length; i++)
         {
             if (!ht->buckets[i])
                 continue;
-            size_t l = fl_array_length(ht->buckets[i]);
-            for (size_t j=0; j < l; j++)
+
+            size_t bucket_length = fl_array_length(ht->buckets[i]);
+            for (size_t j=0; j < bucket_length; j++)
             {
                 if ((ht->buckets[i]+j))
                 {

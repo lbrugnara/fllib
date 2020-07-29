@@ -191,7 +191,7 @@ config msvc-config for toolchain(msvc) {
 # Configurations extending from msvc-config inherit all the for clauses too, which means
 # both msvc-debug and msvc-release are available just for the msvc toolchain
 config msvc-debug extends msvc-config {
-    compile: { flags : [  "/Od", "/Zi", "/DEBUG:FULL" ] },
+    compile: { flags : [  "/Od", "/Z7", "/DEBUG:FULL" ] },
     executable: { flags : [  "/DEBUG:FULL" ] },
 }
 

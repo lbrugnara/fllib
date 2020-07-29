@@ -28,7 +28,8 @@ int main(int argc, char **argv)
         ),
         flut_suite("Array", 
             { "Array combine", &test_array_combine },
-            { "Array append", &test_array_append }
+            { "Array append", &test_array_append },
+            { "Array contains", &test_array_contains_n },
         ),
         flut_suite("Slice", 
             { "Slice allocation", &test_slice },

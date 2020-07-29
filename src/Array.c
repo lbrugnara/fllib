@@ -152,13 +152,14 @@ bool fl_array_contains(const FlArray * const array, const void *needle)
 	return false;
 }
 
-bool fl_array_contains_n(const void *array, size_t nelems, const void *needle, size_t needlesize) 
+bool fl_array_contains_n(const void *array, size_t array_length, const void *needle, size_t needle_size) 
 {
-	const FlByte *bytes = (FlByte*)array;
+	const FlByte *bytes = (FlByte*) array;
+	size_t total_length = array_length * needle_size;
 
-	for (size_t i=0; i * needlesize < nelems; i++)
+	for (size_t i=0; i * needle_size < total_length; i++)
 	{
-		if (memcmp(&bytes[i * needlesize], needle, needlesize) == 0)
+		if (memcmp(&bytes[i * needle_size], needle, needle_size) == 0)
 			return true;
 	}
 	return false;

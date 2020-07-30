@@ -58,6 +58,7 @@ void flut_run(int argc, char **argv, FlutSuite **suites, size_t length)
 
     if (!should_run)
     {
+        fl_array_free(results);
         printf("No tests have been run.\n");
         return;
     }
@@ -83,5 +84,6 @@ void flut_run(int argc, char **argv, FlutSuite **suites, size_t length)
     printf("+--------------------------+--------------+------------+------------+\n");
     printf("| %-25s| %6zu/%-5zu | %-2s%3.2f%%%-1s | %7llu ms |\n", "Total", nptests, ntests, "", (nptests/(float)ntests)*100, "", total_elapsed_time);
     printf("+--------------------------+--------------+------------+------------+\n");
+
     fl_array_free(results);
 }

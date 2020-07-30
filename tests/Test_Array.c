@@ -114,17 +114,36 @@ void test_array_contains_n(FlutContext *ctx, FlutAssertUtils *assert)
             float f;
         };
         
-        struct ItemTest array[] = { { 0, 'a', 0.0 }, { 1, 'b', 0.1 }, { 2, 'c', 0.2 } };
+        struct ItemTest template[] = { { 0, 'a', 0.0 }, { 1, 'b', 0.1 }, { 2, 'c', 0.2 } };
+        size_t array_length = flm_array_length(template);
 
-        for (size_t i=0; i < flm_array_length(array); i++)
+        struct ItemTest *array = fl_malloc(sizeof(struct ItemTest) * array_length);
+        
+        for (size_t i=0; i < array_length; i++)
+        {
+            array[i].i = template[i].i;
+            array[i].c = template[i].c;
+            array[i].f = template[i].f;
+        }
+        
+
+        for (size_t i=0; i < array_length; i++)
         {
             flut_expect_vexplain(ctx, 
-                assert->is_true(fl_array_contains_n(array, flm_array_length(array), &array[i], sizeof(struct ItemTest))), 
+                assert->is_true(fl_array_contains_n(array, array_length, &array[i], sizeof(struct ItemTest))), 
                 "Struct { %d, %c, %f } should be present in the array", array[i].i, array[i].c, array[i].f);
         }
 
-        flut_expect_explain(ctx, 
-                assert->is_false(fl_array_contains_n(array, flm_array_length(array), &((struct ItemTest) { 3, 'd', 0.3 }), sizeof(struct ItemTest))), 
-                "Struct { 3, d, 0.3 } should NOT be present in the array");
+        struct ItemTest *item = fl_malloc(sizeof(struct ItemTest));
+        item->i = 3;
+        item->c = 'd';
+        item->f = 0.3;
+
+        flut_expect_vexplain(ctx, 
+                assert->is_false(fl_array_contains_n(array, array_length, item, sizeof(struct ItemTest))), 
+                "Struct { %d, %c, %f } should be present in the array", item->i, item->c, item->f);
+
+        fl_free(item);
+        fl_free(array);
     }
 }

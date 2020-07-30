@@ -36,8 +36,4 @@ typedef unsigned char FlByte;
  */
 #define FL_EOS '\0'
 
-#define FL_PRINT_VAR(x) #x
-#define FL_STRINGIFY(x) FL_PRINT_VAR(x)
-#define FL_LINE FL_STRINGIFY(__LINE__)
-
 #endif

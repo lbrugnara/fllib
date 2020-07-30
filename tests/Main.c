@@ -24,7 +24,8 @@ int main(int argc, char **argv)
         argv,
         flut_suite("Std", 
             { "Exception handling", &test_std_exception },
-            { "Global error handling thread safety", &test_errors }
+            { "Global error handling thread safety", &test_errors },
+            { "Scoped resources", &test_scoped_resource },
         ),
         flut_suite("Array", 
             { "Array combine", &test_array_combine },

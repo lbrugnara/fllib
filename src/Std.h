@@ -96,8 +96,34 @@ void* fl_copy(const void *var, size_t nbytes);
 #define container_of fl_container_of
 #endif
 
-#define fl_scoped_resource(type, resource, init, free) \
-    for (type resource = init; resource != NULL; (free, resource = NULL))
+#define FL_PRINT_VAR(x) #x
+#define FL_STRINGIFY(x) FL_PRINT_VAR(x)
+#define FL_LINE FL_STRINGIFY(__LINE__)
+#define FL_PASTE(tok1, tok2) tok1##tok2
+#define FL_TOKENPASTE(tok1, tok2) FL_PASTE(tok1, tok2)
+
+/*
+ * Macro: fl_scoped_resource
+ *  Creates a resource that allocates heap memory but that memory is released by the
+ *  free expression before exiting the scope.
+ *
+ * Parameters:
+ *  init - An expression that creates an object using dynamic memory
+ *  free - An expression that frees the memory allocated by the init expression
+ *
+ * Returns:
+ *  void - This function does not return a value
+ *
+ * Notes:
+ *  - Use with caution: a return keyword **does not trigger the free expression**
+ */
+#define fl_scoped_resource(init, free)                                                                                              \
+    /* The first loop handles the iteration*/                                                                                       \
+    for (short FL_TOKENPASTE(fl_run_, __LINE__) = 1; FL_TOKENPASTE(fl_run_, __LINE__) == 1; FL_TOKENPASTE(fl_run_, __LINE__) = 0)   \
+        /* The second loop initializes and frees the memory */                                                                      \
+        for (init; FL_TOKENPASTE(fl_run_, __LINE__) == 1; (free, FL_TOKENPASTE(fl_run_, __LINE__) = 0))                             \
+            /* The third loop adds a "safe-guard" agains continue and break keywords */                                             \
+            for (; FL_TOKENPASTE(fl_run_, __LINE__) == 1; FL_TOKENPASTE(fl_run_, __LINE__) = 0)
 
 /*
  * Macro: FLBIT

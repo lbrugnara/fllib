@@ -19,7 +19,6 @@ config clang-config for toolchain(clang, gcc) {
             "-finput-charset=UTF-8",
             "-fexec-charset=UTF-8",
             "-D_FORTIFY_SOURCE=2",
-            "-DFL_UNICODE_DB",
             "-c ${sbs.input_file}",
             "-o ${sbs.output_file}"
         ]

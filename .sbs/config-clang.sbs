@@ -1,0 +1,146 @@
+# The base configuration contains all the flags shared between debug and release configurations
+config clang-config for toolchain(clang, gcc) {
+    compile: {
+        extension: ".o",
+        flags: [
+            "-Wall",
+            "-Werror",
+            "-Wextra",
+            "-pedantic",
+            "-Wmissing-field-initializers",
+            "-Wno-unused-value",
+            "-Wno-unused-parameter",
+            "-Wno-unused-variable",
+            "-Wno-unused-function",
+            "-Wno-missing-braces",
+            "-fstrict-aliasing",
+            "-Wvla",
+            "-finput-charset=UTF-8",
+            "-fexec-charset=UTF-8",
+            "-D_FORTIFY_SOURCE=2",
+            # ${sbs.input_file} is a special variable that contains the source filename
+            "-c ${sbs.input_file}",
+            # The ${sbs.output_file} variable contains the output name for the compiled object
+            "-o ${sbs.output_file}"
+        ]
+    },    
+
+    # Specific overrides for linux envs
+    if $sbs.os == linux {
+        compile: { flags: [ "-std=gnu99", "-fPIC" ] },
+        archive: { 
+            extension: ".a", 
+            flags: [ "rcs", "${sbs.output_file}" ] 
+        },
+        shared: {
+            extension: ".so",
+            flags: [ "-shared", "-o ${sbs.output_file}" ]
+        },
+        executable: {
+            extension: "",
+            flags: [ "-o ${sbs.output_file}" ]
+        }
+    },
+
+    # Specific overrides for Windows envs
+    if $sbs.os == win {
+        compile: { flags: [ "-std=c99" ] },
+        archive: {
+            extension: ".lib",
+            flags: [ "/NOLOGO", "/OUT:${sbs.output_file}" ]
+        },
+        shared: {
+            extension: ".dll",
+            flags: [ "/NOLOGO", "/DLL", "/OUT:${sbs.output_file}" ]
+        },
+        executable: {
+            extension: ".exe",
+            flags: [ "/OUT:${sbs.output_file}", "/DEFAULTLIB:libcmt.lib", "/NOLOGO", "/SUBSYSTEM:CONSOLE" ]
+        }
+    }
+
+    if $sbs.toolchain == clang
+    {
+        if $sbs.os == win
+        {
+            if $sbs.arch == x86 
+            {
+                compile: { flags: [ "--target=i386-pc-win32" ] }
+            } 
+            else if $sbs.arch == x86_64
+            {
+                compile: { flags: [ "--target=x86_64-pc-win32" ] }
+            }
+        }
+        else if $sbs.os == linux
+        {
+            if $sbs.arch == x86
+            {
+                compile: { flags: [ "--target=i386-pc-linux" ] }
+                shared: { flags: [ "--target=i386-pc-linux" ] }
+                executable: { flags: [ "--target=i386-pc-linux" ] }
+            }
+            else if $sbs.arch == x86_64
+            {
+                compile: { flags: [ "--target=x86_64-pc-linux" ] }
+                shared: { flags: [ "--target=x86_64-pc-linux" ] }
+                executable: { flags: [ "--target=x86_64-pc-linux" ] }
+            }
+        }
+    }
+    else if $sbs.toolchain == gcc
+    {
+        if $sbs.arch == x86
+        {
+            compile: { flags: [ "-m32" ] }
+            shared: { flags: [ "-m32" ] }
+            executable: { flags: [ "-m32" ] }
+        }
+        else if $sbs.arch == x86_64
+        {
+            compile: { flags: [ "-m64" ] }
+            shared: { flags: [ "-m64" ] }
+            executable: { flags: [ "-m64" ] }
+        }
+    }
+}
+
+# The debug configuration adds flags to generate debug information
+config clang-debug extends clang-config {
+    compile: { flags: [ "-ggdb", "-O0" ] }
+
+    if $sbs.os == win {
+        shared: { flags: [ "/DEBUG:FULL" ] },
+        executable: { flags: [ "/DEBUG:FULL" ] }
+    }
+}
+
+# The sanitize config adds the -fsanitize flag to compile with Clang's sanitizers
+config clang-debug-sanitize extends clang-debug {
+
+    if $sbs.os == win {
+        compile: { flags: [ "-fsanitize=address,undefined" ] }
+    }
+
+    if $sbs.os == linux {
+        compile: { flags: [ "-fsanitize=address,undefined,function" ] }
+        executable: { flags: [ "-fsanitize=address,undefined,function" ] }
+    }
+}
+
+# The release configuration adds specifc flags to get optimized code
+config clang-release extends clang-config {
+    compile: { flags: [ "-O3" ] }
+}
+
+config clang-release-sanitize extends clang-release {
+
+    if $sbs.os == win {
+        compile: { flags: [ "-fsanitize=address,undefined" ] }
+    }
+
+    if $sbs.os == linux {
+        compile: { flags: [ "-fsanitize=address,undefined,function" ] }
+        executable: { flags: [ "-fsanitize=address,undefined,function" ] }
+    }
+}

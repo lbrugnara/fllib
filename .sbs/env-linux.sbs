@@ -1,0 +1,14 @@
+env linux-bash for $sbs.host.os == linux {
+    os: $sbs.linux,
+    arch: "x86_64"
+}
+
+env linux-bash-x86 for $sbs.host.os == linux {
+    os: $sbs.linux
+    arch: "x86"
+}
+
+env linux-bash-x86_64 for $sbs.host.os == linux {
+    os: $sbs.linux
+    arch: "x86_64"
+}

@@ -1,0 +1,19 @@
+executable fl-tests {
+    output_name: "tests",
+    output_dir: "build/${triplet}/",
+    actions: {
+        before: [],
+        after: []
+    },
+    objects: [
+        fl-tests-objects,
+        flut-static
+    ]
+
+    if $sbs.os == linux {
+        libraries: [
+            { name: "m" },
+            { name: "pthread" }
+        ]
+    }
+}

@@ -1,0 +1,32 @@
+env win-cmd for $sbs.host.os == win {
+    os: $sbs.win
+    arch: $env.Platform == x86 ? "x86" : ($env.Platform == x64 ? "x86_64" : "unk"),
+}
+
+env win-cmd-x86 for $sbs.host.os == win {
+    os: $sbs.win
+    arch: "x86"
+    shell_type: cmd,
+    shell_command: "cmd.exe",
+    shell_args: [ "/K", "clang-10.0.0-x86.bat"]
+}
+
+env win-cmd-x86_64 for $sbs.host.os == win {
+    os: $sbs.win
+    arch: "x86_64"
+    shell_type: cmd,
+    shell_command: "cmd.exe",
+    shell_args: [ "/K", "clang-10.0.0-x64.bat"]
+}
+
+env win-wsl-x86 for $sbs.host.os == win {
+    os: $sbs.linux,
+    arch: "x86"
+    shell_type: bash
+}
+
+env win-wsl-x86_64 for $sbs.host.os == win {
+    os: $sbs.linux,
+    arch: "x86_64"
+    shell_type: bash
+}

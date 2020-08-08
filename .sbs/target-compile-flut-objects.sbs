@@ -1,0 +1,9 @@
+compile flut-objects {
+    includes: [ 
+        "./include"
+    ],
+    output_dir: "obj/${triplet}/",
+    sources: [
+        "flut/src/.*[.]c$"
+    ]
+}

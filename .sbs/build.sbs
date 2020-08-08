@@ -1,17 +1,33 @@
-env win-cmd { 
-    os: $sbs.win,
-    arch: [ $sbs.x86, $sbs.x86_64 ]
-}
-env linux-bash { 
-    os: $sbs.linux,
-    arch: [ $sbs.x86, $sbs.x86_64 ]
-}
-
 include [
-    "actions.sbs",
-    "configs.sbs",
+    "variables.sbs",
+
+    "action-clean.sbs",
+    "action-export-headers.sbs",
+    "action-generate-unicode-db.sbs",
+
+    "env-linux.sbs",
+    "env-win.sbs",
+
+    "config-clang.sbs",
+    "config-msvc.sbs",
+
+    "toolchain-clang.sbs",
+    "toolchain-gcc.sbs",
+    "toolchain-msvc.sbs",
+
+    "target-archive-fllib-shared.sbs"
+    "target-archive-fllib-static.sbs"
+    "target-archive-flut-static.sbs"
+
+    "target-compile-fl-objects.sbs"
+    "target-compile-fl-tests-objects.sbs"
+    "target-compile-fl-unicode-db-objects.sbs"
+    "target-compile-flut-objects.sbs"
+
+    "target-executable-fl-tests.sbs"
+    "target-executable-fl-tests-sanitize.sbs"
+    "target-executable-fl-unicode-db.sbs"
+
     "dummy.sbs",
     "presets.sbs",
-    "targets.sbs",
-    "toolchains.sbs",
 ]

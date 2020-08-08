@@ -26,7 +26,7 @@ preset debug-sanitize {
     envs: [ win-cmd, linux-bash ],
     toolchains: [ clang ],
     configs: [ clang-debug-sanitize ],
-    targets: [ fl-tests-sanitize ],
+    targets: [ fllib-static, fl-tests-sanitize ],
     actions: {
         before: [
             export-headers
@@ -38,7 +38,7 @@ preset release-sanitize {
     envs: [ win-cmd, linux-bash ],
     toolchains: [ clang ],
     configs: [ clang-release-sanitize ],
-    targets: [ fl-tests-sanitize ],
+    targets: [ fllib-static, fl-tests-sanitize ],
     actions: {
         before: [
             export-headers
@@ -52,7 +52,17 @@ preset clean {
     configs: [ clang-debug, clang-release, msvc-debug, msvc-release ],
     target: dummy,
     actions: {
-        before: [ clean, clean-tests ]
+        before: [ clean ]
+    }
+}
+
+preset clean-all {
+    envs: [ win-cmd, linux-bash ],
+    toolchains: [ clang, gcc, msvc ],
+    configs: [ clang-debug, clang-release, msvc-debug, msvc-release ],
+    target: dummy,
+    actions: {
+        before: [ clean-all ]
     }
 }
 

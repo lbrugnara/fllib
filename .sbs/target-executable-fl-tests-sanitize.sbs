@@ -1,0 +1,46 @@
+executable fl-tests-sanitize {
+    output_name: "tests",
+    output_dir: "build/${triplet}/",
+    actions: {
+        # before: [ clean, clean-tests ]
+        # after: [ `.\tests\build\clang-debug-sanitize\tests.exe` ]
+    }
+
+    if $sbs.os == win and $sbs.arch == x86 {
+        objects: [             
+            "clang_rt.ubsan_standalone-i386.lib",
+            "clang_rt.asan-i386.lib",
+            "clang_rt.builtins-i386.lib",
+        ]
+        libraries: [
+            {
+                path: "D:\dev\LLVM\10.0.0\x86\lib\clang\10.0.0\lib\windows"
+            }
+        ]
+    }
+
+    if $sbs.os == win and $sbs.arch == x86_64 {
+        objects: [ 
+            "clang_rt.ubsan_standalone-x86_64.lib",
+            "clang_rt.asan-x86_64.lib",
+            "clang_rt.builtins-x86_64.lib",
+        ]
+        libraries: [
+            {
+                path: "D:\dev\LLVM\10.0.0\x64\lib\clang\10.0.0\lib\windows"
+            }
+        ]
+    }
+
+    if $sbs.os == linux {
+        libraries: [
+            { name: "m" },
+            { name: "pthread" }
+        ]
+    }
+
+    objects: [
+        fl-tests-objects,
+        flut-static,
+    ]
+}

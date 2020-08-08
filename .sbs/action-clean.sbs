@@ -1,0 +1,13 @@
+action clean
+{
+    if $sbs.os == win and $sbs.shell in [ system, cmd ]
+    {
+        `if exist .\\obj\\${sbs.os}\\${sbs.arch} (rd /s /q .\\obj\\${sbs.os}\\${sbs.arch})`,
+        `if exist .\\build.\\${sbs.os}\\${sbs.arch} (rd /s /q .\\build.\\${sbs.os}\\${sbs.arch})`
+    }
+
+    if $sbs.os == linux and $sbs.shell in [ system, bash ]
+    {
+        `/bin/rm -fr obj/${sbs.os}/${sbs.arch} build/${sbs.os}/${sbs.arch}`
+    }
+}

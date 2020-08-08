@@ -1,0 +1,17 @@
+compile fl-objects {
+    includes: [ ],
+    output_dir: "obj/${triplet}/",
+    sources: [ 
+        "src/containers/[^/]*[.]c$"
+        "src/os/[^W/]*[.]c$"
+        "src/text/[^/]*[.]c$"
+        "src/threading/[^/]*[.]c$"
+        "src/[^/]*[.]c$"
+    ],
+
+    if $sbs.os == win {
+        sources: [
+            "src/os/WinEx.c"
+        ]
+    }
+}

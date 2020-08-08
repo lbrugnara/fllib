@@ -1,0 +1,22 @@
+
+toolchain msvc for $sbs.os == win {
+
+    # These are the same for both envs
+    compiler: {
+        bin: "cl.exe",
+        include_dir_flag: "/I",
+        define_flag: "/D"
+    }    
+
+    # We use MS's archiver
+    archiver: {
+        bin: "lib.exe"
+    },
+
+    # We use MS' linker
+    linker: {
+        bin: "link.exe",
+        lib_dir_flag: "/LIBPATH:",
+        lib_flag: "/DEFAULTLIB:"
+    }
+}

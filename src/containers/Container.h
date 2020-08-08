@@ -1,6 +1,7 @@
 #ifndef FL_CONTAINER_H
 #define FL_CONTAINER_H
 
+#include <stddef.h>
 #include <stdbool.h>
 #include "../Types.h"
 

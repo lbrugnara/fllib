@@ -30,12 +30,30 @@ struct FlSlice {
 };
 
 /*
+ * Macro: flm_slice_new
+ *  Similar to <fl_slice_new> but it resolves to a literal <struct FlSlice> object using positional initializers
+ *
+ * Parameters:
+ *  const FlByte * const sequence - Pointer to the sequence to hold within the struct
+ *  size_t element_size - The size of each element within the sequence
+ *  size_t offset - The offset to apply to the sequence pointer 
+ *  size_t length - The length of the slice
+ *
+ * Returns:
+ *  struct FlSlice - The slice that represents a contiguous read-only sequence of bytes
+ *
+ */
+#define flm_slice_new(sequence, element_size, offset, length) ((struct FlSlice) { sequence + element_size * offset, element_size, length })
+
+/*
  * Function: fl_slice_new
  *   Creates a new struct FlSlice that holds a contiguous read-only sequence of bytes
  *
  * Parameters: 
- *  const FlByte * const sequence - Pointer to the sequence to hold within the struct
- *  size_t length - Number of bytes this slice holds
+ *  sequence - Pointer to the sequence to hold within the struct
+ *  element_size - The size of each element within the sequence
+ *  offset - The offset to apply to the sequence pointer 
+ *  length - The length of the slice
  *
  * Return: 
  *  <struct FlSlice> - Representation of the contiguous read-only sequence of bytes

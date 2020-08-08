@@ -1,0 +1,8 @@
+executable fl-unicode-db {
+    output_name: "unicodedb",
+    output_dir: "build/${triplet}/",
+    objects: [ fl-unicode-db-objects, fllib-static ],
+    actions: {
+        after: [ generate-unicode-db ]
+    }
+}

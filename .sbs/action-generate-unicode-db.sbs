@@ -1,0 +1,10 @@
+action generate-unicode-db
+{
+    if $sbs.os == win and $sbs.shell in [ system, cmd ] {
+        `.\build\${sbs.os}\${sbs.arch}\${sbs.toolchain}\${sbs.config}\unicodedb.exe`
+    }
+
+    if $sbs.os == linux and $sbs.shell in [ system, bash ] {
+        `./build/${sbs.os}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/unicodedb`
+    }
+}

@@ -1,0 +1,22 @@
+# We use GCC's toolchain that is shared between Windows and Linux environments
+toolchain gcc {
+
+    # These are the same for both envs
+    compiler: {
+        bin: "gcc",
+        include_dir_flag: "-I",
+        define_flag: "-D"
+    }    
+
+    # Linux specifics
+    if $sbs.os == linux {
+        archiver: {
+            bin: "ar"
+        },
+        linker: {
+            bin: "gcc",
+            lib_dir_flag: "-L",
+            lib_flag: "-l"
+        }
+    }
+}

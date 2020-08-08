@@ -1,9 +1,9 @@
 #!/bin/bash
 set -x
-mkdir -p obj/linux/x86_64/gcc/clang-debug/src/containers obj/linux/x86_64/gcc/clang-debug/src/os obj/linux/x86_64/gcc/clang-debug/src/text obj/linux/x86_64/gcc/clang-debug/src/threading
-mkdir -p obj/linux/x86_64/gcc/clang-debug/tests/containers obj/linux/x86_64/gcc/clang-debug/tests/text
-mkdir -p obj/linux/x86_64/gcc/clang-debug/flut/src/assert
-mkdir -p build/linux/x86_64/gcc/clang-debug
+mkdir -p obj/linux/x86/gcc/clang-debug/src/containers obj/linux/x86/gcc/clang-debug/src/os obj/linux/x86/gcc/clang-debug/src/text obj/linux/x86/gcc/clang-debug/src/threading
+mkdir -p obj/linux/x86/gcc/clang-debug/tests/containers obj/linux/x86/gcc/clang-debug/tests/text
+mkdir -p obj/linux/x86/gcc/clang-debug/flut/src/assert
+mkdir -p build/linux/x86/gcc/clang-debug
 mkdir -p ./include/fllib
 mkdir -p ./include/flut
 (cd ./src && find . -type f -name '*.h' | xargs cp --parents -t ../include/fllib)

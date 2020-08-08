@@ -1,0 +1,11 @@
+archive fllib-shared {
+    output_name: "libfl",
+    output_dir: "build/${triplet}/",
+    actions: {
+        before: [],
+        after: []
+    },
+    objects: [
+        fl-objects
+    ]
+}

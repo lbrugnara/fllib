@@ -1,0 +1,12 @@
+archive flut-static {
+    output_name: "libflut",
+    output_dir: "build/${triplet}/",
+    actions: {
+        before: [],
+        after: []
+    },
+    objects: [
+        fl-objects,
+        flut-objects
+    ]
+}

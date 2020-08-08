@@ -1,0 +1,13 @@
+action clean-all
+{
+    if $sbs.os == win and $sbs.shell in [ system, cmd ]
+    {
+        `if exist .\\obj\\ (rd /s /q .\\obj\\)`,
+        `if exist .\\build.\\ (rd /s /q .\\build.\\)`
+    }
+
+    if $sbs.os == linux and $sbs.shell in [ system, bash ]
+    {
+        `/bin/rm -fr obj/ build/`
+    }
+}

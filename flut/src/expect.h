@@ -25,7 +25,7 @@
 } while (0)
 
 #define flut_expect_explain(ctx, assertion, message)    \
-    fl_test_vaexpect(ctx, assertion, "%s", message)
+    flut_expect_vexplain(ctx, assertion, "%s", message)
 
 bool flut_expect_compat(const char* name, bool condition);
 

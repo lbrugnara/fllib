@@ -1,0 +1,36 @@
+# We use Clang's toolchain that is shared between Windows and Linux environments
+toolchain clang {
+
+    # These are the same for both envs
+    compiler: {
+        bin: "clang",
+        include_dir_flag: "-I",
+        define_flag: "-D"
+    }    
+
+    # Windows specifics
+    if $sbs.os == win {
+        # We use LLVM's archiver
+        archiver: {
+            bin: "llvm-lib.exe"
+        },
+        # We use MS' linker
+        linker: {
+            bin: "link.exe",
+            lib_dir_flag: "/LIBPATH:",
+            lib_flag: "/DEFAULTLIB:"
+        }
+    },
+
+    # Linux specifics
+    if $sbs.os == linux {
+        archiver: {
+            bin: "ar"
+        },
+        linker: {
+            bin: "clang",
+            lib_dir_flag: "-L",
+            lib_flag: "-l"
+        }
+    }
+}

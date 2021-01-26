@@ -1,14 +1,16 @@
+#include <ctype.h>
+#include <stdarg.h>
+#include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
-#include <ctype.h>
-#include <stdbool.h>
-#include <stdarg.h>
 
-#include <fllib/Error.h>
-#include "expect.h"
+
 #include "context.h"
+#include "expect.h"
 #include "test.h"
+#include <fllib/Error.h>
+
 
 extern struct FlContext test_restore_context_compat;
 
@@ -24,14 +26,13 @@ extern struct FlContext test_restore_context_compat;
  * {return: bool} true if conditionResult is valid, throws exception if not
  *
  */
-bool flut_expect_compat(const char* descr, bool conditionResult)
+bool flut_expect_compat(const char *descr, bool conditionResult)
 {
-    if (!conditionResult)
-    {
-        printf("    FAIL: %s\n", descr);
+    if (!conditionResult) {
+        printf(" |  |- FAIL: %s\n", descr);
         Throw(&test_restore_context_compat, FL_TEST_FAILURE, descr);
     }
-    printf("    PASS: %s\n", descr);
+    printf(" |  |- PASS: %s\n", descr);
     return true;
 }
 
@@ -47,7 +48,7 @@ bool flut_expect_compat(const char* descr, bool conditionResult)
  * {return: bool} true if conditionResult is valid, throws exception if not
  *
  */
-bool flut_vexpect_compat(bool conditionResult, const char* format, ...)
+bool flut_vexpect_compat(bool conditionResult, const char *format, ...)
 {
     char descr[FL_CTX_MSG_SIZE];
     va_list args;
@@ -55,12 +56,11 @@ bool flut_vexpect_compat(bool conditionResult, const char* format, ...)
     vsnprintf(descr, FL_CTX_MSG_SIZE, format, args);
     va_end(args);
 
-    if (!conditionResult)
-    {
-        printf("    FAIL: %s\n", descr);
+    if (!conditionResult) {
+        printf(" |  |- FAIL: %s\n", descr);
         Throw(&test_restore_context_compat, FL_TEST_FAILURE, descr);
     }
-    printf("    PASS: %s\n", descr);
+    printf(" |  |- PASS: %s\n", descr);
     return true;
 }
 
@@ -69,29 +69,25 @@ bool flut_expect_result(FlutContext *ctx, FlutAssertResult *result)
     bool success = result->success;
     // Remove the -probably- "assert->" part
     const char *assertion = strstr(result->assertion, "->");
-    if (assertion != NULL) 
-    {
+    if (assertion != NULL) {
         assertion += 2;
-    }
-    else
-    {
+    } else {
         assertion = result->assertion;
     }
 
-    char description[FL_CTX_MSG_SIZE];
-    snprintf(description, FL_CTX_MSG_SIZE, "%s:%llu (%s) condition \"%s\"\n\t\t%s", 
-        result->filename, 
-        result->line, 
-        result->funcname, 
-        assertion,
-        (success ? "" : result->message));
-
-    printf("    %s: %s\n", (success ? "PASS" : "FAIL"), assertion);
+    if (success) {
+        printf(" |  |- PASS: %s\n", assertion);
+    } else {
+        printf(" |  |- FAIL: %s\n", assertion);
+        printf(" |  |        In %s:%llu:%s\n", result->filename, result->line, result->funcname);
+        printf(" |  |           %s\n", result->message);
+    }
 
     flut_assert_result_free(result);
 
     if (success)
         return true;
 
-    Throw(&ctx->context, FL_TEST_FAILURE, description);
+    ctx->failed = true;
+    Throw(&ctx->context, FL_TEST_FAILURE, NULL);
 }

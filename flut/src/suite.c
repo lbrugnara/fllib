@@ -1,20 +1,23 @@
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
 #include <ctype.h>
 #include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-#include <fllib/Mem.h>
+
 #include <fllib/Array.h>
 #include <fllib/Cstring.h>
 #include <fllib/Error.h>
-#include <fllib/os/Timer.h>
+#include <fllib/Mem.h>
 #include <fllib/os/Signal.h>
+#include <fllib/os/Timer.h>
+
 
 #include "assert.h"
 #include "context.h"
-#include "test.h"
 #include "suite.h"
+#include "test.h"
+
 
 struct FlContext test_restore_context_compat = FL_CTX_STATIC_INIT;
 
@@ -30,18 +33,18 @@ struct FlContext test_restore_context_compat = FL_CTX_STATIC_INIT;
  * {return: FlutSuite} Suite pointer
  *
  */
-FlutSuite* flut_suite_new(const char *name, const FlutTestCase *tests, size_t length)
+FlutSuite *flut_suite_new(const char *id, const char *descr, const FlutTestCase *tests, size_t length)
 {
     FlutSuite *suite = fl_malloc(sizeof(struct FlutSuite));
 
     if (suite == NULL)
         return NULL;
 
-    suite->name = fl_cstring_dup(name);
+    suite->id = fl_cstring_dup(id);
+    suite->description = fl_cstring_dup(descr);
     suite->tests = fl_array_new(sizeof(FlutTestCase), length);
 
-    for (size_t i=0; i < length; i++)
-    {
+    for (size_t i = 0; i < length; i++) {
         suite->tests[i].name = fl_cstring_dup(tests[i].name);
         suite->tests[i].run = tests[i].run;
     }
@@ -61,10 +64,10 @@ FlutSuite* flut_suite_new(const char *name, const FlutTestCase *tests, size_t le
  */
 void flut_suite_free(FlutSuite *suite)
 {
-    fl_cstring_free(suite->name);
+    fl_cstring_free(suite->id);
+    fl_cstring_free(suite->description);
 
-    for (size_t i=0; i < fl_array_length(suite->tests); i++)
-    {
+    for (size_t i = 0; i < fl_array_length(suite->tests); i++) {
         fl_cstring_free(suite->tests[i].name);
     }
 
@@ -96,7 +99,7 @@ static void test_signal_handler(int sign)
 /*
  * Function: exception_filter
  *
- * Exception filter function for Windows platforms. Capture an 
+ * Exception filter function for Windows platforms. Capture an
  * exception raised by Win32 API. When that happens, it throws
  * an exception.
  *
@@ -106,7 +109,7 @@ static void test_signal_handler(int sign)
  *  or EXCEPTION_CONTINUE_SEARCH when the program can't continue
  *
  */
-static LONG WINAPI exception_filter(EXCEPTION_POINTERS * ExceptionInfo)
+static LONG WINAPI exception_filter(EXCEPTION_POINTERS *ExceptionInfo)
 {
     if (ExceptionInfo->ExceptionRecord->ExceptionCode == EXCEPTION_NONCONTINUABLE_EXCEPTION)
         return EXCEPTION_CONTINUE_SEARCH; // Let Win32 resolve
@@ -121,32 +124,38 @@ static LONG WINAPI exception_filter(EXCEPTION_POINTERS * ExceptionInfo)
 
 void flut_suite_run(FlutSuite *suite, FlutSuiteResult *result)
 {
-    FlutContext *test_context = flut_context_new();
     FlutAssertUtils *assert = flut_assert_utils_new();
 
-    #ifdef _WIN32
+#ifdef _WIN32
     FlWinExceptionHandler global_handler = fl_winex_global_handler_set(exception_filter);
-    #endif
+#endif
     fl_signal_global_handler_set(test_signal_handler);
 
-    printf("TEST SUITE: %s\n", suite->name);
+    printf("TEST SUITE: %s - %s\n", suite->id, suite->description);
+    printf(" |\n");
 
     size_t failed_tests = 0;
+    size_t number_of_tests = fl_array_length(suite->tests);
 
-    for (size_t i=0; i < fl_array_length(suite->tests); i++)
-    {
-        printf("TEST CASE: %s\n", suite->tests[i].name);
+    for (size_t i = 0; i < number_of_tests; i++) {
+        printf(" |- TEST CASE: %s\n", suite->tests[i].name);
 
+        FlutContext *test_context = flut_context_new();
         volatile bool failed = false;
 
         FlTimer *timer = fl_timer_create();
         fl_timer_start(timer);
 
-        Try (&test_context->context)
+        Try(&test_context->context)
         {
-            Try (&test_restore_context_compat)
+            Try(&test_restore_context_compat)
             {
                 suite->tests[i].run(test_context, assert);
+
+                if (test_context->failed) {
+                    failed_tests++;
+                    failed = true;
+                }
             }
             Rest
             {
@@ -166,32 +175,37 @@ void flut_suite_run(FlutSuite *suite, FlutSuiteResult *result)
             failed = true;
         }
         EndTry;
-        
+
         fl_timer_end(timer);
 
-        if (failed)
-        {
-            printf("TEST SUITE FAILED: %s\n\n", fl_ctx_frame_last(&(test_context->context))->message);
+        if (failed) {
+            struct FlContextFrame *frame = fl_ctx_frame_last(&(test_context->context));
+            printf(" |  +- CASE FAILED");
+            if (frame->message[0] != '\0')
+                printf(": %s", frame->message);
+        } else {
+            printf(" |  +- CASE PASSED: %ld ms", fl_timer_elapsed_ms(timer));
         }
-        else
-        {
-            printf("TEST SUITE OK: %ld ms\n\n", fl_timer_elapsed_ms(timer));
-        }
+
+        if (i < number_of_tests - 1)
+            printf("\n |");
+
+        printf("\n");
 
         result->elapsed += fl_timer_elapsed_ms(timer);
 
         fl_timer_free(timer);
+        flut_context_free(test_context);
     }
-    
+
+    printf(" |\n +- PASSED TESTS: %zu/%zu\n", (number_of_tests - failed_tests), number_of_tests);
+
     result->ran = true;
-    result->passedTests = fl_array_length(suite->tests) - failed_tests;
+    result->passedTests = number_of_tests - failed_tests;
 
-    printf("\n");
-
-    #ifdef _WIN32
+#ifdef _WIN32
     fl_winex_global_handler_set(global_handler);
-    #endif
+#endif
 
     flut_assert_utils_free(assert);
-    flut_context_free(test_context);
 }

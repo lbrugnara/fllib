@@ -6,21 +6,67 @@
  *  Represents a collection of test cases
  */
 
-#include <stddef.h>
-#include <stdbool.h>
-#include <fllib/Std.h>
+#include "context.h"
+#include "map.h"
 #include "test.h"
+#include <fllib/Std.h>
+#include <stdbool.h>
+#include <stddef.h>
 
-#define flut_suite(name, ...) flut_suite_new(name, ((const FlutTestCase[]){__VA_ARGS__}), sizeof(((const FlutTestCase[]){__VA_ARGS__})) / sizeof(((const FlutTestCase[]){__VA_ARGS__}))[0])
 
+#define flut_define_suite(suite_id, suite_desc, ...)                                                                   \
+    FlutSuite *flut_suite_##suite_id()                                                                                 \
+    {                                                                                                                  \
+        FlutTestCase *cases = fl_array_new(sizeof(FlutTestCase), 0);                                                   \
+        FLUT_MAP_ARG(flut_register_test, suite_id, __VA_ARGS__)                                                        \
+        FlutSuite *suite = flut_suite_new(#suite_id, suite_desc, cases, fl_array_length(cases));                       \
+        fl_array_free(cases);                                                                                          \
+        return suite;                                                                                                  \
+    }
 
-typedef struct FlutSuite {
-    const char *name;
+#define flut_add_suite(suite_id)                                                                                       \
+    {                                                                                                                  \
+        extern FlutSuite *flut_suite_##suite_id();                                                                     \
+        FlutSuite *suite_id##_suite = flut_suite_##suite_id();                                                         \
+        suites = fl_array_append(suites, &suite_id##_suite);                                                           \
+    }
+
+/**
+ * Notes:
+ *  - Deprecated: Use flut_add_suite(suite_id) or flut_run_suites
+ */
+#define flut_register_suite(suite_id)                                                                                  \
+    (void)0);                                                                                                          \
+    {                                                                                                                  \
+        extern FlutSuite *flut_suite_##suite_id();                                                                     \
+        FlutSuite *suite_id##_suite = flut_suite_##suite_id();                                                         \
+        suites = fl_array_append(suites, &suite_id##_suite);                                                           \
+    }((void)0
+
+/**
+ * Notes:
+ *  - Deprecated: Use flut_add_suite(suite_id) or flut_run_suites
+ */
+#define flut_suite(name, ...)                                                                                          \
+    (void)0);                                                                                                          \
+    {                                                                                                                  \
+        FlutSuite *suite = flut_suite_new(name,                                                                        \
+                                          name,                                                                        \
+                                          ((const FlutTestCase[]){ __VA_ARGS__ }),                                     \
+                                          sizeof(((const FlutTestCase[]){ __VA_ARGS__ })) /                            \
+                                            sizeof(((const FlutTestCase[]){ __VA_ARGS__ }))[0]);                       \
+        suites = fl_array_append(suites, &suite);                                                                      \
+    }((void)0
+
+typedef struct FlutSuite
+{
+    const char *id;
+    const char *description;
     FlutTestCase *tests;
 } FlutSuite;
 
-
-typedef struct FlutSuiteResult {
+typedef struct FlutSuiteResult
+{
     FlutSuite *suite;
     size_t passedTests;
     long elapsed;
@@ -30,10 +76,11 @@ typedef struct FlutSuiteResult {
 /*
  * Function: flut_suite_new
  *  Creates a new test suite that includes all the provided tests and can be identified by the
- *  provided name
+ *  provided id
  *
  * Parameters:
- *  name - The name to identify the suite
+ *  id - The id to identify the suite
+ *  descr - A message describing the suite
  *  tests - An array of test cases
  *  length - The number of test cases in the *tests* array
  *
@@ -42,11 +89,11 @@ typedef struct FlutSuiteResult {
  *
  * Notes:
  *  -   The object returned by this function must be freed using the <flut_suite_free> function.
- * 
+ *
  * See:
  *  -   <flut_suite_free>
  */
-FlutSuite* flut_suite_new(const char* name, const FlutTestCase *tests, size_t length);
+FlutSuite *flut_suite_new(const char *id, const char *descr, const FlutTestCase *tests, size_t length);
 
 /*
  * Function: flut_suite_free

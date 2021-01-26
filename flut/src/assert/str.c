@@ -1,9 +1,9 @@
-#include <stddef.h>
 #include <stdbool.h>
+#include <stddef.h>
 
-#include <fllib/Std.h>
-#include <fllib/Mem.h>
 #include <fllib/Cstring.h>
+#include <fllib/Mem.h>
+#include <fllib/Std.h>
 
 #include "result.h"
 
@@ -14,7 +14,7 @@ FlutAssertResult* flut_assert_str_equals(const char *expected, const char *actua
     result->success = strcmp(expected, actual) == 0;
 
     if (!result->success) {
-        result->message = fl_cstring_vdup("Expecting string to be equals to %s, actually %s", expected, actual);
+        result->message = fl_cstring_vdup("Expecting string to be equals to \"%s\", actually \"%s\"", expected, actual);
     }
 
     if (free_mem)
@@ -30,7 +30,7 @@ FlutAssertResult* flut_assert_str_equals_n(const char *expected, const char *act
     result->success = strncmp(expected, actual, n) == 0;
 
     if (!result->success) {
-        result->message = fl_cstring_vdup("Expecting string to be equals to %s, actually %s", expected, actual);
+        result->message = fl_cstring_vdup("Expecting string to be equals to \"%s\", actually \"%s\"", expected, actual);
     }
 
     if (free_mem)

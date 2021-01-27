@@ -454,7 +454,9 @@ FlArray* fl_hashtable_values(FlHashtable *ht)
 
 bool fl_hashtable_has_key(FlHashtable *ht, const void *key)
 {
-    return fl_hashtable_get(ht, key) != NULL;
+    // Try to get an EXISTENT bucket
+    struct FlBucketEntry *target_bucket = lookup_bucket(ht, key, BUCKET_LOOKUP_EXISTENT);
+    return target_bucket != NULL && !target_bucket->free;
 }
 
 size_t fl_hashtable_length(FlHashtable *ht)

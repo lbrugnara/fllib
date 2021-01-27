@@ -100,7 +100,8 @@ void fl_list_remove(FlList *list, struct FlListNode *node)
 
 	if (isHead)
 		list->head = node->next;
-	else if (isTail)
+	
+	if (isTail)
 		list->tail = node->prev;
 
 	if (list->cleaner)

@@ -41,11 +41,30 @@ bool fl_system_is_little_endian (void)
     return p[0] == 1;
 }
 
-void fl_system_sleep(unsigned long milliseconds)
+void fl_system_sleep_ms(unsigned long milliseconds)
 {
     #ifdef _WIN32
     Sleep(milliseconds);
     #elif defined(__linux__)
-    sleep(milliseconds / 1000);
+    usleep(milliseconds * 1000);
+    #endif
+}
+
+void fl_system_sleep_us(unsigned long microseconds)
+{
+    #ifdef _WIN32
+
+    HANDLE timer;
+	LARGE_INTEGER ft;
+
+	ft.QuadPart = -(10 * microseconds);
+
+	timer = CreateWaitableTimer(NULL, TRUE, NULL);
+	SetWaitableTimer(timer, &ft, 0, NULL, NULL, 0);
+	WaitForSingleObject(timer, INFINITE);
+	CloseHandle(timer);
+
+    #elif defined(__linux__)
+    usleep(microseconds);
     #endif
 }

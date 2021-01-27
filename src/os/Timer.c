@@ -50,25 +50,6 @@ void fl_timer_start(FlTimer *timer)
     #endif
 }
 
-
-long fl_timer_tick(FlTimer *timer)
-{
-    flm_assert(timer != NULL, "Timer must not be null");
-
-    // Tick (re)starts the timer
-    if (timer->status == TIMER_STOPPED || timer->status == TIMER_ENDED)
-    {
-        fl_timer_start(timer);
-        return 0;
-    }
-
-    fl_timer_end(timer);
-    long elapsed = fl_timer_elapsed_ms(timer);
-    fl_timer_start(timer);
-
-    return elapsed;
-}
-
 void fl_timer_end(FlTimer *timer)
 {
     flm_assert(timer != NULL, "Timer must not be null");
@@ -81,21 +62,75 @@ void fl_timer_end(FlTimer *timer)
     timer->status = TIMER_ENDED;
 }
 
-long fl_timer_elapsed_ms(FlTimer *timer)
+unsigned long fl_timer_tick_ms(FlTimer *timer)
+{
+    flm_assert(timer != NULL, "Timer must not be null");
+
+    // Tick (re)starts the timer
+    if (timer->status == TIMER_STOPPED || timer->status == TIMER_ENDED)
+    {
+        fl_timer_start(timer);
+        return 0;
+    }
+
+    fl_timer_end(timer);
+    unsigned long elapsed = fl_timer_elapsed_ms(timer);
+    fl_timer_start(timer);
+
+    return elapsed;
+}
+
+unsigned long long fl_timer_tick_ns(FlTimer *timer)
+{
+    flm_assert(timer != NULL, "Timer must not be null");
+
+    // Tick (re)starts the timer
+    if (timer->status == TIMER_STOPPED || timer->status == TIMER_ENDED)
+    {
+        fl_timer_start(timer);
+        return 0;
+    }
+
+    fl_timer_end(timer);
+    unsigned long long elapsed = fl_timer_elapsed_ns(timer);
+    fl_timer_start(timer);
+
+    return elapsed;
+}
+
+unsigned long fl_timer_elapsed_ms(FlTimer *timer)
 {
     flm_assert(timer != NULL, "Timer must not be null");
     flm_assert(timer->status == TIMER_ENDED, "Timer stopped or already running");
     #ifdef _WIN32
-        LONGLONG elapsed= timer->end.QuadPart - timer->start.QuadPart;
+        ULONG elapsed= timer->end.QuadPart - timer->start.QuadPart;
         elapsed *= 1000;
         elapsed /= timer->freq.QuadPart;
         return elapsed;
     #elif defined(__linux__) || defined(__CYGWIN__)
-        long startms = timer->start.tv_nsec / 1.0e6;
-        startms += (timer->start.tv_sec * 1000);
-        long endms = timer->end.tv_nsec / 1.0e6;
-        endms += (timer->end.tv_sec * 1000);
-        return endms - startms;
+        unsigned long start_ms = timer->start.tv_nsec / 1.0e6;
+        start_ms += (timer->start.tv_sec * 1000);
+        unsigned long end_ms = timer->end.tv_nsec / 1.0e6;
+        end_ms += (timer->end.tv_sec * 1000);
+        return end_ms - start_ms;
+    #endif
+}
+
+unsigned long long fl_timer_elapsed_ns(FlTimer *timer)
+{
+    flm_assert(timer != NULL, "Timer must not be null");
+    flm_assert(timer->status == TIMER_ENDED, "Timer stopped or already running");
+    #ifdef _WIN32
+        ULONGLONG elapsed = timer->end.QuadPart - timer->start.QuadPart;
+        elapsed *= 1000000000;
+        elapsed /= timer->freq.QuadPart;
+        return elapsed;
+    #elif defined(__linux__) || defined(__CYGWIN__)
+        unsigned long long start_ns = timer->start.tv_nsec / 1.0e6;
+        start_ns += (timer->start.tv_sec * 1000000000);
+        unsigned long long end_ns = timer->end.tv_nsec / 1.0e6;
+        end_ns += (timer->end.tv_sec * 1000000000);
+        return end_ns - start_ns;
     #endif
 }
 

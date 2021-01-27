@@ -1,8 +1,9 @@
 #include <fllib.h>
+#include <flut/flut.h>
 
-#include "Test_Array.h"
+flut_define_suite(array, "Dynamic array functions", combine, append, contains_n)
 
-void test_array_combine(void)
+flut_define_test(array, combine, "Array combine")
 {
     {
         int *zero_to_nine = fl_array_new(sizeof(int), 10);
@@ -60,8 +61,8 @@ void test_array_combine(void)
     }
 }
 
-void test_array_append(void)
-{
+flut_define_test(array, append, "Array append") {
+
     int *numbers = fl_array_new(sizeof(int), 0);
 
     for (int i=0; i < 10; i++)
@@ -75,8 +76,8 @@ void test_array_append(void)
     fl_array_free(numbers);
 }
 
-void test_array_contains_n(FlutContext *ctx, FlutAssertUtils *assert)
-{
+flut_define_test(array, contains_n, "Array contains N") {
+
     flut_describe(ctx, "fl_array_contains_n should work for array of characters") {
         char array[] = { 'a', 'e', 'i', 'o', 'u' };
 
@@ -108,7 +109,8 @@ void test_array_contains_n(FlutContext *ctx, FlutAssertUtils *assert)
     }
 
     flut_describe(ctx, "fl_array_contains_n should work for structs") {
-        struct ItemTest {
+        struct ItemTest
+        {
             int i;
             char c;
             float f;

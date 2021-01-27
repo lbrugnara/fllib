@@ -1,5 +1,3 @@
-#include "Std.h"
-#include "Test_Array.h"
 #include "Test_Slice.h"
 #include "Test_Cstring.h"
 #include "IO.h"
@@ -22,16 +20,8 @@ int main(int argc, char **argv)
     flut_run_tests(
         argc,
         argv,
-        flut_suite("Std", 
-            { "Exception handling", &test_std_exception },
-            { "Global error handling thread safety", &test_errors },
-            { "Scoped resources", &test_scoped_resource },
-        ),
-        flut_suite("Array", 
-            { "Array combine", &test_array_combine },
-            { "Array append", &test_array_append },
-            { "Array contains", &test_array_contains_n },
-        ),
+        flut_register_suite(std),
+        flut_register_suite(array),
         flut_suite("Slice", 
             { "Slice allocation", &test_slice },
             { "Slice iterator", &test_slice_iterator }

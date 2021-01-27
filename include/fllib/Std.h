@@ -122,7 +122,7 @@ void* fl_copy(const void *var, size_t nbytes);
     for (short FL_TOKENPASTE(fl_run_, __LINE__) = 1; FL_TOKENPASTE(fl_run_, __LINE__) == 1; FL_TOKENPASTE(fl_run_, __LINE__) = 0)   \
         /* The second loop initializes and frees the memory */                                                                      \
         for (init; FL_TOKENPASTE(fl_run_, __LINE__) == 1; (free, FL_TOKENPASTE(fl_run_, __LINE__) = 0))                             \
-            /* The third loop adds a "safe-guard" agains continue and break keywords */                                             \
+            /* The third loop adds a "safe-guard" against continue and break keywords */                                             \
             for (; FL_TOKENPASTE(fl_run_, __LINE__) == 1; FL_TOKENPASTE(fl_run_, __LINE__) = 0)
 
 /*

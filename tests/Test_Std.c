@@ -4,9 +4,10 @@
 #include "../src/Cstring.h"
 #include "../src/Array.h"
 #include "../src/threading/Thread.h"
-#include "Std.h"
 
 #include <flut/flut.h>
+
+flut_define_suite(std, "fllib standard functions", exceptions, thread_errors, scoped_resources)
 
 void thread_error(void *args)
 {
@@ -46,7 +47,7 @@ void thread_error(void *args)
     fl_thread_exit(NULL);
 }
 
-void test_errors()
+flut_define_test(std, thread_errors, "Global error handling thread safety")
 {
     int nthreads = 5;
     FlThread *threads = fl_array_new(sizeof(FlThread), nthreads);
@@ -69,35 +70,35 @@ void c(struct FlContext *ctx);
 void d(struct FlContext *ctx);
 void e(struct FlContext *ctx);
 
-void test_std_exception()
+flut_define_test(std, exceptions, "Pseudo try-catch exception handling")
 {
-    struct FlContext *ctx = fl_ctx_new();
+    struct FlContext *try_ctx = fl_ctx_new();
 
-    Try(ctx)
+    Try(try_ctx)
     {
-        a(ctx);
+        a(try_ctx);
     }
     Catch((int)'a')
     {
-        struct FlContextFrame *frame = fl_ctx_frame_last(ctx);
+        struct FlContextFrame *frame = fl_ctx_frame_last(try_ctx);
         flut_expect_compat("Catched exception in root should be (int)'a'", frame->exception == (int)'a');
         flut_expect_compat("Catched exception in root should have message \"a\"", flm_cstring_equals_n(frame->message, "a", 1));
     }
     Rest
     {
-        flut_expect_compat("Exception shouldn't have fallen in root's Rest clause", false);
+        flut_expect_compat("The exception shouldn't have fallen in root's Rest clause", false);
     }
     EndTry;
 
-    fl_ctx_free(ctx);
+    fl_ctx_free(try_ctx);
 
-    ctx = fl_ctx_new();
+    try_ctx = fl_ctx_new();
 
-    Try(ctx)
+    Try(try_ctx)
     {
-        Try(ctx) { 
-            Try(ctx) { 
-                Try(ctx) { 
+        Try(try_ctx) { 
+            Try(try_ctx) { 
+                Try(try_ctx) { 
 
                 }
                 EndTry; 
@@ -108,7 +109,7 @@ void test_std_exception()
     }
     EndTry;
 
-    fl_ctx_free(ctx);
+    fl_ctx_free(try_ctx);
 }
 
 void a(struct FlContext *ctx) 
@@ -126,7 +127,7 @@ void a(struct FlContext *ctx)
     }
     Rest
     {
-        flut_expect_compat("Exception shouldn't have fallen in a()'s Rest clause", false);
+        flut_expect_compat("The exception shouldn't have fallen in a()'s Rest clause", false);
     }
     EndTry;
 }
@@ -146,7 +147,7 @@ void b(struct FlContext *ctx)
     }
     Rest
     {
-        flut_expect_compat("Exception shouldn't have fallen in b()'s Rest clause", false);
+        flut_expect_compat("The exception shouldn't have fallen in b()'s Rest clause", false);
     }
     EndTry;
 }
@@ -166,7 +167,7 @@ void c(struct FlContext *ctx)
     }
     Rest
     {
-        flut_expect_compat("Exception shouldn't have fallen in c()'s Rest clause", false);
+        flut_expect_compat("The exception shouldn't have fallen in c()'s Rest clause", false);
     }
     EndTry;
 }
@@ -186,7 +187,7 @@ void d(struct FlContext *ctx)
     }
     Rest
     {
-        flut_expect_compat("Exception shouldn't have fallen in d()'s Rest clause", false);
+        flut_expect_compat("The exception shouldn't have fallen in d()'s Rest clause", false);
     }
     EndTry;
 }
@@ -210,10 +211,10 @@ struct StdTestAllocation {
 static void* allocate(size_t size)
 {
     size_t index = 0;
-    for (; index < FL_STD_TEST_MAX_ALLOCATIONS; index++)
-    {
-        if (allocations[index] == NULL)
+    for (; index < FL_STD_TEST_MAX_ALLOCATIONS; index++) {
+        if (allocations[index] == NULL) {
             break;
+        }
     }
 
     if (index == FL_STD_TEST_MAX_ALLOCATIONS)
@@ -229,7 +230,7 @@ static void* allocate(size_t size)
 
 static bool is_allocated(size_t index)
 {
-    return allocations[index] != NULL && FL_STD_TEST_ALLOC_HEADER(allocations[index])->is_allocated;
+    return index < FL_STD_TEST_MAX_ALLOCATIONS && allocations[index] != NULL && FL_STD_TEST_ALLOC_HEADER(allocations[index])->is_allocated;
 }
 
 static void deallocate(void *data)
@@ -254,7 +255,7 @@ static void end()
     }
 }
 
-void test_scoped_resource(FlutContext *ctx, FlutAssertUtils *assert)
+flut_define_test(std, scoped_resources, "Scoped resources")
 {
     init();
     flut_describe(ctx, "Scoped resources must be deallocated when exiting the scope under normal flow execution") {

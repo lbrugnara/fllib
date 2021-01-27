@@ -102,7 +102,9 @@ bool win32_process_create(FlProcess *process)
 
     process->si.dwFlags |= STARTF_USESTDHANDLES;
 
-    char *command_line = fl_cstring_vdup("%s", process->command);
+    // We don't pass lpApplicationName, so we need to use quotation marks around the executable path in lpCommandLine:
+    // https://docs.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createprocessa#security-remarks
+    char *command_line = fl_cstring_vdup("\"%s\"", process->command);
 
     if (process->argv)
     {

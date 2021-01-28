@@ -1,5 +1,3 @@
-#include "Test_Slice.h"
-#include "Test_Cstring.h"
 #include "IO.h"
 #include "text/Test_Unicode.h"
 #include "text/Test_String.h"
@@ -22,21 +20,8 @@ int main(int argc, char **argv)
         argv,
         flut_register_suite(std),
         flut_register_suite(array),
-        flut_suite("Slice", 
-            { "Slice allocation", &test_slice },
-            { "Slice iterator", &test_slice_iterator }
-        ),
-        flut_suite("Cstr", 
-            { "fl_cstring_new", &test_cstring_new }, 
-            { "fl_cstring_dup", &test_cstring_dup },
-            { "fl_cstring_split", &test_cstring_split },
-            { "fl_cstring_replace_char", &test_cstring_replace_char },
-            { "fl_cstring_replace", &test_cstring_replace },
-            { "fl_cstring_append{_char}", &test_cstring_append },
-            { "fl_cstring_join", &test_cstring_join },
-            { "cstr_misc_functions", &test_cstring_misc },
-            { "fl_cstring_find", &test_cstring_find }
-        ),
+        flut_register_suite(slice),
+        flut_register_suite(cstr),
         flut_suite("IO", 
             { "fl_io_file_write_all_bytes and fl_io_file_read_all_bytes", &test_file_rw_all_bytes },
             { "IO realpath", &test_io_realpath },

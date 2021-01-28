@@ -54,3 +54,24 @@ FlutAssertResult* flut_assert_str_not_equals(const char *expected, const char *a
 
     return result;
 }
+
+FlutAssertResult* flut_assert_str_length(size_t expected_length, const char *str, bool free_mem)
+{
+    struct FlutAssertResult *result = fl_malloc(sizeof(struct FlutAssertResult));
+
+    result->success = str != NULL && strlen(str) == expected_length;
+
+    if (!result->success) {
+        if (str == NULL) {
+            result->message = fl_cstring_vdup("Expecting string to have length %zu, actually NULL", expected_length);
+        } else {
+            result->message = fl_cstring_vdup("Expecting string to have length %zu, actually %zu", expected_length, strlen(str));
+        }
+    }
+
+    if (free_mem) {
+        fl_cstring_free(str);
+    }
+
+    return result;
+}

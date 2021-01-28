@@ -1,8 +1,8 @@
 #include <limits.h>
 #include <fllib.h>
-
 #include <flut/flut.h>
-#include "Test_Cstring.h"
+
+flut_define_suite(cstr, "C string functions", new, dup, split, replace_char, replace, append, join, misc, find)
 
 static inline size_t integer_length(long long i)
 {
@@ -20,21 +20,29 @@ static inline size_t uinteger_length(unsigned long long i)
     return l;
 }
 
-void test_cstring_new()
+flut_define_test(new, "Cstring new")
 {
-    char *str = fl_cstring_new(5);
-    flut_expect_compat("fl_cstring_new(5) returns a valid pointer", str != NULL);
-    str[0] = 'H';
-    str[1] = 'e';
-    str[2] = 'l';
-    str[3] = 'l';
-    str[4] = 'o';
-    flut_expect_compat("Assign each character into str to form \"Hello\"", flm_cstring_equals(str, "Hello"));
-    flut_expect_compat("Because fl_cstring_new adds 1 byte for the NULL character, str[5] must be the NULL character", str[5] == '\0');
-    fl_cstring_free(str);
+    flut_describe("fl_cstring_new should return valid pointers") {
+        char *str = fl_cstring_new(5);
+        
+        flut_expect_explain(assert->not_null(str), "fl_cstring_new(5) returns a valid pointer");
+
+        flut_expect_explain(assert->str.length(0, str, false), "Length of the returned string must be 0 (empty string)");
+
+        str[0] = 'H';
+        str[1] = 'e';
+        str[2] = 'l';
+        str[3] = 'l';
+        str[4] = 'o';
+
+        flut_expect_explain(assert->str.length(5, str, false), "Length of the returned string must be 5 ('Hello')");
+        flut_expect_explain(assert->is_true(str[5] == '\0'), "str[5] must be the NULL character");
+
+        fl_cstring_free(str);
+    }
 }
 
-void test_cstring_dup()
+flut_define_test(dup, "Cstring dup")
 {
     char *str = fl_cstring_dup("Hello");
     flut_expect_compat("str not null", str != NULL);
@@ -42,7 +50,7 @@ void test_cstring_dup()
     fl_cstring_free(str);
 }
 
-void test_cstring_split()
+flut_define_test(split, "Cstring split")
 {
     FlVector *v = fl_cstring_split("Hello");
     size_t length = fl_vector_length(v);
@@ -72,7 +80,7 @@ void test_cstring_split()
     fl_vector_free(v);
 }
 
-void test_cstring_replace_char()
+flut_define_test(replace_char, "Cstring replace char")
 {
     char *world = "World";
     char *worl = fl_cstring_replace_char(world, 'd', "");
@@ -97,7 +105,7 @@ void test_cstring_replace_char()
     fl_cstring_free(withZz);
 }
 
-void test_cstring_replace()
+flut_define_test(replace, "Cstring replace")
 {
     char *replaced = fl_cstring_replace("", "abc", "123");
     flut_expect_compat("Replace 'abc' with '123' on empty string returns empty string", flm_cstring_equals(replaced, ""));
@@ -170,7 +178,7 @@ void test_cstring_replace()
     fl_cstring_free(replaced);
 }
 
-void test_cstring_append()
+flut_define_test(append, "Cstring append")
 {
     char *helloWorld = fl_cstring_dup("Hello ");
     fl_cstring_append(&helloWorld, "world!");
@@ -185,7 +193,7 @@ void test_cstring_append()
     fl_cstring_free(helloWorld);
 }
 
-void test_cstring_join()
+flut_define_test(join, "Cstring join")
 {
     FlVector *str_vector = flm_vector_new_with(.capacity = 3, .cleaner = fl_container_cleaner_pointer);
     char *str1 = fl_cstring_dup("one");
@@ -202,7 +210,7 @@ void test_cstring_join()
     fl_vector_free(str_vector);
 }
 
-void test_cstring_misc()
+flut_define_test(misc, "Cstring misc")
 {
     size_t length;
     long long number;
@@ -238,19 +246,19 @@ void test_cstring_misc()
     flut_vexpect_compat(1 == length, "Integer %llu (ULLONG_MIN) to string is %d chars (length = %d)", unumber, 1, length);
 }
 
-void test_cstring_find(FlutContext *ctx, FlutAssertUtils *assert)
+flut_define_test(find, "Cstring find")
 {
-    flut_describe(ctx, "Find should find ASCII chars within UTF-8 strings")
+    flut_describe("Find should find ASCII chars within UTF-8 strings")
     {
         char *a = fl_cstring_find("兔¡¢£¤¥a¦§¨©ª«¬­®", "a");
-        flut_expect(ctx, assert->not_null(a));
-        flut_expect(ctx, assert->is_true(*a == 'a'));
+        flut_expect(assert->not_null(a));
+        flut_expect(assert->is_true(*a == 'a'));
     }
 
-    flut_describe(ctx, "Find should find literal UTF-8 chars within UTF-8 strings")
+    flut_describe("Find should find literal UTF-8 chars within UTF-8 strings")
     {
         char *rabbit = fl_cstring_find("兔¡¢£¤¥兔¦§¨©ª«¬­®", "兔");
-        flut_expect(ctx, assert->not_null(rabbit));
-        flut_expect(ctx, assert->str.equals_n(rabbit, "兔", strlen("兔"), false));
+        flut_expect(assert->not_null(rabbit));
+        flut_expect(assert->str.equals_n(rabbit, "兔", strlen("兔"), false));
     }
 }

@@ -7,27 +7,27 @@
 #include <stdbool.h>
 
 
-#define flut_do_assert(result, call, format, ...)                                                                      \
-    ((result) = call,                                                                                                  \
-     (result)->filename = __FILE__,                                                                                    \
-     (result)->funcname = __func__,                                                                                    \
-     (result)->line = __LINE__,                                                                                        \
-     (result)->assertion = fl_cstring_vdup(format, __VA_ARGS__),                                                       \
+#define flut_do_assert(result, call, format, ...)                                                                       \
+    ((result) = call,                                                                                                   \
+     (result)->filename = __FILE__,                                                                                     \
+     (result)->funcname = __func__,                                                                                     \
+     (result)->line = __LINE__,                                                                                         \
+     (result)->assertion = fl_cstring_vdup(format, __VA_ARGS__),                                                        \
      (result))
 
-#define flut_expect(ctx, assertion)                                                                                    \
-    do {                                                                                                               \
-        FlutAssertResult *result = NULL;                                                                               \
-        flut_expect_result(ctx, flut_do_assert(result, assertion, "%s", #assertion));                                  \
+#define flut_expect(assertion)                                                                                          \
+    do {                                                                                                                \
+        FlutAssertResult *result = NULL;                                                                                \
+        flut_expect_result(flut__internal_ctx, flut_do_assert(result, assertion, "%s", #assertion));                    \
     } while (0)
 
-#define flut_expect_vexplain(ctx, assertion, format, ...)                                                              \
-    do {                                                                                                               \
-        FlutAssertResult *result = NULL;                                                                               \
-        flut_expect_result(ctx, flut_do_assert(result, assertion, format, __VA_ARGS__));                               \
+#define flut_expect_vexplain(assertion, format, ...)                                                                    \
+    do {                                                                                                                \
+        FlutAssertResult *result = NULL;                                                                                \
+        flut_expect_result(flut__internal_ctx, flut_do_assert(result, assertion, format, __VA_ARGS__));                 \
     } while (0)
 
-#define flut_expect_explain(ctx, assertion, message) flut_expect_vexplain(ctx, assertion, "%s", message)
+#define flut_expect_explain(assertion, message) flut_expect_vexplain(assertion, "%s", message)
 
 /**
  * Notes:

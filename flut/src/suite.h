@@ -14,21 +14,22 @@
 #include <stddef.h>
 
 
-#define flut_define_suite(suite_id, suite_desc, ...)                                                                   \
-    FlutSuite *flut_suite_##suite_id()                                                                                 \
-    {                                                                                                                  \
-        FlutTestCase *cases = fl_array_new(sizeof(FlutTestCase), 0);                                                   \
-        FLUT_MAP_ARG(flut_register_test, suite_id, __VA_ARGS__)                                                        \
-        FlutSuite *suite = flut_suite_new(#suite_id, suite_desc, cases, fl_array_length(cases));                       \
-        fl_array_free(cases);                                                                                          \
-        return suite;                                                                                                  \
+#define flut_define_suite(suite_id, suite_desc, ...)                                                                    \
+    FLUT_MAP(flut_forward_declare_test_in_suite, __VA_ARGS__);                                                                   \
+    FlutSuite *flut_suite_##suite_id()                                                                                  \
+    {                                                                                                                   \
+        FlutTestCase *cases = fl_array_new(sizeof(FlutTestCase), 0);                                                    \
+        FLUT_MAP(flut_register_test_in_suite, __VA_ARGS__)                                                                       \
+        FlutSuite *suite = flut_suite_new(#suite_id, suite_desc, cases, fl_array_length(cases));                        \
+        fl_array_free(cases);                                                                                           \
+        return suite;                                                                                                   \
     }
 
-#define flut_add_suite(suite_id)                                                                                       \
-    {                                                                                                                  \
-        extern FlutSuite *flut_suite_##suite_id();                                                                     \
-        FlutSuite *suite_id##_suite = flut_suite_##suite_id();                                                         \
-        suites = fl_array_append(suites, &suite_id##_suite);                                                           \
+#define flut_add_suite(suite_id)                                                                                        \
+    {                                                                                                                   \
+        extern FlutSuite *flut_suite_##suite_id();                                                                      \
+        FlutSuite *suite_id##_suite = flut_suite_##suite_id();                                                          \
+        suites = fl_array_append(suites, &suite_id##_suite);                                                            \
     }
 
 /**

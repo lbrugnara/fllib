@@ -20,6 +20,7 @@ typedef struct FlutAssertUtils {
         FlutAssertResult* (*equals)(const char *expected, const char *actual, bool free_mem);
         FlutAssertResult* (*equals_n)(const char *expected, const char *actual, size_t n, bool free_mem);
         FlutAssertResult* (*not_equals)(const char *expected, const char *actual, bool free_mem);
+        FlutAssertResult* (*length)(size_t expected_length, const char *str, bool free_mem);        
     } str;
 } FlutAssertUtils;
 

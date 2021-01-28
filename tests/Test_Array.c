@@ -3,7 +3,7 @@
 
 flut_define_suite(array, "Dynamic array functions", combine, append, contains_n)
 
-flut_define_test(array, combine, "Array combine")
+flut_define_test(combine, "Array combine")
 {
     {
         int *zero_to_nine = fl_array_new(sizeof(int), 10);
@@ -61,7 +61,7 @@ flut_define_test(array, combine, "Array combine")
     }
 }
 
-flut_define_test(array, append, "Array append") {
+flut_define_test(append, "Array append") {
 
     int *numbers = fl_array_new(sizeof(int), 0);
 
@@ -76,39 +76,39 @@ flut_define_test(array, append, "Array append") {
     fl_array_free(numbers);
 }
 
-flut_define_test(array, contains_n, "Array contains N") {
+flut_define_test(contains_n, "Array contains N") {
 
-    flut_describe(ctx, "fl_array_contains_n should work for array of characters") {
+    flut_describe("fl_array_contains_n should work for array of characters") {
         char array[] = { 'a', 'e', 'i', 'o', 'u' };
 
         for (size_t i=0; i < flm_array_length(array); i++)
         {
-            flut_expect_vexplain(ctx, 
+            flut_expect_vexplain(
                 assert->is_true(fl_array_contains_n(array, flm_array_length(array), &array[i], sizeof(char))), 
                 "Character %c should be present in the array", array[i]);
         }
 
-        flut_expect_explain(ctx,
+        flut_expect_explain(
             assert->is_false(fl_array_contains_n(array, flm_array_length(array), "b", sizeof(char))),
             "Character b should NOT be present in the array");
     }
 
-    flut_describe(ctx, "fl_array_contains_n should work for array of integers") {
+    flut_describe("fl_array_contains_n should work for array of integers") {
         int array[] = { 0, 2, 4, 6, 8, 10 };
 
         for (size_t i=0; i < flm_array_length(array); i++)
         {
-            flut_expect_vexplain(ctx, 
+            flut_expect_vexplain(
                 assert->is_true(fl_array_contains_n(array, flm_array_length(array), &array[i], sizeof(int))), 
                 "Integer %d should be present in the array", array[i]);
         }
 
-        flut_expect_explain(ctx,
+        flut_expect_explain(
             assert->is_false(fl_array_contains_n(array, flm_array_length(array), (int[]){ 1 }, sizeof(char))),
             "Integer 1 should NOT be present in the array");
     }
 
-    flut_describe(ctx, "fl_array_contains_n should work for structs") {
+    flut_describe("fl_array_contains_n should work for structs") {
         struct ItemTest
         {
             int i;
@@ -131,7 +131,7 @@ flut_define_test(array, contains_n, "Array contains N") {
 
         for (size_t i=0; i < array_length; i++)
         {
-            flut_expect_vexplain(ctx, 
+            flut_expect_vexplain(
                 assert->is_true(fl_array_contains_n(array, array_length, &array[i], sizeof(struct ItemTest))), 
                 "Struct { %d, %c, %f } should be present in the array", array[i].i, array[i].c, array[i].f);
         }
@@ -141,7 +141,7 @@ flut_define_test(array, contains_n, "Array contains N") {
         item->c = 'd';
         item->f = 0.3;
 
-        flut_expect_vexplain(ctx, 
+        flut_expect_vexplain(
                 assert->is_false(fl_array_contains_n(array, array_length, item, sizeof(struct ItemTest))), 
                 "Struct { %d, %c, %f } should be present in the array", item->i, item->c, item->f);
 

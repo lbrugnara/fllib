@@ -28,6 +28,7 @@ FlutAssertUtils* flut_assert_utils_new(void)
     asserts->str.equals = flut_assert_str_equals;
     asserts->str.equals_n = flut_assert_str_equals_n;
     asserts->str.not_equals = flut_assert_str_not_equals;
+    asserts->str.length = flut_assert_str_length;
 
     return asserts;
 }

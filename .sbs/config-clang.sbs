@@ -90,6 +90,8 @@ config clang-config for toolchain(clang, gcc) {
     }
     else if $sbs.toolchain == gcc
     {
+        compile: { flags: [ "-Wno-nonnull" ] }
+
         if $sbs.arch == x86
         {
             compile: { flags: [ "-m32" ] }

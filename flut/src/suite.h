@@ -14,16 +14,8 @@
 #include <stddef.h>
 
 #define FLUT__TAKE_FIRST_PARAMETER(a, ...) a
-#define FLUT__VA_ARGS_IDENTITY(...) __VA_ARGS__
-#define FLUT__IDENTITY(X) X
-#define FLUT__REMOVE_PARENTHESES(args_enclosed_in_paren) FLUT__IDENTITY( FLUT__VA_ARGS_IDENTITY args_enclosed_in_paren )
 
-#define FLUT__TEST_DEFINITION(test_id, test_description, test_body)                                                     \
-    static char *flut_suite_test_##test_id##_description = test_description;                                            \
-    static void flut_suite_test_##test_id(FlutContext *flut__internal_ctx, FlutAssertUtils *assert)                     \
-        FLUT__REMOVE_PARENTHESES(test_body)
-
-#define FLUT__REGISTER_TEST(test_id)                                                                            \
+#define FLUT__REGISTER_TEST(test_id)                                                                                    \
     {                                                                                                                   \
         size_t cur_size = fl_array_length(cases);                                                                       \
         cases = fl_array_resize(cases, cur_size + 1);                                                                   \
@@ -31,14 +23,12 @@
         cases[cur_size].run = &flut_suite_test_##test_id;                                                               \
     }
 
-#define flut_test(test_id, test_description, ...) test_id, test_description, (__VA_ARGS__)
-
 #define flut_define_suite(suite_id, description, ...)                                                                   \
     FLUT_MAP_3_AT_TIME_WITH_SPACE(FLUT__TEST_DEFINITION, __VA_ARGS__)                                                   \
     FlutSuite *flut_suite_##suite_id()                                                                                  \
     {                                                                                                                   \
         FlutTestCase *cases = fl_array_new(sizeof(FlutTestCase), 0);                                                    \
-        FLUT_MAP(FLUT__REGISTER_TEST, FLUT_MAP_3_AT_TIME(FLUT__TAKE_FIRST_PARAMETER, __VA_ARGS__))              \
+        FLUT_MAP(FLUT__REGISTER_TEST, FLUT_MAP_3_AT_TIME(FLUT__TAKE_FIRST_PARAMETER, __VA_ARGS__))                      \
         FlutSuite *suite = flut_suite_new(#suite_id, description, cases, fl_array_length(cases));                       \
         fl_array_free(cases);                                                                                           \
         return suite;                                                                                                   \

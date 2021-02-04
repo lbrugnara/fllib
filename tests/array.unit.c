@@ -6,7 +6,7 @@ flut_define_suite(
     array,
 
     // SUITE DESCRIPTION
-    "Module Array: Heap allocated array functions",
+    "Heap allocated array functions",
 
     // TEST CASE
     flut_test(combine, "fl_array_combine tests", {
@@ -49,7 +49,7 @@ flut_define_suite(
     }),
 
     // TEST CASE
-    flut_test(contains_n, "Array contains N", {
+    flut_long_test(contains_n, "Array contains N", ({
         flut_describe("fl_array_contains_n should work for array of characters") {
             char array[] = { 'a', 'e', 'i', 'o', 'u' };
 
@@ -120,5 +120,5 @@ flut_define_suite(
             fl_free(item);
             fl_free(array);
         }
-    })
+    }))
 );

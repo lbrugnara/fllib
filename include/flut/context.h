@@ -5,10 +5,17 @@
 #include <fllib/Error.h>
 #include <stdbool.h>
 
+typedef enum FlutHostOs {
+    FLUT_OS_UNK,
+    FLUT_OS_WIN,
+    FLUT_OS_LINUX
+} FlutHostOs;
+
 typedef struct FlutContext
 {
     struct FlContext context;
     bool failed;
+    FlutHostOs os;
 } FlutContext;
 
 FlutContext *flut_context_new(void);

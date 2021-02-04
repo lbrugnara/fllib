@@ -14,6 +14,15 @@ FlutContext* flut_context_new(void)
     FlutContext *ctx = fl_malloc(sizeof(FlutContext));
     memcpy(ctx, &base_context, sizeof(FlutContext));
 
+    
+    #ifdef _WIN32
+        ctx->os = FLUT_OS_WIN;
+    #elif defined(__linux__)
+        ctx->os = FLUT_OS_LINUX;
+    #else
+        ctx->os = FLUT_OS_UNK;
+    #endif
+
     return ctx;
 }
 

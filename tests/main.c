@@ -1,8 +1,6 @@
 #include "text/Test_Unicode.h"
 #include "text/Test_String.h"
 #include "text/Test_Regex.h"
-#include "containers/Test_BinaryHeap.h"
-#include "containers/Test_Hashtable.h"
 #include "containers/Test_Vector.h"
 #include "containers/Test_List.h"
 
@@ -49,17 +47,7 @@ int main(int argc, char **argv)
             { "fl_vector_pop", &test_fl_vector_pop },
             { "fl_vector_ref_get", &test_fl_vector_get },
         ),
-        flut_suite("Hashtable",
-            { "fl_hashtable_add", &test_fl_hashtable_add },
-            { "fl_hashtable_add_fhash", &test_fl_hashtable_add_fhash },
-            { "fl_hashtable_get", &test_fl_hashtable_get },
-            { "fl_hashtable_set", &test_fl_hashtable_set },
-            { "fl_hashtable_clear", &test_fl_hashtable_clear },
-            { "fl_hashtable_keys_and_values", &test_fl_hashtable_keys_and_values },
-            { "fl_hashtable_remove", &test_fl_hashtable_remove },
-            { "fl_hashtable_resize", &test_fl_hashtable_resize },
-            { "fl_hashtable_values", &test_fl_hashtable_values },
-        ),
+        flut_register_suite(hashtable),
         flut_suite("List",
             { "fl_list_head", &test_fl_list_head },
             { "fl_list_tail", &test_fl_list_tail },
@@ -68,9 +56,6 @@ int main(int argc, char **argv)
             { "fl_list_insert_after", &test_fl_list_insert_after },
             { "fl_list_insert_before", &test_fl_list_insert_before }
         ),
-        flut_suite("Binary Heap",
-            { "fl_binheap_new", &test_fl_binheap_new },
-            { "fl_binheap_insert", &test_fl_binheap_insert },
-        )
+        flut_register_suite(binary_heap)
     );
 }

@@ -7,6 +7,8 @@
 
 #include "assert.h"
 #include "assert/asserts.h"
+#include "context.h"
+#include "test.h"
 
 FlutAssertUtils* flut_assert_utils_new(void)
 {
@@ -36,4 +38,33 @@ FlutAssertUtils* flut_assert_utils_new(void)
 void flut_assert_utils_free(FlutAssertUtils *asserts)
 {
     fl_free(asserts);
+}
+
+
+bool flut_assert_result(FlutContext *ctx, FlutAssertResult *result)
+{
+    bool success = result->success;
+    // Remove the -probably- "assert->" part
+    const char *assertion = strstr(result->assertion, "->");
+    if (assertion != NULL) {
+        assertion += 2;
+    } else {
+        assertion = result->assertion;
+    }
+
+    if (success) {
+        printf(" |  |- PASS: %s\n", assertion);
+    } else {
+        printf(" |  |- FAIL: %s\n", assertion);
+        printf(" |  |        In %s:%llu:%s\n", result->filename, result->line, result->funcname);
+        printf(" |  |           %s\n", result->message);
+    }
+
+    flut_assert_result_free(result);
+
+    if (success)
+        return true;
+
+    ctx->failed = true;
+    Throw(&ctx->context, FL_TEST_FAILURE, NULL);
 }

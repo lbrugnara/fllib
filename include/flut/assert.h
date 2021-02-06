@@ -4,6 +4,29 @@
 #include <stddef.h>
 #include <stdbool.h>
 #include "assert/result.h"
+#include "context.h"
+
+#define flut_do_assert(result, call, format, ...)                                                                       \
+    ((result) = call,                                                                                                   \
+     (result)->filename = __FILE__,                                                                                     \
+     (result)->funcname = __func__,                                                                                     \
+     (result)->line = __LINE__,                                                                                         \
+     (result)->assertion = fl_cstring_vdup(format, __VA_ARGS__),                                                        \
+     (result))
+
+#define flut_assert(assertion)                                                                                          \
+    do {                                                                                                                \
+        FlutAssertResult *result = NULL;                                                                                \
+        flut_assert_result(flut__internal_ctx, flut_do_assert(result, assertion, "%s", #assertion));                    \
+    } while (0)
+
+#define flut_assert_vexplain(assertion, format, ...)                                                                    \
+    do {                                                                                                                \
+        FlutAssertResult *result = NULL;                                                                                \
+        flut_assert_result(flut__internal_ctx, flut_do_assert(result, assertion, format, __VA_ARGS__));                 \
+    } while (0)
+
+#define flut_assert_explain(assertion, message) flut_assert_vexplain(assertion, "%s", message)
 
 typedef struct FlutAssertUtils {
     FlutAssertResult* (*null)(void *obj);
@@ -25,6 +48,7 @@ typedef struct FlutAssertUtils {
 } FlutAssertUtils;
 
 FlutAssertUtils* flut_assert_utils_new(void);
+bool flut_assert_result(FlutContext *ctx, FlutAssertResult *result);
 void flut_assert_utils_free(FlutAssertUtils *asserts);
 
 #endif /* FLUT_ASSERT_UTILS_H */

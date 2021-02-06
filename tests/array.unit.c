@@ -88,12 +88,12 @@ flut_define_test(array_contains_n) {
 
         for (size_t i=0; i < flm_array_length(array); i++)
         {
-            flut_expect_vexplain(
+            flut_assert_vexplain(
                 assert->is_true(fl_array_contains_n(array, flm_array_length(array), &array[i], sizeof(char))), 
                 "Character %c should be present in the array", array[i]);
         }
 
-        flut_expect_explain(
+        flut_assert_explain(
             assert->is_false(fl_array_contains_n(array, flm_array_length(array), "b", sizeof(char))),
             "Character b should NOT be present in the array");
     }
@@ -103,12 +103,12 @@ flut_define_test(array_contains_n) {
 
         for (size_t i=0; i < flm_array_length(array); i++)
         {
-            flut_expect_vexplain(
+            flut_assert_vexplain(
                 assert->is_true(fl_array_contains_n(array, flm_array_length(array), &array[i], sizeof(int))), 
                 "Integer %d should be present in the array", array[i]);
         }
 
-        flut_expect_explain(
+        flut_assert_explain(
             assert->is_false(fl_array_contains_n(array, flm_array_length(array), (int[]){ 1 }, sizeof(char))),
             "Integer 1 should NOT be present in the array");
     }
@@ -136,7 +136,7 @@ flut_define_test(array_contains_n) {
 
         for (size_t i=0; i < array_length; i++)
         {
-            flut_expect_vexplain(
+            flut_assert_vexplain(
                 assert->is_true(fl_array_contains_n(array, array_length, &array[i], sizeof(struct ItemTest))), 
                 "Struct { %d, %c, %f } should be present in the array", array[i].i, array[i].c, array[i].f);
         }
@@ -146,7 +146,7 @@ flut_define_test(array_contains_n) {
         item->c = 'd';
         item->f = 0.3;
 
-        flut_expect_vexplain(
+        flut_assert_vexplain(
                 assert->is_false(fl_array_contains_n(array, array_length, item, sizeof(struct ItemTest))), 
                 "Struct { %d, %c, %f } should be present in the array", item->i, item->c, item->f);
 

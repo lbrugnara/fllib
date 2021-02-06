@@ -37,9 +37,9 @@ flut_define_test(cstring_new)
     flut_describe("fl_cstring_new should return valid pointers") {
         char *str = fl_cstring_new(5);
         
-        flut_expect_explain(assert->not_null(str), "fl_cstring_new(5) returns a valid pointer");
+        flut_assert_explain(assert->not_null(str), "fl_cstring_new(5) returns a valid pointer");
 
-        flut_expect_explain(assert->str.length(0, str, false), "Length of the returned string must be 0 (empty string)");
+        flut_assert_explain(assert->str.length(0, str, false), "Length of the returned string must be 0 (empty string)");
 
         str[0] = 'H';
         str[1] = 'e';
@@ -47,8 +47,8 @@ flut_define_test(cstring_new)
         str[3] = 'l';
         str[4] = 'o';
 
-        flut_expect_explain(assert->str.length(5, str, false), "Length of the returned string must be 5 ('Hello')");
-        flut_expect_explain(assert->is_true(str[5] == '\0'), "str[5] must be the NULL character");
+        flut_assert_explain(assert->str.length(5, str, false), "Length of the returned string must be 5 ('Hello')");
+        flut_assert_explain(assert->is_true(str[5] == '\0'), "str[5] must be the NULL character");
 
         fl_cstring_free(str);
     }
@@ -263,14 +263,14 @@ flut_define_test(cstring_find)
     flut_describe("Find should find ASCII chars within UTF-8 strings")
     {
         char *a = fl_cstring_find("兔¡¢£¤¥a¦§¨©ª«¬­®", "a");
-        flut_expect(assert->not_null(a));
-        flut_expect(assert->is_true(*a == 'a'));
+        flut_assert(assert->not_null(a));
+        flut_assert(assert->is_true(*a == 'a'));
     }
 
     flut_describe("Find should find literal UTF-8 chars within UTF-8 strings")
     {
         char *rabbit = fl_cstring_find("兔¡¢£¤¥兔¦§¨©ª«¬­®", "兔");
-        flut_expect(assert->not_null(rabbit));
-        flut_expect(assert->str.equals_n(rabbit, "兔", strlen("兔"), false));
+        flut_assert(assert->not_null(rabbit));
+        flut_assert(assert->str.equals_n(rabbit, "兔", strlen("兔"), false));
     }
 }

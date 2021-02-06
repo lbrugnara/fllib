@@ -262,240 +262,240 @@ flut_define_test(std_scoped_resources) {
     init();
     flut_describe("Scoped resources must be deallocated when exiting the scope under normal flow execution") {
         
-        flut_expect_explain(assert->is_false(is_allocated(0)), "Slot 1 must be deallocated");
+        flut_assert_explain(assert->is_false(is_allocated(0)), "Slot 1 must be deallocated");
 
         fl_scoped_resource(void *res1 = allocate(sizeof(void*)), deallocate(res1))
         {
          // Scope res1
-         flut_expect_explain(assert->is_true(is_allocated(0)), "Slot 1 must be allocated");
-         flut_expect_explain(assert->is_false(is_allocated(1)), "Slot 2 must be deallocated");
+         flut_assert_explain(assert->is_true(is_allocated(0)), "Slot 1 must be allocated");
+         flut_assert_explain(assert->is_false(is_allocated(1)), "Slot 2 must be deallocated");
          
          fl_scoped_resource(void *res2 = allocate(sizeof(void*)), deallocate(res2))
          {
           // Scope res2
-          flut_expect_explain(assert->is_true(is_allocated(1)), "Slot 2 must be allocated");
-          flut_expect_explain(assert->is_false(is_allocated(2)), "Slot 3 must be deallocated");
+          flut_assert_explain(assert->is_true(is_allocated(1)), "Slot 2 must be allocated");
+          flut_assert_explain(assert->is_false(is_allocated(2)), "Slot 3 must be deallocated");
           
           fl_scoped_resource(void *res3 = allocate(sizeof(void*)), deallocate(res3))
           {
            // Scope res3
-           flut_expect_explain(assert->is_true(is_allocated(2)), "Slot 3 must be allocated");
-           flut_expect_explain(assert->is_false(is_allocated(3)), "Slot 4 must be deallocated");
+           flut_assert_explain(assert->is_true(is_allocated(2)), "Slot 3 must be allocated");
+           flut_assert_explain(assert->is_false(is_allocated(3)), "Slot 4 must be deallocated");
            
            fl_scoped_resource(void *res4 = allocate(sizeof(void*)), deallocate(res4))
            {
             // Scope res4
-            flut_expect_explain(assert->is_true(is_allocated(3)), "Slot 4 must be allocated");
-            flut_expect_explain(assert->is_false(is_allocated(4)), "Slot 5 must be deallocated");
+            flut_assert_explain(assert->is_true(is_allocated(3)), "Slot 4 must be allocated");
+            flut_assert_explain(assert->is_false(is_allocated(4)), "Slot 5 must be deallocated");
             
             fl_scoped_resource(void *res5 = allocate(sizeof(void*)), deallocate(res5))
             {
              // Scope res5
-             flut_expect_explain(assert->is_true(is_allocated(4)), "Slot 5 must be allocated");
-             flut_expect_explain(assert->is_false(is_allocated(5)), "Slot 6 must be deallocated");
+             flut_assert_explain(assert->is_true(is_allocated(4)), "Slot 5 must be allocated");
+             flut_assert_explain(assert->is_false(is_allocated(5)), "Slot 6 must be deallocated");
              
              fl_scoped_resource(void *res6 = allocate(sizeof(void*)), deallocate(res6))
              {
               // Scope res6
-              flut_expect_explain(assert->is_true(is_allocated(5)), "Slot 6 must be allocated");
-              flut_expect_explain(assert->is_false(is_allocated(6)), "Slot 7 must be deallocated");
+              flut_assert_explain(assert->is_true(is_allocated(5)), "Slot 6 must be allocated");
+              flut_assert_explain(assert->is_false(is_allocated(6)), "Slot 7 must be deallocated");
               
               fl_scoped_resource(void *res7 = allocate(sizeof(void*)), deallocate(res7))
               {
                // Scope res7
-               flut_expect_explain(assert->is_true(is_allocated(6)), "Slot 7 must be allocated");
-               flut_expect_explain(assert->is_false(is_allocated(7)), "Slot 8 must be deallocated");
+               flut_assert_explain(assert->is_true(is_allocated(6)), "Slot 7 must be allocated");
+               flut_assert_explain(assert->is_false(is_allocated(7)), "Slot 8 must be deallocated");
                
                fl_scoped_resource(void *res8 = allocate(sizeof(void*)), deallocate(res8))
                {
                 // Scope res8
-                flut_expect_explain(assert->is_true(is_allocated(7)), "Slot 8 must be allocated");
-                flut_expect_explain(assert->is_false(is_allocated(8)), "Slot 9 must be deallocated");
+                flut_assert_explain(assert->is_true(is_allocated(7)), "Slot 8 must be allocated");
+                flut_assert_explain(assert->is_false(is_allocated(8)), "Slot 9 must be deallocated");
                 
                 fl_scoped_resource(void *res9 = allocate(sizeof(void*)), deallocate(res9))
                 {
                  // Scope res9
-                 flut_expect_explain(assert->is_true(is_allocated(8)), "Slot 9 must be allocated");
-                 flut_expect_explain(assert->is_false(is_allocated(9)), "Slot 10 must be deallocated");
+                 flut_assert_explain(assert->is_true(is_allocated(8)), "Slot 9 must be allocated");
+                 flut_assert_explain(assert->is_false(is_allocated(9)), "Slot 10 must be deallocated");
                   
                  fl_scoped_resource(void *res10 = allocate(sizeof(void*)), deallocate(res10))
                  {
                    // Scope res10
-                   flut_expect_explain(assert->null(allocate(sizeof(void*))), "Allocation is expected to fail");
+                   flut_assert_explain(assert->null(allocate(sizeof(void*))), "Allocation is expected to fail");
                    // End res10
                  }
 
-                 flut_expect_explain(assert->is_false(is_allocated(9)), "Slot 10 must be deallocated");
-                 flut_expect_explain(assert->is_true(is_allocated(8)), "Slot 9 must be allocated");
+                 flut_assert_explain(assert->is_false(is_allocated(9)), "Slot 10 must be deallocated");
+                 flut_assert_explain(assert->is_true(is_allocated(8)), "Slot 9 must be allocated");
                  // End res9
                 }
 
-                flut_expect_explain(assert->is_false(is_allocated(8)), "Slot 9 must be deallocated");
-                flut_expect_explain(assert->is_true(is_allocated(7)), "Slot 8 must be allocated");
+                flut_assert_explain(assert->is_false(is_allocated(8)), "Slot 9 must be deallocated");
+                flut_assert_explain(assert->is_true(is_allocated(7)), "Slot 8 must be allocated");
                 // End res8
                }
 
-               flut_expect_explain(assert->is_false(is_allocated(7)), "Slot 8 must be deallocated");
-               flut_expect_explain(assert->is_true(is_allocated(6)), "Slot 7 must be allocated");
+               flut_assert_explain(assert->is_false(is_allocated(7)), "Slot 8 must be deallocated");
+               flut_assert_explain(assert->is_true(is_allocated(6)), "Slot 7 must be allocated");
                // End res7
               }
 
-              flut_expect_explain(assert->is_false(is_allocated(6)), "Slot 7 must be deallocated");
-              flut_expect_explain(assert->is_true(is_allocated(5)), "Slot 6 must be allocated");
+              flut_assert_explain(assert->is_false(is_allocated(6)), "Slot 7 must be deallocated");
+              flut_assert_explain(assert->is_true(is_allocated(5)), "Slot 6 must be allocated");
               // End res6
              }
 
-             flut_expect_explain(assert->is_false(is_allocated(5)), "Slot 6 must be deallocated");
-             flut_expect_explain(assert->is_true(is_allocated(4)), "Slot 5 must be allocated");
+             flut_assert_explain(assert->is_false(is_allocated(5)), "Slot 6 must be deallocated");
+             flut_assert_explain(assert->is_true(is_allocated(4)), "Slot 5 must be allocated");
              // End res5
             }
 
-            flut_expect_explain(assert->is_false(is_allocated(4)), "Slot 5 must be deallocated");
-            flut_expect_explain(assert->is_true(is_allocated(3)), "Slot 4 must be allocated");
+            flut_assert_explain(assert->is_false(is_allocated(4)), "Slot 5 must be deallocated");
+            flut_assert_explain(assert->is_true(is_allocated(3)), "Slot 4 must be allocated");
             // End res4
            }
 
-           flut_expect_explain(assert->is_false(is_allocated(3)), "Slot 4 must be deallocated");
-           flut_expect_explain(assert->is_true(is_allocated(2)), "Slot 3 must be allocated");
+           flut_assert_explain(assert->is_false(is_allocated(3)), "Slot 4 must be deallocated");
+           flut_assert_explain(assert->is_true(is_allocated(2)), "Slot 3 must be allocated");
            // End res3
           }
 
-          flut_expect_explain(assert->is_false(is_allocated(2)), "Slot 3 must be deallocated");
-          flut_expect_explain(assert->is_true(is_allocated(1)), "Slot 2 must be allocated");
+          flut_assert_explain(assert->is_false(is_allocated(2)), "Slot 3 must be deallocated");
+          flut_assert_explain(assert->is_true(is_allocated(1)), "Slot 2 must be allocated");
           // End res2
          }
 
-         flut_expect_explain(assert->is_false(is_allocated(1)), "Slot 2 must be deallocated");
-         flut_expect_explain(assert->is_true(is_allocated(0)), "Slot 1 must be allocated");
+         flut_assert_explain(assert->is_false(is_allocated(1)), "Slot 2 must be deallocated");
+         flut_assert_explain(assert->is_true(is_allocated(0)), "Slot 1 must be allocated");
          // End res1
         }
 
-        flut_expect_explain(assert->is_false(is_allocated(0)), "Slot 1 must be deallocated");
+        flut_assert_explain(assert->is_false(is_allocated(0)), "Slot 1 must be deallocated");
     }
     end();
 
     init();
     flut_describe("Scoped resources must be deallocated when exiting the scope using break (WEIRD BUT EXPECTED)") {
         
-        flut_expect_explain(assert->is_false(is_allocated(0)), "Slot 1 must be deallocated");
+        flut_assert_explain(assert->is_false(is_allocated(0)), "Slot 1 must be deallocated");
 
         fl_scoped_resource(void *res1 = allocate(sizeof(void*)), deallocate(res1))
         {
          // Scope res1
-         flut_expect_explain(assert->is_true(is_allocated(0)), "Slot 1 must be allocated");
-         flut_expect_explain(assert->is_false(is_allocated(1)), "Slot 2 must be deallocated");
+         flut_assert_explain(assert->is_true(is_allocated(0)), "Slot 1 must be allocated");
+         flut_assert_explain(assert->is_false(is_allocated(1)), "Slot 2 must be deallocated");
          
          fl_scoped_resource(void *res2 = allocate(sizeof(void*)), deallocate(res2))
          {
           // Scope res2
-          flut_expect_explain(assert->is_true(is_allocated(1)), "Slot 2 must be allocated");
-          flut_expect_explain(assert->is_false(is_allocated(2)), "Slot 3 must be deallocated");
+          flut_assert_explain(assert->is_true(is_allocated(1)), "Slot 2 must be allocated");
+          flut_assert_explain(assert->is_false(is_allocated(2)), "Slot 3 must be deallocated");
           
           fl_scoped_resource(void *res3 = allocate(sizeof(void*)), deallocate(res3))
           {
            // Scope res3
-           flut_expect_explain(assert->is_true(is_allocated(2)), "Slot 3 must be allocated");
-           flut_expect_explain(assert->is_false(is_allocated(3)), "Slot 4 must be deallocated");
+           flut_assert_explain(assert->is_true(is_allocated(2)), "Slot 3 must be allocated");
+           flut_assert_explain(assert->is_false(is_allocated(3)), "Slot 4 must be deallocated");
            
            fl_scoped_resource(void *res4 = allocate(sizeof(void*)), deallocate(res4))
            {
             // Scope res4
-            flut_expect_explain(assert->is_true(is_allocated(3)), "Slot 4 must be allocated");
-            flut_expect_explain(assert->is_false(is_allocated(4)), "Slot 5 must be deallocated");
+            flut_assert_explain(assert->is_true(is_allocated(3)), "Slot 4 must be allocated");
+            flut_assert_explain(assert->is_false(is_allocated(4)), "Slot 5 must be deallocated");
             
             fl_scoped_resource(void *res5 = allocate(sizeof(void*)), deallocate(res5))
             {
              // Scope res5
-             flut_expect_explain(assert->is_true(is_allocated(4)), "Slot 5 must be allocated");
-             flut_expect_explain(assert->is_false(is_allocated(5)), "Slot 6 must be deallocated");
+             flut_assert_explain(assert->is_true(is_allocated(4)), "Slot 5 must be allocated");
+             flut_assert_explain(assert->is_false(is_allocated(5)), "Slot 6 must be deallocated");
              
              fl_scoped_resource(void *res6 = allocate(sizeof(void*)), deallocate(res6))
              {
               // Scope res6
-              flut_expect_explain(assert->is_true(is_allocated(5)), "Slot 6 must be allocated");
-              flut_expect_explain(assert->is_false(is_allocated(6)), "Slot 7 must be deallocated");
+              flut_assert_explain(assert->is_true(is_allocated(5)), "Slot 6 must be allocated");
+              flut_assert_explain(assert->is_false(is_allocated(6)), "Slot 7 must be deallocated");
               
               fl_scoped_resource(void *res7 = allocate(sizeof(void*)), deallocate(res7))
               {
                // Scope res7
-               flut_expect_explain(assert->is_true(is_allocated(6)), "Slot 7 must be allocated");
-               flut_expect_explain(assert->is_false(is_allocated(7)), "Slot 8 must be deallocated");
+               flut_assert_explain(assert->is_true(is_allocated(6)), "Slot 7 must be allocated");
+               flut_assert_explain(assert->is_false(is_allocated(7)), "Slot 8 must be deallocated");
                
                fl_scoped_resource(void *res8 = allocate(sizeof(void*)), deallocate(res8))
                {
                 // Scope res8
-                flut_expect_explain(assert->is_true(is_allocated(7)), "Slot 8 must be allocated");
-                flut_expect_explain(assert->is_false(is_allocated(8)), "Slot 9 must be deallocated");
+                flut_assert_explain(assert->is_true(is_allocated(7)), "Slot 8 must be allocated");
+                flut_assert_explain(assert->is_false(is_allocated(8)), "Slot 9 must be deallocated");
                 
                 fl_scoped_resource(void *res9 = allocate(sizeof(void*)), deallocate(res9))
                 {
                  // Scope res9
-                 flut_expect_explain(assert->is_true(is_allocated(8)), "Slot 9 must be allocated");
-                 flut_expect_explain(assert->is_false(is_allocated(9)), "Slot 10 must be deallocated");
+                 flut_assert_explain(assert->is_true(is_allocated(8)), "Slot 9 must be allocated");
+                 flut_assert_explain(assert->is_false(is_allocated(9)), "Slot 10 must be deallocated");
                   
                  fl_scoped_resource(void *res10 = allocate(sizeof(void*)), deallocate(res10))
                  {
                    // Scope res10
-                   flut_expect_explain(assert->null(allocate(sizeof(void*))), "Allocation is expected to fail");
+                   flut_assert_explain(assert->null(allocate(sizeof(void*))), "Allocation is expected to fail");
                    break;
                    // End res10
                  }
 
-                 flut_expect_explain(assert->is_false(is_allocated(9)), "Slot 10 must be deallocated");
-                 flut_expect_explain(assert->is_true(is_allocated(8)), "Slot 9 must be allocated");
+                 flut_assert_explain(assert->is_false(is_allocated(9)), "Slot 10 must be deallocated");
+                 flut_assert_explain(assert->is_true(is_allocated(8)), "Slot 9 must be allocated");
                  break;
                  // End res9
                 }
 
-                flut_expect_explain(assert->is_false(is_allocated(8)), "Slot 9 must be deallocated");
-                flut_expect_explain(assert->is_true(is_allocated(7)), "Slot 8 must be allocated");
+                flut_assert_explain(assert->is_false(is_allocated(8)), "Slot 9 must be deallocated");
+                flut_assert_explain(assert->is_true(is_allocated(7)), "Slot 8 must be allocated");
                 break;
                 // End res8
                }
 
-               flut_expect_explain(assert->is_false(is_allocated(7)), "Slot 8 must be deallocated");
-               flut_expect_explain(assert->is_true(is_allocated(6)), "Slot 7 must be allocated");
+               flut_assert_explain(assert->is_false(is_allocated(7)), "Slot 8 must be deallocated");
+               flut_assert_explain(assert->is_true(is_allocated(6)), "Slot 7 must be allocated");
                break;
                // End res7
               }
 
-              flut_expect_explain(assert->is_false(is_allocated(6)), "Slot 7 must be deallocated");
-              flut_expect_explain(assert->is_true(is_allocated(5)), "Slot 6 must be allocated");
+              flut_assert_explain(assert->is_false(is_allocated(6)), "Slot 7 must be deallocated");
+              flut_assert_explain(assert->is_true(is_allocated(5)), "Slot 6 must be allocated");
               break;
               // End res6
              }
 
-             flut_expect_explain(assert->is_false(is_allocated(5)), "Slot 6 must be deallocated");
-             flut_expect_explain(assert->is_true(is_allocated(4)), "Slot 5 must be allocated");
+             flut_assert_explain(assert->is_false(is_allocated(5)), "Slot 6 must be deallocated");
+             flut_assert_explain(assert->is_true(is_allocated(4)), "Slot 5 must be allocated");
              break;
              // End res5
             }
 
-            flut_expect_explain(assert->is_false(is_allocated(4)), "Slot 5 must be deallocated");
-            flut_expect_explain(assert->is_true(is_allocated(3)), "Slot 4 must be allocated");
+            flut_assert_explain(assert->is_false(is_allocated(4)), "Slot 5 must be deallocated");
+            flut_assert_explain(assert->is_true(is_allocated(3)), "Slot 4 must be allocated");
             break;
             // End res4
            }
 
-           flut_expect_explain(assert->is_false(is_allocated(3)), "Slot 4 must be deallocated");
-           flut_expect_explain(assert->is_true(is_allocated(2)), "Slot 3 must be allocated");
+           flut_assert_explain(assert->is_false(is_allocated(3)), "Slot 4 must be deallocated");
+           flut_assert_explain(assert->is_true(is_allocated(2)), "Slot 3 must be allocated");
            break;
            // End res3
           }
 
-          flut_expect_explain(assert->is_false(is_allocated(2)), "Slot 3 must be deallocated");
-          flut_expect_explain(assert->is_true(is_allocated(1)), "Slot 2 must be allocated");
+          flut_assert_explain(assert->is_false(is_allocated(2)), "Slot 3 must be deallocated");
+          flut_assert_explain(assert->is_true(is_allocated(1)), "Slot 2 must be allocated");
           break;
           // End res2
          }
 
-         flut_expect_explain(assert->is_false(is_allocated(1)), "Slot 2 must be deallocated");
-         flut_expect_explain(assert->is_true(is_allocated(0)), "Slot 1 must be allocated");
+         flut_assert_explain(assert->is_false(is_allocated(1)), "Slot 2 must be deallocated");
+         flut_assert_explain(assert->is_true(is_allocated(0)), "Slot 1 must be allocated");
          break;
          // End res1
         }
 
-        flut_expect_explain(assert->is_false(is_allocated(0)), "Slot 1 must be deallocated");
+        flut_assert_explain(assert->is_false(is_allocated(0)), "Slot 1 must be deallocated");
         break;
     }
     end();
@@ -503,125 +503,125 @@ flut_define_test(std_scoped_resources) {
     init();
     flut_describe("Scoped resources must be deallocated when exiting the scope using continue (UNEXPECTED)") {
         
-        flut_expect_explain(assert->is_false(is_allocated(0)), "Slot 1 must be deallocated");
+        flut_assert_explain(assert->is_false(is_allocated(0)), "Slot 1 must be deallocated");
 
         fl_scoped_resource(void *res1 = allocate(sizeof(void*)), deallocate(res1))
         {
          // Scope res1
-         flut_expect_explain(assert->is_true(is_allocated(0)), "Slot 1 must be allocated");
-         flut_expect_explain(assert->is_false(is_allocated(1)), "Slot 2 must be deallocated");
+         flut_assert_explain(assert->is_true(is_allocated(0)), "Slot 1 must be allocated");
+         flut_assert_explain(assert->is_false(is_allocated(1)), "Slot 2 must be deallocated");
          
          fl_scoped_resource(void *res2 = allocate(sizeof(void*)), deallocate(res2))
          {
           // Scope res2
-          flut_expect_explain(assert->is_true(is_allocated(1)), "Slot 2 must be allocated");
-          flut_expect_explain(assert->is_false(is_allocated(2)), "Slot 3 must be deallocated");
+          flut_assert_explain(assert->is_true(is_allocated(1)), "Slot 2 must be allocated");
+          flut_assert_explain(assert->is_false(is_allocated(2)), "Slot 3 must be deallocated");
           
           fl_scoped_resource(void *res3 = allocate(sizeof(void*)), deallocate(res3))
           {
            // Scope res3
-           flut_expect_explain(assert->is_true(is_allocated(2)), "Slot 3 must be allocated");
-           flut_expect_explain(assert->is_false(is_allocated(3)), "Slot 4 must be deallocated");
+           flut_assert_explain(assert->is_true(is_allocated(2)), "Slot 3 must be allocated");
+           flut_assert_explain(assert->is_false(is_allocated(3)), "Slot 4 must be deallocated");
            
            fl_scoped_resource(void *res4 = allocate(sizeof(void*)), deallocate(res4))
            {
             // Scope res4
-            flut_expect_explain(assert->is_true(is_allocated(3)), "Slot 4 must be allocated");
-            flut_expect_explain(assert->is_false(is_allocated(4)), "Slot 5 must be deallocated");
+            flut_assert_explain(assert->is_true(is_allocated(3)), "Slot 4 must be allocated");
+            flut_assert_explain(assert->is_false(is_allocated(4)), "Slot 5 must be deallocated");
             
             fl_scoped_resource(void *res5 = allocate(sizeof(void*)), deallocate(res5))
             {
              // Scope res5
-             flut_expect_explain(assert->is_true(is_allocated(4)), "Slot 5 must be allocated");
-             flut_expect_explain(assert->is_false(is_allocated(5)), "Slot 6 must be deallocated");
+             flut_assert_explain(assert->is_true(is_allocated(4)), "Slot 5 must be allocated");
+             flut_assert_explain(assert->is_false(is_allocated(5)), "Slot 6 must be deallocated");
              
              fl_scoped_resource(void *res6 = allocate(sizeof(void*)), deallocate(res6))
              {
               // Scope res6
-              flut_expect_explain(assert->is_true(is_allocated(5)), "Slot 6 must be allocated");
-              flut_expect_explain(assert->is_false(is_allocated(6)), "Slot 7 must be deallocated");
+              flut_assert_explain(assert->is_true(is_allocated(5)), "Slot 6 must be allocated");
+              flut_assert_explain(assert->is_false(is_allocated(6)), "Slot 7 must be deallocated");
               
               fl_scoped_resource(void *res7 = allocate(sizeof(void*)), deallocate(res7))
               {
                // Scope res7
-               flut_expect_explain(assert->is_true(is_allocated(6)), "Slot 7 must be allocated");
-               flut_expect_explain(assert->is_false(is_allocated(7)), "Slot 8 must be deallocated");
+               flut_assert_explain(assert->is_true(is_allocated(6)), "Slot 7 must be allocated");
+               flut_assert_explain(assert->is_false(is_allocated(7)), "Slot 8 must be deallocated");
                
                fl_scoped_resource(void *res8 = allocate(sizeof(void*)), deallocate(res8))
                {
                 // Scope res8
-                flut_expect_explain(assert->is_true(is_allocated(7)), "Slot 8 must be allocated");
-                flut_expect_explain(assert->is_false(is_allocated(8)), "Slot 9 must be deallocated");
+                flut_assert_explain(assert->is_true(is_allocated(7)), "Slot 8 must be allocated");
+                flut_assert_explain(assert->is_false(is_allocated(8)), "Slot 9 must be deallocated");
                 
                 fl_scoped_resource(void *res9 = allocate(sizeof(void*)), deallocate(res9))
                 {
                  // Scope res9
-                 flut_expect_explain(assert->is_true(is_allocated(8)), "Slot 9 must be allocated");
-                 flut_expect_explain(assert->is_false(is_allocated(9)), "Slot 10 must be deallocated");
+                 flut_assert_explain(assert->is_true(is_allocated(8)), "Slot 9 must be allocated");
+                 flut_assert_explain(assert->is_false(is_allocated(9)), "Slot 10 must be deallocated");
                   
                  fl_scoped_resource(void *res10 = allocate(sizeof(void*)), deallocate(res10))
                  {
                    // Scope res10
-                   flut_expect_explain(assert->null(allocate(sizeof(void*))), "Allocation is expected to fail");
+                   flut_assert_explain(assert->null(allocate(sizeof(void*))), "Allocation is expected to fail");
                    continue;
                    // End res10
                  }
 
-                 flut_expect_explain(assert->is_false(is_allocated(9)), "Slot 10 must be deallocated");
-                 flut_expect_explain(assert->is_true(is_allocated(8)), "Slot 9 must be allocated");
+                 flut_assert_explain(assert->is_false(is_allocated(9)), "Slot 10 must be deallocated");
+                 flut_assert_explain(assert->is_true(is_allocated(8)), "Slot 9 must be allocated");
                  continue;
                  // End res9
                 }
 
-                flut_expect_explain(assert->is_false(is_allocated(8)), "Slot 9 must be deallocated");
-                flut_expect_explain(assert->is_true(is_allocated(7)), "Slot 8 must be allocated");
+                flut_assert_explain(assert->is_false(is_allocated(8)), "Slot 9 must be deallocated");
+                flut_assert_explain(assert->is_true(is_allocated(7)), "Slot 8 must be allocated");
                 continue;
                 // End res8
                }
 
-               flut_expect_explain(assert->is_false(is_allocated(7)), "Slot 8 must be deallocated");
-               flut_expect_explain(assert->is_true(is_allocated(6)), "Slot 7 must be allocated");
+               flut_assert_explain(assert->is_false(is_allocated(7)), "Slot 8 must be deallocated");
+               flut_assert_explain(assert->is_true(is_allocated(6)), "Slot 7 must be allocated");
                continue;
                // End res7
               }
 
-              flut_expect_explain(assert->is_false(is_allocated(6)), "Slot 7 must be deallocated");
-              flut_expect_explain(assert->is_true(is_allocated(5)), "Slot 6 must be allocated");
+              flut_assert_explain(assert->is_false(is_allocated(6)), "Slot 7 must be deallocated");
+              flut_assert_explain(assert->is_true(is_allocated(5)), "Slot 6 must be allocated");
               continue;
               // End res6
              }
 
-             flut_expect_explain(assert->is_false(is_allocated(5)), "Slot 6 must be deallocated");
-             flut_expect_explain(assert->is_true(is_allocated(4)), "Slot 5 must be allocated");
+             flut_assert_explain(assert->is_false(is_allocated(5)), "Slot 6 must be deallocated");
+             flut_assert_explain(assert->is_true(is_allocated(4)), "Slot 5 must be allocated");
              continue;
              // End res5
             }
 
-            flut_expect_explain(assert->is_false(is_allocated(4)), "Slot 5 must be deallocated");
-            flut_expect_explain(assert->is_true(is_allocated(3)), "Slot 4 must be allocated");
+            flut_assert_explain(assert->is_false(is_allocated(4)), "Slot 5 must be deallocated");
+            flut_assert_explain(assert->is_true(is_allocated(3)), "Slot 4 must be allocated");
             continue;
             // End res4
            }
 
-           flut_expect_explain(assert->is_false(is_allocated(3)), "Slot 4 must be deallocated");
-           flut_expect_explain(assert->is_true(is_allocated(2)), "Slot 3 must be allocated");
+           flut_assert_explain(assert->is_false(is_allocated(3)), "Slot 4 must be deallocated");
+           flut_assert_explain(assert->is_true(is_allocated(2)), "Slot 3 must be allocated");
            continue;
            // End res3
           }
 
-          flut_expect_explain(assert->is_false(is_allocated(2)), "Slot 3 must be deallocated");
-          flut_expect_explain(assert->is_true(is_allocated(1)), "Slot 2 must be allocated");
+          flut_assert_explain(assert->is_false(is_allocated(2)), "Slot 3 must be deallocated");
+          flut_assert_explain(assert->is_true(is_allocated(1)), "Slot 2 must be allocated");
           continue;
           // End res2
          }
 
-         flut_expect_explain(assert->is_false(is_allocated(1)), "Slot 2 must be deallocated");
-         flut_expect_explain(assert->is_true(is_allocated(0)), "Slot 1 must be allocated");
+         flut_assert_explain(assert->is_false(is_allocated(1)), "Slot 2 must be deallocated");
+         flut_assert_explain(assert->is_true(is_allocated(0)), "Slot 1 must be allocated");
          continue;
          // End res1
         }
 
-        flut_expect_explain(assert->is_false(is_allocated(0)), "Slot 1 must be deallocated");
+        flut_assert_explain(assert->is_false(is_allocated(0)), "Slot 1 must be deallocated");
         continue;
     }
     end();

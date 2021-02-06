@@ -13,19 +13,19 @@ flut_define_test(slice_new) {
 
     flut_vdescribe("Working with slices of the string: '%s'", sequence) {
         struct FlSlice slice = fl_slice_new((const FlByte*)sequence, 1, 0, 4);
-        flut_expect_explain(assert->str.equals_n("Some", (const char*)slice.sequence, slice.length, false), "Sequence slice[0,4] is equals to 'Some'");
-        flut_expect_explain(assert->is_true(fl_slice_equals_sequence(&slice, (const FlByte*)sequence, slice.length)), "Slice[0,4] is equals to sequence");
+        flut_assert_explain(assert->str.equals_n("Some", (const char*)slice.sequence, slice.length, false), "Sequence slice[0,4] is equals to 'Some'");
+        flut_assert_explain(assert->is_true(fl_slice_equals_sequence(&slice, (const FlByte*)sequence, slice.length)), "Slice[0,4] is equals to sequence");
 
         struct FlSlice slice2 = fl_slice_new((const FlByte*)sequence, 1, 34, 10);
-        flut_expect_explain(assert->str.equals_n("contiguous", (const char*)slice2.sequence, slice2.length, false), "Sequence slice[36,10] is equals to 'contiguous'");
-        flut_expect_explain(assert->is_true(fl_slice_equals_sequence(&slice2, (const FlByte*)sequence + 34, slice2.length)), "Slice[36,10] is equals to sequence + 34");
+        flut_assert_explain(assert->str.equals_n("contiguous", (const char*)slice2.sequence, slice2.length, false), "Sequence slice[36,10] is equals to 'contiguous'");
+        flut_assert_explain(assert->is_true(fl_slice_equals_sequence(&slice2, (const FlByte*)sequence + 34, slice2.length)), "Slice[36,10] is equals to sequence + 34");
 
         struct FlSlice slice3 = fl_slice_new((const FlByte*)sequence, 1, 57, 5);
-        flut_expect_explain(assert->str.equals_n("bytes", (const char*)slice3.sequence, slice3.length, false), "Sequence slice[57,5] is equals to 'bytes'");
-        flut_expect_explain(assert->is_true(fl_slice_equals_sequence(&slice3, (const FlByte*)sequence + 57, slice3.length)), "Slice[57,5] is equals to sequence + 57");
+        flut_assert_explain(assert->str.equals_n("bytes", (const char*)slice3.sequence, slice3.length, false), "Sequence slice[57,5] is equals to 'bytes'");
+        flut_assert_explain(assert->is_true(fl_slice_equals_sequence(&slice3, (const FlByte*)sequence + 57, slice3.length)), "Slice[57,5] is equals to sequence + 57");
         
         struct FlSlice slice4 = fl_slice_new((const FlByte*)sequence, 1, 34, 10);
-        flut_expect_explain(assert->is_true(fl_slice_equals(&slice2, &slice4)), "Two slices[36,10] must be equals");
+        flut_assert_explain(assert->is_true(fl_slice_equals(&slice2, &slice4)), "Two slices[36,10] must be equals");
     }
 }
 

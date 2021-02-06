@@ -12,23 +12,7 @@
     printf("%s", " |  |  ");                                                                                            \
     printf("%s", descr);                                                                                                \
     printf("%s", "\n");                                                                                                 \
-    printf("%s", " |  |-------------------------------------------------------------------------\n");
-
-#define flut_forward_declare_test_in_suite(test_id)                                                                     \
-    static char *flut_suite_test_##test_id##_description;                                                               \
-    static void flut_suite_test_##test_id(FlutContext *, FlutAssertUtils *)                                             \
-
-#define flut_register_test_in_suite(test_id)                                                                            \
-    {                                                                                                                   \
-        size_t cur_size = fl_array_length(cases);                                                                       \
-        cases = fl_array_resize(cases, cur_size + 1);                                                                   \
-        cases[cur_size].name = flut_suite_test_##test_id##_description;                                                 \
-        cases[cur_size].run = &flut_suite_test_##test_id;                                                               \
-    }
-
-#define flut_define_test(test_id, descr)                                                                                \
-    static char *flut_suite_test_##test_id##_description = descr;                                                       \
-    static void flut_suite_test_##test_id(FlutContext *flut__internal_ctx, FlutAssertUtils *assert)
+    printf("%s", " |  |-------------------------------------------------------------------------\n");                   \
 
 #define flut_vdescribe(format, ...)                                                                                     \
     printf("%s", " |  |-------------------------------------------------------------------------\n");                   \

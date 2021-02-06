@@ -1,9 +1,14 @@
 #include <fllib.h>
 #include <flut/flut.h>
 
-flut_define_suite(array, "Dynamic array functions", combine, append, contains_n)
+flut_define_suite(array) {
+    flut_suite_description("Dynamic array functions");
+    flut_suite_register_test(array_combine, "Array combine");
+    flut_suite_register_test(array_append, "Array append");
+    flut_suite_register_test(array_contains_n, "Array contains N");
+}
 
-flut_define_test(combine, "Array combine")
+flut_define_test(array_combine)
 {
     {
         int *zero_to_nine = fl_array_new(sizeof(int), 10);
@@ -61,7 +66,7 @@ flut_define_test(combine, "Array combine")
     }
 }
 
-flut_define_test(append, "Array append") {
+flut_define_test(array_append) {
 
     int *numbers = fl_array_new(sizeof(int), 0);
 
@@ -76,7 +81,7 @@ flut_define_test(append, "Array append") {
     fl_array_free(numbers);
 }
 
-flut_define_test(contains_n, "Array contains N") {
+flut_define_test(array_contains_n) {
 
     flut_describe("fl_array_contains_n should work for array of characters") {
         char array[] = { 'a', 'e', 'i', 'o', 'u' };

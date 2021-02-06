@@ -14,49 +14,37 @@
 #include <stddef.h>
 
 
-#define flut_define_suite(suite_id, suite_desc, ...)                                                                    \
-    FLUT_MAP(flut_forward_declare_test_in_suite, __VA_ARGS__);                                                                   \
-    FlutSuite *flut_suite_##suite_id()                                                                                  \
-    {                                                                                                                   \
-        FlutTestCase *cases = fl_array_new(sizeof(FlutTestCase), 0);                                                    \
-        FLUT_MAP(flut_register_test_in_suite, __VA_ARGS__)                                                                       \
-        FlutSuite *suite = flut_suite_new(#suite_id, suite_desc, cases, fl_array_length(cases));                        \
-        fl_array_free(cases);                                                                                           \
-        return suite;                                                                                                   \
-    }
-
-#define flut_add_suite(suite_id)                                                                                        \
-    {                                                                                                                   \
-        extern FlutSuite *flut_suite_##suite_id();                                                                      \
-        FlutSuite *suite_id##_suite = flut_suite_##suite_id();                                                          \
-        suites = fl_array_append(suites, &suite_id##_suite);                                                            \
-    }
-
 /**
  * Notes:
  *  - Deprecated: Use flut_add_suite(suite_id) or flut_run_suites
  */
-#define flut_register_suite(suite_id)                                                                                  \
-    (void)0);                                                                                                          \
-    {                                                                                                                  \
-        extern FlutSuite *flut_suite_##suite_id();                                                                     \
-        FlutSuite *suite_id##_suite = flut_suite_##suite_id();                                                         \
-        suites = fl_array_append(suites, &suite_id##_suite);                                                           \
+#define flut_register_suite(suite_id)                                                                                   \
+    (void)0);                                                                                                           \
+    {                                                                                                                   \
+        extern void flut_suite_##suite_id(FlutSuite *);                                                                 \
+        FlutSuite *suite = flut_suite_new(#suite_id);                                                                   \
+        flut_suite_##suite_id(suite);                                                                                   \
+        suites = fl_array_append(suites, &suite);                                                                       \
     }((void)0
 
 /**
  * Notes:
  *  - Deprecated: Use flut_add_suite(suite_id) or flut_run_suites
  */
-#define flut_suite(name, ...)                                                                                          \
-    (void)0);                                                                                                          \
-    {                                                                                                                  \
-        FlutSuite *suite = flut_suite_new(name,                                                                        \
-                                          name,                                                                        \
-                                          ((const FlutTestCase[]){ __VA_ARGS__ }),                                     \
-                                          sizeof(((const FlutTestCase[]){ __VA_ARGS__ })) /                            \
-                                            sizeof(((const FlutTestCase[]){ __VA_ARGS__ }))[0]);                       \
-        suites = fl_array_append(suites, &suite);                                                                      \
+#define flut_suite(suite_name, ...)                                                                                         \
+    (void)0);                                                                                                               \
+    {                                                                                                                       \
+        FlutSuite *suite = flut_suite_new(suite_name);                                                                      \
+        suite->description = fl_cstring_dup(suite_name);                                                                    \
+        size_t n = sizeof(((const FlutTestCase[]){ __VA_ARGS__ })) / sizeof(((const FlutTestCase[]){ __VA_ARGS__ }))[0];    \
+        FlutTestCase *tests = (FlutTestCase[]){ __VA_ARGS__ };                                                              \
+        for (size_t i=0; i < n; i++) {                                                                                      \
+            size_t cur_size = fl_array_length(suite->tests);                                                                \
+            suite->tests = fl_array_resize(suite->tests, cur_size + 1);                                                     \
+            suite->tests[cur_size].name = fl_cstring_dup(tests[i].name);                                                    \
+            suite->tests[cur_size].run = tests[i].run;                                                                      \
+        }                                                                                                                   \
+        suites = fl_array_append(suites, &suite);                                                                           \
     }((void)0
 
 typedef struct FlutSuite
@@ -94,7 +82,7 @@ typedef struct FlutSuiteResult
  * See:
  *  -   <flut_suite_free>
  */
-FlutSuite *flut_suite_new(const char *id, const char *descr, const FlutTestCase *tests, size_t length);
+FlutSuite *flut_suite_new(const char *id);
 
 /*
  * Function: flut_suite_free

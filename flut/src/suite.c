@@ -33,7 +33,7 @@ struct FlContext test_restore_context_compat = FL_CTX_STATIC_INIT;
  * {return: FlutSuite} Suite pointer
  *
  */
-FlutSuite *flut_suite_new(const char *id, const char *descr, const FlutTestCase *tests, size_t length)
+FlutSuite *flut_suite_new(const char *id)
 {
     FlutSuite *suite = fl_malloc(sizeof(struct FlutSuite));
 
@@ -41,13 +41,7 @@ FlutSuite *flut_suite_new(const char *id, const char *descr, const FlutTestCase 
         return NULL;
 
     suite->id = fl_cstring_dup(id);
-    suite->description = fl_cstring_dup(descr);
-    suite->tests = fl_array_new(sizeof(FlutTestCase), length);
-
-    for (size_t i = 0; i < length; i++) {
-        suite->tests[i].name = fl_cstring_dup(tests[i].name);
-        suite->tests[i].run = tests[i].run;
-    }
+    suite->tests = fl_array_new(sizeof(FlutTestCase), 0);
 
     return suite;
 }

@@ -21,7 +21,7 @@ int main(int argc, char **argv)
         flut_register_suite(std),
         flut_register_suite(array),
         flut_register_suite(slice),
-        flut_register_suite(cstr),
+        flut_register_suite(cstring),
         flut_suite("IO", 
             { "fl_io_file_write_all_bytes and fl_io_file_read_all_bytes", &test_file_rw_all_bytes },
             { "IO realpath", &test_io_realpath },

@@ -7,7 +7,12 @@
 
 #include <flut/flut.h>
 
-flut_define_suite(std, "fllib standard functions", exceptions, thread_errors, scoped_resources)
+flut_define_suite(std) {
+    flut_suite_description("fllib standard functions");
+    flut_suite_register_test(std_exceptions, "Global error handling thread safety");
+    flut_suite_register_test(std_thread_errors, "Pseudo try-catch exception handling");
+    flut_suite_register_test(std_scoped_resources, "Scoped resources");
+}
 
 void thread_error(void *args)
 {
@@ -47,8 +52,7 @@ void thread_error(void *args)
     fl_thread_exit(NULL);
 }
 
-flut_define_test(thread_errors, "Global error handling thread safety")
-{
+flut_define_test(std_thread_errors) {
     int nthreads = 5;
     FlThread *threads = fl_array_new(sizeof(FlThread), nthreads);
     for (int i=0; i < nthreads; i++)
@@ -70,8 +74,7 @@ void c(struct FlContext *ctx);
 void d(struct FlContext *ctx);
 void e(struct FlContext *ctx);
 
-flut_define_test(exceptions, "Pseudo try-catch exception handling")
-{
+flut_define_test(std_exceptions) {
     struct FlContext *try_ctx = fl_ctx_new();
 
     Try(try_ctx)
@@ -255,8 +258,7 @@ static void end()
     }
 }
 
-flut_define_test(scoped_resources, "Scoped resources")
-{
+flut_define_test(std_scoped_resources) {
     init();
     flut_describe("Scoped resources must be deallocated when exiting the scope under normal flow execution") {
         

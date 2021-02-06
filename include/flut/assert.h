@@ -54,9 +54,9 @@
 #define flut_assert_string_is_equals(expected, actual, shouldFreeActual)        \
     flut_assert_vexplain(flut__assert_str_equals((expected), (actual), (shouldFreeActual)), "String '"#actual"' (%s) should be equals to string '" #expected "' (%s)", (actual), (expected))
 
-#define flut_assert_string_is_equals_n(expected, actual, length, shouldFreeActual)                          \
-    flut_assert_vexplain(flut__assert_str_equals_n((expected), (actual), (shouldFreeActual)),                \
-        "%zu characters from string '"#actual"' (%.*s) should be equals to string '" #expected "' (%.*s)", (length) (actual), (length), (expected), (length))
+#define flut_assert_string_is_equals_n(expected, actual, length, shouldFreeActual)                                      \
+    flut_assert_vexplain(flut__assert_str_equals_n((expected), (actual), (length), (shouldFreeActual)),                 \
+        "%zu characters from string '"#actual"' (%.*s) should be equals to string '" #expected "' (%.*s)", (length), (length), (actual), (length), (expected))
 
 #define flut_assert_string_is_not_equals(expected, actual, shouldFreeActual)    \
     flut_assert_vexplain(flut__assert_str_not_equals((expected), (actual), (shouldFreeActual)), "String '"#actual"' (%s) should not be equals to string '" #expected "' (%s)", (actual), (expected))

@@ -3,7 +3,7 @@
 
 #include "result.h"
 
-FlutAssertResult* flut_assert_null(void *obj);
-FlutAssertResult* flut_assert_not_null(void *obj);
+FlutAssertResult* flut__assert_null(void *obj);
+FlutAssertResult* flut__assert_not_null(void *obj);
 
 #endif /* FL_TEST_ASSERT_NULL_H */

@@ -24,10 +24,10 @@ flut_define_test(array_combine)
         zero_to_nineteen = fl_array_combine(zero_to_nineteen, zero_to_nine);
         zero_to_nineteen = fl_array_combine(zero_to_nineteen, ten_to_nineteen);
 
-        flut_expect_compat("Array must contain 20 elements", fl_array_length(zero_to_nineteen) == 20);
+        flut_assert_is_true(fl_array_length(zero_to_nineteen) == 20);
 
         for (int i=0; i < 20; i++)
-            flut_vexpect_compat(i == zero_to_nineteen[i], "Element at position %d must be equals to %d", i, i);
+            flut_assert_int_is_equals(i, zero_to_nineteen[i]);
 
         fl_array_free(zero_to_nine);
         fl_array_free(ten_to_nineteen);
@@ -52,12 +52,12 @@ flut_define_test(array_combine)
         zero_to_nineteen = fl_array_combine(zero_to_nineteen, zero_to_nine);
         zero_to_nineteen = fl_array_combine(zero_to_nineteen, ten_to_nineteen);
 
-        flut_expect_compat("Array must contain 20 elements", fl_array_length(zero_to_nineteen) == 20);
+        flut_assert_is_true(fl_array_length(zero_to_nineteen) == 20);
 
         for (int i=0; i < 20; i++)
         {
-            flut_vexpect_compat(numbers + i == zero_to_nineteen[i], "Element at position %d must point to numbers[%d]", i, i);
-            flut_vexpect_compat(i == *zero_to_nineteen[i], "Element at position %d must be equals to %d", i, i);
+            flut_assert_pointer_is_equals(numbers + i, zero_to_nineteen[i]);
+            flut_assert_int_is_equals(i, *zero_to_nineteen[i]);
         }
 
         fl_array_free(zero_to_nine);
@@ -73,10 +73,10 @@ flut_define_test(array_append) {
     for (int i=0; i < 10; i++)
         numbers = fl_array_append(numbers, &i);
 
-    flut_expect_compat("Numbers array must contain 10 elements", fl_array_length(numbers) == 10);
+    flut_assert_is_true(fl_array_length(numbers) == 10);
 
     for (int i=0; i < 10; i++)
-            flut_vexpect_compat(i == numbers[i], "Element at position %d must be equals to %d", i, i);
+            flut_assert_int_is_equals(i, numbers[i]);
 
     fl_array_free(numbers);
 }
@@ -86,31 +86,28 @@ flut_define_test(array_contains_n) {
     flut_describe("fl_array_contains_n should work for array of characters") {
         char array[] = { 'a', 'e', 'i', 'o', 'u' };
 
-        for (size_t i=0; i < flm_array_length(array); i++)
-        {
-            flut_assert_vexplain(
-                assert->is_true(fl_array_contains_n(array, flm_array_length(array), &array[i], sizeof(char))), 
-                "Character %c should be present in the array", array[i]);
-        }
-
-        flut_assert_explain(
-            assert->is_false(fl_array_contains_n(array, flm_array_length(array), "b", sizeof(char))),
-            "Character b should NOT be present in the array");
+        #define MAKE_CHAR_PTR(c)   (char[]) { c }
+        flut_assert_is_true(fl_array_contains_n(array, flm_array_length(array), MAKE_CHAR_PTR('a'), sizeof(char)));
+        flut_assert_is_true(fl_array_contains_n(array, flm_array_length(array), MAKE_CHAR_PTR('e'), sizeof(char)));
+        flut_assert_is_true(fl_array_contains_n(array, flm_array_length(array), MAKE_CHAR_PTR('i'), sizeof(char)));
+        flut_assert_is_true(fl_array_contains_n(array, flm_array_length(array), MAKE_CHAR_PTR('o'), sizeof(char)));
+        flut_assert_is_true(fl_array_contains_n(array, flm_array_length(array), MAKE_CHAR_PTR('u'), sizeof(char)));
+        flut_assert_is_false(fl_array_contains_n(array, flm_array_length(array), MAKE_CHAR_PTR('b'), sizeof(char)));
+        #undef MAKE_CHAR_PTR
     }
 
     flut_describe("fl_array_contains_n should work for array of integers") {
         int array[] = { 0, 2, 4, 6, 8, 10 };
 
-        for (size_t i=0; i < flm_array_length(array); i++)
-        {
-            flut_assert_vexplain(
-                assert->is_true(fl_array_contains_n(array, flm_array_length(array), &array[i], sizeof(int))), 
-                "Integer %d should be present in the array", array[i]);
-        }
-
-        flut_assert_explain(
-            assert->is_false(fl_array_contains_n(array, flm_array_length(array), (int[]){ 1 }, sizeof(char))),
-            "Integer 1 should NOT be present in the array");
+        #define MAKE_INT_PTR(i)   (int[]) { i }
+        flut_assert_is_true(fl_array_contains_n(array, flm_array_length(array), MAKE_INT_PTR(0), sizeof(int)));
+        flut_assert_is_true(fl_array_contains_n(array, flm_array_length(array), MAKE_INT_PTR(2), sizeof(int)));
+        flut_assert_is_true(fl_array_contains_n(array, flm_array_length(array), MAKE_INT_PTR(4), sizeof(int)));
+        flut_assert_is_true(fl_array_contains_n(array, flm_array_length(array), MAKE_INT_PTR(6), sizeof(int)));
+        flut_assert_is_true(fl_array_contains_n(array, flm_array_length(array), MAKE_INT_PTR(8), sizeof(int)));
+        flut_assert_is_true(fl_array_contains_n(array, flm_array_length(array), MAKE_INT_PTR(10), sizeof(int)));
+        flut_assert_is_false(fl_array_contains_n(array, flm_array_length(array), MAKE_INT_PTR(1), sizeof(int)));
+        #undef MAKE_INT_PTR
     }
 
     flut_describe("fl_array_contains_n should work for structs") {
@@ -133,24 +130,15 @@ flut_define_test(array_contains_n) {
             array[i].f = template[i].f;
         }
         
-
-        for (size_t i=0; i < array_length; i++)
-        {
-            flut_assert_vexplain(
-                assert->is_true(fl_array_contains_n(array, array_length, &array[i], sizeof(struct ItemTest))), 
-                "Struct { %d, %c, %f } should be present in the array", array[i].i, array[i].c, array[i].f);
-        }
-
-        struct ItemTest *item = fl_malloc(sizeof(struct ItemTest));
-        item->i = 3;
-        item->c = 'd';
-        item->f = 0.3;
-
-        flut_assert_vexplain(
-                assert->is_false(fl_array_contains_n(array, array_length, item, sizeof(struct ItemTest))), 
-                "Struct { %d, %c, %f } should be present in the array", item->i, item->c, item->f);
-
-        fl_free(item);
+        struct ItemTest *values = fl_malloc(sizeof(struct ItemTest) * 4);
+        struct ItemTest *current = values - 1;
+        #define MAKE_STRUCT_PTR(vi, vc, vf)    (current++, current->i = vi, current->c = vc, current->f = vf, current)
+        flut_assert_is_true(fl_array_contains_n(array, array_length, MAKE_STRUCT_PTR(0, 'a', 0.0), sizeof(struct ItemTest)));
+        flut_assert_is_true(fl_array_contains_n(array, array_length, MAKE_STRUCT_PTR(1, 'b', 0.1), sizeof(struct ItemTest)));
+        flut_assert_is_true(fl_array_contains_n(array, array_length, MAKE_STRUCT_PTR(2, 'c', 0.2), sizeof(struct ItemTest)));
+        flut_assert_is_false(fl_array_contains_n(array, array_length, MAKE_STRUCT_PTR(3, 'd', 0.3), sizeof(struct ItemTest)));
+        #undef MAKE_STRUCT_PTR
+        fl_free(values);
         fl_free(array);
     }
 }

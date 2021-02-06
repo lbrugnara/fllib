@@ -29,40 +29,48 @@
 
 #define flut_assert_explain(assertion, message) flut_assert_vexplain(assertion, "%s", message)
 
-#define flut_assert_is_null(obj)        flut_assert_explain(flut__assert_null((obj)), "'"#obj"' should be null")
-#define flut_assert_is_not_null(obj)     flut_assert_explain(flut__assert_not_null((obj)), "'"#obj"' should not be null")
+#define flut_assert_is_null(obj)        flut_assert_explain(flut__assert_null((obj)), "Expression `"#obj"` should be null")
+#define flut_assert_is_not_null(obj)     flut_assert_explain(flut__assert_not_null((obj)), "Expression `"#obj"` should not be null")
 
-#define flut_assert_is_true(expression)    flut_assert_explain(flut__assert_bool_true((expression)), "'"#expression"' should be true")
-#define flut_assert_is_false(expression)   flut_assert_explain(flut__assert_bool_false((expression)), "'"#expression"' should be false")
+#define flut_assert_is_true(expression)    flut_assert_explain(flut__assert_bool_true((expression)), "Expression `"#expression"` should be true")
+#define flut_assert_is_false(expression)   flut_assert_explain(flut__assert_bool_false((expression)), "Expression `"#expression"` should be false")
 
 #define flut_assert_pointer_is_equals(expected, actual)         \
-    flut_assert_explain(flut__assert_ptr_equals((expected), (actual)), "Pointer '"#actual"' should be equals to pointer '" #expected "'")
+    flut_assert_explain(flut__assert_ptr_equals((expected), (actual)), "Pointer `"#actual"` should be equals to pointer `" #expected "`")
 #define flut_assert_pointer_is_not_equals(expected, actual)     \
-    flut_assert_explain(flut__assert_ptr_not_equals((expected), (actual)), "Pointer '"#actual"' should not be equals to pointer '" #expected "'")
+    flut_assert_explain(flut__assert_ptr_not_equals((expected), (actual)), "Pointer `"#actual"` should not be equals to pointer `" #expected "`")
 
 #define flut_assert_size_t_is_equals(expected, actual)         \
-    flut_assert_vexplain(flut__assert_size_t_equals((expected), (actual)), "size_t '"#actual"' (%zu) should be equals to size_t '" #expected "' (%zu)", (actual), (expected))
+    flut_assert_vexplain(flut__assert_size_t_equals((expected), (actual)), "size_t `"#actual"` (%zu) should be equals to size_t `" #expected "` (%zu)", (actual), (expected))
 
 #define flut_assert_size_t_is_not_equals(expected, actual)     \
-    flut_assert_vexplain(flut__assert_size_t_not_equals((expected), (actual)), "size_t '"#actual"' (%zu) should not be equals to size_t '" #expected "' (%zu)", (actual), (expected))
+    flut_assert_vexplain(flut__assert_size_t_not_equals((expected), (actual)), "size_t `"#actual"` (%zu) should not be equals to size_t `" #expected "` (%zu)", (actual), (expected))
 
 #define flut_assert_int_is_equals(expected, actual)         \
-    flut_assert_vexplain(flut__assert_int_equals((expected), (actual)), "Integer '"#actual"' (%zu) should be equals to integer '" #expected "' (%zu)", (actual), (expected))
+    flut_assert_vexplain(flut__assert_int_equals((expected), (actual)), "Integer `"#actual"` (%zu) should be equals to integer `" #expected "` (%zu)", (actual), (expected))
 #define flut_assert_int_is_not_equals(expected, actual)     \
-    flut_assert_vexplain(flut__assert_int_not_equals((expected), (actual)), "Integer '"#actual"' (%zu) should not be equals to integer '" #expected "' (%zu)", (actual), (expected))
+    flut_assert_vexplain(flut__assert_int_not_equals((expected), (actual)), "Integer `"#actual"` (%zu) should not be equals to integer `" #expected "` (%zu)", (actual), (expected))
 
 #define flut_assert_string_is_equals(expected, actual, shouldFreeActual)        \
-    flut_assert_vexplain(flut__assert_str_equals((expected), (actual), (shouldFreeActual)), "String '"#actual"' (%s) should be equals to string '" #expected "' (%s)", (actual), (expected))
+    flut_assert_vexplain(flut__assert_str_equals((expected), (actual), (shouldFreeActual)), "String `"#actual"` (\"%s\") should be equals to string `" #expected "` (\"%s\")", (actual), (expected))
 
 #define flut_assert_string_is_equals_n(expected, actual, length, shouldFreeActual)                                      \
     flut_assert_vexplain(flut__assert_str_equals_n((expected), (actual), (length), (shouldFreeActual)),                 \
-        "%zu characters from string '"#actual"' (%.*s) should be equals to string '" #expected "' (%.*s)", (length), (length), (actual), (length), (expected))
+        "%zu characters from string `"#actual"` (\"%.*s\") should be equals to string `" #expected "` (\"%.*s\")", (length), (length), (actual), (length), (expected))
 
 #define flut_assert_string_is_not_equals(expected, actual, shouldFreeActual)    \
-    flut_assert_vexplain(flut__assert_str_not_equals((expected), (actual), (shouldFreeActual)), "String '"#actual"' (%s) should not be equals to string '" #expected "' (%s)", (actual), (expected))
+    flut_assert_vexplain(flut__assert_str_not_equals((expected), (actual), (shouldFreeActual)), "String `"#actual"` (\"%s\") should not be equals to string `" #expected "` (\"%s\")", (actual), (expected))
 
 #define flut_assert_string_has_length(expected, string, shouldFreeString)       \
-    flut_assert_vexplain(flut__assert_str_length((expected), (string), (shouldFreeString)), "String '"#string"' (%s) should be %zu characters length", (string), (expected))
+    flut_assert_vexplain(flut__assert_str_length((expected), (string), (shouldFreeString)), "String `"#string"` (\"%s\") should be %zu characters length", (string), (expected))
+
+#define flut_unexpected(error_msg)                                                                          \
+do {                                                                                                        \
+    struct FlutAssertResult *result = fl_malloc(sizeof(struct FlutAssertResult));                           \
+    result->success = false;                                                                                \
+    result->message = fl_cstring_dup(error_msg);                                                            \
+    flut_assert_result(flut__internal_ctx, flut_do_assert(result, result, "%s", "Unexpected scenario"));    \
+} while (0)
 
 typedef struct FlutAssertUtils {
     FlutAssertResult* (*null)(void *obj);

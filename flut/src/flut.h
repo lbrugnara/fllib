@@ -8,7 +8,9 @@
 #include "test.h"
 #include <fllib/Array.h>
 
-#define flut_define_test(test_id)       void flut__test_##test_id(FlutContext *flut__internal_ctx, FlutAssertUtils *assert)
+#define FLUT_CURRENT_CTX flut__internal_ctx
+
+#define flut_define_test(test_id)       void flut__test_##test_id(FlutContext *FLUT_CURRENT_CTX, FlutAssertUtils *assert)
 
 #define flut_define_suite(suite_id)     void flut_suite_##suite_id(FlutSuite *flut__internal_suite)
 

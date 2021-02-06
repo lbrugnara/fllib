@@ -14,50 +14,40 @@ flut_define_suite(std) {
     flut_suite_register_test(std_scoped_resources, "Scoped resources");
 }
 
-void thread_error(void *args)
-{
-    struct FlError error;
-    char *str;
-    FlThreadId id = fl_thread_current_id();
-    fl_error_push(1, "ID=%d | Testing error 1", id);
-    error = fl_error_last();
-    str = fl_cstring_vdup("ID=%d | Testing error 1", id);
-    flut_expect_compat(str, error.id == 1 && flm_cstring_equals(error.message, str));
-    fl_cstring_free(str);
-    
-    fl_error_push(2, "ID=%d | Testing error 2", id);
-    error = fl_error_last();
-    str = fl_cstring_vdup("ID=%d | Testing error 2", id);
-    flut_expect_compat(str, error.id == 2 && flm_cstring_equals(error.message, str));
-    fl_cstring_free(str);
-    
-    fl_error_push(3, "ID=%d | Testing error 3", id);
-    error = fl_error_last();
-    str = fl_cstring_vdup("ID=%d | Testing error 3", id);
-    flut_expect_compat(str, error.id == 3 && flm_cstring_equals(error.message, str));
-    fl_cstring_free(str);
-    
-    fl_error_push(4, "ID=%d | Testing error 4", id);
-    error = fl_error_last();
-    str = fl_cstring_vdup("ID=%d | Testing error 4", id);
-    flut_expect_compat(str, error.id == 4 && flm_cstring_equals(error.message, str));
-    fl_cstring_free(str);
-    
-    fl_error_push(5, "ID=%d | Testing error 5", id);
-    error = fl_error_last();
-    str = fl_cstring_vdup("ID=%d | Testing error 5", id);
-    flut_expect_compat(str, error.id == 5 && flm_cstring_equals(error.message, str));
-    fl_cstring_free(str);
+// std_scoped_resources
+#define FL_STD_TEST_MAX_ALLOCATIONS 10
+#define FL_STD_TEST_ALLOC_HEADER(a) (((struct StdTestAllocation*)a)-1)
+#define FL_STD_TEST_ALLOC_DATA(h) (((struct StdTestAllocation*)h) + 1)
 
-    fl_thread_exit(NULL);
-}
+static void **allocations[FL_STD_TEST_MAX_ALLOCATIONS];
+
+struct StdTestAllocation {
+    bool is_allocated;
+};
+
+static void* allocate(size_t size);
+static bool is_allocated(size_t index);
+static void deallocate(void *data);
+static void init();
+static void end();
+
+// std_thread_errors
+void thread_error(void *args);
+
+// std_exceptions
+void a(struct FlContext *ctx, FlutContext *FLUT_CURRENT_CTX);
+void b(struct FlContext *ctx, FlutContext *FLUT_CURRENT_CTX);
+void c(struct FlContext *ctx, FlutContext *FLUT_CURRENT_CTX);
+void d(struct FlContext *ctx, FlutContext *FLUT_CURRENT_CTX);
+void e(struct FlContext *ctx, FlutContext *FLUT_CURRENT_CTX);
+
 
 flut_define_test(std_thread_errors) {
     int nthreads = 5;
     FlThread *threads = fl_array_new(sizeof(FlThread), nthreads);
     for (int i=0; i < nthreads; i++)
     {
-        threads[i] = fl_thread_create(thread_error, NULL);
+        threads[i] = fl_thread_create(thread_error, FLUT_CURRENT_CTX);
     }
     fl_thread_join_all(threads, nthreads);
     
@@ -67,29 +57,22 @@ flut_define_test(std_thread_errors) {
     fl_array_free(threads);
 }
 
-
-void a(struct FlContext *ctx);
-void b(struct FlContext *ctx);
-void c(struct FlContext *ctx);
-void d(struct FlContext *ctx);
-void e(struct FlContext *ctx);
-
 flut_define_test(std_exceptions) {
     struct FlContext *try_ctx = fl_ctx_new();
 
     Try(try_ctx)
     {
-        a(try_ctx);
+        a(try_ctx, FLUT_CURRENT_CTX);
     }
     Catch((int)'a')
     {
         struct FlContextFrame *frame = fl_ctx_frame_last(try_ctx);
-        flut_expect_compat("Catched exception in root should be (int)'a'", frame->exception == (int)'a');
-        flut_expect_compat("Catched exception in root should have message \"a\"", flm_cstring_equals_n(frame->message, "a", 1));
+        flut_assert_is_true(frame->exception == (int)'a');
+        flut_assert_is_true(flm_cstring_equals_n(frame->message, "a", 1));
     }
     Rest
     {
-        flut_expect_compat("The exception shouldn't have fallen in root's Rest clause", false);
+        flut_unexpected("The exception shouldn't have fallen in root's Rest clause");
     }
     EndTry;
 
@@ -115,101 +98,499 @@ flut_define_test(std_exceptions) {
     fl_ctx_free(try_ctx);
 }
 
-void a(struct FlContext *ctx) 
+flut_define_test(std_scoped_resources) {
+    init();
+    flut_describe("Scoped resources must be deallocated when exiting the scope under normal flow execution") {
+        
+        flut_assert_is_false(is_allocated(0));
+
+        fl_scoped_resource(void *res1 = allocate(sizeof(void*)), deallocate(res1))
+        {
+         // Scope res1
+         flut_assert_is_true(is_allocated(0));
+         flut_assert_is_false(is_allocated(1));
+         
+         fl_scoped_resource(void *res2 = allocate(sizeof(void*)), deallocate(res2))
+         {
+          // Scope res2
+          flut_assert_is_true(is_allocated(1));
+          flut_assert_is_false(is_allocated(2));
+          
+          fl_scoped_resource(void *res3 = allocate(sizeof(void*)), deallocate(res3))
+          {
+           // Scope res3
+           flut_assert_is_true(is_allocated(2));
+           flut_assert_is_false(is_allocated(3));
+           
+           fl_scoped_resource(void *res4 = allocate(sizeof(void*)), deallocate(res4))
+           {
+            // Scope res4
+            flut_assert_is_true(is_allocated(3));
+            flut_assert_is_false(is_allocated(4));
+            
+            fl_scoped_resource(void *res5 = allocate(sizeof(void*)), deallocate(res5))
+            {
+             // Scope res5
+             flut_assert_is_true(is_allocated(4));
+             flut_assert_is_false(is_allocated(5));
+             
+             fl_scoped_resource(void *res6 = allocate(sizeof(void*)), deallocate(res6))
+             {
+              // Scope res6
+              flut_assert_is_true(is_allocated(5));
+              flut_assert_is_false(is_allocated(6));
+              
+              fl_scoped_resource(void *res7 = allocate(sizeof(void*)), deallocate(res7))
+              {
+               // Scope res7
+               flut_assert_is_true(is_allocated(6));
+               flut_assert_is_false(is_allocated(7));
+               
+               fl_scoped_resource(void *res8 = allocate(sizeof(void*)), deallocate(res8))
+               {
+                // Scope res8
+                flut_assert_is_true(is_allocated(7));
+                flut_assert_is_false(is_allocated(8));
+                
+                fl_scoped_resource(void *res9 = allocate(sizeof(void*)), deallocate(res9))
+                {
+                 // Scope res9
+                 flut_assert_is_true(is_allocated(8));
+                 flut_assert_is_false(is_allocated(9));
+                  
+                 fl_scoped_resource(void *res10 = allocate(sizeof(void*)), deallocate(res10))
+                 {
+                   // Scope res10
+                   flut_assert_is_null(allocate(sizeof(void*)));
+                   // End res10
+                 }
+
+                 flut_assert_is_false(is_allocated(9));
+                 flut_assert_is_true(is_allocated(8));
+                 // End res9
+                }
+
+                flut_assert_is_false(is_allocated(8));
+                flut_assert_is_true(is_allocated(7));
+                // End res8
+               }
+
+               flut_assert_is_false(is_allocated(7));
+               flut_assert_is_true(is_allocated(6));
+               // End res7
+              }
+
+              flut_assert_is_false(is_allocated(6));
+              flut_assert_is_true(is_allocated(5));
+              // End res6
+             }
+
+             flut_assert_is_false(is_allocated(5));
+             flut_assert_is_true(is_allocated(4));
+             // End res5
+            }
+
+            flut_assert_is_false(is_allocated(4));
+            flut_assert_is_true(is_allocated(3));
+            // End res4
+           }
+
+           flut_assert_is_false(is_allocated(3));
+           flut_assert_is_true(is_allocated(2));
+           // End res3
+          }
+
+          flut_assert_is_false(is_allocated(2));
+          flut_assert_is_true(is_allocated(1));
+          // End res2
+         }
+
+         flut_assert_is_false(is_allocated(1));
+         flut_assert_is_true(is_allocated(0));
+         // End res1
+        }
+
+        flut_assert_is_false(is_allocated(0));
+    }
+    end();
+
+    init();
+    flut_describe("Scoped resources must be deallocated when exiting the scope using break (WEIRD BUT EXPECTED)") {
+        
+        flut_assert_is_false(is_allocated(0));
+
+        fl_scoped_resource(void *res1 = allocate(sizeof(void*)), deallocate(res1))
+        {
+         // Scope res1
+         flut_assert_is_true(is_allocated(0));
+         flut_assert_is_false(is_allocated(1));
+         
+         fl_scoped_resource(void *res2 = allocate(sizeof(void*)), deallocate(res2))
+         {
+          // Scope res2
+          flut_assert_is_true(is_allocated(1));
+          flut_assert_is_false(is_allocated(2));
+          
+          fl_scoped_resource(void *res3 = allocate(sizeof(void*)), deallocate(res3))
+          {
+           // Scope res3
+           flut_assert_is_true(is_allocated(2));
+           flut_assert_is_false(is_allocated(3));
+           
+           fl_scoped_resource(void *res4 = allocate(sizeof(void*)), deallocate(res4))
+           {
+            // Scope res4
+            flut_assert_is_true(is_allocated(3));
+            flut_assert_is_false(is_allocated(4));
+            
+            fl_scoped_resource(void *res5 = allocate(sizeof(void*)), deallocate(res5))
+            {
+             // Scope res5
+             flut_assert_is_true(is_allocated(4));
+             flut_assert_is_false(is_allocated(5));
+             
+             fl_scoped_resource(void *res6 = allocate(sizeof(void*)), deallocate(res6))
+             {
+              // Scope res6
+              flut_assert_is_true(is_allocated(5));
+              flut_assert_is_false(is_allocated(6));
+              
+              fl_scoped_resource(void *res7 = allocate(sizeof(void*)), deallocate(res7))
+              {
+               // Scope res7
+               flut_assert_is_true(is_allocated(6));
+               flut_assert_is_false(is_allocated(7));
+               
+               fl_scoped_resource(void *res8 = allocate(sizeof(void*)), deallocate(res8))
+               {
+                // Scope res8
+                flut_assert_is_true(is_allocated(7));
+                flut_assert_is_false(is_allocated(8));
+                
+                fl_scoped_resource(void *res9 = allocate(sizeof(void*)), deallocate(res9))
+                {
+                 // Scope res9
+                 flut_assert_is_true(is_allocated(8));
+                 flut_assert_is_false(is_allocated(9));
+                  
+                 fl_scoped_resource(void *res10 = allocate(sizeof(void*)), deallocate(res10))
+                 {
+                   // Scope res10
+                   flut_assert_is_null(allocate(sizeof(void*)));
+                   break;
+                   // End res10
+                 }
+
+                 flut_assert_is_false(is_allocated(9));
+                 flut_assert_is_true(is_allocated(8));
+                 break;
+                 // End res9
+                }
+
+                flut_assert_is_false(is_allocated(8));
+                flut_assert_is_true(is_allocated(7));
+                break;
+                // End res8
+               }
+
+               flut_assert_is_false(is_allocated(7));
+               flut_assert_is_true(is_allocated(6));
+               break;
+               // End res7
+              }
+
+              flut_assert_is_false(is_allocated(6));
+              flut_assert_is_true(is_allocated(5));
+              break;
+              // End res6
+             }
+
+             flut_assert_is_false(is_allocated(5));
+             flut_assert_is_true(is_allocated(4));
+             break;
+             // End res5
+            }
+
+            flut_assert_is_false(is_allocated(4));
+            flut_assert_is_true(is_allocated(3));
+            break;
+            // End res4
+           }
+
+           flut_assert_is_false(is_allocated(3));
+           flut_assert_is_true(is_allocated(2));
+           break;
+           // End res3
+          }
+
+          flut_assert_is_false(is_allocated(2));
+          flut_assert_is_true(is_allocated(1));
+          break;
+          // End res2
+         }
+
+         flut_assert_is_false(is_allocated(1));
+         flut_assert_is_true(is_allocated(0));
+         break;
+         // End res1
+        }
+
+        flut_assert_is_false(is_allocated(0));
+        break;
+    }
+    end();
+
+    init();
+    flut_describe("Scoped resources must be deallocated when exiting the scope using continue (UNEXPECTED)") {
+        
+        flut_assert_is_false(is_allocated(0));
+
+        fl_scoped_resource(void *res1 = allocate(sizeof(void*)), deallocate(res1))
+        {
+         // Scope res1
+         flut_assert_is_true(is_allocated(0));
+         flut_assert_is_false(is_allocated(1));
+         
+         fl_scoped_resource(void *res2 = allocate(sizeof(void*)), deallocate(res2))
+         {
+          // Scope res2
+          flut_assert_is_true(is_allocated(1));
+          flut_assert_is_false(is_allocated(2));
+          
+          fl_scoped_resource(void *res3 = allocate(sizeof(void*)), deallocate(res3))
+          {
+           // Scope res3
+           flut_assert_is_true(is_allocated(2));
+           flut_assert_is_false(is_allocated(3));
+           
+           fl_scoped_resource(void *res4 = allocate(sizeof(void*)), deallocate(res4))
+           {
+            // Scope res4
+            flut_assert_is_true(is_allocated(3));
+            flut_assert_is_false(is_allocated(4));
+            
+            fl_scoped_resource(void *res5 = allocate(sizeof(void*)), deallocate(res5))
+            {
+             // Scope res5
+             flut_assert_is_true(is_allocated(4));
+             flut_assert_is_false(is_allocated(5));
+             
+             fl_scoped_resource(void *res6 = allocate(sizeof(void*)), deallocate(res6))
+             {
+              // Scope res6
+              flut_assert_is_true(is_allocated(5));
+              flut_assert_is_false(is_allocated(6));
+              
+              fl_scoped_resource(void *res7 = allocate(sizeof(void*)), deallocate(res7))
+              {
+               // Scope res7
+               flut_assert_is_true(is_allocated(6));
+               flut_assert_is_false(is_allocated(7));
+               
+               fl_scoped_resource(void *res8 = allocate(sizeof(void*)), deallocate(res8))
+               {
+                // Scope res8
+                flut_assert_is_true(is_allocated(7));
+                flut_assert_is_false(is_allocated(8));
+                
+                fl_scoped_resource(void *res9 = allocate(sizeof(void*)), deallocate(res9))
+                {
+                 // Scope res9
+                 flut_assert_is_true(is_allocated(8));
+                 flut_assert_is_false(is_allocated(9));
+                  
+                 fl_scoped_resource(void *res10 = allocate(sizeof(void*)), deallocate(res10))
+                 {
+                   // Scope res10
+                   flut_assert_is_null(allocate(sizeof(void*)));
+                   continue;
+                   // End res10
+                 }
+
+                 flut_assert_is_false(is_allocated(9));
+                 flut_assert_is_true(is_allocated(8));
+                 continue;
+                 // End res9
+                }
+
+                flut_assert_is_false(is_allocated(8));
+                flut_assert_is_true(is_allocated(7));
+                continue;
+                // End res8
+               }
+
+               flut_assert_is_false(is_allocated(7));
+               flut_assert_is_true(is_allocated(6));
+               continue;
+               // End res7
+              }
+
+              flut_assert_is_false(is_allocated(6));
+              flut_assert_is_true(is_allocated(5));
+              continue;
+              // End res6
+             }
+
+             flut_assert_is_false(is_allocated(5));
+             flut_assert_is_true(is_allocated(4));
+             continue;
+             // End res5
+            }
+
+            flut_assert_is_false(is_allocated(4));
+            flut_assert_is_true(is_allocated(3));
+            continue;
+            // End res4
+           }
+
+           flut_assert_is_false(is_allocated(3));
+           flut_assert_is_true(is_allocated(2));
+           continue;
+           // End res3
+          }
+
+          flut_assert_is_false(is_allocated(2));
+          flut_assert_is_true(is_allocated(1));
+          continue;
+          // End res2
+         }
+
+         flut_assert_is_false(is_allocated(1));
+         flut_assert_is_true(is_allocated(0));
+         continue;
+         // End res1
+        }
+
+        flut_assert_is_false(is_allocated(0));
+        continue;
+    }
+    end();
+}
+
+
+void thread_error(void *args)
 {
+    FlutContext *FLUT_CURRENT_CTX = (FlutContext*) args;
+    struct FlError error;
+    char *str;
+    FlThreadId id = fl_thread_current_id();
+    fl_error_push(1, "ID=%d | Testing error 1", id);
+    error = fl_error_last();
+    str = fl_cstring_vdup("ID=%d | Testing error 1", id);
+    flut_assert_int_is_equals(1, (int) error.id);
+    flut_assert_string_is_equals(str, error.message, false);
+    fl_cstring_free(str);
+    
+    fl_error_push(2, "ID=%d | Testing error 2", id);
+    error = fl_error_last();
+    str = fl_cstring_vdup("ID=%d | Testing error 2", id);
+    flut_assert_int_is_equals(2, (int) error.id);
+    flut_assert_string_is_equals(str, error.message, false);
+    fl_cstring_free(str);
+    
+    fl_error_push(3, "ID=%d | Testing error 3", id);
+    error = fl_error_last();
+    str = fl_cstring_vdup("ID=%d | Testing error 3", id);
+    flut_assert_int_is_equals(3, (int) error.id);
+    flut_assert_string_is_equals(str, error.message, false);
+    fl_cstring_free(str);
+    
+    fl_error_push(4, "ID=%d | Testing error 4", id);
+    error = fl_error_last();
+    str = fl_cstring_vdup("ID=%d | Testing error 4", id);
+    flut_assert_int_is_equals(4, (int) error.id);
+    flut_assert_string_is_equals(str, error.message, false);
+    fl_cstring_free(str);
+    
+    fl_error_push(5, "ID=%d | Testing error 5", id);
+    error = fl_error_last();
+    str = fl_cstring_vdup("ID=%d | Testing error 5", id);
+    flut_assert_int_is_equals(5, (int) error.id);
+    flut_assert_string_is_equals(str, error.message, false);
+    fl_cstring_free(str);
+
+    fl_thread_exit(NULL);
+}
+
+void a(struct FlContext *ctx, FlutContext *FLUT_CURRENT_CTX) {
     Try(ctx)
     {
-        b(ctx);
+        b(ctx, FLUT_CURRENT_CTX);
     }
     Catch((int)'b')
     {
         struct FlContextFrame *frame = fl_ctx_frame_last(ctx);
-        flut_expect_compat("Catched exception in a() should be (int)'b'", frame->exception == (int)'b');
-        flut_expect_compat("Catched exception in a() should have message \"b\"", flm_cstring_equals_n(frame->message, "b", 1));
+        flut_assert_is_true(frame->exception == (int)'b');
+        flut_assert_is_true(flm_cstring_equals_n(frame->message, "b", 1));
         Throw(ctx, (int)'a', "a");
     }
     Rest
     {
-        flut_expect_compat("The exception shouldn't have fallen in a()'s Rest clause", false);
+        flut_unexpected("The exception shouldn't have fallen in a()'s Rest clause");
     }
     EndTry;
 }
 
-void b(struct FlContext *ctx) 
-{
+void b(struct FlContext *ctx, FlutContext *FLUT_CURRENT_CTX) {
     Try(ctx)
     {
-        c(ctx);
+        c(ctx, FLUT_CURRENT_CTX);
     }
     Catch((int)'c')
     {
         struct FlContextFrame *frame = fl_ctx_frame_last(ctx);
-        flut_expect_compat("Catched exception in b() should be (int)'c'", frame->exception == (int)'c');
-        flut_expect_compat("Catched exception in b() should have message \"c\"", flm_cstring_equals_n(frame->message, "c", 1));
+        flut_assert_is_true(frame->exception == (int)'c');
+        flut_assert_is_true(flm_cstring_equals_n(frame->message, "c", 1));
         Throw(ctx, (int)'b', "b");
     }
     Rest
     {
-        flut_expect_compat("The exception shouldn't have fallen in b()'s Rest clause", false);
+        flut_unexpected("The exception shouldn't have fallen in b()'s Rest clause");
     }
     EndTry;
 }
 
-void c(struct FlContext *ctx) 
-{ 
+void c(struct FlContext *ctx, FlutContext *FLUT_CURRENT_CTX) { 
     Try(ctx)
     {   
-        d(ctx);
+        d(ctx, FLUT_CURRENT_CTX);
     }
     Catch((int)'d')
     {
         struct FlContextFrame *frame = fl_ctx_frame_last(ctx);
-        flut_expect_compat("Catched exception in c() should be (int)'d'", frame->exception == (int)'d');
-        flut_expect_compat("Catched exception in c() should have message \"d\"", flm_cstring_equals_n(frame->message, "d", 1));
+        flut_assert_is_true(frame->exception == (int)'d');
+        flut_assert_is_true(flm_cstring_equals_n(frame->message, "d", 1));
         Throw(ctx, (int)'c', "c");
     }
     Rest
     {
-        flut_expect_compat("The exception shouldn't have fallen in c()'s Rest clause", false);
+        flut_unexpected("The exception shouldn't have fallen in c()'s Rest clause");
     }
     EndTry;
 }
 
-void d(struct FlContext *ctx) 
-{
+void d(struct FlContext *ctx, FlutContext *FLUT_CURRENT_CTX) {
     Try(ctx)
     {
-        e(ctx);
+        e(ctx, FLUT_CURRENT_CTX);
     }
     Catch((int)'e')
     {
         struct FlContextFrame *frame = fl_ctx_frame_last(ctx);
-        flut_expect_compat("Catched exception in d() should be (int)'e'", frame->exception == (int)'e');
-        flut_expect_compat("Catched exception in d() should have message \"e\"", flm_cstring_equals_n(frame->message, "e", 1));
+        flut_assert_is_true(frame->exception == (int)'e');
+        flut_assert_is_true(flm_cstring_equals_n(frame->message, "e", 1));
         Throw(ctx, (int)'d', "d");
     }
     Rest
     {
-        flut_expect_compat("The exception shouldn't have fallen in d()'s Rest clause", false);
+        flut_unexpected("The exception shouldn't have fallen in d()'s Rest clause");
     }
     EndTry;
 }
 
-void e(struct FlContext *ctx) 
-{
+void e(struct FlContext *ctx, FlutContext *FLUT_CURRENT_CTX) {
     Throw(ctx, (int)'e', "e");
 }
-
-#define FL_STD_TEST_MAX_ALLOCATIONS 10
-
-static void **allocations[FL_STD_TEST_MAX_ALLOCATIONS];
-
-struct StdTestAllocation {
-    bool is_allocated;
-};
-
-#define FL_STD_TEST_ALLOC_HEADER(a) (((struct StdTestAllocation*)a)-1)
-#define FL_STD_TEST_ALLOC_DATA(h) (((struct StdTestAllocation*)h) + 1)
 
 static void* allocate(size_t size)
 {
@@ -256,373 +637,4 @@ static void end()
 
         fl_free(FL_STD_TEST_ALLOC_HEADER(allocations[i]));
     }
-}
-
-flut_define_test(std_scoped_resources) {
-    init();
-    flut_describe("Scoped resources must be deallocated when exiting the scope under normal flow execution") {
-        
-        flut_assert_explain(assert->is_false(is_allocated(0)), "Slot 1 must be deallocated");
-
-        fl_scoped_resource(void *res1 = allocate(sizeof(void*)), deallocate(res1))
-        {
-         // Scope res1
-         flut_assert_explain(assert->is_true(is_allocated(0)), "Slot 1 must be allocated");
-         flut_assert_explain(assert->is_false(is_allocated(1)), "Slot 2 must be deallocated");
-         
-         fl_scoped_resource(void *res2 = allocate(sizeof(void*)), deallocate(res2))
-         {
-          // Scope res2
-          flut_assert_explain(assert->is_true(is_allocated(1)), "Slot 2 must be allocated");
-          flut_assert_explain(assert->is_false(is_allocated(2)), "Slot 3 must be deallocated");
-          
-          fl_scoped_resource(void *res3 = allocate(sizeof(void*)), deallocate(res3))
-          {
-           // Scope res3
-           flut_assert_explain(assert->is_true(is_allocated(2)), "Slot 3 must be allocated");
-           flut_assert_explain(assert->is_false(is_allocated(3)), "Slot 4 must be deallocated");
-           
-           fl_scoped_resource(void *res4 = allocate(sizeof(void*)), deallocate(res4))
-           {
-            // Scope res4
-            flut_assert_explain(assert->is_true(is_allocated(3)), "Slot 4 must be allocated");
-            flut_assert_explain(assert->is_false(is_allocated(4)), "Slot 5 must be deallocated");
-            
-            fl_scoped_resource(void *res5 = allocate(sizeof(void*)), deallocate(res5))
-            {
-             // Scope res5
-             flut_assert_explain(assert->is_true(is_allocated(4)), "Slot 5 must be allocated");
-             flut_assert_explain(assert->is_false(is_allocated(5)), "Slot 6 must be deallocated");
-             
-             fl_scoped_resource(void *res6 = allocate(sizeof(void*)), deallocate(res6))
-             {
-              // Scope res6
-              flut_assert_explain(assert->is_true(is_allocated(5)), "Slot 6 must be allocated");
-              flut_assert_explain(assert->is_false(is_allocated(6)), "Slot 7 must be deallocated");
-              
-              fl_scoped_resource(void *res7 = allocate(sizeof(void*)), deallocate(res7))
-              {
-               // Scope res7
-               flut_assert_explain(assert->is_true(is_allocated(6)), "Slot 7 must be allocated");
-               flut_assert_explain(assert->is_false(is_allocated(7)), "Slot 8 must be deallocated");
-               
-               fl_scoped_resource(void *res8 = allocate(sizeof(void*)), deallocate(res8))
-               {
-                // Scope res8
-                flut_assert_explain(assert->is_true(is_allocated(7)), "Slot 8 must be allocated");
-                flut_assert_explain(assert->is_false(is_allocated(8)), "Slot 9 must be deallocated");
-                
-                fl_scoped_resource(void *res9 = allocate(sizeof(void*)), deallocate(res9))
-                {
-                 // Scope res9
-                 flut_assert_explain(assert->is_true(is_allocated(8)), "Slot 9 must be allocated");
-                 flut_assert_explain(assert->is_false(is_allocated(9)), "Slot 10 must be deallocated");
-                  
-                 fl_scoped_resource(void *res10 = allocate(sizeof(void*)), deallocate(res10))
-                 {
-                   // Scope res10
-                   flut_assert_explain(assert->null(allocate(sizeof(void*))), "Allocation is expected to fail");
-                   // End res10
-                 }
-
-                 flut_assert_explain(assert->is_false(is_allocated(9)), "Slot 10 must be deallocated");
-                 flut_assert_explain(assert->is_true(is_allocated(8)), "Slot 9 must be allocated");
-                 // End res9
-                }
-
-                flut_assert_explain(assert->is_false(is_allocated(8)), "Slot 9 must be deallocated");
-                flut_assert_explain(assert->is_true(is_allocated(7)), "Slot 8 must be allocated");
-                // End res8
-               }
-
-               flut_assert_explain(assert->is_false(is_allocated(7)), "Slot 8 must be deallocated");
-               flut_assert_explain(assert->is_true(is_allocated(6)), "Slot 7 must be allocated");
-               // End res7
-              }
-
-              flut_assert_explain(assert->is_false(is_allocated(6)), "Slot 7 must be deallocated");
-              flut_assert_explain(assert->is_true(is_allocated(5)), "Slot 6 must be allocated");
-              // End res6
-             }
-
-             flut_assert_explain(assert->is_false(is_allocated(5)), "Slot 6 must be deallocated");
-             flut_assert_explain(assert->is_true(is_allocated(4)), "Slot 5 must be allocated");
-             // End res5
-            }
-
-            flut_assert_explain(assert->is_false(is_allocated(4)), "Slot 5 must be deallocated");
-            flut_assert_explain(assert->is_true(is_allocated(3)), "Slot 4 must be allocated");
-            // End res4
-           }
-
-           flut_assert_explain(assert->is_false(is_allocated(3)), "Slot 4 must be deallocated");
-           flut_assert_explain(assert->is_true(is_allocated(2)), "Slot 3 must be allocated");
-           // End res3
-          }
-
-          flut_assert_explain(assert->is_false(is_allocated(2)), "Slot 3 must be deallocated");
-          flut_assert_explain(assert->is_true(is_allocated(1)), "Slot 2 must be allocated");
-          // End res2
-         }
-
-         flut_assert_explain(assert->is_false(is_allocated(1)), "Slot 2 must be deallocated");
-         flut_assert_explain(assert->is_true(is_allocated(0)), "Slot 1 must be allocated");
-         // End res1
-        }
-
-        flut_assert_explain(assert->is_false(is_allocated(0)), "Slot 1 must be deallocated");
-    }
-    end();
-
-    init();
-    flut_describe("Scoped resources must be deallocated when exiting the scope using break (WEIRD BUT EXPECTED)") {
-        
-        flut_assert_explain(assert->is_false(is_allocated(0)), "Slot 1 must be deallocated");
-
-        fl_scoped_resource(void *res1 = allocate(sizeof(void*)), deallocate(res1))
-        {
-         // Scope res1
-         flut_assert_explain(assert->is_true(is_allocated(0)), "Slot 1 must be allocated");
-         flut_assert_explain(assert->is_false(is_allocated(1)), "Slot 2 must be deallocated");
-         
-         fl_scoped_resource(void *res2 = allocate(sizeof(void*)), deallocate(res2))
-         {
-          // Scope res2
-          flut_assert_explain(assert->is_true(is_allocated(1)), "Slot 2 must be allocated");
-          flut_assert_explain(assert->is_false(is_allocated(2)), "Slot 3 must be deallocated");
-          
-          fl_scoped_resource(void *res3 = allocate(sizeof(void*)), deallocate(res3))
-          {
-           // Scope res3
-           flut_assert_explain(assert->is_true(is_allocated(2)), "Slot 3 must be allocated");
-           flut_assert_explain(assert->is_false(is_allocated(3)), "Slot 4 must be deallocated");
-           
-           fl_scoped_resource(void *res4 = allocate(sizeof(void*)), deallocate(res4))
-           {
-            // Scope res4
-            flut_assert_explain(assert->is_true(is_allocated(3)), "Slot 4 must be allocated");
-            flut_assert_explain(assert->is_false(is_allocated(4)), "Slot 5 must be deallocated");
-            
-            fl_scoped_resource(void *res5 = allocate(sizeof(void*)), deallocate(res5))
-            {
-             // Scope res5
-             flut_assert_explain(assert->is_true(is_allocated(4)), "Slot 5 must be allocated");
-             flut_assert_explain(assert->is_false(is_allocated(5)), "Slot 6 must be deallocated");
-             
-             fl_scoped_resource(void *res6 = allocate(sizeof(void*)), deallocate(res6))
-             {
-              // Scope res6
-              flut_assert_explain(assert->is_true(is_allocated(5)), "Slot 6 must be allocated");
-              flut_assert_explain(assert->is_false(is_allocated(6)), "Slot 7 must be deallocated");
-              
-              fl_scoped_resource(void *res7 = allocate(sizeof(void*)), deallocate(res7))
-              {
-               // Scope res7
-               flut_assert_explain(assert->is_true(is_allocated(6)), "Slot 7 must be allocated");
-               flut_assert_explain(assert->is_false(is_allocated(7)), "Slot 8 must be deallocated");
-               
-               fl_scoped_resource(void *res8 = allocate(sizeof(void*)), deallocate(res8))
-               {
-                // Scope res8
-                flut_assert_explain(assert->is_true(is_allocated(7)), "Slot 8 must be allocated");
-                flut_assert_explain(assert->is_false(is_allocated(8)), "Slot 9 must be deallocated");
-                
-                fl_scoped_resource(void *res9 = allocate(sizeof(void*)), deallocate(res9))
-                {
-                 // Scope res9
-                 flut_assert_explain(assert->is_true(is_allocated(8)), "Slot 9 must be allocated");
-                 flut_assert_explain(assert->is_false(is_allocated(9)), "Slot 10 must be deallocated");
-                  
-                 fl_scoped_resource(void *res10 = allocate(sizeof(void*)), deallocate(res10))
-                 {
-                   // Scope res10
-                   flut_assert_explain(assert->null(allocate(sizeof(void*))), "Allocation is expected to fail");
-                   break;
-                   // End res10
-                 }
-
-                 flut_assert_explain(assert->is_false(is_allocated(9)), "Slot 10 must be deallocated");
-                 flut_assert_explain(assert->is_true(is_allocated(8)), "Slot 9 must be allocated");
-                 break;
-                 // End res9
-                }
-
-                flut_assert_explain(assert->is_false(is_allocated(8)), "Slot 9 must be deallocated");
-                flut_assert_explain(assert->is_true(is_allocated(7)), "Slot 8 must be allocated");
-                break;
-                // End res8
-               }
-
-               flut_assert_explain(assert->is_false(is_allocated(7)), "Slot 8 must be deallocated");
-               flut_assert_explain(assert->is_true(is_allocated(6)), "Slot 7 must be allocated");
-               break;
-               // End res7
-              }
-
-              flut_assert_explain(assert->is_false(is_allocated(6)), "Slot 7 must be deallocated");
-              flut_assert_explain(assert->is_true(is_allocated(5)), "Slot 6 must be allocated");
-              break;
-              // End res6
-             }
-
-             flut_assert_explain(assert->is_false(is_allocated(5)), "Slot 6 must be deallocated");
-             flut_assert_explain(assert->is_true(is_allocated(4)), "Slot 5 must be allocated");
-             break;
-             // End res5
-            }
-
-            flut_assert_explain(assert->is_false(is_allocated(4)), "Slot 5 must be deallocated");
-            flut_assert_explain(assert->is_true(is_allocated(3)), "Slot 4 must be allocated");
-            break;
-            // End res4
-           }
-
-           flut_assert_explain(assert->is_false(is_allocated(3)), "Slot 4 must be deallocated");
-           flut_assert_explain(assert->is_true(is_allocated(2)), "Slot 3 must be allocated");
-           break;
-           // End res3
-          }
-
-          flut_assert_explain(assert->is_false(is_allocated(2)), "Slot 3 must be deallocated");
-          flut_assert_explain(assert->is_true(is_allocated(1)), "Slot 2 must be allocated");
-          break;
-          // End res2
-         }
-
-         flut_assert_explain(assert->is_false(is_allocated(1)), "Slot 2 must be deallocated");
-         flut_assert_explain(assert->is_true(is_allocated(0)), "Slot 1 must be allocated");
-         break;
-         // End res1
-        }
-
-        flut_assert_explain(assert->is_false(is_allocated(0)), "Slot 1 must be deallocated");
-        break;
-    }
-    end();
-
-    init();
-    flut_describe("Scoped resources must be deallocated when exiting the scope using continue (UNEXPECTED)") {
-        
-        flut_assert_explain(assert->is_false(is_allocated(0)), "Slot 1 must be deallocated");
-
-        fl_scoped_resource(void *res1 = allocate(sizeof(void*)), deallocate(res1))
-        {
-         // Scope res1
-         flut_assert_explain(assert->is_true(is_allocated(0)), "Slot 1 must be allocated");
-         flut_assert_explain(assert->is_false(is_allocated(1)), "Slot 2 must be deallocated");
-         
-         fl_scoped_resource(void *res2 = allocate(sizeof(void*)), deallocate(res2))
-         {
-          // Scope res2
-          flut_assert_explain(assert->is_true(is_allocated(1)), "Slot 2 must be allocated");
-          flut_assert_explain(assert->is_false(is_allocated(2)), "Slot 3 must be deallocated");
-          
-          fl_scoped_resource(void *res3 = allocate(sizeof(void*)), deallocate(res3))
-          {
-           // Scope res3
-           flut_assert_explain(assert->is_true(is_allocated(2)), "Slot 3 must be allocated");
-           flut_assert_explain(assert->is_false(is_allocated(3)), "Slot 4 must be deallocated");
-           
-           fl_scoped_resource(void *res4 = allocate(sizeof(void*)), deallocate(res4))
-           {
-            // Scope res4
-            flut_assert_explain(assert->is_true(is_allocated(3)), "Slot 4 must be allocated");
-            flut_assert_explain(assert->is_false(is_allocated(4)), "Slot 5 must be deallocated");
-            
-            fl_scoped_resource(void *res5 = allocate(sizeof(void*)), deallocate(res5))
-            {
-             // Scope res5
-             flut_assert_explain(assert->is_true(is_allocated(4)), "Slot 5 must be allocated");
-             flut_assert_explain(assert->is_false(is_allocated(5)), "Slot 6 must be deallocated");
-             
-             fl_scoped_resource(void *res6 = allocate(sizeof(void*)), deallocate(res6))
-             {
-              // Scope res6
-              flut_assert_explain(assert->is_true(is_allocated(5)), "Slot 6 must be allocated");
-              flut_assert_explain(assert->is_false(is_allocated(6)), "Slot 7 must be deallocated");
-              
-              fl_scoped_resource(void *res7 = allocate(sizeof(void*)), deallocate(res7))
-              {
-               // Scope res7
-               flut_assert_explain(assert->is_true(is_allocated(6)), "Slot 7 must be allocated");
-               flut_assert_explain(assert->is_false(is_allocated(7)), "Slot 8 must be deallocated");
-               
-               fl_scoped_resource(void *res8 = allocate(sizeof(void*)), deallocate(res8))
-               {
-                // Scope res8
-                flut_assert_explain(assert->is_true(is_allocated(7)), "Slot 8 must be allocated");
-                flut_assert_explain(assert->is_false(is_allocated(8)), "Slot 9 must be deallocated");
-                
-                fl_scoped_resource(void *res9 = allocate(sizeof(void*)), deallocate(res9))
-                {
-                 // Scope res9
-                 flut_assert_explain(assert->is_true(is_allocated(8)), "Slot 9 must be allocated");
-                 flut_assert_explain(assert->is_false(is_allocated(9)), "Slot 10 must be deallocated");
-                  
-                 fl_scoped_resource(void *res10 = allocate(sizeof(void*)), deallocate(res10))
-                 {
-                   // Scope res10
-                   flut_assert_explain(assert->null(allocate(sizeof(void*))), "Allocation is expected to fail");
-                   continue;
-                   // End res10
-                 }
-
-                 flut_assert_explain(assert->is_false(is_allocated(9)), "Slot 10 must be deallocated");
-                 flut_assert_explain(assert->is_true(is_allocated(8)), "Slot 9 must be allocated");
-                 continue;
-                 // End res9
-                }
-
-                flut_assert_explain(assert->is_false(is_allocated(8)), "Slot 9 must be deallocated");
-                flut_assert_explain(assert->is_true(is_allocated(7)), "Slot 8 must be allocated");
-                continue;
-                // End res8
-               }
-
-               flut_assert_explain(assert->is_false(is_allocated(7)), "Slot 8 must be deallocated");
-               flut_assert_explain(assert->is_true(is_allocated(6)), "Slot 7 must be allocated");
-               continue;
-               // End res7
-              }
-
-              flut_assert_explain(assert->is_false(is_allocated(6)), "Slot 7 must be deallocated");
-              flut_assert_explain(assert->is_true(is_allocated(5)), "Slot 6 must be allocated");
-              continue;
-              // End res6
-             }
-
-             flut_assert_explain(assert->is_false(is_allocated(5)), "Slot 6 must be deallocated");
-             flut_assert_explain(assert->is_true(is_allocated(4)), "Slot 5 must be allocated");
-             continue;
-             // End res5
-            }
-
-            flut_assert_explain(assert->is_false(is_allocated(4)), "Slot 5 must be deallocated");
-            flut_assert_explain(assert->is_true(is_allocated(3)), "Slot 4 must be allocated");
-            continue;
-            // End res4
-           }
-
-           flut_assert_explain(assert->is_false(is_allocated(3)), "Slot 4 must be deallocated");
-           flut_assert_explain(assert->is_true(is_allocated(2)), "Slot 3 must be allocated");
-           continue;
-           // End res3
-          }
-
-          flut_assert_explain(assert->is_false(is_allocated(2)), "Slot 3 must be deallocated");
-          flut_assert_explain(assert->is_true(is_allocated(1)), "Slot 2 must be allocated");
-          continue;
-          // End res2
-         }
-
-         flut_assert_explain(assert->is_false(is_allocated(1)), "Slot 2 must be deallocated");
-         flut_assert_explain(assert->is_true(is_allocated(0)), "Slot 1 must be allocated");
-         continue;
-         // End res1
-        }
-
-        flut_assert_explain(assert->is_false(is_allocated(0)), "Slot 1 must be deallocated");
-        continue;
-    }
-    end();
 }

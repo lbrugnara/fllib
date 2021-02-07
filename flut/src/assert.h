@@ -29,33 +29,125 @@
 
 #define flut_assert_explain(assertion, message) flut_assert_vexplain(assertion, "%s", message)
 
+// Null
 #define flut_assert_is_null(obj)        flut_assert_explain(flut__assert_null((obj)), "Expression `"#obj"` should be null")
 #define flut_assert_is_not_null(obj)     flut_assert_explain(flut__assert_not_null((obj)), "Expression `"#obj"` should not be null")
 
+// Boolean
 #define flut_assert_is_true(expression)    flut_assert_explain(flut__assert_bool_true((expression)), "Expression `"#expression"` should be true")
 #define flut_assert_is_false(expression)   flut_assert_explain(flut__assert_bool_false((expression)), "Expression `"#expression"` should be false")
 
+// Pointers
 #define flut_assert_pointer_is_equals(expected, actual)         \
     flut_assert_explain(flut__assert_ptr_equals((expected), (actual)), "Pointer `"#actual"` should be equals to pointer `" #expected "`")
 #define flut_assert_pointer_is_not_equals(expected, actual)     \
     flut_assert_explain(flut__assert_ptr_not_equals((expected), (actual)), "Pointer `"#actual"` should not be equals to pointer `" #expected "`")
 
-#define flut_assert_size_t_is_equals(expected, actual)         \
-    flut_assert_vexplain(flut__assert_size_t_equals((expected), (actual)), "size_t expression `"#actual"` should be equals to size_t expression `" #expected "` (%zu == %zu)", (actual), (expected))
+// size_t
+#define flut_assert_size_t_is_equals(expected, actual)                                                                              \
+do {                                                                                                                                \
+    flut_assert_vexplain(                                                                                                           \
+        flut__assert_size_t_equals((expected), (actual)),                                                                           \
+        "size_t expression `"#actual"` should be equals to size_t expression `" #expected "` (%zu == %zu)", (actual), (expected)    \
+    );                                                                                                                              \
+} while (0)
 
-#define flut_assert_size_t_is_not_equals(expected, actual)     \
-    flut_assert_vexplain(flut__assert_size_t_not_equals((expected), (actual)), "size_t expression `"#actual"` should not be equals to size_t expression `" #expected "` (%zu != %zu)", (actual), (expected))
+#define flut_assert_size_t_is_not_equals(expected, actual)                                                                              \
+do {                                                                                                                                    \
+    flut_assert_vexplain(                                                                                                               \
+        flut__assert_size_t_not_equals((expected), (actual)),                                                                           \
+        "size_t expression `"#actual"` should not be equals to size_t expression `" #expected "` (%zu != %zu)", (actual), (expected)    \
+    );                                                                                                                                  \
+} while(0)
 
-#define flut_assert_int_is_equals(expected, actual)         \
-    flut_assert_vexplain(flut__assert_int_equals((expected), (actual)), "Integer expression `"#actual"` should be equals to integer expression `" #expected "` (%zu == %zu)", (actual), (expected))
-#define flut_assert_int_is_not_equals(expected, actual)     \
-    flut_assert_vexplain(flut__assert_int_not_equals((expected), (actual)), "Integer expression `"#actual"` should not be equals to integer expression `" #expected "` (%zu != %zu)", (actual), (expected))
+#define flut_assert_size_t_is_greater_than(expected, actual)                                                                            \
+do {                                                                                                                                    \
+    flut_assert_vexplain(                                                                                                               \
+        flut__assert_size_t_gt((expected), (actual)),                                                                                   \
+        "size_t expression `"#actual"` should be greater than size_t expression `" #expected "` (%zu > %zu)", (actual), (expected)      \
+    );                                                                                                                                  \
+} while (0)
 
+#define flut_assert_size_t_is_greater_than_or_equals(expected, actual)                                                                              \
+do {                                                                                                                                                \
+    flut_assert_vexplain(                                                                                                                           \
+        flut__assert_size_t_gte((expected), (actual)),                                                                                              \
+        "size_t expression `"#actual"` should be greater than or equals to size_t expression `" #expected "` (%zu >= %zu)", (actual), (expected)    \
+    );                                                                                                                                              \
+} while (0)
+
+#define flut_assert_size_t_is_lesser_than(expected, actual)                                                                             \
+do {                                                                                                                                    \
+    flut_assert_vexplain(                                                                                                               \
+        flut__assert_size_t_lt((expected), (actual)),                                                                                   \
+        "size_t expression `"#actual"` should be lesser than size_t expression `" #expected "` (%zu < %zu)", (actual), (expected)       \
+    );                                                                                                                                  \
+} while (0)
+
+#define flut_assert_size_t_is_lesser_than_or_equals(expected, actual)                                                                               \
+do {                                                                                                                                                \
+    flut_assert_vexplain(                                                                                                                           \
+        flut__assert_size_t_lte((expected), (actual)),                                                                                              \
+        "size_t expression `"#actual"` should be lesser than or equals to size_t expression `" #expected "` (%zu <= %zu)", (actual), (expected)     \
+    );                                                                                                                                              \
+} while (0)
+
+// int
+#define flut_assert_int_is_equals(expected, actual)                                                                                 \
+do {                                                                                                                                \
+    flut_assert_vexplain(                                                                                                           \
+        flut__assert_int_equals((expected), (actual)),                                                                              \
+        "Integer expression `"#actual"` should be equals to integer expression `" #expected "` (%zu == %zu)", (actual), (expected)  \
+    );                                                                                                                              \
+} while (0)
+
+#define flut_assert_int_is_not_equals(expected, actual)                                                                                 \
+do {                                                                                                                                    \
+    flut_assert_vexplain(                                                                                                               \
+        flut__assert_int_not_equals((expected), (actual)),                                                                              \
+        "Integer expression `"#actual"` should not be equals to integer expression `" #expected "` (%zu != %zu)", (actual), (expected)  \
+    );                                                                                                                                  \
+} while (0)
+
+#define flut_assert_int_is_greater_than(expected, actual)                                                                               \
+do {                                                                                                                                    \
+    flut_assert_vexplain(                                                                                                               \
+        flut__assert_int_gt((expected), (actual)),                                                                                      \
+        "Integer expression `"#actual"` should be greater than integer expression `" #expected "` (%zu > %zu)", (actual), (expected)    \
+    );                                                                                                                                  \
+} while (0)
+
+#define flut_assert_int_is_greater_than_or_equals(expected, actual)                                                                                 \
+do {                                                                                                                                                \
+    flut_assert_vexplain(                                                                                                                           \
+        flut__assert_int_gte((expected), (actual)),                                                                                                 \
+        "Integer expression `"#actual"` should be greater than or equals to integer expression `" #expected "` (%zu >= %zu)", (actual), (expected)  \
+    );                                                                                                                                              \
+} while (0)
+
+#define flut_assert_int_is_lesser_than(expected, actual)                                                                                \
+do {                                                                                                                                    \
+    flut_assert_vexplain(                                                                                                               \
+        flut__assert_int_lt((expected), (actual)),                                                                                      \
+        "Integer expression `"#actual"` should be lesser than integer expression `" #expected "` (%zu < %zu)", (actual), (expected)     \
+    );                                                                                                                                  \
+} while (0)
+
+#define flut_assert_int_is_lesser_than_or_equals(expected, actual)                                                                                  \
+do {                                                                                                                                                \
+    flut_assert_vexplain(                                                                                                                           \
+        flut__assert_int_lte((expected), (actual)),                                                                                                 \
+        "Integer expression `"#actual"` should be lesser than or equals to integer expression `" #expected "` (%zu <= %zu)", (actual), (expected)   \
+    );                                                                                                                                              \
+} while (0)
+
+// char
 #define flut_assert_char_is_equals(expected, actual)         \
     flut_assert_vexplain(flut__assert_char_equals((expected), (actual)), "Char expression `"#actual"` should be equals to char expression `" #expected "` ('%c' == '%c')", (actual), (expected))
 #define flut_assert_char_is_not_equals(expected, actual)     \
     flut_assert_vexplain(flut__assert_char_not_equals((expected), (actual)), "Char expression `"#actual"` should not be equals to char expression `" #expected "` ('%c' != '%c')", (actual), (expected))
 
+// string
 #define flut_assert_string_is_equals(expected, actual, shouldFreeActual)                                                                    \
 do {                                                                                                                                        \
     char *value = fl_cstring_dup(actual);                                                                                                   \
@@ -94,6 +186,7 @@ do {                                                                            
     fl_cstring_free(value);                                                                                                                 \
 } while (0)
 
+// General
 #define flut_unexpected(error_msg)                                                                          \
 do {                                                                                                        \
     struct FlutAssertResult *result = fl_malloc(sizeof(struct FlutAssertResult));                           \

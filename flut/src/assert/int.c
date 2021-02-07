@@ -32,3 +32,48 @@ FlutAssertResult* flut__assert_int_not_equals(int expected, int actual)
 
     return result;
 }
+
+FlutAssertResult* flut__assert_int_gt(int expected, int actual) {
+    struct FlutAssertResult *result = fl_malloc(sizeof(struct FlutAssertResult));
+
+    result->success = actual > expected;
+
+    if (!result->success) {
+        result->message = fl_cstring_vdup("Expecting int value to be greater than %d, actually %d", expected, actual);
+    }
+
+    return result;
+}
+FlutAssertResult* flut__assert_int_gte(int expected, int actual) {
+    struct FlutAssertResult *result = fl_malloc(sizeof(struct FlutAssertResult));
+
+    result->success = actual >= expected;
+
+    if (!result->success) {
+        result->message = fl_cstring_vdup("Expecting int value to be greater than or equals to %d, actually %d", expected, actual);
+    }
+
+    return result;
+}
+FlutAssertResult* flut__assert_int_lt(int expected, int actual) {
+    struct FlutAssertResult *result = fl_malloc(sizeof(struct FlutAssertResult));
+
+    result->success = actual < expected;
+
+    if (!result->success) {
+        result->message = fl_cstring_vdup("Expecting int value to be lesser than %d, actually %d", expected, actual);
+    }
+
+    return result;
+}
+FlutAssertResult* flut__assert_int_lte(int expected, int actual) {
+    struct FlutAssertResult *result = fl_malloc(sizeof(struct FlutAssertResult));
+
+    result->success = actual <= expected;
+
+    if (!result->success) {
+        result->message = fl_cstring_vdup("Expecting int value to be lesser than or equals to %d, actually %d", expected, actual);
+    }
+
+    return result;
+}

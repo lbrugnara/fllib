@@ -71,8 +71,7 @@ flut_define_test(cstring_split) {
     fl_vector_free(v);
 }
 
-flut_define_test(cstring_replace_char)
-{
+flut_define_test(cstring_replace_char) {
     char *world = "World";
     char *worl = fl_cstring_replace_char(world, 'd', "");
     flut_assert_string_is_equals("Worl", worl, false);
@@ -94,8 +93,7 @@ flut_define_test(cstring_replace_char)
     flut_assert_string_is_equals("zzbczzbczzbczz", with_zz, true);
 }
 
-flut_define_test(cstring_replace)
-{
+flut_define_test(cstring_replace) {
     char *replaced = fl_cstring_replace("", "abc", "123");
     flut_assert_string_is_equals("", replaced, true);
 
@@ -150,23 +148,22 @@ flut_define_test(cstring_replace)
     flut_assert_string_is_equals(shortermsg, replaced, true);
 }
 
-flut_define_test(cstring_append)
-{
+flut_define_test(cstring_append) {
     char *helloWorld = fl_cstring_dup("Hello ");
     fl_cstring_append(&helloWorld, "world!");
-    flut_expect_compat("Append 'world!' to string 'Hello ' results in 'Hello world!'", flm_cstring_equals(helloWorld, "Hello world!"));
-    flut_expect_compat("Combined string  'Hello world!' has 12 characters", strlen(helloWorld) == 12);
+
+    flut_assert_string_is_equals("Hello world!", helloWorld, false);
+    flut_assert_string_has_length(12, helloWorld, false);
+
     fl_cstring_append(fl_cstring_append(fl_cstring_append(fl_cstring_append(&helloWorld, "\n"), "Bye"), "."), ".");
-    flut_expect_compat("4 calls to append with '\\n', 'Bye', '.' and '.' results in string 'Hello world!\\nBye..'", flm_cstring_equals(helloWorld, "Hello world!\nBye.."));
+    flut_assert_string_is_equals("Hello world!\nBye..", helloWorld, false);
 
     fl_cstring_append_char(&helloWorld, '.');
     fl_cstring_append_char(&helloWorld, '\n');
-    flut_expect_compat("2 calls to append_char with '.' and '\\n' results in 'Hello world!\\nBye...\\n'", flm_cstring_equals(helloWorld, "Hello world!\nBye...\n"));
-    fl_cstring_free(helloWorld);
+    flut_assert_string_is_equals("Hello world!\nBye...\n", helloWorld, true);
 }
 
-flut_define_test(cstring_join)
-{
+flut_define_test(cstring_join) {
     FlVector *str_vector = flm_vector_new_with(.capacity = 3, .cleaner = fl_container_cleaner_pointer);
     char *str1 = fl_cstring_dup("one");
     char *str2 = fl_cstring_dup("two");
@@ -176,61 +173,35 @@ flut_define_test(cstring_join)
     fl_vector_add(str_vector, &str2);
     fl_vector_add(str_vector, &str3);
     char *str = fl_cstring_join(str_vector, ", ");
-    flut_expect_compat("Join vector with three items 'one', 'two' and 'three' using ', ' as glue, results in 'one, two, three'", flm_cstring_equals(str, "one, two, three"));
-    flut_expect_compat("Length of previous joined string is 15 characters", strlen(str) == 15);
-    fl_cstring_free(str);
+
+    flut_assert_string_is_equals("one, two, three", str, false);
+    flut_assert_string_has_length(15, str, true);
+
     fl_vector_free(str_vector);
 }
 
-flut_define_test(cstring_misc)
-{
-    size_t length;
-    long long number;
-
-    number = 1;
-    length = integer_length(number);
-    flut_vexpect_compat(1 == length, "Integer %lld to string contains %d chars (length = %d)", number, 1, length);
-
-    number = -1;
-    length = integer_length(number);
-    flut_vexpect_compat(2 == length, "Integer %lld to string contains %d chars (length = %d)", number, 2, length);
-
-    number = LLONG_MAX;
-    length = integer_length(number);
-    flut_vexpect_compat(19 >= length, "Integer %lld (LLONG_MAX) to string is at least %d chars (Min 64 bits) (length = %d)", number, 19, length);
-
-    number = LLONG_MIN;
-    length = integer_length(number);
-    flut_vexpect_compat(20 >= length, "Integer %lld (LLONG_MAX) to string is at least %d chars (Min 64 bits) (length = %d)", number, 20, length);
-
-    //
-    unsigned long long unumber;
-    unumber = 1;
-    length = uinteger_length(unumber);
-    flut_vexpect_compat(1 == length, "Integer %llu to string contains %d chars (length = %d)", unumber, 1, length);
-
-    unumber = ULLONG_MAX;
-    length = uinteger_length(unumber);
-    flut_vexpect_compat(20 >= length, "Integer %llu (ULLONG_MAX) to string is at least %d chars (Min 64 bits) (length = %d)", unumber, 20, length);
-
-    unumber = 0;
-    length = uinteger_length(unumber);
-    flut_vexpect_compat(1 == length, "Integer %llu (ULLONG_MIN) to string is %d chars (length = %d)", unumber, 1, length);
+flut_define_test(cstring_misc) {
+    flut_assert_size_t_is_equals(1, integer_length(1));
+    flut_assert_size_t_is_equals(2, integer_length(-1));
+    flut_assert_size_t_is_greater_than_or_equals(19, integer_length(LLONG_MAX));
+    flut_assert_size_t_is_greater_than_or_equals(20, integer_length(LLONG_MIN));
+    flut_assert_size_t_is_equals(1, uinteger_length(1));
+    flut_assert_size_t_is_greater_than_or_equals(20, uinteger_length(ULLONG_MAX));
+    flut_assert_size_t_is_equals(1, uinteger_length(0));
 }
 
-flut_define_test(cstring_find)
-{
+flut_define_test(cstring_find) {
     flut_describe("Find should find ASCII chars within UTF-8 strings")
     {
         char *a = fl_cstring_find("兔¡¢£¤¥a¦§¨©ª«¬­®", "a");
-        flut_assert(assert->not_null(a));
-        flut_assert(assert->is_true(*a == 'a'));
+        flut_assert_is_not_null(a);
+        flut_assert_char_is_equals('a', *a);
     }
 
     flut_describe("Find should find literal UTF-8 chars within UTF-8 strings")
     {
         char *rabbit = fl_cstring_find("兔¡¢£¤¥兔¦§¨©ª«¬­®", "兔");
-        flut_assert(assert->not_null(rabbit));
-        flut_assert(assert->str.equals_n(rabbit, "兔", strlen("兔"), false));
+        flut_assert_is_not_null(rabbit);
+        flut_assert_string_is_equals_n("兔", rabbit, strlen("兔"), false);
     }
 }

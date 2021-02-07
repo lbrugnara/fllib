@@ -6,5 +6,9 @@
 
 FlutAssertResult* flut__assert_int_equals(int expected, int actual);
 FlutAssertResult* flut__assert_int_not_equals(int expected, int actual);
+FlutAssertResult* flut__assert_int_gt(int expected, int actual);
+FlutAssertResult* flut__assert_int_gte(int expected, int actual);
+FlutAssertResult* flut__assert_int_lt(int expected, int actual);
+FlutAssertResult* flut__assert_int_lte(int expected, int actual);
 
 #endif /* FL_TEST_ASSERT_INT_H */

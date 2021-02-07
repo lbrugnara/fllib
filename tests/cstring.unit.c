@@ -2,7 +2,6 @@
 #include <fllib.h>
 #include <flut/flut.h>
 
-
 flut_define_suite(cstring) {
     flut_suite_description("C string functions");
     flut_suite_register_test(cstring_new, "Cstring new");

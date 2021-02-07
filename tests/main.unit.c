@@ -1,4 +1,3 @@
-#include "IO.h"
 #include "text/Test_Unicode.h"
 #include "text/Test_String.h"
 #include "text/Test_Regex.h"
@@ -22,11 +21,7 @@ int main(int argc, char **argv)
         flut_register_suite(array),
         flut_register_suite(slice),
         flut_register_suite(cstring),
-        flut_suite("IO", 
-            { "fl_io_file_write_all_bytes and fl_io_file_read_all_bytes", &test_file_rw_all_bytes },
-            { "IO realpath", &test_io_realpath },
-            { "IO Paths", &test_io_path },
-        ),
+        flut_register_suite(io),
         flut_suite("Unicode",
             { "fl_unicode_codepoint_at", &test_fl_unicode_codepoint_at },
             { "fl_unicode_codeunit_sequence_size", &test_fl_unicode_codeunit_sequence_size},

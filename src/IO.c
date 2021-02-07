@@ -138,6 +138,46 @@ CLEANUP:
     return status;
 }
 
+bool fl_io_dir_remove(const char *path) {
+    #ifdef _WIN32
+    return _rmdir(path) == 0;
+    #else
+    return rmdir(path) == 0;
+    #endif
+}
+
+bool fl_io_dir_remove_recursive(const char *path) {
+    flm_assert(path, "path cannot be NULL");
+
+    if (!fl_io_dir_remove(path)) {
+        return false;
+    }
+
+    bool status = true;
+
+    path = fl_cstring_replace(path, "/", FL_IO_DIR_SEPARATOR);
+    FlVector *parts = fl_cstring_split_by(path, FL_IO_DIR_SEPARATOR);
+    fl_vector_pop(parts, NULL);
+    
+    while (fl_vector_length(parts) > 0) {
+        char *current_path = fl_cstring_join(parts, FL_IO_DIR_SEPARATOR);
+
+        if (!fl_io_dir_remove(current_path)) {
+            fl_cstring_free(current_path);
+            status = false;
+            break;
+        }
+
+        fl_cstring_free(current_path);
+        fl_vector_pop(parts, NULL);
+    }
+
+    fl_vector_free(parts);
+    fl_cstring_free(path);
+
+    return status;
+}
+
 bool fl_io_file_close(FILE * fd)
 {
     return fclose(fd) == 0;

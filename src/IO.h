@@ -99,6 +99,9 @@ bool fl_io_dir_create(const char *pathname);
  */
 bool fl_io_dir_create_recursive(const char *pathname);
 
+bool fl_io_dir_remove(const char *path);
+bool fl_io_dir_remove_recursive(const char *path);
+
 bool fl_io_path_is_relative(const char *path);
 bool fl_io_path_is_absolute(const char *path);
 

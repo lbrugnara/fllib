@@ -16,30 +16,27 @@ flut_define_suite(cstring) {
     flut_suite_register_test(cstring_find, "Cstring find");
 }
 
-static inline size_t integer_length(long long i)
-{
+static inline size_t integer_length(long long i) {
     size_t l = i >= 0 ? 1 : 2;
     while (i /= 10)
         l++;
     return l;
 }
 
-static inline size_t uinteger_length(unsigned long long i)
-{
+static inline size_t uinteger_length(unsigned long long i) {
     size_t l = 1;
     while (i /= 10)
         l++;
     return l;
 }
 
-flut_define_test(cstring_new)
-{
+flut_define_test(cstring_new) {
     flut_describe("fl_cstring_new should return valid pointers") {
         char *str = fl_cstring_new(5);
         
-        flut_assert_explain(assert->not_null(str), "fl_cstring_new(5) returns a valid pointer");
+        flut_assert_is_not_null(str);
 
-        flut_assert_explain(assert->str.length(0, str, false), "Length of the returned string must be 0 (empty string)");
+        flut_assert_string_has_length(0, str, false);
 
         str[0] = 'H';
         str[1] = 'e';
@@ -47,48 +44,30 @@ flut_define_test(cstring_new)
         str[3] = 'l';
         str[4] = 'o';
 
-        flut_assert_explain(assert->str.length(5, str, false), "Length of the returned string must be 5 ('Hello')");
-        flut_assert_explain(assert->is_true(str[5] == '\0'), "str[5] must be the NULL character");
+        flut_assert_string_has_length(5, str, false);
+        flut_assert_is_true(str[5] == '\0');
 
         fl_cstring_free(str);
     }
 }
 
-flut_define_test(cstring_dup)
-{
+flut_define_test(cstring_dup) {
     char *str = fl_cstring_dup("Hello");
-    flut_expect_compat("str not null", str != NULL);
-    flut_expect_compat("str == \"Hello\"", flm_cstring_equals(str, "Hello"));
-    fl_cstring_free(str);
+    flut_assert_is_not_null(str);
+    flut_assert_string_is_equals("Hello", str, true);
 }
 
-flut_define_test(cstring_split)
-{
+flut_define_test(cstring_split) {
     FlVector *v = fl_cstring_split("Hello");
+
+    flut_assert_is_true(fl_vector_length(v) == 5);
+
     size_t length = fl_vector_length(v);
-    flut_expect_compat("Split resulted in a vector with length 5", length == 5);
-    for(size_t i=0; i < length; i++)
-    {
-        char c = *(char*) fl_vector_ref_get(v, i);
-        switch(i)
-        {
-            case 0:
-                flut_expect_compat("Char in position 0 must be 'H'", c == 'H');
-                break;
-            case 1:
-                flut_expect_compat("Char in position 1 must be 'e'", c == 'e');
-                break;
-            case 2:
-                flut_expect_compat("Char in position 2 must be 'l'", c == 'l');
-                break;
-            case 3:
-                flut_expect_compat("Char in position 3 must be 'l'", c == 'l');
-                break;
-            case 4:
-                flut_expect_compat("Char in position 4 must be 'o'", c == 'o');
-                break;
-        }
-    }
+    flut_assert_char_is_equals('H', flm_vector_get(v, char, 0));
+    flut_assert_char_is_equals('e', flm_vector_get(v, char, 1));
+    flut_assert_char_is_equals('l', flm_vector_get(v, char, 2));
+    flut_assert_char_is_equals('l', flm_vector_get(v, char, 3));
+    flut_assert_char_is_equals('o', flm_vector_get(v, char, 4));
     fl_vector_free(v);
 }
 
@@ -96,98 +75,79 @@ flut_define_test(cstring_replace_char)
 {
     char *world = "World";
     char *worl = fl_cstring_replace_char(world, 'd', "");
-    flut_expect_compat("Replace char 'd' with empty string in 'World' results in 'Worl'", flm_cstring_equals(worl, "Worl"));
+    flut_assert_string_is_equals("Worl", worl, false);
+
     char *word = fl_cstring_replace_char(worl, 'l', "d");
-    flut_expect_compat("Replace char 'l' with 'd' in 'Worl' results in 'Word'", flm_cstring_equals(word, "Word"));
+    flut_assert_string_is_equals("Word", word, false);
     fl_cstring_free(word);
     fl_cstring_free(worl);
 
     char *dot = "object.property";
-    char *noDot = fl_cstring_replace_char(dot, '.', "");
-    flut_expect_compat("Replace char '.' with empty string in 'object.property' results in 'objectproperty'", flm_cstring_equals(noDot, "objectproperty"));
-    fl_cstring_free(noDot);
+    char *no_dot = fl_cstring_replace_char(dot, '.', "");
+    flut_assert_string_is_equals("objectproperty", no_dot, true);
 
-    char *multipleA = "abcabcabca";
-    char *noA = fl_cstring_replace_char(multipleA, 'a', "");
-    flut_expect_compat("Replace char 'a' with empty string in 'abcabcabca' results in 'bcbcbc'", flm_cstring_equals(noA, "bcbcbc"));
-    fl_cstring_free(noA);
+    char *multiple_a = "abcabcabca";
+    char *no_a = fl_cstring_replace_char(multiple_a, 'a', "");
+    flut_assert_string_is_equals("bcbcbc", no_a, true);
 
-    char *withZz = fl_cstring_replace_char(multipleA, 'a', "zz");
-    flut_expect_compat("Replace char 'a' with string 'zz' in 'abcabcabca' results in 'zzbczzbczzbczz'", flm_cstring_equals(withZz, "zzbczzbczzbczz"));
-    fl_cstring_free(withZz);
+    char *with_zz = fl_cstring_replace_char(multiple_a, 'a', "zz");
+    flut_assert_string_is_equals("zzbczzbczzbczz", with_zz, true);
 }
 
 flut_define_test(cstring_replace)
 {
     char *replaced = fl_cstring_replace("", "abc", "123");
-    flut_expect_compat("Replace 'abc' with '123' on empty string returns empty string", flm_cstring_equals(replaced, ""));
-    fl_cstring_free(replaced);
+    flut_assert_string_is_equals("", replaced, true);
 
     replaced = fl_cstring_replace("abc", "", "123");
-    flut_expect_compat("Replace empty string with '123' on 'abc' returns '123abc'", flm_cstring_equals(replaced, "123abc"));
-    fl_cstring_free(replaced);
+    flut_assert_string_is_equals("123abc", replaced, true);
 
     replaced = fl_cstring_replace("", "", "123");
-    flut_expect_compat("Replace empty string with '123' on empty string returns '123", flm_cstring_equals(replaced, "123"));
-    fl_cstring_free(replaced);
+    flut_assert_string_is_equals("123", replaced, true);
 
     replaced = fl_cstring_replace("Remove my Es", "e", "");
-    flut_expect_compat("Replace 'e' with empty string in 'Remove my Es' returns 'Remov my Es'", flm_cstring_equals(replaced, "Rmov my Es"));
-    fl_cstring_free(replaced);
+    flut_assert_string_is_equals("Rmov my Es", replaced, true);
 
     replaced = fl_cstring_replace("hello", "k", "z");
-    flut_expect_compat("Replace 'k' with 'z' on 'hello' returns 'hello'", flm_cstring_equals(replaced, "hello"));
-    fl_cstring_free(replaced);
+    flut_assert_string_is_equals("hello", replaced, true);
 
     replaced = fl_cstring_replace("hello", "nhelloz", "z");
-    flut_expect_compat("Replace 'nhelloz' with 'z' on 'hello' returns 'hello'", flm_cstring_equals(replaced, "hello"));
-    fl_cstring_free(replaced);
+    flut_assert_string_is_equals("hello", replaced, true);
 
     replaced = fl_cstring_replace("hello", "e", "a");
-    flut_expect_compat("Replace 'e' with 'a' in 'hello' returns 'hallo'", flm_cstring_equals(replaced, "hallo"));
-    fl_cstring_free(replaced);
+    flut_assert_string_is_equals("hallo", replaced, true);
 
     replaced = fl_cstring_replace("hello", "ll", "l");
-    flut_expect_compat("Replace 'll' with 'l' on 'hello' returns 'helo'", flm_cstring_equals(replaced, "helo"));
-    fl_cstring_free(replaced);
+    flut_assert_string_is_equals("helo", replaced, true);
 
     replaced = fl_cstring_replace("hello", "ll", "lll");
-    flut_expect_compat("Replace 'll' with 'lll' on 'hello' returns 'helllo'", flm_cstring_equals(replaced, "helllo"));
-    fl_cstring_free(replaced);
+    flut_assert_string_is_equals("helllo", replaced, true);
 
     replaced = fl_cstring_replace("hello", "l", "ll");
-    flut_expect_compat("Replace 'l' with 'll' on 'hello' returns 'hellllo'", flm_cstring_equals(replaced, "hellllo"));
-    fl_cstring_free(replaced);
+    flut_assert_string_is_equals("hellllo", replaced, true);
 
     replaced = fl_cstring_replace("hello", "l", "zz");
-    flut_expect_compat("Replace 'l' with 'zz' on 'hello' returns 'hezzzzo'", flm_cstring_equals(replaced, "hezzzzo"));
-    fl_cstring_free(replaced);
+    flut_assert_string_is_equals("hezzzzo", replaced, true);
 
     replaced = fl_cstring_replace("hello", "hello", "");
-    flut_expect_compat("Replace 'hello' with empty string on 'hello' returns empty string", flm_cstring_equals(replaced, ""));
-    fl_cstring_free(replaced);
+    flut_assert_string_is_equals("", replaced, true);
 
     replaced = fl_cstring_replace("hellobye", "hellox", "");
-    flut_expect_compat("Replace 'hellox' with empty string in 'hellobye' returns 'hellobye'", flm_cstring_equals(replaced, "hellobye"));
-    fl_cstring_free(replaced);
+    flut_assert_string_is_equals("hellobye", replaced, true);
 
     replaced = fl_cstring_replace("Hello world!", "o w", "O W");
-    flut_expect_compat("Replace 'o w' with 'O W' on 'Hello world!' returns 'HellO World!'", flm_cstring_equals(replaced, "HellO World!"));
-    fl_cstring_free(replaced);
+    flut_assert_string_is_equals("HellO World!", replaced, true);
 
     replaced = fl_cstring_replace("hellohello", "jello", "zello");
-    flut_expect_compat("Replace 'jello' with 'zello' on 'hellohello' returns 'hellohello'", flm_cstring_equals(replaced, "hellohello"));
-    fl_cstring_free(replaced);
+    flut_assert_string_is_equals("hellohello", replaced, true);
 
     const char *msg = "Actually, we are changing all the text by a larger one";
     replaced = fl_cstring_replace("none", "none", msg);
-    flut_expect_compat("Replace 'none' with 'Actually, we are changing all the text by a larger one' on 'none' returns 'Actually, we are changing all the text by a larger one'", flm_cstring_equals(replaced, msg));
-    fl_cstring_free(replaced);
+    flut_assert_string_is_equals(msg, replaced, true);
 
     const char *shortermsg = "Now, a shorter one";
     replaced = fl_cstring_replace(msg, msg, shortermsg);
-    flut_expect_compat("Replace 'Actually, we are changing all the text by a larger one' with 'Now, a shorter one' on 'Actually, we are changing all the text by a larger one' returns 'Now, a shorter one'", flm_cstring_equals(replaced, shortermsg));
-    fl_cstring_free(replaced);
+    flut_assert_string_is_equals(shortermsg, replaced, true);
 }
 
 flut_define_test(cstring_append)

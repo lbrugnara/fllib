@@ -41,28 +41,58 @@
     flut_assert_explain(flut__assert_ptr_not_equals((expected), (actual)), "Pointer `"#actual"` should not be equals to pointer `" #expected "`")
 
 #define flut_assert_size_t_is_equals(expected, actual)         \
-    flut_assert_vexplain(flut__assert_size_t_equals((expected), (actual)), "size_t `"#actual"` (%zu) should be equals to size_t `" #expected "` (%zu)", (actual), (expected))
+    flut_assert_vexplain(flut__assert_size_t_equals((expected), (actual)), "size_t expression `"#actual"` should be equals to size_t expression `" #expected "` (%zu == %zu)", (actual), (expected))
 
 #define flut_assert_size_t_is_not_equals(expected, actual)     \
-    flut_assert_vexplain(flut__assert_size_t_not_equals((expected), (actual)), "size_t `"#actual"` (%zu) should not be equals to size_t `" #expected "` (%zu)", (actual), (expected))
+    flut_assert_vexplain(flut__assert_size_t_not_equals((expected), (actual)), "size_t expression `"#actual"` should not be equals to size_t expression `" #expected "` (%zu != %zu)", (actual), (expected))
 
 #define flut_assert_int_is_equals(expected, actual)         \
-    flut_assert_vexplain(flut__assert_int_equals((expected), (actual)), "Integer `"#actual"` (%zu) should be equals to integer `" #expected "` (%zu)", (actual), (expected))
+    flut_assert_vexplain(flut__assert_int_equals((expected), (actual)), "Integer expression `"#actual"` should be equals to integer expression `" #expected "` (%zu == %zu)", (actual), (expected))
 #define flut_assert_int_is_not_equals(expected, actual)     \
-    flut_assert_vexplain(flut__assert_int_not_equals((expected), (actual)), "Integer `"#actual"` (%zu) should not be equals to integer `" #expected "` (%zu)", (actual), (expected))
+    flut_assert_vexplain(flut__assert_int_not_equals((expected), (actual)), "Integer expression `"#actual"` should not be equals to integer expression `" #expected "` (%zu != %zu)", (actual), (expected))
 
-#define flut_assert_string_is_equals(expected, actual, shouldFreeActual)        \
-    flut_assert_vexplain(flut__assert_str_equals((expected), (actual), (shouldFreeActual)), "String `"#actual"` (\"%s\") should be equals to string `" #expected "` (\"%s\")", (actual), (expected))
+#define flut_assert_char_is_equals(expected, actual)         \
+    flut_assert_vexplain(flut__assert_char_equals((expected), (actual)), "Char expression `"#actual"` should be equals to char expression `" #expected "` ('%c' == '%c')", (actual), (expected))
+#define flut_assert_char_is_not_equals(expected, actual)     \
+    flut_assert_vexplain(flut__assert_char_not_equals((expected), (actual)), "Char expression `"#actual"` should not be equals to char expression `" #expected "` ('%c' != '%c')", (actual), (expected))
 
-#define flut_assert_string_is_equals_n(expected, actual, length, shouldFreeActual)                                      \
-    flut_assert_vexplain(flut__assert_str_equals_n((expected), (actual), (length), (shouldFreeActual)),                 \
-        "%zu characters from string `"#actual"` (\"%.*s\") should be equals to string `" #expected "` (\"%.*s\")", (length), (length), (actual), (length), (expected))
+#define flut_assert_string_is_equals(expected, actual, shouldFreeActual)                                                                    \
+do {                                                                                                                                        \
+    char *value = fl_cstring_dup(actual);                                                                                                   \
+    flut_assert_vexplain(                                                                                                                   \
+        flut__assert_str_equals((expected), (actual), (shouldFreeActual)),                                                                  \
+        "String expression `"#actual"` should be equals to string expression `" #expected "` (\"%s\" == \"%s\")", (value), (expected));     \
+    fl_cstring_free(value);                                                                                                                 \
+} while (0)
+
+#define flut_assert_string_is_equals_n(expected, actual, length, shouldFreeActual)                                                          \
+do {                                                                                                                                        \
+    char *value = fl_cstring_dup(actual);                                                                                                   \
+    flut_assert_vexplain(                                                                                                                   \
+        flut__assert_str_equals_n((expected), (actual), (length), (shouldFreeActual)),                                                      \
+        "%zu character(s) from string expression `"#actual"` should be equals to string expression `" #expected "` (\"%.*s\" == \"%.*s\")", \
+        (length), (length), (value), (length), (expected));                                                                                 \
+    fl_cstring_free(value);                                                                                                                 \
+} while (0)
 
 #define flut_assert_string_is_not_equals(expected, actual, shouldFreeActual)    \
-    flut_assert_vexplain(flut__assert_str_not_equals((expected), (actual), (shouldFreeActual)), "String `"#actual"` (\"%s\") should not be equals to string `" #expected "` (\"%s\")", (actual), (expected))
+do {                                                                                                                                        \
+    char *value = fl_cstring_dup(actual);                                                                                                   \
+    flut_assert_vexplain(                                                                                                                   \
+        flut__assert_str_not_equals((expected), (actual), (shouldFreeActual)),                                                              \
+        "String expression `"#actual"` should not be equals to string expression `" #expected "` (\"%s\" != \"%s\")", (value), (expected)); \
+    fl_cstring_free(value);                                                                                                                 \
+} while (0)
 
-#define flut_assert_string_has_length(expected, string, shouldFreeString)       \
-    flut_assert_vexplain(flut__assert_str_length((expected), (string), (shouldFreeString)), "String `"#string"` (\"%s\") should be %zu characters length", (string), (expected))
+#define flut_assert_string_has_length(expected, string, shouldFreeString)                                                                   \
+do {                                                                                                                                        \
+    char *value = fl_cstring_dup(string);                                                                                                   \
+    flut_assert_vexplain(                                                                                                                   \
+        flut__assert_str_length((expected), (string), (shouldFreeString)),                                                                  \
+        "String expression `"#string"` should be %zu character(s) length. Expression `"#string"` is %zu character(s) length (\"%s\")",      \
+        (expected), strlen((value)), (value));                                                                                              \
+    fl_cstring_free(value);                                                                                                                 \
+} while (0)
 
 #define flut_unexpected(error_msg)                                                                          \
 do {                                                                                                        \

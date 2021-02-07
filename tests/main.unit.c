@@ -3,11 +3,10 @@
 #include "text/Test_Regex.h"
 #include "containers/Test_BinaryHeap.h"
 #include "containers/Test_Hashtable.h"
-#include "containers/Test_Vector.h"
 #include "containers/Test_List.h"
 
 #include <fllib.h>
-#include <flut/suite.h>
+#include <flut/flut.h>
 #include <stdio.h>
 #include <locale.h>
 #include <time.h>
@@ -41,14 +40,7 @@ int main(int argc, char **argv)
             { "fl_regex_tokenize", &test_fl_regex_tokenize },
             { "fl_regex_match", &test_fl_regex_match }
         ),
-        flut_suite("Vector",
-            { "fl_vector_new", &test_fl_vector_new },
-            { "fl_vector_add", &test_fl_vector_add },
-            { "fl_vector_insert", &test_fl_vector_insert },
-            { "fl_vector_shift", &test_fl_vector_shift },
-            { "fl_vector_pop", &test_fl_vector_pop },
-            { "fl_vector_ref_get", &test_fl_vector_get },
-        ),
+        flut_register_suite(vector),
         flut_suite("Hashtable",
             { "fl_hashtable_add", &test_fl_hashtable_add },
             { "fl_hashtable_add_fhash", &test_fl_hashtable_add_fhash },

@@ -1,129 +1,126 @@
 #include <fllib.h>
 #include <math.h>
 #include <flut/flut.h>
-#include "Test_Vector.h"
 
-void test_fl_vector_new(FlutContext *flut__internal_ctx, FlutAssertUtils *assert)
-{
-    flut_describe("Passing a list of designated initializers to flm_vector_new_with must return a valid vector (.capacity = 1)")
-    {
+flut_define_suite(vector) {
+    flut_suite_description("Vector functions");
+    flut_suite_register_test(vector_new, "fl_vector_new function");
+    flut_suite_register_test(vector_add, "fl_vector_add function");
+    flut_suite_register_test(vector_insert, "fl_vector_insert function");
+    flut_suite_register_test(vector_shift, "fl_vector_shift function");
+    flut_suite_register_test(vector_pop, "fl_vector_pop function");
+    flut_suite_register_test(vector_get, "fl_vector_get function");
+}
+
+flut_define_test(vector_new) {
+    flut_describe("Passing a list of designated initializers to flm_vector_new_with must return a valid vector (.capacity = 1)") {
         FlVector *vector = flm_vector_new_with(.capacity = 1);
 
-        flut_assert(assert->not_null(vector));
-        flut_assert(assert->size_t.equals(0, fl_vector_length(vector)));
-        flut_assert(assert->size_t.equals(1, fl_vector_capacity(vector)));
-        flut_assert(assert->size_t.equals(SIZE_MAX / sizeof(void*), fl_vector_max_capacity(vector)));
-        flut_assert(assert->is_true(fl_vector_growth_factor(vector) == 2.0));
-        flut_assert(assert->size_t.equals(sizeof(void*), fl_vector_element_size(vector)));
+        flut_assert_is_not_null(vector);
+        flut_assert_size_t_is_equals(0, fl_vector_length(vector));
+        flut_assert_size_t_is_equals(1, fl_vector_capacity(vector));
+        flut_assert_size_t_is_equals(SIZE_MAX / sizeof(void*), fl_vector_max_capacity(vector));
+        flut_assert_is_true(fl_vector_growth_factor(vector) == 2.0);
+        flut_assert_size_t_is_equals(sizeof(void*), fl_vector_element_size(vector));
 
         fl_vector_free(vector);
     }
 
-    flut_describe("Passing a list of positional initializers to flm_vector_new_with must return a valid vector (fl_container_writer, fl_container_cleaner_pointer, 1.5, 16, 15, 30)")
-    {
+    flut_describe("Passing a list of positional initializers to flm_vector_new_with must return a valid vector (fl_container_writer, fl_container_cleaner_pointer, 1.5, 16, 15, 30)") {
         FlVector *vector = flm_vector_new_with(fl_container_writer, fl_container_cleaner_pointer, 1.5, 16, 15, 30);
 
-        flut_assert(assert->not_null(vector));
-        flut_assert(assert->size_t.equals(0, fl_vector_length(vector)));
-        flut_assert(assert->size_t.equals(15, fl_vector_capacity(vector)));
-        flut_assert(assert->size_t.equals(30, fl_vector_max_capacity(vector)));
-        flut_assert(assert->is_true(fl_vector_growth_factor(vector) == 1.5));
-        flut_assert(assert->size_t.equals(16, fl_vector_element_size(vector)));
+        flut_assert_is_not_null(vector);
+        flut_assert_size_t_is_equals(0, fl_vector_length(vector));
+        flut_assert_size_t_is_equals(15, fl_vector_capacity(vector));
+        flut_assert_size_t_is_equals(30, fl_vector_max_capacity(vector));
+        flut_assert_is_true(fl_vector_growth_factor(vector) == 1.5);
+        flut_assert_size_t_is_equals(16, fl_vector_element_size(vector));
 
         fl_vector_free(vector);
     }
 
-    flut_describe("flm_vector_new_with(.capacity = 10) should create a valid vector")
-    {
+    flut_describe("flm_vector_new_with(.capacity = 10) should create a valid vector") {
         FlVector *vector = flm_vector_new_with(.capacity = 10);
 
-        flut_assert(assert->not_null(vector));
-        flut_assert(assert->size_t.equals(0, fl_vector_length(vector)));
-        flut_assert(assert->size_t.equals(10, fl_vector_capacity(vector)));
-        flut_assert(assert->size_t.equals(SIZE_MAX / sizeof(void*), fl_vector_max_capacity(vector)));
-        flut_assert(assert->is_true(fl_vector_growth_factor(vector) == 2.0));
-        flut_assert(assert->size_t.equals(sizeof(void*), fl_vector_element_size(vector)));
+        flut_assert_is_not_null(vector);
+        flut_assert_size_t_is_equals(0, fl_vector_length(vector));
+        flut_assert_size_t_is_equals(10, fl_vector_capacity(vector));
+        flut_assert_size_t_is_equals(SIZE_MAX / sizeof(void*), fl_vector_max_capacity(vector));
+        flut_assert_is_true(fl_vector_growth_factor(vector) == 2.0);
+        flut_assert_size_t_is_equals(sizeof(void*), fl_vector_element_size(vector));
 
         fl_vector_free(vector);
     }
 
-    flut_describe("flm_vector_new_with(.capacity = 100) should create a valid vector")
-    {
+    flut_describe("flm_vector_new_with(.capacity = 100) should create a valid vector") {
         FlVector *vector = flm_vector_new_with(.capacity = 100);
 
-        flut_assert(assert->not_null(vector));
-        flut_assert(assert->size_t.equals(0, fl_vector_length(vector)));
-        flut_assert(assert->size_t.equals(100, fl_vector_capacity(vector)));
-        flut_assert(assert->size_t.equals(SIZE_MAX / sizeof(void*), fl_vector_max_capacity(vector)));
-        flut_assert(assert->is_true(fl_vector_growth_factor(vector) == 2.0));
-        flut_assert(assert->size_t.equals(sizeof(void*), fl_vector_element_size(vector)));
+        flut_assert_is_not_null(vector);
+        flut_assert_size_t_is_equals(0, fl_vector_length(vector));
+        flut_assert_size_t_is_equals(100, fl_vector_capacity(vector));
+        flut_assert_size_t_is_equals(SIZE_MAX / sizeof(void*), fl_vector_max_capacity(vector));
+        flut_assert_is_true(fl_vector_growth_factor(vector) == 2.0);
+        flut_assert_size_t_is_equals(sizeof(void*), fl_vector_element_size(vector));
 
         fl_vector_free(vector);
     }
 
-    flut_describe("flm_vector_new_with(.capacity = 0) should create a valid vector")
-    {
+    flut_describe("flm_vector_new_with(.capacity = 0) should create a valid vector") {
         FlVector *vector = flm_vector_new_with(.capacity = 0);
 
-        flut_assert(assert->not_null(vector));
-        flut_assert(assert->size_t.equals(0, fl_vector_length(vector)));
-        flut_assert(assert->size_t.equals(1, fl_vector_capacity(vector)));
-        flut_assert(assert->size_t.equals(SIZE_MAX / sizeof(void*), fl_vector_max_capacity(vector)));
-        flut_assert(assert->is_true(fl_vector_growth_factor(vector) == 2.0));
-        flut_assert(assert->size_t.equals(sizeof(void*), fl_vector_element_size(vector)));
+        flut_assert_is_not_null(vector);
+        flut_assert_size_t_is_equals(0, fl_vector_length(vector));
+        flut_assert_size_t_is_equals(1, fl_vector_capacity(vector));
+        flut_assert_size_t_is_equals(SIZE_MAX / sizeof(void*), fl_vector_max_capacity(vector));
+        flut_assert_is_true(fl_vector_growth_factor(vector) == 2.0);
+        flut_assert_size_t_is_equals(sizeof(void*), fl_vector_element_size(vector));
 
         fl_vector_free(vector);
     }
 
-    flut_describe("flm_vector_new_with(.element_size = sizeof(int*), .capacity = 20, .max_capacity = 40, .growth_factor = 1.6) should create a valid vector")
-    {
+    flut_describe("flm_vector_new_with(.element_size = sizeof(int*), .capacity = 20, .max_capacity = 40, .growth_factor = 1.6) should create a valid vector") {
         FlVector *vector = flm_vector_new_with(.element_size = sizeof(int*), .capacity = 20, .max_capacity = 40, .growth_factor = 1.6);
 
-        flut_assert(assert->not_null(vector));
-        flut_assert(assert->size_t.equals(0, fl_vector_length(vector)));
-        flut_assert(assert->size_t.equals(20, fl_vector_capacity(vector)));
-        flut_assert(assert->size_t.equals(40, fl_vector_max_capacity(vector)));
-        flut_assert(assert->is_true(fl_vector_growth_factor(vector) == 1.6));
-        flut_assert(assert->size_t.equals(sizeof(int*), fl_vector_element_size(vector)));
+        flut_assert_is_not_null(vector);
+        flut_assert_size_t_is_equals(0, fl_vector_length(vector));
+        flut_assert_size_t_is_equals(20, fl_vector_capacity(vector));
+        flut_assert_size_t_is_equals(40, fl_vector_max_capacity(vector));
+        flut_assert_is_true(fl_vector_growth_factor(vector) == 1.6);
+        flut_assert_size_t_is_equals(sizeof(int*), fl_vector_element_size(vector));
 
         fl_vector_free(vector);
     }
 
-    flut_describe("flm_vector_new_with(.element_size = sizeof(double), .capacity = 20, .growth_factor = 1.6) should create a valid vector")
-    {
+    flut_describe("flm_vector_new_with(.element_size = sizeof(double), .capacity = 20, .growth_factor = 1.6) should create a valid vector") {
         FlVector *vector = flm_vector_new_with(.element_size = sizeof(double), .capacity = 20, .growth_factor = 1.6);
 
-        flut_assert(assert->not_null(vector));
-        flut_assert(assert->size_t.equals(0, fl_vector_length(vector)));
-        flut_assert(assert->size_t.equals(20, fl_vector_capacity(vector)));
-        flut_assert(assert->size_t.equals(SIZE_MAX / sizeof(double), fl_vector_max_capacity(vector)));
-        flut_assert(assert->is_true(fl_vector_growth_factor(vector) == 1.6));
-        flut_assert(assert->size_t.equals(sizeof(double), fl_vector_element_size(vector)));
+        flut_assert_is_not_null(vector);
+        flut_assert_size_t_is_equals(0, fl_vector_length(vector));
+        flut_assert_size_t_is_equals(20, fl_vector_capacity(vector));
+        flut_assert_size_t_is_equals(SIZE_MAX / sizeof(double), fl_vector_max_capacity(vector));
+        flut_assert_is_true(fl_vector_growth_factor(vector) == 1.6);
+        flut_assert_size_t_is_equals(sizeof(double), fl_vector_element_size(vector));
 
         fl_vector_free(vector);
     }
 
-    flut_describe("flm_vector_new_with(.capacity = SIZE_MAX, .element_size = sizeof(void*)) must return NULL (cannot be allocated)")
-    {
+    flut_describe("flm_vector_new_with(.capacity = SIZE_MAX, .element_size = sizeof(void*)) must return NULL (cannot be allocated)") {
         FlVector *vector = flm_vector_new_with(.capacity = SIZE_MAX, .element_size = sizeof(void*));
-        flut_assert(assert->null(vector));
+        flut_assert_is_null(vector);
     }
 
-    flut_describe("flm_vector_new_with(.element_size = SIZE_MAX, .max_capacity = 10) must return NULL (cannot be allocated")
-    {
+    flut_describe("flm_vector_new_with(.element_size = SIZE_MAX, .max_capacity = 10) must return NULL (cannot be allocated") {
         FlVector *vector = flm_vector_new_with(.element_size = SIZE_MAX, .max_capacity = 10);
-        flut_assert(assert->null(vector));
+        flut_assert_is_null(vector);
     }
 
-    flut_describe("flm_vector_new_with(.capacity = 10, .max_capacity = 5) must return NULL")
-    {
+    flut_describe("flm_vector_new_with(.capacity = 10, .max_capacity = 5) must return NULL") {
         FlVector *vector = flm_vector_new_with(.capacity = 10, .max_capacity = 5);
-        flut_assert(assert->null(vector));
+        flut_assert_is_null(vector);
     }
 }
 
-void test_fl_vector_add()
-{
+flut_define_test(vector_add) {
     /*// Use pointers
     size_t numbers[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
 
@@ -171,8 +168,7 @@ void test_fl_vector_add()
     fl_vector_free(vector);
 }
 
-void test_fl_vector_insert()
-{
+flut_define_test(vector_insert) {
     // Use pointers
     size_t numbers[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
     size_t array_length = sizeof(numbers) / sizeof(numbers[0]);
@@ -286,8 +282,7 @@ void test_fl_vector_insert()
     }
 }
 
-void test_fl_vector_shift()
-{
+flut_define_test(vector_shift) {
     // Use pointers
     int *numbers[10] = { 0 };
     size_t size = 10;
@@ -343,8 +338,7 @@ void test_fl_vector_shift()
     fl_vector_free(vector);
 }
 
-void test_fl_vector_pop()
-{
+flut_define_test(vector_pop) {
     // Use pointers
     int *numbers[10] = { 0 };
     size_t size = 10;
@@ -397,8 +391,7 @@ void test_fl_vector_pop()
     fl_vector_free(vector);
 }
 
-void test_fl_vector_get()
-{
+flut_define_test(vector_get) {
     flut_println("fl_vector_ref_get should return \"pointers to\" int for a vector that stores integers") {
         FlVector *vector_of_ints = flm_vector_new_with(.element_size = sizeof(int));
 

@@ -27,6 +27,10 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+typedef enum FlIoErrorType {
+    FL_IO_ERROR_PATH_IS_ABSOLUTE
+} FlIoErrorType;
+
 FILE * fl_io_file_open(const char *filename, const char *mode)
 {
     #if defined(_WIN32) && __STDC_WANT_SECURE_LIB__
@@ -148,6 +152,11 @@ bool fl_io_dir_remove(const char *path) {
 
 bool fl_io_dir_remove_recursive(const char *path) {
     flm_assert(path, "path cannot be NULL");
+
+    if (fl_io_path_is_absolute(path)) {
+        fl_error_push(FL_IO_ERROR_PATH_IS_ABSOLUTE, "%s", "Cannot recursively remove a directory referenced by its absolute path");
+        return false;
+    }
 
     if (!fl_io_dir_remove(path)) {
         return false;

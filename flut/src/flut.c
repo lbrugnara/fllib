@@ -64,9 +64,9 @@ void flut_run(int argc, char **argv, FlutSuite **suites, size_t length)
 
     size_t ntests = 0;
     size_t nptests = 0;
-    printf("+------------------------------------+--------------+------------+------------+\n");
-    printf("| %-35s| %-12s | %-10s | %-10s |\n", "Suite", "Passed/Total", "Percentage", "Time (ms)");
-    printf("+------------------------------------+--------------+------------+------------+\n");
+    printf("+--------------------------------------------------------+--------------+------------+------------+\n");
+    printf("| %-55s| %-12s | %-10s | %-10s |\n", "Suite", "Passed/Total", "Percentage", "Time (ms)");
+    printf("+--------------------------------------------------------+--------------+------------+------------+\n");
     for (size_t i = 0; i < length; i++) {
         if (!results[i].ran)
             continue;
@@ -76,7 +76,7 @@ void flut_run(int argc, char **argv, FlutSuite **suites, size_t length)
         char *suite_descr = flm_cstring_equals(suites[i]->id, suites[i]->description)
                               ? fl_cstring_dup(suites[i]->id)
                               : fl_cstring_vdup("%s - %s", suites[i]->id, suites[i]->description);
-        printf("| %-35s| %6zu/%-5zu | %-2s%3.2f%%%-1s | %7ld ms |\n",
+        printf("| %-55s| %6zu/%-5zu | %-2s%3.2f%%%-1s | %7ld ms |\n",
                suite_descr,
                results[i].passedTests,
                fl_array_length(suites[i]->tests),
@@ -86,8 +86,8 @@ void flut_run(int argc, char **argv, FlutSuite **suites, size_t length)
                results[i].elapsed);
         fl_cstring_free(suite_descr);
     }
-    printf("+------------------------------------+--------------+------------+------------+\n");
-    printf("| %-35s| %6zu/%-5zu | %-2s%3.2f%%%-1s | %7llu ms |\n",
+    printf("+--------------------------------------------------------+--------------+------------+------------+\n");
+    printf("| %-55s| %6zu/%-5zu | %-2s%3.2f%%%-1s | %7llu ms |\n",
            "Total",
            nptests,
            ntests,
@@ -95,7 +95,7 @@ void flut_run(int argc, char **argv, FlutSuite **suites, size_t length)
            (nptests / (float)ntests) * 100,
            "",
            total_elapsed_time);
-    printf("+------------------------------------+--------------+------------+------------+\n");
+    printf("+--------------------------------------------------------+--------------+------------+------------+\n");
 
     fl_array_free(results);
 }

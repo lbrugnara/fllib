@@ -32,8 +32,7 @@ static bool should_run_suite(struct FlutSuite *suite, int argc, char **argv)
     return false;
 }
 
-void flut_run(int argc, char **argv, FlutSuite **suites, size_t length)
-{
+bool flut_run(int argc, char **argv, FlutSuite **suites, size_t length) {
     // Compatibility for fl_run macro with a a null-terminator
     if (suites[length - 1] == NULL)
         length--;
@@ -59,7 +58,7 @@ void flut_run(int argc, char **argv, FlutSuite **suites, size_t length)
     if (!should_run) {
         fl_array_free(results);
         printf("No tests have been run.\n");
-        return;
+        return true;
     }
 
     size_t ntests = 0;
@@ -98,4 +97,6 @@ void flut_run(int argc, char **argv, FlutSuite **suites, size_t length)
     printf("+--------------------------------------------------------+--------------+------------+------------+\n");
 
     fl_array_free(results);
+
+    return ntests == nptests;
 }

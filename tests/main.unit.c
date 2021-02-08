@@ -13,9 +13,11 @@
 
 int main(int argc, char **argv) 
 {
+    bool success;
     flut_run_tests(
         argc,
         argv,
+        &success,
         flut_register_suite(std),
         flut_register_suite(array),
         flut_register_suite(slice),
@@ -65,4 +67,5 @@ int main(int argc, char **argv)
             { "fl_binheap_insert", &test_fl_binheap_insert },
         )
     );
+    return success ? 0 : -1;
 }

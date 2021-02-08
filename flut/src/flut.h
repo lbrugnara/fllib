@@ -29,11 +29,11 @@
  * Notes:
  *  - Deprecated: Use flut_run_suites instead
  */
-#define flut_run_tests(argc, argv, ...)                                                                                \
+#define flut_run_tests(argc, argv, result_ptr, ...)                                                                    \
     do {                                                                                                               \
         FlutSuite **suites = fl_array_new(sizeof(FlutSuite *), 0);                                                     \
         ((void)0, __VA_ARGS__, (void)0);                                                                               \
-        flut_run(argc, argv, suites, fl_array_length(suites));                                                         \
+        *(result_ptr) = flut_run(argc, argv, suites, fl_array_length(suites));                                         \
         fl_array_free_each_pointer(suites, (FlArrayFreeElementFunc)flut_suite_free);                                   \
     } while (0)
 
@@ -65,11 +65,11 @@
  *  length - The number of test suites
  *
  * Returns:
- *  void - This function does not return a value
+ *  bool - True if all tests succeed, otherwise it returns false
  *
  * Notes:
  *
  */
-void flut_run(int argc, char **argv, FlutSuite **suites, size_t length);
+bool flut_run(int argc, char **argv, FlutSuite **suites, size_t length);
 
 #endif /* FLUT_H */

@@ -8,7 +8,7 @@
 #define flut_assert_string_is_not_null(string, shouldFreeString)    \
 do {                                                                \
     char *value = (char*) string;                                   \
-    flut_assertion_vexplain(                                           \
+    flut_assertion_explainv(                                           \
         flut__assert_not_null((void*) (value)),                     \
         "String expression `%s` should not be null (\"%s\")",       \
         #string, (value)                                            \
@@ -20,7 +20,7 @@ do {                                                                \
 do {                                                                                            \
     char *value = (char*) actual;                                                               \
     char *copy = fl_cstring_dup(value);                                                         \
-    flut_assertion_vexplain(                                                                       \
+    flut_assertion_explainv(                                                                       \
         flut__assert_str_equals((expected), (value), (shouldFreeActual)),                       \
         "String expression `%s` should be equals to string expression `%s` (\"%s\" == \"%s\")", \
         #actual, #expected, (copy), (expected));                                                \
@@ -31,7 +31,7 @@ do {                                                                            
 do {                                                                                                                        \
     char *value = (char*) actual;                                                                                           \
     char *copy = fl_cstring_dup(value);                                                                                     \
-    flut_assertion_vexplain(                                                                                                   \
+    flut_assertion_explainv(                                                                                                   \
         flut__assert_str_equals_n((expected), (value), (length), (shouldFreeActual)),                                       \
         "%zu character(s) from string expression `%s` should be equals to string expression `%s` (\"%.*s\" == \"%.*s\")",   \
         (length), #actual, #expected, (length), (copy), (length), (expected));                                              \
@@ -42,7 +42,7 @@ do {                                                                            
 do {                                                                                                \
     char *value = (char*) actual;                                                                   \
     char *copy = fl_cstring_dup(value);                                                             \
-    flut_assertion_vexplain(                                                                           \
+    flut_assertion_explainv(                                                                           \
         flut__assert_str_not_equals((expected), (value), (shouldFreeActual)),                       \
         "String expression `%s` should not be equals to string expression `%s` (\"%s\" != \"%s\")", \
         #actual, #expected, (copy), (expected));                                                    \
@@ -53,7 +53,7 @@ do {                                                                            
 do {                                                                                                                        \
     char *value = (char*) string;                                                                                           \
     char *copy = fl_cstring_dup(value);                                                                                     \
-    flut_assertion_vexplain(                                                                                                   \
+    flut_assertion_explainv(                                                                                                   \
         flut__assert_str_length((expected), (value), (shouldFreeString)),                                                   \
         "String expression `%s` should be %zu character(s) length. Expression `%s` is %zu character(s) length (\"%s\")",    \
         #string, (expected), #string, strlen((copy)), (copy));                                                              \

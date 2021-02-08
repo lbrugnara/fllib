@@ -5,8 +5,8 @@ mkdir build\win\x86\clang\clang-debug
 if not exist .\include (mkdir .\include)
 if not exist .\include\fllib (mkdir .\include\fllib)
 if not exist .\include\flut (mkdir .\include\flut)
-xcopy /y /d /s .\src\*.h .\include\fllib
-xcopy /y /d /s .\flut\src\*.h .\include\flut
+xcopy /F /y /d /s .\src\*.h .\include\fllib
+xcopy /F /y /d /s .\flut\src\*.h .\include\flut
 clang   -Wall -Werror -Wextra -pedantic -Wmissing-field-initializers -Wno-unused-value -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -Wno-missing-braces -fstrict-aliasing -Wvla -finput-charset=UTF-8 -fexec-charset=UTF-8 -D_FORTIFY_SOURCE=2 -std=c99 --target=i386-pc-win32 -ggdb -O0 -c .\src\containers\BinaryHeap.c -o obj\win\x86\clang\clang-debug\src\containers\BinaryHeap.o 
 clang   -Wall -Werror -Wextra -pedantic -Wmissing-field-initializers -Wno-unused-value -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -Wno-missing-braces -fstrict-aliasing -Wvla -finput-charset=UTF-8 -fexec-charset=UTF-8 -D_FORTIFY_SOURCE=2 -std=c99 --target=i386-pc-win32 -ggdb -O0 -c .\src\containers\Container.c -o obj\win\x86\clang\clang-debug\src\containers\Container.o 
 clang   -Wall -Werror -Wextra -pedantic -Wmissing-field-initializers -Wno-unused-value -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -Wno-missing-braces -fstrict-aliasing -Wvla -finput-charset=UTF-8 -fexec-charset=UTF-8 -D_FORTIFY_SOURCE=2 -std=c99 --target=i386-pc-win32 -ggdb -O0 -c .\src\containers\Hashtable.c -o obj\win\x86\clang\clang-debug\src\containers\Hashtable.o 

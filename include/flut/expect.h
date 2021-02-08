@@ -14,7 +14,7 @@ bool flut_expect_compat(const char *name, bool condition);
 
 /**
  * Notes:
- *  - Deprecated: Adopt flut_describe and use flut_assertion_vexplain instead
+ *  - Deprecated: Adopt flut_describe and use flut_assertion_explainv instead
  */
 bool flut_vexpect_compat(bool conditionResult, const char *format, ...);
 

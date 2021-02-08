@@ -7,7 +7,7 @@
 
 #define flut_assert_is_true(expression)         \
 do {                                            \
-    flut_assertion_vexplain(                       \
+    flut_assertion_explainv(                       \
         flut__assert_bool_true((expression)),   \
         "Expression `%s` should be true",       \
         #expression                             \
@@ -16,7 +16,7 @@ do {                                            \
 
 #define flut_assert_is_false(expression)        \
 do {                                            \
-    flut_assertion_vexplain(                       \
+    flut_assertion_explainv(                       \
         flut__assert_bool_false((expression)),  \
         "Expression `%s` should be false",      \
         #expression                             \

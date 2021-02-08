@@ -6,8 +6,8 @@ mkdir -p obj/linux/x86/gcc/clang-debug/flut/src/assert
 mkdir -p build/linux/x86/gcc/clang-debug
 mkdir -p ./include/fllib
 mkdir -p ./include/flut
-(cd ./src && find . -type f -name '*.h' | xargs cp -u --parents -t ../include/fllib)
-(cd ./flut/src && find . -type f -name '*.h' | xargs cp -u --parents -t ../../include/flut)
+(cd ./src && find . -type f -name '*.h' | xargs cp --verbose -u --parents -t ../include/fllib)
+(cd ./flut/src && find . -type f -name '*.h' | xargs cp --verbose -u --parents -t ../../include/flut)
 gcc   -Wall -Werror -Wextra -pedantic -Wmissing-field-initializers -Wno-unused-value -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -Wno-missing-braces -fstrict-aliasing -Wvla -finput-charset=UTF-8 -fexec-charset=UTF-8 -D_FORTIFY_SOURCE=2 -std=gnu99 -fPIC -Wno-nonnull -m64 -ggdb -O0 -c ./src/containers/BinaryHeap.c -o obj/linux/x86_64/gcc/clang-debug/src/containers/BinaryHeap.o 
 gcc   -Wall -Werror -Wextra -pedantic -Wmissing-field-initializers -Wno-unused-value -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -Wno-missing-braces -fstrict-aliasing -Wvla -finput-charset=UTF-8 -fexec-charset=UTF-8 -D_FORTIFY_SOURCE=2 -std=gnu99 -fPIC -Wno-nonnull -m64 -ggdb -O0 -c ./src/containers/Container.c -o obj/linux/x86_64/gcc/clang-debug/src/containers/Container.o 
 gcc   -Wall -Werror -Wextra -pedantic -Wmissing-field-initializers -Wno-unused-value -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -Wno-missing-braces -fstrict-aliasing -Wvla -finput-charset=UTF-8 -fexec-charset=UTF-8 -D_FORTIFY_SOURCE=2 -std=gnu99 -fPIC -Wno-nonnull -m64 -ggdb -O0 -c ./src/containers/Hashtable.c -o obj/linux/x86_64/gcc/clang-debug/src/containers/Hashtable.o 

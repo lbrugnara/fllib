@@ -6,13 +6,13 @@
 #include "result.h"
 #include "../context.h"
 
-#define flut_do_assertion(result, call, format, ...)                                                                        \
-    ((result) = call,                                                                                                       \
-     (result)->filename = __FILE__,                                                                                         \
-     (result)->funcname = __func__,                                                                                         \
-     (result)->line = __LINE__,                                                                                             \
-     (result)->assertion = fl_cstring_vdup(format, __VA_ARGS__),                                                            \
-     (result))
+#define flut_do_assertion(assertion_result, call_retval, format, ...)       \
+    ((assertion_result) = call_retval,                                      \
+     (assertion_result)->filename = __FILE__,                               \
+     (assertion_result)->funcname = __func__,                               \
+     (assertion_result)->line = __LINE__,                                   \
+     (assertion_result)->assertion = fl_cstring_vdup(format, __VA_ARGS__),  \
+     (assertion_result))
 
 #define flut_assertion_explainv(assertion, format, ...)                                                                     \
     do {                                                                                                                    \

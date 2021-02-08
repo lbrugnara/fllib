@@ -7,7 +7,7 @@
 
 #define flut_assert_char_is_equals(expected, actual)                                    \
 do {                                                                                    \
-    flut_assertion_vexplain(                                                               \
+    flut_assertion_explainv(                                                               \
         flut__assert_char_equals((expected), (actual)),                                 \
         "Char expression `%s` should be equals to char expression `%s` ('%c' == '%c')", \
         #actual, #expected, (actual), (expected)                                        \
@@ -15,7 +15,7 @@ do {                                                                            
 } while (0)
 #define flut_assert_char_is_not_equals(expected, actual)                                    \
 do {                                                                                        \
-    flut_assertion_vexplain(                                                                   \
+    flut_assertion_explainv(                                                                   \
         flut__assert_char_not_equals((expected), (actual)),                                 \
         "Char expression `%s` should not be equals to char expression `%s` ('%c' != '%c')", \
         #actual, #expected, (actual), (expected)                                            \

@@ -5,8 +5,8 @@ mkdir build\win\x86_64\msvc\msvc-debug
 if not exist .\include (mkdir .\include)
 if not exist .\include\fllib (mkdir .\include\fllib)
 if not exist .\include\flut (mkdir .\include\flut)
-xcopy /y /d /s .\src\*.h .\include\fllib
-xcopy /y /d /s .\flut\src\*.h .\include\flut
+xcopy /F /y /d /s .\src\*.h .\include\fllib
+xcopy /F /y /d /s .\flut\src\*.h .\include\flut
 cl.exe   /W1 /Od /Z7 /DEBUG:FULL /c .\src\containers\BinaryHeap.c /Fo.\obj\win\x86_64\msvc\msvc-debug\src\containers\BinaryHeap.o 
 cl.exe   /W1 /Od /Z7 /DEBUG:FULL /c .\src\containers\Container.c /Fo.\obj\win\x86_64\msvc\msvc-debug\src\containers\Container.o 
 cl.exe   /W1 /Od /Z7 /DEBUG:FULL /c .\src\containers\Hashtable.c /Fo.\obj\win\x86_64\msvc\msvc-debug\src\containers\Hashtable.o 

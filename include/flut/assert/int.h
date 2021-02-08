@@ -7,7 +7,7 @@
 
 #define flut_assert_int_is_equals(expected, actual)                                         \
 do {                                                                                        \
-    flut_assertion_vexplain(                                                                   \
+    flut_assertion_explainv(                                                                   \
         flut__assert_int_equals((expected), (actual)),                                      \
         "Integer expression `%s` should be equals to integer expression `%s` (%zu == %zu)", \
         #actual, #expected, (actual), (expected)                                            \
@@ -16,7 +16,7 @@ do {                                                                            
 
 #define flut_assert_int_is_not_equals(expected, actual)                                         \
 do {                                                                                            \
-    flut_assertion_vexplain(                                                                       \
+    flut_assertion_explainv(                                                                       \
         flut__assert_int_not_equals((expected), (actual)),                                      \
         "Integer expression `%s` should not be equals to integer expression `%s` (%zu != %zu)", \
         #actual, #expected, (actual), (expected)                                                \
@@ -25,7 +25,7 @@ do {                                                                            
 
 #define flut_assert_int_is_greater_than(expected, actual)                                       \
 do {                                                                                            \
-    flut_assertion_vexplain(                                                                       \
+    flut_assertion_explainv(                                                                       \
         flut__assert_int_gt((expected), (actual)),                                              \
         "Integer expression `%s` should be greater than integer expression `%s` (%zu > %zu)",   \
         #actual, #expected, (actual), (expected)                                                \
@@ -34,7 +34,7 @@ do {                                                                            
 
 #define flut_assert_int_is_greater_than_or_equals(expected, actual)                                         \
 do {                                                                                                        \
-    flut_assertion_vexplain(                                                                                   \
+    flut_assertion_explainv(                                                                                   \
         flut__assert_int_gte((expected), (actual)),                                                         \
         "Integer expression `%s` should be greater than or equals to integer expression `%s` (%zu >= %zu)", \
         #actual, #expected, (actual), (expected)                                                            \
@@ -43,7 +43,7 @@ do {                                                                            
 
 #define flut_assert_int_is_lesser_than(expected, actual)                                        \
 do {                                                                                            \
-    flut_assertion_vexplain(                                                                       \
+    flut_assertion_explainv(                                                                       \
         flut__assert_int_lt((expected), (actual)),                                              \
         "Integer expression `%s` should be lesser than integer expression `%s` (%zu < %zu)",    \
         #actual, #expected, (actual), (expected)                                                \
@@ -52,7 +52,7 @@ do {                                                                            
 
 #define flut_assert_int_is_lesser_than_or_equals(expected, actual)                                          \
 do {                                                                                                        \
-    flut_assertion_vexplain(                                                                                   \
+    flut_assertion_explainv(                                                                                   \
         flut__assert_int_lte((expected), (actual)),                                                         \
         "Integer expression `%s` should be lesser than or equals to integer expression `%s` (%zu <= %zu)",  \
         #actual, #expected, (actual), (expected)                                                            \

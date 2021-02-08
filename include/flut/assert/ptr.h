@@ -7,7 +7,7 @@
 
 #define flut_assert_pointer_is_equals(expected, actual)         \
 do {                                                            \
-    flut_assertion_vexplain(                                       \
+    flut_assertion_explainv(                                       \
         flut__assert_ptr_equals((expected), (actual)),          \
         "Pointer `%s` should be equals to pointer `%s`",        \
         #actual, #expected                                      \
@@ -16,7 +16,7 @@ do {                                                            \
 
 #define flut_assert_pointer_is_not_equals(expected, actual)     \
 do {                                                            \
-    flut_assertion_vexplain(                                       \
+    flut_assertion_explainv(                                       \
         flut__assert_ptr_not_equals((expected), (actual)),      \
         "Pointer `%s` should not be equals to pointer `%s`",    \
         #actual, #expected                                      \

@@ -12,8 +12,6 @@
 #include <fllib/os/Signal.h>
 #include <fllib/os/Timer.h>
 
-
-#include "assert.h"
 #include "context.h"
 #include "suite.h"
 #include "test.h"
@@ -118,8 +116,6 @@ static LONG WINAPI exception_filter(EXCEPTION_POINTERS *ExceptionInfo)
 
 void flut_suite_run(FlutSuite *suite, FlutSuiteResult *result)
 {
-    FlutAssertUtils *assert = flut_assert_utils_new();
-
 #ifdef _WIN32
     FlWinExceptionHandler global_handler = fl_winex_global_handler_set(exception_filter);
 #endif
@@ -144,7 +140,7 @@ void flut_suite_run(FlutSuite *suite, FlutSuiteResult *result)
         {
             Try(&test_restore_context_compat)
             {
-                suite->tests[i].run(test_context, assert);
+                suite->tests[i].run(test_context);
 
                 if (test_context->failed) {
                     failed_tests++;
@@ -200,6 +196,4 @@ void flut_suite_run(FlutSuite *suite, FlutSuiteResult *result)
 #ifdef _WIN32
     fl_winex_global_handler_set(global_handler);
 #endif
-
-    flut_assert_utils_free(assert);
 }

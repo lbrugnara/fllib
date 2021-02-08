@@ -1,7 +1,7 @@
 #ifndef FLUT_H
 #define FLUT_H
 
-#include "assert.h"
+#include "assert/asserts.h"
 #include "context.h"
 #include "expect.h"
 #include "suite.h"
@@ -10,7 +10,7 @@
 
 #define FLUT_CURRENT_CTX flut__internal_ctx
 
-#define flut_define_test(test_id)       void flut__test_##test_id(FlutContext *FLUT_CURRENT_CTX, FlutAssertUtils *assert)
+#define flut_define_test(test_id)       void flut__test_##test_id(FlutContext *FLUT_CURRENT_CTX)
 
 #define flut_define_suite(suite_id)     void flut_suite_##suite_id(FlutSuite *flut__internal_suite)
 
@@ -21,7 +21,7 @@
         size_t cur_size = fl_array_length(flut__internal_suite->tests);                                                 \
         flut__internal_suite->tests = fl_array_resize(flut__internal_suite->tests, cur_size + 1);                       \
         flut__internal_suite->tests[cur_size].name = fl_cstring_dup(test_description);                                  \
-        void flut__test_##test_id(FlutContext *, FlutAssertUtils *);                                                    \
+        void flut__test_##test_id(FlutContext*);                                                                        \
         flut__internal_suite->tests[cur_size].run = &flut__test_##test_id;                                              \
     } (void)0
 

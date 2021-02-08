@@ -117,6 +117,14 @@ config clang-debug extends clang-config {
     }
 }
 
+# The coverage config adds the flags to get generate the code coverage
+config clang-debug-coverage extends clang-debug {
+    compile: { flags: [ "-fprofile-instr-generate -fcoverage-mapping" ] }
+    if $sbs.os == linux {
+        executable: { flags: [ "-fprofile-instr-generate -fcoverage-mapping" ] }
+    }
+}
+
 # The sanitize config adds the -fsanitize flag to compile with Clang's sanitizers
 config clang-debug-sanitize extends clang-debug {
 

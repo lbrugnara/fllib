@@ -22,6 +22,21 @@ preset debug {
     }
 }
 
+preset debug-coverage {
+    envs: [ win-cmd, linux-bash ],
+    toolchains: [ clang ],
+    configs: [ clang-debug-coverage ],
+    targets: [ fllib-static, fl-tests ],
+    actions: {
+        before: [
+            export-headers
+        ],
+        after: [
+            clang-profile
+        ]
+    }
+}
+
 preset debug-sanitize {
     envs: [ win-cmd, linux-bash ],
     toolchains: [ clang ],

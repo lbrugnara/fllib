@@ -14,9 +14,9 @@ toolchain clang {
         archiver: {
             bin: "llvm-lib.exe"
         },
-        # We use MS' linker
+        # We use LLVM' linker
         linker: {
-            bin: "link.exe",
+            bin: "lld-link.exe",
             lib_dir_flag: "/LIBPATH:",
             lib_flag: "/DEFAULTLIB:"
         }

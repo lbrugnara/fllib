@@ -1,6 +1,7 @@
 include [
     "variables.sbs",
 
+    "action-clang-profile.sbs",
     "action-clean.sbs",
     "action-clean-all.sbs",
     "action-export-headers.sbs",

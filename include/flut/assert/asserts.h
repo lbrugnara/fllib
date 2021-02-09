@@ -3,6 +3,7 @@
 
 #include "bool.h"
 #include "char.h"
+#include "double.h"
 #include "int.h"
 #include "null.h"
 #include "ptr.h"

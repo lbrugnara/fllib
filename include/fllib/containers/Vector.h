@@ -163,6 +163,99 @@ struct FlVectorArgs {
 #define flm_vector_new_with(...) fl_vector_new_args((struct FlVectorArgs) { __VA_ARGS__ })
 
 /*
+ * Macro: flm_vector_add
+ * 
+ * --- Prototype
+ *      #define flm_vector_add(vector, type, value) (fl_vector_add((vector), (type[]) { value }))
+ * ---
+ * 
+ *  Adds a new element of the provided type to the vector.
+ * 
+ * Parameters:
+ *  vector - Vector object
+ *  type - Type of the value to be added to the vector
+ *  value - The value to be added to the vector
+ *
+ * Return:
+ *  bool: *true* if the element is added to the vector, otherwise this function returns *false*.
+ * 
+ * Notes:
+ *  -   If the vector object is configured to use an <FlContainerCleanupFn> function, it takes ownership of 
+ *      the added element, which means it will release the element memory once it is removed from the vector
+ *      unless the functions that remove elements from the vector say the opposite.
+ * 
+ * See:
+ *  -   <fl_vector_new_args> to check how to configure an <FlContainerCleanupFn> function
+ *  -   <fl_vector_shift> and <fl_vector_pop> to check how to remove elements from the vector
+ * 
+ * Example:
+ * 
+ * --- C
+ *      FlVector *int_vector = flm_vector_new_with(.element_size = sizeof(int));
+ * 
+ *      flm_vector_add(int_vector, int, 10);
+ *      assert(flm_vector_get(int_vector, int, 0) == 10);
+ * 
+ *      flm_vector_add(int_vector, int, 15);
+ *      assert(flm_vector_get(int_vector, int, 1) == 15);
+ * 
+ *      flm_vector_add(int_vector, int, 20);
+ *      assert(flm_vector_get(int_vector, int, 2) == 20);
+ * ---
+ */
+#define flm_vector_add(vector, type, value) (fl_vector_add((vector), (type[]) { value }))
+
+/*
+ * Macro: flm_vector_insert
+ * 
+ * --- Prototype
+ *      #define flm_vector_insert(vector, type, element, index) (fl_vector_insert((vector), (type[]) { element }, (index)))
+ * ---
+ * 
+ *  Inserts an element of the provided type into the vector in the specified index:
+ * 
+ *      -   If the index is equals to the vector's length, the element is appended
+ *      -   If the index is lesser than the vector's length, all the elements stored in the 
+ *          index-th position and above will be moved one position to the right
+ *      -   If the index is greather than the vector's length, all the elements between the
+ *          current last element and the new element to be inserted are zeroed-out
+ *
+ * Parameters:
+ *  vector - vector object
+ *  type - The type of the element to insert
+ *  element - Element to insert into the vector
+ *  index - Target position to store the element in the vector
+ *
+ * Return:
+ *  bool: *true* if the element is inserted into the vector, otherwise this function returns *false*.
+ * 
+ * Notes:
+ *  -   If the vector object is configured to use an <FlContainerCleanupFn> function, it takes ownership of 
+ *      the inserted element, which means it will release the element memory once it is removed from the vector
+ *      unless the functions that remove elements from the vector say the opposite.
+ * 
+ * See:
+ *  -   <fl_vector_new_args> to check how to configure an <FlContainerCleanupFn> function
+ *  -   <fl_vector_shift> and <fl_vector_pop> to check how to remove elements from the vector
+ * 
+ * Example:
+ * 
+ * --- C
+ *      FlVector *int_vector = flm_vector_new_with(.element_size = sizeof(int));
+ * 
+ *      flm_vector_insert(int_vector, int, 10, 0);
+ *      assert(flm_vector_get(int_vector, int, 0) == 10);
+ * 
+ *      flm_vector_insert(int_vector, int, 15, 1);
+ *      assert(flm_vector_get(int_vector, int, 1) == 15);
+ * 
+ *      flm_vector_insert(int_vector, int, 20, 2);
+ *      assert(flm_vector_get(int_vector, int, 2) == 20);
+ * ---
+ */
+#define flm_vector_insert(vector, type, element, index) (fl_vector_insert((vector), (type[]) { element }, (index)))
+
+/*
  * Macro: flm_vector_get
  * 
  * --- Prototype
@@ -404,7 +497,7 @@ size_t fl_vector_element_size(FlVector *vector);
  *  element - Element to be appended to the vector
  * 
  * Return:
- *  bool: *true* if the element is added to the array, otherwise this function returns *false*.
+ *  bool: *true* if the element is added to the vector, otherwise this function returns *false*.
  * 
  * Notes:
  *  -   If the vector object is configured to use an <FlContainerCleanupFn> function, it takes ownership of 
@@ -433,7 +526,7 @@ bool fl_vector_add(FlVector *vector, const void *element);
  *  index - Target position to store the element in the vector
  *
  * Return:
- *  bool: *true* if the element is inserted into the array, otherwise this function returns *false*.
+ *  bool: *true* if the element is inserted into the vector, otherwise this function returns *false*.
  * 
  * Notes:
  *  -   If the vector object is configured to use an <FlContainerCleanupFn> function, it takes ownership of 

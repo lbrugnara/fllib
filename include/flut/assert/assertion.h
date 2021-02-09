@@ -22,11 +22,14 @@
 
 #define flut_assertion_explain(assertion, message) flut_assertion_explainv(assertion, "%s", message)
 
-#define flut_explain(message, assertion)                                                                                \
+#define flut_explainv(assertion, format, ...)                                                                           \
     assertion;                                                                                                          \
     printf("%s", " |  |  ");                                                                                            \
-    printf("      Explanation: %s", message);                                                                           \
+    printf("%s", "      Explanation: ");                                                                                \
+    printf(format, __VA_ARGS__);                                                                                        \
     printf("%s", "\n")
+
+#define flut_explain(assertion, message) flut_explainv(assertion, "%s", message)
 
 bool flut_assertion_process_result(FlutContext *ctx, FlutAssertResult *result);
 

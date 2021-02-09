@@ -204,7 +204,7 @@ flut_define_test(vector_insert) {
         fl_vector_free(vector);
     }
 
-    flut_describe("Insert of primitive types in position 0 must result in an ordedered vector") {
+    flut_describe("Insert of pointers in position 0 must result in an ordedered vector") {
         FlVector *vector = flm_vector_new_with(.element_size = sizeof(char*), .cleaner = fl_container_cleaner_pointer, .capacity = 10);
         flut_assert_is_true(flm_vector_insert(vector, char*, fl_cstring_vdup("Element %d", 9), 0));
         flut_assert_is_true(flm_vector_insert(vector, char*, fl_cstring_vdup("Element %d", 8), 0));
@@ -232,12 +232,8 @@ flut_define_test(vector_insert) {
 
     flut_describe("Insert should not succeed if max. capacity has been reached") {
         FlVector *vector = flm_vector_new_with(.max_capacity = 5, .element_size = sizeof(size_t));
-        flut_assert_is_true(flm_vector_insert(vector, size_t, 4, 0));
-        flut_assert_is_true(flm_vector_insert(vector, size_t, 3, 0));
-        flut_assert_is_true(flm_vector_insert(vector, size_t, 2, 0));
-        flut_assert_is_true(flm_vector_insert(vector, size_t, 1, 0));
-        flut_assert_is_true(flm_vector_insert(vector, size_t, 0, 0));
-        flut_assert_size_t_is_equals(5, fl_vector_length(vector));
+        flut_explain(flut_assert_is_true(flm_vector_insert(vector, size_t, 0, 4)), "An insert in the last position should fill the vector");
+        flut_assert_size_t_is_equals(fl_vector_max_capacity(vector), fl_vector_length(vector));
         flut_assert_is_false(flm_vector_insert(vector, size_t, 0, 0));
         flut_assert_is_false(flm_vector_insert(vector, size_t, 0, 1));
         flut_assert_is_false(flm_vector_insert(vector, size_t, 0, 2));
@@ -247,150 +243,137 @@ flut_define_test(vector_insert) {
 }
 
 flut_define_test(vector_shift) {
-    // Use pointers
-    int *numbers[10] = { 0 };
-    size_t size = 10;
-
-    for (size_t i=0; i < size; i++)
-    {
-        numbers[i] = fl_malloc(sizeof(int));
-        *(numbers[i]) = i;
+    flut_describe("Shift primitive types from vector") {
+        FlVector *vector = flm_vector_new_with(.capacity = 10, .element_size = sizeof(int));
+        flut_assert_is_true(flm_vector_add(vector, int, 0));
+        flut_assert_is_true(flm_vector_add(vector, int, 1));
+        flut_assert_is_true(flm_vector_add(vector, int, 2));
+        flut_assert_is_true(flm_vector_add(vector, int, 3));
+        flut_assert_size_t_is_equals(4, fl_vector_length(vector));
+        flut_assert_is_true(fl_vector_shift(vector, NULL));
+        flut_assert_is_true(fl_vector_shift(vector, NULL));
+        flut_assert_is_true(fl_vector_shift(vector, NULL));
+        flut_assert_is_true(fl_vector_shift(vector, NULL));
+        flut_assert_size_t_is_equals(0, fl_vector_length(vector));
+        flut_assert_is_false(fl_vector_shift(vector, NULL));
+        fl_vector_free(vector);
     }
-
-    FlVector *vector = flm_vector_new_with(.capacity = 10);
-
-    for (size_t i=0; i < size; i++)
-    {
-        // Store a pointer
-        fl_vector_add(vector, numbers + i);
+    flut_describe("Shift pointers from vector") {
+        FlVector *vector = flm_vector_new_with(.element_size = sizeof(char*), .capacity = 10, .cleaner = fl_container_cleaner_pointer);
+        flut_assert_is_true(flm_vector_add(vector, char*, fl_cstring_vdup("Element %d", 0)));
+        flut_assert_is_true(flm_vector_add(vector, char*, fl_cstring_vdup("Element %d", 1)));
+        flut_assert_is_true(flm_vector_add(vector, char*, fl_cstring_vdup("Element %d", 2)));
+        flut_assert_is_true(flm_vector_add(vector, char*, fl_cstring_vdup("Element %d", 3)));
+        flut_assert_size_t_is_equals(4, fl_vector_length(vector));
+        flut_assert_is_true(fl_vector_shift(vector, NULL));
+        flut_assert_is_true(fl_vector_shift(vector, NULL));
+        flut_assert_is_true(fl_vector_shift(vector, NULL));
+        flut_assert_is_true(fl_vector_shift(vector, NULL));
+        flut_assert_size_t_is_equals(0, fl_vector_length(vector));
+        flut_assert_is_false(fl_vector_shift(vector, NULL));
+        fl_vector_free(vector);
     }
-
-    flut_expect_compat("Vector must have length == 10", fl_vector_length(vector) == 10);
-
-    for (size_t i=0; i < size; i++)
-    {
-        int *number = NULL;
-        fl_vector_shift(vector, &number);
-        flut_vexpect_compat(number && *number == *(numbers[i]), "Shifted element must be equals to %d", *(numbers[i]));
+    flut_describe("Shift pointers from vector without cleaning its memory") {
+        FlVector *vector = flm_vector_new_with(.element_size = sizeof(char*), .capacity = 10, .cleaner = fl_container_cleaner_pointer);
+        flut_assert_is_true(flm_vector_add(vector, char*, fl_cstring_vdup("Element %d", 0)));
+        flut_assert_is_true(flm_vector_add(vector, char*, fl_cstring_vdup("Element %d", 1)));
+        flut_assert_is_true(flm_vector_add(vector, char*, fl_cstring_vdup("Element %d", 2)));
+        flut_assert_is_true(flm_vector_add(vector, char*, fl_cstring_vdup("Element %d", 3)));
+        flut_assert_size_t_is_equals(4, fl_vector_length(vector));
+        char *element = NULL;
+        flut_assert_is_true(fl_vector_shift(vector, &element));
+        flut_assert_string_is_equals("Element 0", element, true);
+        flut_assert_is_true(fl_vector_shift(vector, &element));
+        flut_assert_string_is_equals("Element 1", element, true);
+        flut_assert_is_true(fl_vector_shift(vector, &element));
+        flut_assert_string_is_equals("Element 2", element, true);
+        flut_assert_is_true(fl_vector_shift(vector, &element));
+        flut_assert_string_is_equals("Element 3", element, true);
+        flut_assert_size_t_is_equals(0, fl_vector_length(vector));
+        fl_vector_free(vector);
     }
-
-    flut_expect_compat("Vector after shifting all the elements must be empty", fl_vector_length(vector) == 0);
-
-    for (size_t i=0; i < size; i++)
-        fl_free(numbers[i]);
-
-    fl_vector_free(vector);
-
-    vector = flm_vector_new_with(.element_size = sizeof(int), .capacity = 10);
-
-    for (int i=0; i < 10; i++)
-    {
-        flut_vexpect_compat(fl_vector_add(vector, &i), "Element at position %d must be added successfully", i);
-    }
-
-    flut_expect_compat("Vector must have length == 10", fl_vector_length(vector) == 10);
-
-    for (int i=0; i < 10; i++)
-    {
-        int number = -1;
-        fl_vector_shift(vector, &number);
-        flut_vexpect_compat(number == i, "Shifted element must be equals to %d", i);
-    }
-
-    flut_expect_compat("Vector after shifting all the elements must be empty", fl_vector_length(vector) == 0);
-
-    fl_vector_free(vector);
 }
 
 flut_define_test(vector_pop) {
-    // Use pointers
-    int *numbers[10] = { 0 };
-    size_t size = 10;
-
-    for (size_t i=0; i < size; i++)
-    {
-        numbers[i] = fl_malloc(sizeof(int));
-        *(numbers[i]) = i;
+    flut_describe("Pop primitive types from vector") {
+        FlVector *vector = flm_vector_new_with(.capacity = 10, .element_size = sizeof(int));
+        flut_assert_is_true(flm_vector_add(vector, int, 0));
+        flut_assert_is_true(flm_vector_add(vector, int, 1));
+        flut_assert_is_true(flm_vector_add(vector, int, 2));
+        flut_assert_is_true(flm_vector_add(vector, int, 3));
+        flut_assert_size_t_is_equals(4, fl_vector_length(vector));
+        flut_assert_is_true(fl_vector_pop(vector, NULL));
+        flut_assert_is_true(fl_vector_pop(vector, NULL));
+        flut_assert_is_true(fl_vector_pop(vector, NULL));
+        flut_assert_is_true(fl_vector_pop(vector, NULL));
+        flut_assert_size_t_is_equals(0, fl_vector_length(vector));
+        flut_assert_is_false(fl_vector_pop(vector, NULL));
+        fl_vector_free(vector);
     }
-
-    FlVector *vector = flm_vector_new_with(.capacity = 10);
-
-    for (size_t i=0; i < size; i++)
-        fl_vector_add(vector, numbers+i);
-
-    flut_expect_compat("Vector must have length == 10", fl_vector_length(vector) == 10);
-
-    for (size_t i=0; i < size; i++)
-    {
-        int *number = NULL;
-        fl_vector_pop(vector, &number);
-        flut_vexpect_compat(number && *number == *(numbers[size-1-i]), "Shifted element must be equals to %d", *(numbers[size-1-i]));
+    flut_describe("Pop pointers from vector") {
+        FlVector *vector = flm_vector_new_with(.element_size = sizeof(char*), .capacity = 10, .cleaner = fl_container_cleaner_pointer);
+        flut_assert_is_true(flm_vector_add(vector, char*, fl_cstring_vdup("Element %d", 0)));
+        flut_assert_is_true(flm_vector_add(vector, char*, fl_cstring_vdup("Element %d", 1)));
+        flut_assert_is_true(flm_vector_add(vector, char*, fl_cstring_vdup("Element %d", 2)));
+        flut_assert_is_true(flm_vector_add(vector, char*, fl_cstring_vdup("Element %d", 3)));
+        flut_assert_size_t_is_equals(4, fl_vector_length(vector));
+        flut_assert_is_true(fl_vector_pop(vector, NULL));
+        flut_assert_is_true(fl_vector_pop(vector, NULL));
+        flut_assert_is_true(fl_vector_pop(vector, NULL));
+        flut_assert_is_true(fl_vector_pop(vector, NULL));
+        flut_assert_size_t_is_equals(0, fl_vector_length(vector));
+        flut_assert_is_false(fl_vector_pop(vector, NULL));
+        fl_vector_free(vector);
     }
-
-    flut_expect_compat("Vector after popping all the elements must be empty", fl_vector_length(vector) == 0);
-
-    for (size_t i=0; i < size; i++)
-        fl_free(numbers[i]);
-
-    fl_vector_free(vector);
-
-    vector = flm_vector_new_with(.element_size = sizeof(int), .capacity = 10);
-
-    for (int i=0; i < 10; i++)
-    {
-        flut_vexpect_compat(fl_vector_add(vector, &i), "Add (at position %zu) must success", i);
+    flut_describe("Pop pointers from vector without cleaning its memory") {
+        FlVector *vector = flm_vector_new_with(.element_size = sizeof(char*), .capacity = 10, .cleaner = fl_container_cleaner_pointer);
+        flut_assert_is_true(flm_vector_add(vector, char*, fl_cstring_vdup("Element %d", 0)));
+        flut_assert_is_true(flm_vector_add(vector, char*, fl_cstring_vdup("Element %d", 1)));
+        flut_assert_is_true(flm_vector_add(vector, char*, fl_cstring_vdup("Element %d", 2)));
+        flut_assert_is_true(flm_vector_add(vector, char*, fl_cstring_vdup("Element %d", 3)));
+        flut_assert_size_t_is_equals(4, fl_vector_length(vector));
+        char *element = NULL;
+        flut_assert_is_true(fl_vector_pop(vector, &element));
+        flut_assert_string_is_equals("Element 3", element, true);
+        flut_assert_is_true(fl_vector_pop(vector, &element));
+        flut_assert_string_is_equals("Element 2", element, true);
+        flut_assert_is_true(fl_vector_pop(vector, &element));
+        flut_assert_string_is_equals("Element 1", element, true);
+        flut_assert_is_true(fl_vector_pop(vector, &element));
+        flut_assert_string_is_equals("Element 0", element, true);
+        flut_assert_size_t_is_equals(0, fl_vector_length(vector));
+        fl_vector_free(vector);
     }
-
-    flut_expect_compat("Vector must have length == 10", fl_vector_length(vector) == 10);
-
-    for (int i=0; i < 10; i++)
-    {
-        int number = -1;
-        fl_vector_pop(vector, &number);
-        flut_vexpect_compat(number == 9-i, "Shifted element must be equals to %d", 9-i);
-    }
-
-    flut_expect_compat("Vector after popping all the elements must be empty", fl_vector_length(vector) == 0);
-
-    fl_vector_free(vector);
 }
 
 flut_define_test(vector_get) {
-    flut_println("fl_vector_ref_get should return \"pointers to\" int for a vector that stores integers") {
-        FlVector *vector_of_ints = flm_vector_new_with(.element_size = sizeof(int));
-
-        int x = 10, y = 20;
-
-        fl_vector_add(vector_of_ints, &x);              // Accepts "pointer to" integer
-        fl_vector_insert(vector_of_ints, &y, 0);        // Accepts "pointer to" integer
-
-        int *py = fl_vector_ref_get(vector_of_ints, 0);     // Returns "pointer to" integer
-        int *px = fl_vector_ref_get(vector_of_ints, 1);     // Returns "pointer to" integer
-
-        flut_vexpect_compat(*py == y, "Element at index 0 must be equals to variable y (%d)", y);
-        flut_vexpect_compat(*px == x, "Element at index 1 must be equals to variable x (%d)", x);
-
-        fl_vector_free(vector_of_ints);
+    flut_describe("Get primitive types from vector") {
+        FlVector *vector = flm_vector_new_with(.capacity = 10, .element_size = sizeof(int));
+        flut_assert_is_true(flm_vector_add(vector, int, 0));
+        flut_assert_is_true(flm_vector_add(vector, int, 1));
+        flut_assert_is_true(flm_vector_add(vector, int, 2));
+        flut_assert_is_true(flm_vector_add(vector, int, 3));
+        flut_assert_size_t_is_equals(4, fl_vector_length(vector));
+        flut_assert_int_is_equals(0, *(int*) fl_vector_ref_get(vector, 0));
+        flut_assert_int_is_equals(1, *(int*) fl_vector_ref_get(vector, 1));
+        flut_assert_int_is_equals(2, *(int*) fl_vector_ref_get(vector, 2));
+        flut_assert_int_is_equals(3, *(int*) fl_vector_ref_get(vector, 3));
+        flut_assert_is_null(fl_vector_ref_get(vector, 4));
+        fl_vector_free(vector);
     }
-
-    flut_println("fl_vector_ref_get should return \"pointers to\" pointers to int for a vector that stores pointers to integer") {
-        FlVector *vector_of_int_ptrs = flm_vector_new_with(.capacity = 2);
-
-        int x = 10, y = 20;
-        int *px = &x, *py = &y;
-
-        fl_vector_add(vector_of_int_ptrs, &px);             // Accepts "pointer to" pointer to integer
-        fl_vector_insert(vector_of_int_ptrs, &py, 0);       // Accepts "pointer to" pointer to integer
-
-        int **ppy = fl_vector_ref_get(vector_of_int_ptrs, 0);   // Returns "pointer to" pointer to integer
-        int **ppx = fl_vector_ref_get(vector_of_int_ptrs, 1);   // Returns "pointer to" pointer to integer
-
-        flut_vexpect_compat(*ppy == py, "Element at index 0 must be equals to pointer py (0x%x)", py);
-        flut_vexpect_compat(**ppy == y, "Dereferencing element at index 0 must be equals to variable y (%d)", y);
-        flut_vexpect_compat(*ppx == px, "Element at index 1 must be equals to pointer px (0x%x)", px);
-        flut_vexpect_compat(**ppx == x, "Dereferencing element at index 1 must be equals to variable x (%d)", x);
-
-        fl_vector_free(vector_of_int_ptrs);
+    flut_describe("Get pointers from vector") {
+        FlVector *vector = flm_vector_new_with(.element_size = sizeof(char*), .capacity = 10, .cleaner = fl_container_cleaner_pointer);
+        flut_assert_is_true(flm_vector_add(vector, char*, fl_cstring_vdup("Element %d", 0)));
+        flut_assert_is_true(flm_vector_add(vector, char*, fl_cstring_vdup("Element %d", 1)));
+        flut_assert_is_true(flm_vector_add(vector, char*, fl_cstring_vdup("Element %d", 2)));
+        flut_assert_is_true(flm_vector_add(vector, char*, fl_cstring_vdup("Element %d", 3)));
+        flut_assert_size_t_is_equals(4, fl_vector_length(vector));
+        flut_assert_string_is_equals("Element 0", *(char**) fl_vector_ref_get(vector, 0), false);
+        flut_assert_string_is_equals("Element 1", *(char**) fl_vector_ref_get(vector, 1), false);
+        flut_assert_string_is_equals("Element 2", *(char**) fl_vector_ref_get(vector, 2), false);
+        flut_assert_string_is_equals("Element 3", *(char**) fl_vector_ref_get(vector, 3), false);
+        flut_assert_is_null(fl_vector_ref_get(vector, 4));
+        fl_vector_free(vector);
     }
 }
 
@@ -403,15 +386,12 @@ flut_define_test(vector_value_writer) {
             flm_vector_add(vector, size_t, numbers[i]);
         }
 
-        size_t *ptr0 = (size_t*) fl_vector_ref_get(vector, 0);
-        *ptr0 += 10;
-        size_t *ptr1 = (size_t*) fl_vector_ref_get(vector, 1);
-        *ptr1 += 10;
-        size_t *ptr2 = (size_t*) fl_vector_ref_get(vector, 2);
-        *ptr2 += 10;
-        flut_assert_size_t_is_not_equals(numbers[0], flm_vector_get(vector, size_t, 0));
-        flut_assert_size_t_is_not_equals(numbers[1], flm_vector_get(vector, size_t, 1));
-        flut_assert_size_t_is_not_equals(numbers[2], flm_vector_get(vector, size_t, 2));
+        (*(size_t*) fl_vector_ref_get(vector, 0))++;
+        (*(size_t*) fl_vector_ref_get(vector, 1))++;
+        (*(size_t*) fl_vector_ref_get(vector, 2))++;
+        flut_explain(flut_assert_size_t_is_not_equals(numbers[0], flm_vector_get(vector, size_t, 0)), "Element 0 within the vector should have been incremented by 1");
+        flut_explain(flut_assert_size_t_is_not_equals(numbers[1], flm_vector_get(vector, size_t, 1)), "Element 1 within the vector should have been incremented by 1");
+        flut_explain(flut_assert_size_t_is_not_equals(numbers[2], flm_vector_get(vector, size_t, 2)), "Element 2 within the vector should have been incremented by 1");
 
         fl_vector_free(vector);
     }

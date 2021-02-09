@@ -170,33 +170,29 @@ bool fl_vector_add(FlVector *vector, const void *element)
     return true;
 }
 
-bool fl_vector_insert(FlVector *vector, const void *element, size_t index)
-{
-    // Capacity required to store an element in the index-nth position
-    size_t reqcapacity = index + 1;
-
-    if (reqcapacity > vector->max_capacity)
+bool fl_vector_insert(FlVector *vector, const void *element, size_t index) {
+    // If we don't have enough space to store one more item, return false
+    if (vector->length + 1 > vector->max_capacity) {
         return false;
+    }
 
     // Check resize
-    if (vector->length >= vector->capacity || reqcapacity > vector->capacity)
-    {
+    if (index >= vector->capacity || vector->length >= vector->capacity) {
         // Expected new capacity per growth factor
-        size_t newcapacity = calculate_growth(vector, reqcapacity);
+        size_t newcapacity = calculate_growth(vector, (index >= vector->capacity ? index : vector->length) + 1);
 
-        if (!resize_vector(vector, newcapacity))
+        if (!resize_vector(vector, newcapacity)) {
             return false;
+        }
     }
 
     // Zero out between the last element and the index if needed
-    if (vector->length < index)
-    {        
-        size_t bytes = (index - vector->length) * vector->element_size;        
-        memset(vector->data + vector->length * vector->element_size, 0, bytes);
+    if (vector->length < index) {        
+        memset(vector->data + vector->length * vector->element_size, 0, (index - vector->length) * vector->element_size);
     }
 
     // Calculate index' offset
-    size_t offset = (index * vector->element_size);    
+    size_t offset = index * vector->element_size;
 
     // If the index is in between current elements, we need to move elements
     // to make space for the new element

@@ -11,7 +11,8 @@ do {                                                                            
         flut__assert_double_equals((expected), (actual), (epsilon)),                    \
         "Double expression `%s` should be equals to double expression `%s` with an "    \
         "acceptable error of %f (|%f - %f| <= %f)",                                     \
-        #actual, #expected, (epsilon), (actual), (expected), (epsilon)                  \
+        #actual, #expected, (double) (epsilon), (double) (actual), (double) (expected), \
+        (double) (epsilon)                                                              \
     );                                                                                  \
 } while (0)
 
@@ -21,7 +22,8 @@ do {                                                                            
         flut__assert_double_not_equals((expected), (actual), (epsilon)),                    \
         "Double expression `%s` should not be equals to double expression `%s` with an "    \
         "acceptable error of %f (|%f - %f| > %f)",                                          \
-        #actual, #expected, (epsilon), (actual), (expected), (epsilon)                      \
+        #actual, #expected, (double) (epsilon), (double) (actual), (double) (expected),     \
+        (double) (epsilon)                                                                  \
     );                                                                                      \
 } while (0)
 
@@ -31,7 +33,7 @@ do {                                                                            
         flut__assert_double_gt((expected), (actual), (epsilon)),                            \
         "Double expression `%s` should be greater than double expression `%s` with an "     \
         "acceptable error of %f (%f > %f)",                                                 \
-        #actual, #expected, (epsilon), (actual), (expected)                                 \
+        #actual, #expected, (double) (epsilon), (double) (actual), (double) (expected)      \
     );                                                                                      \
 } while (0)
 
@@ -41,7 +43,7 @@ do {                                                                            
         flut__assert_double_gte((expected), (actual), (epsilon)),                                       \
         "Double expression `%s` should be greater than or equals to double expression `%s` with an "    \
         "acceptable error of %f (%f >= %f)",                                                            \
-        #actual, #expected, (epsilon), (actual), (expected)                                             \
+        #actual, #expected, (double) (epsilon), (double) (actual), (double) (expected)                  \
     );                                                                                                  \
 } while (0)
 
@@ -51,7 +53,7 @@ do {                                                                            
         flut__assert_double_lt((expected), (actual), (epsilon)),                            \
         "Double expression `%s` should be lesser than double expression `%s` with an "      \
         "acceptable error of %f (%f < %f)",                                                 \
-        #actual, #expected, (epsilon), (actual), (expected)                                 \
+        #actual, #expected, (double) (epsilon), (double) (actual), (double) (expected)      \
     );                                                                                      \
 } while (0)
 
@@ -61,7 +63,7 @@ do {                                                                            
         flut__assert_double_lte((expected), (actual), (epsilon)),                                           \
         "Double expression `%s` should be lesser than or equals to double expression `%s` with an "         \
         "acceptable error of %f (%f <= %f)",                                                                \
-        #actual, #expected, (epsilon), (actual), (expected)                                                 \
+        #actual, #expected, (double) (epsilon), (double) (actual), (double) (expected)                      \
     );                                                                                                      \
 } while (0)
 

@@ -6,7 +6,7 @@
 
 #define flut_assert_is_null(obj)                \
 do {                                            \
-    flut_assertion_explainv(                       \
+    flut_assertion_explainv(                    \
         flut__assert_null((obj)),               \
         "Expression `%s` should be null",       \
         #obj                                    \
@@ -15,7 +15,7 @@ do {                                            \
 
 #define flut_assert_is_not_null(obj)            \
 do {                                            \
-    flut_assertion_explainv(                       \
+    flut_assertion_explainv(                    \
         flut__assert_not_null((obj)),           \
         "Expression `%s` should not be null",   \
         #obj                                    \

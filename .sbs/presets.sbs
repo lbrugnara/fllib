@@ -32,7 +32,7 @@ preset debug-coverage {
             export-headers
         ],
         after: [
-            clang-profile
+            clang-coverage
         ]
     }
 }

@@ -2,20 +2,21 @@ $win_output_path = ".\\build\\${sbs.os}\\${sbs.arch}\\${sbs.toolchain}\\${sbs.co
 $win_test_executable = ".\\build\\${sbs.os}\\${sbs.arch}\\${sbs.toolchain}\\${sbs.config}\\tests.exe"
 $linux_output_path = "./build/${sbs.os}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/"
 $linux_test_executable = "./build/${sbs.os}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/tests"
-action clang-profile
-{
-    if $sbs.os == win and $sbs.shell in [ system, cmd ]
-    {
+$url_path = "/build/${sbs.os}/${sbs.arch}/${sbs.toolchain}/${sbs.config}"
+
+action clang-coverage {
+    if $sbs.os == win and $sbs.shell in [ system, cmd ] {
         `set LLVM_PROFILE_FILE=${win_test_executable}.profraw \
         && ${win_test_executable} 1>nul 2>nul \
         && llvm-profdata merge -sparse ${win_test_executable}.profraw -o ${win_test_executable}.profdata \
-        && llvm-cov show --format=html --output-dir=${win_output_path}/cov-report ${win_test_executable} -instr-profile=${win_test_executable}.profdata`
+        && llvm-cov show --format=html --output-dir=${win_output_path}/cov-report ${win_test_executable} -instr-profile=${win_test_executable}.profdata \
+        && echo Coverage report generated in file://%CD%${url_path}/cov-report/index.html`
     }
 
-    if $sbs.os == linux and $sbs.shell in [ system, bash ]
-    {
+    if $sbs.os == linux and $sbs.shell in [ system, bash ] {
         `LLVM_PROFILE_FILE="${linux_test_executable}.profraw" ${linux_test_executable} 2>/dev/null 1>/dev/null \
         && llvm-profdata merge -sparse ${linux_test_executable}.profraw -o ${linux_test_executable}.profdata \
-        && llvm-cov show --format=html --output-dir=${linux_output_path}/cov-report ${linux_test_executable} -instr-profile=${linux_test_executable}.profdata`
+        && llvm-cov show --format=html --output-dir=${linux_output_path}/cov-report ${linux_test_executable} -instr-profile=${linux_test_executable}.profdata \
+        && echo Coverage report generated in file://$(pwd)${url_path}/cov-report/index.html`
     }
 }

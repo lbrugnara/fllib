@@ -1,0 +1,10 @@
+action memcheck {
+    if $sbs.os == win and $sbs.shell in [ system, cmd ] {
+        `echo Not supported in Windows -yet-`
+    }
+
+    if $sbs.os == linux and $sbs.shell in [ system, bash ] {
+        `valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all \
+        --suppressions=./tests/valgrind.supp -v ./build/${triplet}/tests`
+    }
+}

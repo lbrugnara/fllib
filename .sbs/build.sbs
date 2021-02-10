@@ -6,6 +6,8 @@ include [
     "action-clean-all.sbs",
     "action-export-headers.sbs",
     "action-generate-unicode-db.sbs",
+    "action-memcheck.sbs",
+    "action-tests.sbs",
 
     "env-linux.sbs",
     "env-win.sbs",

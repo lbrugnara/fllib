@@ -422,15 +422,12 @@ flut_define_test(vector_resize) {
         flut_assert_size_t_is_equals(45, fl_vector_max_capacity(vector));
         flut_assert_double_is_equals(2.0, fl_vector_growth_factor(vector), 0.01);
 
-        size_t current_capacity = fl_vector_capacity(vector);
         flut_assert_is_true(flm_vector_insert(vector, size_t, 0, 5));
         flut_assert_size_t_is_equals(10, fl_vector_capacity(vector));
 
-        current_capacity = fl_vector_capacity(vector);
         flut_assert_is_true(flm_vector_insert(vector, size_t, 0, 10));
         flut_assert_size_t_is_equals(20, fl_vector_capacity(vector));
 
-        current_capacity = fl_vector_capacity(vector);
         flut_assert_is_true(flm_vector_insert(vector, size_t, 0, 20));
         flut_assert_size_t_is_equals(40, fl_vector_capacity(vector));
 

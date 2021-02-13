@@ -7,12 +7,16 @@ flut_define_suite(vector) {
     flut_suite_register_test(vector_new, "fl_vector_new function");
     flut_suite_register_test(vector_add, "fl_vector_add function");
     flut_suite_register_test(vector_insert, "fl_vector_insert function");
+    flut_suite_register_test(vector_first, "fl_vector_ref_first function");
+    flut_suite_register_test(vector_last, "fl_vector_ref_last function");
+    flut_suite_register_test(vector_contains, "fl_vector_contains function");
     flut_suite_register_test(vector_shift, "fl_vector_shift function");
     flut_suite_register_test(vector_pop, "fl_vector_pop function");
     flut_suite_register_test(vector_get, "fl_vector_get function");
     flut_suite_register_test(vector_value_writer, "fl_container_write function in vectors");
     flut_suite_register_test(vector_resize, "Vector resize operation");
     flut_suite_register_test(vector_max_capacity, "Vector max. capacity");
+    flut_suite_register_test(vector_cleanup_fn, "Vector cleanup functions");
 }
 
 flut_define_test(vector_new) {
@@ -175,6 +179,15 @@ flut_define_test(vector_add) {
         flut_assert_string_is_equals("Element 9", flm_vector_get(vector, char*, 9), false);
         fl_vector_free(vector);
     }
+
+    flut_describe("Add should not succeed if max. capacity has been reached") {
+        FlVector *vector = flm_vector_new_with(.max_capacity = 2, .element_size = sizeof(size_t));
+        flut_assert_is_true(flm_vector_add(vector, size_t, 0));
+        flut_assert_is_true(flm_vector_add(vector, size_t, 1));
+        flut_assert_size_t_is_equals(fl_vector_max_capacity(vector), fl_vector_length(vector));
+        flut_assert_is_false(flm_vector_add(vector, size_t, 0));
+        fl_vector_free(vector);
+    }
 }
 
 flut_define_test(vector_insert) {
@@ -238,6 +251,89 @@ flut_define_test(vector_insert) {
         flut_assert_is_false(flm_vector_insert(vector, size_t, 0, 1));
         flut_assert_is_false(flm_vector_insert(vector, size_t, 0, 2));
         flut_assert_is_false(flm_vector_insert(vector, size_t, 0, 3));
+        fl_vector_free(vector);
+    }
+}
+
+flut_define_test(vector_first) {
+    flut_describe("Vector should return the first element") {
+        FlVector *vector = flm_vector_new_with(.max_capacity = 5, .element_size = sizeof(size_t));
+        flut_assert_is_true(flm_vector_add(vector, size_t, 0));
+        flut_assert_is_true(flm_vector_add(vector, size_t, 1));
+        flut_assert_is_true(flm_vector_add(vector, size_t, 2));
+        flut_assert_size_t_is_equals(3, fl_vector_length(vector));
+        flut_assert_size_t_is_equals(0, flm_vector_first(vector, size_t));
+        fl_vector_free(vector);
+    }
+
+    flut_describe("fl_vector_ref_first should return NULL if there are no elements") {
+        FlVector *vector = fl_vector_new();
+        flut_assert_is_null(fl_vector_ref_first(vector));
+        fl_vector_free(vector);
+    }
+}
+
+flut_define_test(vector_last) {
+    flut_describe("Vector should return the last element") {
+        FlVector *vector = flm_vector_new_with(.max_capacity = 5, .element_size = sizeof(size_t));
+        flut_assert_is_true(flm_vector_add(vector, size_t, 0));
+        flut_assert_is_true(flm_vector_add(vector, size_t, 1));
+        flut_assert_is_true(flm_vector_add(vector, size_t, 2));
+        flut_assert_size_t_is_equals(3, fl_vector_length(vector));
+        flut_assert_size_t_is_equals(2, flm_vector_last(vector, size_t));
+        fl_vector_free(vector);
+    }
+
+    flut_describe("fl_vector_ref_last should return NULL if there are no elements") {
+        FlVector *vector = fl_vector_new();
+        flut_assert_is_null(fl_vector_ref_last(vector));
+        fl_vector_free(vector);
+    }
+}
+
+flut_define_test(vector_contains) {
+    flut_describe("fl_vector_contains should find primitive types") {
+        FlVector *vector = flm_vector_new_with(.max_capacity = 5, .element_size = sizeof(size_t));
+
+        for (size_t i=0; i < 5; i++) {
+            flut_explainv(flut_assert_is_true(flm_vector_add(vector, size_t, i)), "Add element %zu", i);
+        }
+
+        flut_assert_is_true(flm_vector_contains(vector, size_t, 0));
+        flut_assert_is_true(flm_vector_contains(vector, size_t, 1));
+        flut_assert_is_true(flm_vector_contains(vector, size_t, 2));
+        flut_assert_is_true(flm_vector_contains(vector, size_t, 3));
+        flut_assert_is_true(flm_vector_contains(vector, size_t, 4));
+
+        flut_assert_is_false(flm_vector_contains(vector, size_t, 5));
+        flut_assert_is_false(flm_vector_contains(vector, size_t, 10));
+        flut_assert_is_false(flm_vector_contains(vector, size_t, SIZE_MAX));
+        
+        fl_vector_free(vector);
+    }
+
+    flut_describe("fl_vector_contains should find pointers") {
+        FlVector *vector = flm_vector_new_with(.max_capacity = 5, .element_size = sizeof(size_t*));
+        size_t pointers[5][1] = { { 0 }, { 1 }, { 2 }, { 3 }, { 4 } };
+
+        for (size_t i=0; i < 3; i++) {
+            flut_explainv(flut_assert_is_true(flm_vector_add(vector, size_t*, pointers[i])), "Add pointer to element %zu", *pointers[i]);
+        }
+
+        flut_assert_is_true(flm_vector_contains(vector, size_t*, pointers[0]));
+        flut_assert_is_true(flm_vector_contains(vector, size_t*, pointers[1]));
+        flut_assert_is_true(flm_vector_contains(vector, size_t*, pointers[2]));
+
+        flut_assert_is_false(flm_vector_contains(vector, size_t*, pointers[3]));
+        flut_assert_is_false(flm_vector_contains(vector, size_t*, pointers[4]));
+        flut_assert_is_false(flm_vector_contains(vector, size_t*, NULL));
+        
+        fl_vector_free(vector);
+    }
+
+    flut_describe("fl_vector_contains should return false if there are no elements") {
+        FlVector *vector = fl_vector_new();
+        flut_assert_is_false(flm_vector_contains(vector, void*, NULL));
         fl_vector_free(vector);
     }
 }
@@ -445,7 +541,17 @@ flut_define_test(vector_max_capacity) {
         flut_assert_is_true(flm_vector_insert(vector, void*, NULL, 0));
         flut_assert_is_true(flm_vector_insert(vector, void*, NULL, 4));
         flut_assert_is_false(flm_vector_insert(vector, void*, NULL, 10));
+        flut_assert_is_false(flm_vector_insert(vector, void*, NULL, 1));
 
         fl_vector_free(vector);
     }
+}
+
+flut_define_test(vector_cleanup_fn) {
+    FlVector *vector = flm_vector_new_with(.cleaner = fl_container_cleaner_pointer);
+    flut_assert_is_true(fl_container_cleaner_pointer == fl_vector_cleanup_fn_get(vector));
+    FlContainerCleanupFn old_fn = fl_vector_cleanup_fn_set(vector, (FlContainerCleanupFn) fl_free);
+    flut_assert_is_true(fl_container_cleaner_pointer == old_fn);
+    flut_assert_is_true((FlContainerCleanupFn) fl_free == fl_vector_cleanup_fn_get(vector));
+    fl_vector_free(vector);
 }

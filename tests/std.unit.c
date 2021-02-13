@@ -58,44 +58,48 @@ flut_define_test(std_thread_errors) {
 }
 
 flut_define_test(std_exceptions) {
-    struct FlContext *try_ctx = fl_ctx_new();
+    flut_describe("Passing the context all along function calls should result in an ordered \"unwind\" of the exception") {
+        struct FlContext *try_ctx = fl_ctx_new();
 
-    Try(try_ctx)
-    {
-        a(try_ctx, FLUT_CURRENT_CTX);
+        Try(try_ctx)
+        {
+            a(try_ctx, FLUT_CURRENT_CTX);
+        }
+        Catch((int)'a')
+        {
+            struct FlContextFrame *frame = fl_ctx_frame_last(try_ctx);
+            flut_assert_is_true(frame->exception == (int)'a');
+            flut_assert_is_true(flm_cstring_equals_n(frame->message, "a", 1));
+        }
+        Rest
+        {
+            flut_unexpected("The exception shouldn't have fallen in root's Rest clause");
+        }
+        EndTry;
+
+        fl_ctx_free(try_ctx);
     }
-    Catch((int)'a')
-    {
-        struct FlContextFrame *frame = fl_ctx_frame_last(try_ctx);
-        flut_assert_is_true(frame->exception == (int)'a');
-        flut_assert_is_true(flm_cstring_equals_n(frame->message, "a", 1));
-    }
-    Rest
-    {
-        flut_unexpected("The exception shouldn't have fallen in root's Rest clause");
-    }
-    EndTry;
 
-    fl_ctx_free(try_ctx);
+    flut_describe("Nested Try calls should result in an ordered \"unwind\" of the exception") {
+        struct FlContext *try_ctx = fl_ctx_new();
 
-    try_ctx = fl_ctx_new();
-
-    Try(try_ctx)
-    {
-        Try(try_ctx) { 
+        Try(try_ctx)
+        {
             Try(try_ctx) { 
                 Try(try_ctx) { 
+                    Try(try_ctx) { 
 
-                }
+                    }
+                    EndTry; 
+                } 
                 EndTry; 
             } 
-            EndTry; 
-        } 
+            EndTry;
+        }
         EndTry;
-    }
-    EndTry;
 
-    fl_ctx_free(try_ctx);
+        fl_ctx_free(try_ctx);
+    }
 }
 
 flut_define_test(std_scoped_resources) {

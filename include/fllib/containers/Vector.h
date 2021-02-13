@@ -293,6 +293,26 @@ struct FlVectorArgs {
 #define flm_vector_get(vector, type, index) (*(type*) fl_vector_ref_get((vector), (index)))
 
 /*
+ * Macro: flm_vector_contains
+ * 
+ * --- Prototype
+ *      #define flm_vector_contains(vector, type, element) fl_vector_contains((vector), &(type[]) { (element) });
+ * ---
+ * 
+ *  This macro can be used to directly work with primitive types within vectors to check if an item exists
+ *  within it
+ *
+ * Parameters:
+ *  vector - Vector object
+ *  type - The type of the value to search for
+ *  element - The element to be searched
+ *
+ * Return:
+ *  bool - *true* if the element is present within the vector, otherwise it returns *false*
+ */
+#define flm_vector_contains(vector, type, element) fl_vector_contains((vector), &(type[]) { (element) })
+
+/*
  * Macro: flm_vector_first
  * 
  * --- Prototype

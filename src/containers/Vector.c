@@ -21,34 +21,46 @@ struct FlVector {
     FlByte *data;
 };
 
-static inline size_t calculate_growth(FlVector *vector, size_t reqcapacity)
+static inline bool calculate_growth(FlVector *vector, size_t required_capacity, size_t *granted_capacity_ptr)
 {
-    // If the vector has reached its max capacity, we have nothing to do here
-    if (vector->capacity == vector->max_capacity)
-        return vector->capacity;
+    if (granted_capacity_ptr == NULL) {
+        return false;
+    }
+
+    // If the vector has reached its max capacity, we have nothing to grant
+    if (vector->capacity == vector->max_capacity) {
+        *granted_capacity_ptr = 0;
+        return false;
+    }
 
     // Apply growth factor until get required capacity or the maximum one, whichever
     // happens first
-    size_t newcapacity = vector->capacity;
+    size_t granted_capacity = vector->capacity;
     do {
-        newcapacity = (newcapacity > ceil(vector->max_capacity / vector->growth_factor))
-                            ? vector->max_capacity
-                            : ceil(newcapacity * vector->growth_factor);
-    } while (reqcapacity > newcapacity && newcapacity != vector->max_capacity);
+        granted_capacity = ceil(granted_capacity * vector->growth_factor);
+        if (granted_capacity >= vector->max_capacity) {
+            // No more room, break the loop
+            granted_capacity = vector->max_capacity;
+            break;
+        }
+    } while (granted_capacity < required_capacity);
 
-    return newcapacity;
+    *granted_capacity_ptr = granted_capacity;
+    return granted_capacity >= required_capacity;
 }
 
 bool resize_vector(FlVector *vector, size_t capacity)
 {
     // Check if the number of bytes will overflow
-    if (fl_std_uint_mult_overflow(vector->element_size, capacity, SIZE_MAX))
+    if (fl_std_uint_mult_overflow(vector->element_size, capacity, SIZE_MAX)) {
         return false;
+    }
 
     // Try to reallocate 
     void *tmp = fl_realloc(vector->data, vector->element_size * capacity);
-    if (!tmp)
+    if (!tmp) {
         return false;
+    }
 
     // On success update the vector
     vector->capacity = capacity;
@@ -145,17 +157,19 @@ size_t fl_vector_element_size(FlVector *vector)
 
 bool fl_vector_add(FlVector *vector, const void *element) 
 {
-    size_t reqcapacity = vector->length + 1;
+    size_t required_capacity = vector->length + 1;
 
-    if (reqcapacity > vector->capacity)
+    if (required_capacity > vector->capacity)
     {
-        size_t newcapacity = calculate_growth(vector, reqcapacity);
+        size_t granted_capacity = 0;
 
-        if (newcapacity == vector->max_capacity)
+        if (!calculate_growth(vector, required_capacity, &granted_capacity)) {
             return false;
+        }
 
-        if (!resize_vector(vector,  newcapacity))
+        if (!resize_vector(vector,  granted_capacity)) {
             return false;
+        }
     }
 
     // Get the target slot
@@ -171,17 +185,16 @@ bool fl_vector_add(FlVector *vector, const void *element)
 }
 
 bool fl_vector_insert(FlVector *vector, const void *element, size_t index) {
-    // If we don't have enough space to store one more item, return false
-    if (vector->length + 1 > vector->max_capacity) {
-        return false;
-    }
-
     // Check resize
     if (index >= vector->capacity || vector->length >= vector->capacity) {
         // Expected new capacity per growth factor
-        size_t newcapacity = calculate_growth(vector, (index >= vector->capacity ? index : vector->length) + 1);
+        size_t granted_capacity = 0;
 
-        if (!resize_vector(vector, newcapacity)) {
+        if (!calculate_growth(vector, (index >= vector->capacity ? index : vector->length) + 1, &granted_capacity)) {
+            return false;
+        }
+
+        if (!resize_vector(vector, granted_capacity)) {
             return false;
         }
     }
@@ -237,16 +250,18 @@ void* fl_vector_ref_get(FlVector *vector, size_t index)
 
 void *fl_vector_ref_first(FlVector *vector)
 {
-    if (vector->length == 0)
+    if (vector->length == 0) {
         return NULL;
+    }
 
     return vector->data;
 }
 
 void *fl_vector_ref_last(FlVector *vector)
 {
-    if (vector->length == 0)
+    if (vector->length == 0) {
         return NULL;
+    }
 
     return vector->data + (vector->length-1) * vector->element_size;
 }
@@ -304,11 +319,10 @@ bool fl_vector_pop(FlVector *vector, void *dest)
 
 bool fl_vector_contains(FlVector *vector, const void *needle)
 {
-    for (size_t i=0; i < vector->length; i *= vector->element_size)
-    {
-        // TODO
-        if (memcmp(vector->data + i, needle, vector->element_size) == 0)
+    for (size_t i=0; i < vector->length; i++) {
+        if (memcmp(vector->data + (i * vector->element_size), needle, vector->element_size) == 0) {
             return true;
+        }
     }
     return false;
 }

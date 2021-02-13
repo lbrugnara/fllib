@@ -3,7 +3,6 @@
 #include "text/Test_Regex.h"
 #include "containers/Test_BinaryHeap.h"
 #include "containers/Test_Hashtable.h"
-#include "containers/Test_List.h"
 
 #include <fllib.h>
 #include <flut/flut.h>
@@ -54,14 +53,7 @@ int main(int argc, char **argv)
             { "fl_hashtable_resize", &test_fl_hashtable_resize },
             { "fl_hashtable_values", &test_fl_hashtable_values },
         ),
-        flut_suite("List",
-            { "fl_list_head", &test_fl_list_head },
-            { "fl_list_tail", &test_fl_list_tail },
-            { "fl_list_append", &test_fl_list_append },
-            { "fl_list_prepend", &test_fl_list_prepend },
-            { "fl_list_insert_after", &test_fl_list_insert_after },
-            { "fl_list_insert_before", &test_fl_list_insert_before }
-        ),
+        flut_register_suite(list),
         flut_suite("Binary Heap",
             { "fl_binheap_new", &test_fl_binheap_new },
             { "fl_binheap_insert", &test_fl_binheap_insert },

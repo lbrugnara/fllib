@@ -11,12 +11,22 @@
 #include "str.h"
 
 // General
-#define flut_unexpected(error_msg)                                                                          \
-do {                                                                                                        \
-    struct FlutAssertResult *result = fl_malloc(sizeof(struct FlutAssertResult));                           \
-    result->success = false;                                                                                \
-    result->message = fl_cstring_dup(error_msg);                                                            \
-    flut_assertion_process_result(flut__internal_ctx, flut_do_assertion(result, result, "%s", "Unexpected scenario"));    \
+#define flut_passv(message_format, ...)     \
+    printf("%s", " |  |- PASS: ");          \
+    printf(message_format, __VA_ARGS__);    \
+    printf("%s", "\n");
+
+#define flut_pass(message)  flut_passv("%s", message)
+
+// General
+#define flut_unexpectedv(error_msg_format, ...)                                                                         \
+do {                                                                                                                    \
+    struct FlutAssertResult *result = fl_malloc(sizeof(struct FlutAssertResult));                                       \
+    result->success = false;                                                                                            \
+    result->message = fl_cstring_vdup(error_msg_format, __VA_ARGS__);                                                   \
+    flut_assertion_process_result(flut__internal_ctx, flut_do_assertion(result, result, "%s", "Unexpected scenario"));  \
 } while (0)
+
+#define flut_unexpected(error_msg)  flut_unexpectedv("%s", error_msg)
 
 #endif /* FL_TEST_ASSERTS_H */

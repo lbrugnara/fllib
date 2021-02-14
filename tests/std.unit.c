@@ -35,11 +35,11 @@ static void end();
 void thread_error(void *args);
 
 // std_exceptions
-void a(struct FlContext *ctx, FlutContext *FLUT_CURRENT_CTX);
-void b(struct FlContext *ctx, FlutContext *FLUT_CURRENT_CTX);
-void c(struct FlContext *ctx, FlutContext *FLUT_CURRENT_CTX);
-void d(struct FlContext *ctx, FlutContext *FLUT_CURRENT_CTX);
-void e(struct FlContext *ctx, FlutContext *FLUT_CURRENT_CTX);
+void a(struct FlContext *ctx, FLUT_TEST_CONTEXT_PARAM);
+void b(struct FlContext *ctx, FLUT_TEST_CONTEXT_PARAM);
+void c(struct FlContext *ctx, FLUT_TEST_CONTEXT_PARAM);
+void d(struct FlContext *ctx, FLUT_TEST_CONTEXT_PARAM);
+void e(struct FlContext *ctx, FLUT_TEST_CONTEXT_PARAM);
 
 
 flut_define_test(std_thread_errors) {
@@ -47,7 +47,7 @@ flut_define_test(std_thread_errors) {
     FlThread *threads = fl_array_new(sizeof(FlThread), nthreads);
     for (int i=0; i < nthreads; i++)
     {
-        threads[i] = fl_thread_create(thread_error, FLUT_CURRENT_CTX);
+        threads[i] = fl_thread_create(thread_error, FLUT_TEST_CONTEXT);
     }
     fl_thread_join_all(threads, nthreads);
     
@@ -63,7 +63,7 @@ flut_define_test(std_exceptions) {
 
         Try(try_ctx)
         {
-            a(try_ctx, FLUT_CURRENT_CTX);
+            a(try_ctx, FLUT_TEST_CONTEXT);
         }
         Catch((int)'a')
         {
@@ -474,7 +474,7 @@ flut_define_test(std_scoped_resources) {
 
 void thread_error(void *args)
 {
-    FlutContext *FLUT_CURRENT_CTX = (FlutContext*) args;
+    FLUT_TEST_CONTEXT_PARAM = (FlutContext*) args;
     struct FlError error;
     char *str;
     FlThreadId id = fl_thread_current_id();
@@ -516,10 +516,10 @@ void thread_error(void *args)
     fl_thread_exit(NULL);
 }
 
-void a(struct FlContext *ctx, FlutContext *FLUT_CURRENT_CTX) {
+void a(struct FlContext *ctx, FLUT_TEST_CONTEXT_PARAM) {
     Try(ctx)
     {
-        b(ctx, FLUT_CURRENT_CTX);
+        b(ctx, FLUT_TEST_CONTEXT);
     }
     Catch((int)'b')
     {
@@ -535,10 +535,10 @@ void a(struct FlContext *ctx, FlutContext *FLUT_CURRENT_CTX) {
     EndTry;
 }
 
-void b(struct FlContext *ctx, FlutContext *FLUT_CURRENT_CTX) {
+void b(struct FlContext *ctx, FLUT_TEST_CONTEXT_PARAM) {
     Try(ctx)
     {
-        c(ctx, FLUT_CURRENT_CTX);
+        c(ctx, FLUT_TEST_CONTEXT);
     }
     Catch((int)'c')
     {
@@ -554,10 +554,10 @@ void b(struct FlContext *ctx, FlutContext *FLUT_CURRENT_CTX) {
     EndTry;
 }
 
-void c(struct FlContext *ctx, FlutContext *FLUT_CURRENT_CTX) { 
+void c(struct FlContext *ctx, FLUT_TEST_CONTEXT_PARAM) { 
     Try(ctx)
     {   
-        d(ctx, FLUT_CURRENT_CTX);
+        d(ctx, FLUT_TEST_CONTEXT);
     }
     Catch((int)'d')
     {
@@ -573,10 +573,10 @@ void c(struct FlContext *ctx, FlutContext *FLUT_CURRENT_CTX) {
     EndTry;
 }
 
-void d(struct FlContext *ctx, FlutContext *FLUT_CURRENT_CTX) {
+void d(struct FlContext *ctx, FLUT_TEST_CONTEXT_PARAM) {
     Try(ctx)
     {
-        e(ctx, FLUT_CURRENT_CTX);
+        e(ctx, FLUT_TEST_CONTEXT);
     }
     Catch((int)'e')
     {
@@ -592,7 +592,7 @@ void d(struct FlContext *ctx, FlutContext *FLUT_CURRENT_CTX) {
     EndTry;
 }
 
-void e(struct FlContext *ctx, FlutContext *FLUT_CURRENT_CTX) {
+void e(struct FlContext *ctx, FLUT_TEST_CONTEXT_PARAM) {
     Throw(ctx, (int)'e', "e");
 }
 

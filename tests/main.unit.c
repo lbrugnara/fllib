@@ -1,7 +1,6 @@
 #include "text/Test_Unicode.h"
 #include "text/Test_String.h"
 #include "text/Test_Regex.h"
-#include "containers/Test_BinaryHeap.h"
 #include "containers/Test_Hashtable.h"
 
 #include <fllib.h>
@@ -54,10 +53,7 @@ int main(int argc, char **argv)
             { "fl_hashtable_values", &test_fl_hashtable_values },
         ),
         flut_register_suite(list),
-        flut_suite("Binary Heap",
-            { "fl_binheap_new", &test_fl_binheap_new },
-            { "fl_binheap_insert", &test_fl_binheap_insert },
-        )
+        flut_register_suite(binheap)
     );
     return success ? 0 : -1;
 }

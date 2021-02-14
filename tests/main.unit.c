@@ -1,7 +1,6 @@
 #include "text/Test_Unicode.h"
 #include "text/Test_String.h"
 #include "text/Test_Regex.h"
-#include "containers/Test_Hashtable.h"
 
 #include <fllib.h>
 #include <flut/flut.h>
@@ -41,17 +40,7 @@ int main(int argc, char **argv)
             { "fl_regex_match", &test_fl_regex_match }
         ),
         flut_register_suite(vector),
-        flut_suite("Hashtable",
-            { "fl_hashtable_add", &test_fl_hashtable_add },
-            { "fl_hashtable_add_fhash", &test_fl_hashtable_add_fhash },
-            { "fl_hashtable_get", &test_fl_hashtable_get },
-            { "fl_hashtable_set", &test_fl_hashtable_set },
-            { "fl_hashtable_clear", &test_fl_hashtable_clear },
-            { "fl_hashtable_keys_and_values", &test_fl_hashtable_keys_and_values },
-            { "fl_hashtable_remove", &test_fl_hashtable_remove },
-            { "fl_hashtable_resize", &test_fl_hashtable_resize },
-            { "fl_hashtable_values", &test_fl_hashtable_values },
-        ),
+        flut_register_suite(hashtable),
         flut_register_suite(list),
         flut_register_suite(binheap)
     );

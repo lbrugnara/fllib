@@ -102,9 +102,9 @@ preset tests {
 }
 
 preset memcheck {
-    envs: [ linux-bash ],
-    toolchains: [ clang, gcc ],
-    configs: [ clang-debug, clang-release ],
+    envs: [ win-cmd, linux-bash ],
+    toolchains: [ clang, gcc, msvc ],
+    configs: [ clang-debug, clang-release, msvc-debug, msvc-release ],
     target: dummy,
     actions: {
         before: [ memcheck ]

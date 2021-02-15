@@ -1,10 +1,4 @@
-#include "text/Test_Unicode.h"
-
-#include <fllib.h>
 #include <flut/flut.h>
-#include <stdio.h>
-#include <locale.h>
-#include <time.h>
 
 int main(int argc, char **argv) 
 {
@@ -18,16 +12,7 @@ int main(int argc, char **argv)
         flut_register_suite(slice),
         flut_register_suite(cstring),
         flut_register_suite(io),
-        flut_suite("Unicode",
-            { "fl_unicode_codepoint_at", &test_fl_unicode_codepoint_at },
-            { "fl_unicode_codeunit_sequence_size", &test_fl_unicode_codeunit_sequence_size},
-            { "fl_unicode_unichar_validity", &test_fl_unicode_unichar_validity },
-            { "fl_unicode_codepoint_validity", &test_fl_unicode_codepoint_validity },
-            { "fl_unicode_unichar_sequence_validate", &test_fl_unicode_unichar_sequence_validate },
-            { "fl_unicode_codepoint_convert", &test_fl_unicode_codepoint_convert },
-            { "fl_unicode_codepoint_sequence_validate", &test_fl_unicode_codepoint_sequence_validate },
-            { "fl_unicode_data", &test_fl_unicode_data }
-        ),
+        flut_register_suite(unicode),
         flut_register_suite(string),
         flut_register_suite(regex),
         flut_register_suite(vector),

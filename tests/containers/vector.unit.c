@@ -2,7 +2,7 @@
 #include <math.h>
 #include <flut/flut.h>
 
-flut_define_suite(vector) {
+flut_suite(vector) {
     flut_suite_description("Vector functions");
     flut_suite_register_test(vector_new, "fl_vector_new function");
     flut_suite_register_test(vector_add, "fl_vector_add function");
@@ -19,7 +19,7 @@ flut_define_suite(vector) {
     flut_suite_register_test(vector_cleanup_fn, "Vector cleanup functions");
 }
 
-flut_define_test(vector_new) {
+flut_test(vector_new) {
     flut_describe("Passing a list of designated initializers to flm_vector_new_with must return a valid vector (.capacity = 1)") {
         FlVector *vector = flm_vector_new_with(.capacity = 1);
 
@@ -127,7 +127,7 @@ flut_define_test(vector_new) {
     }
 }
 
-flut_define_test(vector_add) {
+flut_test(vector_add) {
     flut_describe("fl_vector_add should work with primitive types") {
         FlVector *vector = flm_vector_new_with(.element_size = sizeof(size_t), .capacity = 10);
         flut_assert_is_true(flm_vector_add(vector, int, 0));
@@ -190,7 +190,7 @@ flut_define_test(vector_add) {
     }
 }
 
-flut_define_test(vector_insert) {
+flut_test(vector_insert) {
     flut_describe("Insert of primitive types in position 0 must result in an ordedered vector") {
         FlVector *vector = flm_vector_new_with(.capacity = 10, .element_size = sizeof(size_t));
         flut_assert_is_true(flm_vector_insert(vector, size_t, 9, 0));
@@ -255,7 +255,7 @@ flut_define_test(vector_insert) {
     }
 }
 
-flut_define_test(vector_first) {
+flut_test(vector_first) {
     flut_describe("Vector should return the first element") {
         FlVector *vector = flm_vector_new_with(.max_capacity = 5, .element_size = sizeof(size_t));
         flut_assert_is_true(flm_vector_add(vector, size_t, 0));
@@ -273,7 +273,7 @@ flut_define_test(vector_first) {
     }
 }
 
-flut_define_test(vector_last) {
+flut_test(vector_last) {
     flut_describe("Vector should return the last element") {
         FlVector *vector = flm_vector_new_with(.max_capacity = 5, .element_size = sizeof(size_t));
         flut_assert_is_true(flm_vector_add(vector, size_t, 0));
@@ -291,7 +291,7 @@ flut_define_test(vector_last) {
     }
 }
 
-flut_define_test(vector_contains) {
+flut_test(vector_contains) {
     flut_describe("fl_vector_contains should find primitive types") {
         FlVector *vector = flm_vector_new_with(.max_capacity = 5, .element_size = sizeof(size_t));
 
@@ -338,7 +338,7 @@ flut_define_test(vector_contains) {
     }
 }
 
-flut_define_test(vector_shift) {
+flut_test(vector_shift) {
     flut_describe("Shift primitive types from vector") {
         FlVector *vector = flm_vector_new_with(.capacity = 10, .element_size = sizeof(int));
         flut_assert_is_true(flm_vector_add(vector, int, 0));
@@ -390,7 +390,7 @@ flut_define_test(vector_shift) {
     }
 }
 
-flut_define_test(vector_pop) {
+flut_test(vector_pop) {
     flut_describe("Pop primitive types from vector") {
         FlVector *vector = flm_vector_new_with(.capacity = 10, .element_size = sizeof(int));
         flut_assert_is_true(flm_vector_add(vector, int, 0));
@@ -442,7 +442,7 @@ flut_define_test(vector_pop) {
     }
 }
 
-flut_define_test(vector_get) {
+flut_test(vector_get) {
     flut_describe("Get primitive types from vector") {
         FlVector *vector = flm_vector_new_with(.capacity = 10, .element_size = sizeof(int));
         flut_assert_is_true(flm_vector_add(vector, int, 0));
@@ -473,7 +473,7 @@ flut_define_test(vector_get) {
     }
 }
 
-flut_define_test(vector_value_writer) {
+flut_test(vector_value_writer) {
     flut_describe("A container writer should copy the inserted value instead of saving pointers") {
         size_t numbers[3] = { 0, 1, 2 };
         FlVector *vector = flm_vector_new_with(.capacity = 10, .writer = fl_container_writer);
@@ -493,7 +493,7 @@ flut_define_test(vector_value_writer) {
     }
 }
 
-flut_define_test(vector_resize) {
+flut_test(vector_resize) {
     flut_describe("On resize, the capacity must be round to the next higher integer after applying the growth factor") {
         FlVector *vector = flm_vector_new_with(.element_size = sizeof(int), .capacity = 10, .growth_factor = 1.5);
 
@@ -534,7 +534,7 @@ flut_define_test(vector_resize) {
     }    
 }
 
-flut_define_test(vector_max_capacity) {
+flut_test(vector_max_capacity) {
     flut_describe("Once the vector has reached its maximum capacity, inserts on positions greater than max_capacity-1 should not thrive") {
         FlVector *vector = flm_vector_new_with(.capacity = 5, .max_capacity = 5, .growth_factor = 1.5);
 
@@ -547,7 +547,7 @@ flut_define_test(vector_max_capacity) {
     }
 }
 
-flut_define_test(vector_cleanup_fn) {
+flut_test(vector_cleanup_fn) {
     FlVector *vector = flm_vector_new_with(.cleaner = fl_container_cleaner_pointer);
     flut_assert_is_true(fl_container_cleaner_pointer == fl_vector_cleanup_fn_get(vector));
     FlContainerCleanupFn old_fn = fl_vector_cleanup_fn_set(vector, (FlContainerCleanupFn) fl_free);

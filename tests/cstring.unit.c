@@ -2,7 +2,7 @@
 #include <fllib.h>
 #include <flut/flut.h>
 
-flut_define_suite(cstring) {
+flut_suite(cstring) {
     flut_suite_description("C string functions");
     flut_suite_register_test(cstring_new, "Cstring new");
     flut_suite_register_test(cstring_dup, "Cstring dup");
@@ -29,7 +29,7 @@ static inline size_t uinteger_length(unsigned long long i) {
     return l;
 }
 
-flut_define_test(cstring_new) {
+flut_test(cstring_new) {
     flut_describe("fl_cstring_new should return valid pointers") {
         char *str = fl_cstring_new(5);
         
@@ -50,13 +50,13 @@ flut_define_test(cstring_new) {
     }
 }
 
-flut_define_test(cstring_dup) {
+flut_test(cstring_dup) {
     char *str = fl_cstring_dup("Hello");
     flut_assert_is_not_null(str);
     flut_assert_string_is_equals("Hello", str, true);
 }
 
-flut_define_test(cstring_split) {
+flut_test(cstring_split) {
     FlVector *v = fl_cstring_split("Hello");
 
     flut_assert_is_true(fl_vector_length(v) == 5);
@@ -70,7 +70,7 @@ flut_define_test(cstring_split) {
     fl_vector_free(v);
 }
 
-flut_define_test(cstring_replace_char) {
+flut_test(cstring_replace_char) {
     char *world = "World";
     char *worl = fl_cstring_replace_char(world, 'd', "");
     flut_assert_string_is_equals("Worl", worl, false);
@@ -92,7 +92,7 @@ flut_define_test(cstring_replace_char) {
     flut_assert_string_is_equals("zzbczzbczzbczz", with_zz, true);
 }
 
-flut_define_test(cstring_replace) {
+flut_test(cstring_replace) {
     char *replaced = fl_cstring_replace("", "abc", "123");
     flut_assert_string_is_equals("", replaced, true);
 
@@ -147,7 +147,7 @@ flut_define_test(cstring_replace) {
     flut_assert_string_is_equals(shortermsg, replaced, true);
 }
 
-flut_define_test(cstring_append) {
+flut_test(cstring_append) {
     char *helloWorld = fl_cstring_dup("Hello ");
     fl_cstring_append(&helloWorld, "world!");
 
@@ -162,7 +162,7 @@ flut_define_test(cstring_append) {
     flut_assert_string_is_equals("Hello world!\nBye...\n", helloWorld, true);
 }
 
-flut_define_test(cstring_join) {
+flut_test(cstring_join) {
     FlVector *str_vector = flm_vector_new_with(.capacity = 3, .cleaner = fl_container_cleaner_pointer);
     char *str1 = fl_cstring_dup("one");
     char *str2 = fl_cstring_dup("two");
@@ -179,7 +179,7 @@ flut_define_test(cstring_join) {
     fl_vector_free(str_vector);
 }
 
-flut_define_test(cstring_misc) {
+flut_test(cstring_misc) {
     flut_assert_size_t_is_equals(1, integer_length(1));
     flut_assert_size_t_is_equals(2, integer_length(-1));
     flut_assert_size_t_is_greater_than_or_equals(19, integer_length(LLONG_MAX));
@@ -189,7 +189,7 @@ flut_define_test(cstring_misc) {
     flut_assert_size_t_is_equals(1, uinteger_length(0));
 }
 
-flut_define_test(cstring_find) {
+flut_test(cstring_find) {
     flut_describe("Find should find ASCII chars within UTF-8 strings")
     {
         char *a = fl_cstring_find("兔¡¢£¤¥a¦§¨©ª«¬­®", "a");

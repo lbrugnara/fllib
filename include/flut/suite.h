@@ -2,7 +2,7 @@
 #define FLUT_SUITE_H
 
 /*
- * Struct: FlutSuite
+ * About: FlutSuite
  *  Represents a collection of test cases
  */
 
@@ -13,39 +13,81 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#define FLUT__SUITE_PTR flut__internal_suite
 
-/**
+/*
+ * Macro: flut_suite
+ *  Defines a new suite with the provided ID
+ *
+ * Parameters:
+ *  suite_id - The ID of the suite
+ *
+ * Returns:
+ *  This macro is not an expression, it doesn't return a value
+ *
  * Notes:
- *  - Deprecated: Use flut_add_suite(suite_id) or flut_run_suites
+ *  - The ID must be a valid C function name
+ * 
+ * Example:
+ * --- C
+ *  flut_suite(suite_id) {
+ *      flut_suite_description("My suite");
+ *      flut_suite_register_test(my_test, "My test");
+ *  }
+ * ---
+ * 
+ * See:
+ *  - <flut_suite_description>: to set the suite description
+ *  - <flut_suite_register_test>: to register a test in the suite
  */
-#define flut_register_suite(suite_id)                                                                                   \
-    (void)0);                                                                                                           \
-    {                                                                                                                   \
-        extern void flut_suite_##suite_id(FlutSuite *);                                                                 \
-        FlutSuite *suite = flut_suite_new(#suite_id);                                                                   \
-        flut_suite_##suite_id(suite);                                                                                   \
-        suites = fl_array_append(suites, &suite);                                                                       \
-    }((void)0
+#define flut_suite(suite_id)     void flut_suite_##suite_id(FlutSuite *FLUT__SUITE_PTR)
 
-/**
+/*
+ * Macro: flut_suite_description
+ *  This macro must be used within a <flut_suite> block to set the description of the suite
+ *
+ * Parameters:
+ *  message - The description of the suite
+ *
  * Notes:
- *  - Deprecated: Use flut_add_suite(suite_id) or flut_run_suites
+ *  - This macro can only be used within a <flut_suite> block
+ * 
+ * --- Prototype
+ *  flut_suite_description(const char *suite_description)
+ * ---
  */
-#define flut_suite(suite_name, ...)                                                                                         \
-    (void)0);                                                                                                               \
-    {                                                                                                                       \
-        FlutSuite *suite = flut_suite_new(suite_name);                                                                      \
-        suite->description = fl_cstring_dup(suite_name);                                                                    \
-        size_t n = sizeof(((const FlutTestCase[]){ __VA_ARGS__ })) / sizeof(((const FlutTestCase[]){ __VA_ARGS__ }))[0];    \
-        FlutTestCase *tests = (FlutTestCase[]){ __VA_ARGS__ };                                                              \
-        for (size_t i=0; i < n; i++) {                                                                                      \
-            size_t cur_size = fl_array_length(suite->tests);                                                                \
-            suite->tests = fl_array_resize(suite->tests, cur_size + 1);                                                     \
-            suite->tests[cur_size].name = fl_cstring_dup(tests[i].name);                                                    \
-            suite->tests[cur_size].run = tests[i].run;                                                                      \
-        }                                                                                                                   \
-        suites = fl_array_append(suites, &suite);                                                                           \
-    }((void)0
+#define flut_suite_description(suite_description) FLUT__SUITE_PTR->description = fl_cstring_dup(suite_description)
+
+/*
+ * Macro: flut_suite_register_test
+ *  Includes the test identified by the provided ID in the suite where it is being registered
+ *
+ * Parameters:
+ *  test_id - The ID of the test
+ *  test_description - The description of the test
+ *
+ * Returns:
+ *  This macro is not an expression, it doesn't return a value
+ *
+ * Notes:
+ *  - This macro is valid only within a <flut_suite> block
+ * 
+ * See:
+ *  - <flut_suite>: to define a suite and register a test within it
+ *  - <flut_test>: To define a new test
+ * 
+ * --- Prototype
+ *      flut_suite_register_test(test_id, const char *test_description)
+ * ---
+ */
+#define flut_suite_register_test(test_id, test_description)                                 \
+    {                                                                                       \
+        size_t cur_size = fl_array_length(FLUT__SUITE_PTR->tests);                          \
+        FLUT__SUITE_PTR->tests = fl_array_resize(FLUT__SUITE_PTR->tests, cur_size + 1);     \
+        FLUT__SUITE_PTR->tests[cur_size].name = fl_cstring_dup(test_description);           \
+        void flut__test_##test_id(FlutContext*);                                            \
+        FLUT__SUITE_PTR->tests[cur_size].run = &flut__test_##test_id;                       \
+    } (void)0
 
 typedef struct FlutSuite
 {

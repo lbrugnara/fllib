@@ -1,7 +1,7 @@
 #include <fllib.h>
 #include <flut/flut.h>
 
-flut_define_suite(list) {
+flut_suite(list) {
     flut_suite_description("List functions");
     flut_suite_register_test(list_append, "fl_list_append function");
     flut_suite_register_test(list_prepend, "fl_list_prepend function");
@@ -11,7 +11,7 @@ flut_define_suite(list) {
     flut_suite_register_test(list_insert_before, "fl_list_insert_before function");
 }
 
-flut_define_test(list_append) {
+flut_test(list_append) {
     FlList *list = fl_list_new_args((struct FlListArgs) {
         .value_allocator = fl_container_allocator_sizet,
         .value_cleaner = fl_container_cleaner_pointer
@@ -40,7 +40,7 @@ flut_define_test(list_append) {
     fl_list_free(list);
 }
 
-flut_define_test(list_prepend) {
+flut_test(list_prepend) {
     FlList *list = fl_list_new_args((struct FlListArgs) {
         .value_allocator = fl_container_allocator_sizet,
         .value_cleaner = fl_container_cleaner_pointer
@@ -69,7 +69,7 @@ flut_define_test(list_prepend) {
     fl_list_free(list);
 }
 
-flut_define_test(list_head) {
+flut_test(list_head) {
     FlList *list = fl_list_new();
 
     flut_explain(flut_assert_is_null(fl_list_head(list)), "The head of an empty list must be NULL");
@@ -101,7 +101,7 @@ flut_define_test(list_head) {
     fl_list_free(list);
 }
 
-flut_define_test(list_tail) {
+flut_test(list_tail) {
     FlList *list = fl_list_new();
 
     flut_explain(flut_assert_is_null(fl_list_tail(list)), "The tail of an empty list must be NULL");
@@ -133,7 +133,7 @@ flut_define_test(list_tail) {
     fl_list_free(list);
 }
 
-flut_define_test(list_insert_after) {
+flut_test(list_insert_after) {
     flut_describe("Using fl_list_insert_after to insert odd items after inserting all the even items should give an ordered list") {
         FlList *list = fl_list_new_args((struct FlListArgs) {
             .value_allocator = fl_container_allocator_sizet,
@@ -180,7 +180,7 @@ flut_define_test(list_insert_after) {
     }
 }
 
-flut_define_test(list_insert_before) {
+flut_test(list_insert_before) {
     flut_describe("Using fl_list_insert_before to insert even items after inserting all the odd items should give an ordered list") {
         FlList *list = fl_list_new_args((struct FlListArgs) {
             .value_allocator = fl_container_allocator_sizet,

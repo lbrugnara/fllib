@@ -388,7 +388,7 @@ struct FlVectorArgs {
  * Function: fl_vector_new
  *  Creates an instance of a vector that can store pointers.
  * 
- * Members:
+ * Parameters:
  *  This function does not take parameters
  *
  * Return:

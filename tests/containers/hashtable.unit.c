@@ -6,7 +6,7 @@
 
 #define FL_TEST_ALPHABET_LENGTH (size_t) ('Z' - 'A') + 1
 
-flut_define_suite(hashtable) {
+flut_suite(hashtable) {
     flut_suite_description("Hashtable functions");
     flut_suite_register_test(hashtable_add, "fl_hashtable_add function");
     flut_suite_register_test(hashtable_add_fhash, "fl_hashtable_add with a bad hash function");
@@ -19,7 +19,7 @@ flut_define_suite(hashtable) {
     flut_suite_register_test(hashtable_values, "fl_hashtable_values function");
 }
 
-flut_define_test(hashtable_add) {
+flut_test(hashtable_add) {
     flut_describe("fl_hashtable_add for a <char, int> hashtable") {
         FlHashtable *hashtable = NULL;
 
@@ -75,7 +75,7 @@ unsigned long bad_hash_function(const FlByte *key) {
     return 1;
 }
 
-flut_define_test(hashtable_add_fhash) {
+flut_test(hashtable_add_fhash) {
     flut_describe("fl_hashtable_add with a bad hash function should still work") {
         FlHashtable *hashtable = NULL;
 
@@ -127,7 +127,7 @@ flut_define_test(hashtable_add_fhash) {
     }
 }
 
-flut_define_test(hashtable_get) {
+flut_test(hashtable_get) {
     FlHashtable *hashtable = NULL;
     
     flut_assert_is_not_null((hashtable = fl_hashtable_new_args((struct FlHashtableArgs) {
@@ -181,7 +181,7 @@ flut_define_test(hashtable_get) {
     #undef MAKE_INT_PTR
 }
 
-flut_define_test(hashtable_set) {
+flut_test(hashtable_set) {
     FlHashtable *hashtable = NULL;
     
     flut_assert_is_not_null((hashtable = fl_hashtable_new_args((struct FlHashtableArgs) {
@@ -221,7 +221,7 @@ flut_define_test(hashtable_set) {
     #undef MAKE_INT_PTR_FROM_LOWER_CHAR
 }
 
-flut_define_test(hashtable_clear) {
+flut_test(hashtable_clear) {
     FlHashtable *hashtable = NULL;
     
     flut_assert_is_not_null((hashtable = fl_hashtable_new_args((struct FlHashtableArgs) {
@@ -265,7 +265,7 @@ static int compare_int_ptr(const void *a, const void *b) {
     return fl_container_compare_int((const FlByte*) *int_a, (const FlByte*) *int_b);
 }
 
-flut_define_test(hashtable_keys_and_values) {
+flut_test(hashtable_keys_and_values) {
     FlHashtable *hashtable = NULL;
     
     flut_assert_is_not_null((hashtable = fl_hashtable_new_args((struct FlHashtableArgs) {
@@ -325,7 +325,7 @@ flut_define_test(hashtable_keys_and_values) {
     #undef MAKE_INT_PTR
 }
 
-flut_define_test(hashtable_remove) {
+flut_test(hashtable_remove) {
     FlHashtable *hashtable = NULL;
     
     flut_assert_is_not_null((hashtable = fl_hashtable_new_args((struct FlHashtableArgs) {
@@ -375,7 +375,7 @@ static int compare_size_t_ptr(const void *a, const void *b) {
     return fl_container_compare_sizet((const FlByte*) *size_t_a, (const FlByte*) *size_t_b);
 }
 
-flut_define_test(hashtable_resize) {
+flut_test(hashtable_resize) {
     FlHashtable *hashtable = NULL;
     
     flut_assert_is_not_null((hashtable = fl_hashtable_new_args((struct FlHashtableArgs){
@@ -428,7 +428,7 @@ static void allocate_hashtable_args_struct(FlByte **dest, const FlByte *src)
     memcpy(*dest, src, size);
 }
 
-flut_define_test(hashtable_values) {
+flut_test(hashtable_values) {
     struct FlHashtableArgs args = { 0 };
     args.hash_function = fl_hashtable_hash_int;
     args.key_comparer = fl_container_equals_int;

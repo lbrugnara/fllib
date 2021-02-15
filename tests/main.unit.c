@@ -3,22 +3,22 @@
 int main(int argc, char **argv) 
 {
     bool success;
-    flut_run_tests(
+    flut_run_suites(
         argc,
         argv,
         &success,
-        flut_register_suite(std),
-        flut_register_suite(array),
-        flut_register_suite(slice),
-        flut_register_suite(cstring),
-        flut_register_suite(io),
-        flut_register_suite(unicode),
-        flut_register_suite(string),
-        flut_register_suite(regex),
-        flut_register_suite(vector),
-        flut_register_suite(hashtable),
-        flut_register_suite(list),
-        flut_register_suite(binheap)
+        std,
+        array,
+        slice,
+        cstring,
+        io,
+        unicode,
+        string,
+        regex,
+        vector,
+        hashtable,
+        list,
+        binheap
     );
     return success ? 0 : -1;
 }

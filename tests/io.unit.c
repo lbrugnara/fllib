@@ -1,14 +1,14 @@
 #include <fllib.h>
 #include <flut/flut.h>
 
-flut_define_suite(io) {
+flut_suite(io) {
     flut_suite_description("File, dirs, and path related functions");
     flut_suite_register_test(io_realpath, "fl_io_realpath function");
     flut_suite_register_test(io_path, "Relative and absolute paths");
     flut_suite_register_test(io_rw_all_bytes, "read/write all bytes");
 }
 
-flut_define_test(io_realpath) {
+flut_test(io_realpath) {
     flut_describe("realpath should convert all paths to absolute paths and all should be valid.") {
         const char *files[][3] = { 
             // File     Directory                           Full path
@@ -53,7 +53,7 @@ flut_define_test(io_realpath) {
     }
 }
 
-flut_define_test(io_path) {
+flut_test(io_path) {
     #ifdef _WIN32
     flut_describe("Windows paths should be all relative paths") {
         flut_assert_is_true(fl_io_path_is_relative("."));
@@ -107,7 +107,7 @@ flut_define_test(io_path) {
     #endif
 }
 
-flut_define_test(io_rw_all_bytes) {
+flut_test(io_rw_all_bytes) {
     // Retrieve the current working dir and save it to restore it later
     char *wdir = fl_system_get_working_dir();
 

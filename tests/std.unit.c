@@ -7,7 +7,7 @@
 
 #include <flut/flut.h>
 
-flut_define_suite(std) {
+flut_suite(std) {
     flut_suite_description("fllib standard functions");
     flut_suite_register_test(std_exceptions, "Global error handling thread safety");
     flut_suite_register_test(std_thread_errors, "Pseudo try-catch exception handling");
@@ -42,7 +42,7 @@ void d(struct FlContext *ctx, FLUT_TEST_CONTEXT_PARAM);
 void e(struct FlContext *ctx, FLUT_TEST_CONTEXT_PARAM);
 
 
-flut_define_test(std_thread_errors) {
+flut_test(std_thread_errors) {
     int nthreads = 5;
     FlThread *threads = fl_array_new(sizeof(FlThread), nthreads);
     for (int i=0; i < nthreads; i++)
@@ -57,7 +57,7 @@ flut_define_test(std_thread_errors) {
     fl_array_free(threads);
 }
 
-flut_define_test(std_exceptions) {
+flut_test(std_exceptions) {
     flut_describe("Passing the context all along function calls should result in an ordered \"unwind\" of the exception") {
         struct FlContext *try_ctx = fl_ctx_new();
 
@@ -102,7 +102,7 @@ flut_define_test(std_exceptions) {
     }
 }
 
-flut_define_test(std_scoped_resources) {
+flut_test(std_scoped_resources) {
     init();
     flut_describe("Scoped resources must be deallocated when exiting the scope under normal flow execution") {
         

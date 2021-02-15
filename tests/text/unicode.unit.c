@@ -7,7 +7,7 @@
 #define fl_unicode_sequence_equals(string, offset, unichar, unichar_size) \
     fl_slice_equals_sequence(&flm_slice_new(string, sizeof(FlByte), offset, unichar_size), unichar, unichar_size)
 
-flut_define_suite(unicode) {
+flut_suite(unicode) {
     flut_suite_description("Unicode functions");
     flut_suite_register_test(unicode_codepoint_at, "fl_unicode_codepoint_at function");
     flut_suite_register_test(unicode_codepoint_size, "fl_unicode_codepoint_size function");
@@ -18,7 +18,7 @@ flut_define_suite(unicode) {
     flut_suite_register_test(unicode_data, "");
 }
 
-flut_define_test(unicode_codepoint_at) {
+flut_test(unicode_codepoint_at) {
     #define CODEPOINT_OFFSET(offset, size) offset * size
     // All the code points size in this string is two-bytes
     const FlByte *string = FL_UNICODE_SEQUENCE("ĀāĂăĄąĆćĈĉĊċČčĎďĐđĒēĔĕĖėĘęĚěĜĝĞğĠġĢģĤĥĦħĨĩĪīĬĭĮįİıĲĳĴĵĶķĸĹĺĻļĽľĿŀŁłŃńŅņŇňŉŊŋŌōŎŏŐőŒœŔŕŖŗŘřŚśŜŝŞşŠšŢţŤťŦŧŨũŪūŬŭŮůŰűŲųŴŵŶŷŸŹźŻżŽž\x00");
@@ -74,14 +74,14 @@ flut_define_test(unicode_codepoint_at) {
     flut_assert_is_true(fl_unicode_sequence_equals(string, CODEPOINT_OFFSET(1, 4), unichar, unichar_size));
 }
 
-flut_define_test(unicode_codepoint_size) {
+flut_test(unicode_codepoint_size) {
     flut_assert_size_t_is_equals(FL_UNICODE_INVALID_SIZE, fl_unicode_codepoint_size(FL_ENCODING_UTF32, FL_UNICODE_SEQUENCE("\x00\xD8\x00\x00\x00"), 0x00));
     flut_assert_size_t_is_equals(FL_UNICODE_INVALID_SIZE, fl_unicode_codepoint_size(FL_ENCODING_UTF32, FL_UNICODE_SEQUENCE("\x00\xDF\xFF\xFF\x00"), 0x00));
     flut_assert_size_t_is_equals(2, fl_unicode_codepoint_size(FL_ENCODING_UTF8, FL_UNICODE_SEQUENCE("Ɓ"), 0x00));
     flut_assert_size_t_is_equals(4, fl_unicode_codepoint_size(FL_ENCODING_UTF8, FL_UNICODE_SEQUENCE("兔"), 0x00));
 }
 
-flut_define_test(unicode_codeunit_sequence_size) {
+flut_test(unicode_codeunit_sequence_size) {
     flut_assert_size_t_is_equals(6, fl_unicode_codeunit_sequence_size(FL_ENCODING_UTF8, FL_UNICODE_SEQUENCE("abc123"), 0x00));
     flut_assert_size_t_is_equals(7, fl_unicode_codeunit_sequence_size(FL_ENCODING_UTF8, FL_UNICODE_SEQUENCE("aƁc123"), 0x00));
     flut_assert_size_t_is_equals(9, fl_unicode_codeunit_sequence_size(FL_ENCODING_UTF8, FL_UNICODE_SEQUENCE("a兔c123"), 0x00));
@@ -91,7 +91,7 @@ flut_define_test(unicode_codeunit_sequence_size) {
     flut_assert_size_t_is_equals(4, fl_unicode_codeunit_sequence_size(FL_ENCODING_UTF8, FL_UNICODE_SEQUENCE("兔"), 0x00));
 }
 
-flut_define_test(unicode_unichar_validity) {
+flut_test(unicode_unichar_validity) {
     /*flut_expect_compat("Replacement char U+FFFD is valid UTF-8", fl_unicode_unichar_is_valid(FL_ENCODING_UTF8, 0xefbfbd));
     
     // Overlon encodings
@@ -182,7 +182,7 @@ flut_define_test(unicode_unichar_validity) {
     flut_expect_compat("Surrogates sequence U+DBFF U+DFFF is not valid UTF-8", !fl_unicode_unichar_sequence_is_valid(FL_ENCODING_UTF8, (uint32_t[]) { 0xedafbf, 0xedbfbf, 0x00 }, NULL)); // 0x00 == NULL terminated*/
 }
 
-flut_define_test(unicode_codepoint_validity) {
+flut_test(unicode_codepoint_validity) {
     // NOTE: All the 0x00 (NULL) chars at the end are used to mark the end of the sequence
 
     flut_explain(flut_assert_is_true(fl_unicode_codepoint_is_valid(FL_ENCODING_UTF8, FL_UNICODE_SEQUENCE("\xef\xbf\xbd\x00"), 0x00)), "Replacement char U+FFFD is valid UTF-8");
@@ -277,7 +277,7 @@ flut_define_test(unicode_codepoint_validity) {
     flut_explain(flut_assert_is_false(fl_unicode_codepoint_sequence_is_valid(FL_ENCODING_UTF8, FL_UNICODE_SEQUENCE("\xed\xaf\xbf\xed\xbf\xbf\x00"), NULL)), "Surrogates sequence U+DBFF U+DFFF is not valid UTF-8");
 }
 
-flut_define_test(unicode_unichar_sequence_validate) {
+flut_test(unicode_unichar_sequence_validate) {
     /*#define seq_are_eq(a, b, l) (memcmp((a), (b), sizeof(uint32_t)*(l)) == 0)
     #define REPLCHAR 0xEFBFBD
     
@@ -297,7 +297,7 @@ flut_define_test(unicode_unichar_sequence_validate) {
     fl_free(validated);*/
 }
 
-flut_define_test(unicode_codepoint_convert) {
+flut_test(unicode_codepoint_convert) {
     FlByte codepoint[4] = {0,0,0,0};
     size_t bytes = 0;
 
@@ -538,7 +538,7 @@ flut_define_test(unicode_codepoint_convert) {
     flut_assert_is_true(fl_unicode_sequence_equals(FL_UNICODE_SEQUENCE("\xF0\xAF\xA0\x84"), 0, codepoint_utf8, bytes));
 }
 
-flut_define_test(unicode_codepoint_sequence_validate) {
+flut_test(unicode_codepoint_sequence_validate) {
     const FlByte *string = NULL;
     FlByte *valid_string = NULL;
     size_t bytes = 0;
@@ -730,7 +730,7 @@ flut_define_test(unicode_codepoint_sequence_validate) {
     fl_free(valid_string);   
 }
 
-flut_define_test(unicode_data) {
+flut_test(unicode_data) {
     uint32_t destination[50] = {0};
     size_t mapping_size = UINT32_MAX;
 

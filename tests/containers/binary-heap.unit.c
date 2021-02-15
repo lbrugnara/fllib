@@ -5,13 +5,13 @@
 
 #include <flut/flut.h>
 
-flut_define_suite(binheap) {
+flut_suite(binheap) {
     flut_suite_description("Binary heap functions");
     flut_suite_register_test(binheap_new, "fl_binheap_new function");
     flut_suite_register_test(binheap_insert, "fl_binheap_insert function");
 }
 
-flut_define_test(binheap_new) {
+flut_test(binheap_new) {
     flut_describe("Function fl_binheap_new should return a valid binary heap object") {
         FlBinaryHeap *heap = NULL;
         flut_assert_is_not_null((heap = fl_binheap_new(fl_container_compare_pointer, NULL)));
@@ -108,7 +108,7 @@ static void binheap_insert_and_remove(FLUT_TEST_CONTEXT_PARAM, FlBinaryHeap *bin
     }
 }
 
-flut_define_test(binheap_insert) {
+flut_test(binheap_insert) {
     srand(time(NULL));
 
     flut_describe("Root element on max. oriented heap must decrease after removal") {

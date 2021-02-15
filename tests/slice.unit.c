@@ -1,17 +1,17 @@
 #include <fllib.h>
 #include <flut/flut.h>
 
-flut_define_suite(slice) {
+flut_suite(slice) {
     flut_suite_description("slice module");
     flut_suite_register_test(slice_new, "Creating slices of a sequence of bytes");
     flut_suite_register_test(slice_iterator, "Working with slice iterators");
 }
 
-flut_define_test(slice_new) {
+flut_test(slice_new) {
 
     const char * const string = "Some text we want to work with as contiguous sequence of bytes";
 
-    flut_vdescribe("Working with slices of the string: '%s'", string) {
+    flut_describev("Working with slices of the string: '%s'", string) {
         struct FlSlice slice = fl_slice_new((const FlByte*) string, 1, 0, 4);
         flut_assert_string_is_equals_n("Some", (const char*) slice.sequence, slice.length, false);
         flut_assert_is_true(fl_slice_equals_sequence(&slice, (const FlByte*) string, slice.length));
@@ -29,7 +29,7 @@ flut_define_test(slice_new) {
     }
 }
 
-flut_define_test(slice_iterator) {
+flut_test(slice_iterator) {
     int numbers[] = { 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 };
 
     struct FlSlice slice = fl_slice_new((const FlByte*)numbers, sizeof(int), 0, 10);

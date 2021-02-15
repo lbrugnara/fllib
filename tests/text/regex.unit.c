@@ -14,13 +14,13 @@ do {                                            		\
 
 static FlutAssertResult* assert_tokenize(char *expect[], char *regex);
 
-flut_define_suite(regex) {
+flut_suite(regex) {
 	flut_suite_description("Regex functions");
 	flut_suite_register_test(regex_tokenize, "Regex tokenization");
 	flut_suite_register_test(regex_match, "fl_regex_match function");
 }
 
-flut_define_test(regex_tokenize) {
+flut_test(regex_tokenize) {
     #define STR_ARRAY(...) (char*[]){__VA_ARGS__,0x0}
     flut_assert_token_result_is(STR_ARRAY("a", "&", "b", "&", "c", "|", "\\&", "&", "d", "&", "e", "&", "f"), "abc|&def");
     flut_assert_token_result_is(STR_ARRAY("[", "a", "b", "c", "]"), "[abc]");
@@ -59,7 +59,7 @@ bool fl_regex_match_test(char *pattern, char *input)
 	return res;
 }
 
-flut_define_test(regex_match) {
+flut_test(regex_match) {
     flut_assert_is_true(fl_regex_match_test("ab(c|d)", "abc"));
 	flut_assert_is_true(fl_regex_match_test("ab(c|d)", "abd"));
 	flut_assert_is_false(fl_regex_match_test("ab(c|d)", "abe"));

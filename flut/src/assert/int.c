@@ -9,7 +9,7 @@
 
 FlutAssertResult* flut__assert_int_equals(int expected, int actual)
 {
-    struct FlutAssertResult *result = fl_malloc(sizeof(struct FlutAssertResult));
+    struct FlutAssertResult *result = flut_assert_result_new();
 
     result->success = expected == actual;
 
@@ -22,7 +22,7 @@ FlutAssertResult* flut__assert_int_equals(int expected, int actual)
 
 FlutAssertResult* flut__assert_int_not_equals(int expected, int actual)
 {
-    struct FlutAssertResult *result = fl_malloc(sizeof(struct FlutAssertResult));
+    struct FlutAssertResult *result = flut_assert_result_new();
 
     result->success = expected != actual;
 
@@ -34,7 +34,7 @@ FlutAssertResult* flut__assert_int_not_equals(int expected, int actual)
 }
 
 FlutAssertResult* flut__assert_int_gt(int expected, int actual) {
-    struct FlutAssertResult *result = fl_malloc(sizeof(struct FlutAssertResult));
+    struct FlutAssertResult *result = flut_assert_result_new();
 
     result->success = actual > expected;
 
@@ -45,7 +45,7 @@ FlutAssertResult* flut__assert_int_gt(int expected, int actual) {
     return result;
 }
 FlutAssertResult* flut__assert_int_gte(int expected, int actual) {
-    struct FlutAssertResult *result = fl_malloc(sizeof(struct FlutAssertResult));
+    struct FlutAssertResult *result = flut_assert_result_new();
 
     result->success = actual >= expected;
 
@@ -56,7 +56,7 @@ FlutAssertResult* flut__assert_int_gte(int expected, int actual) {
     return result;
 }
 FlutAssertResult* flut__assert_int_lt(int expected, int actual) {
-    struct FlutAssertResult *result = fl_malloc(sizeof(struct FlutAssertResult));
+    struct FlutAssertResult *result = flut_assert_result_new();
 
     result->success = actual < expected;
 
@@ -67,7 +67,7 @@ FlutAssertResult* flut__assert_int_lt(int expected, int actual) {
     return result;
 }
 FlutAssertResult* flut__assert_int_lte(int expected, int actual) {
-    struct FlutAssertResult *result = fl_malloc(sizeof(struct FlutAssertResult));
+    struct FlutAssertResult *result = flut_assert_result_new();
 
     result->success = actual <= expected;
 

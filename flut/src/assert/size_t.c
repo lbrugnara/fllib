@@ -9,7 +9,7 @@
 
 FlutAssertResult* flut__assert_size_t_equals(size_t expected, size_t actual)
 {
-    struct FlutAssertResult *result = fl_malloc(sizeof(struct FlutAssertResult));
+    struct FlutAssertResult *result = flut_assert_result_new();
 
     result->success = expected == actual;
 
@@ -22,7 +22,7 @@ FlutAssertResult* flut__assert_size_t_equals(size_t expected, size_t actual)
 
 FlutAssertResult* flut__assert_size_t_not_equals(size_t expected, size_t actual)
 {
-    struct FlutAssertResult *result = fl_malloc(sizeof(struct FlutAssertResult));
+    struct FlutAssertResult *result = flut_assert_result_new();
 
     result->success = expected != actual;
 
@@ -34,7 +34,7 @@ FlutAssertResult* flut__assert_size_t_not_equals(size_t expected, size_t actual)
 }
 
 FlutAssertResult* flut__assert_size_t_gt(size_t expected, size_t actual) {
-    struct FlutAssertResult *result = fl_malloc(sizeof(struct FlutAssertResult));
+    struct FlutAssertResult *result = flut_assert_result_new();
 
     result->success = actual > expected;
 
@@ -45,7 +45,7 @@ FlutAssertResult* flut__assert_size_t_gt(size_t expected, size_t actual) {
     return result;
 }
 FlutAssertResult* flut__assert_size_t_gte(size_t expected, size_t actual) {
-    struct FlutAssertResult *result = fl_malloc(sizeof(struct FlutAssertResult));
+    struct FlutAssertResult *result = flut_assert_result_new();
 
     result->success = actual >= expected;
 
@@ -56,7 +56,7 @@ FlutAssertResult* flut__assert_size_t_gte(size_t expected, size_t actual) {
     return result;
 }
 FlutAssertResult* flut__assert_size_t_lt(size_t expected, size_t actual) {
-    struct FlutAssertResult *result = fl_malloc(sizeof(struct FlutAssertResult));
+    struct FlutAssertResult *result = flut_assert_result_new();
 
     result->success = actual < expected;
 
@@ -67,7 +67,7 @@ FlutAssertResult* flut__assert_size_t_lt(size_t expected, size_t actual) {
     return result;
 }
 FlutAssertResult* flut__assert_size_t_lte(size_t expected, size_t actual) {
-    struct FlutAssertResult *result = fl_malloc(sizeof(struct FlutAssertResult));
+    struct FlutAssertResult *result = flut_assert_result_new();
 
     result->success = actual <= expected;
 

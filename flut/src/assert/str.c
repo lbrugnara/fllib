@@ -9,7 +9,7 @@
 
 FlutAssertResult* flut__assert_str_equals(const char *expected, const char *actual, bool free_mem)
 {
-    struct FlutAssertResult *result = fl_malloc(sizeof(struct FlutAssertResult));
+    struct FlutAssertResult *result = flut_assert_result_new();
 
     result->success = strcmp(expected, actual) == 0;
 
@@ -25,7 +25,7 @@ FlutAssertResult* flut__assert_str_equals(const char *expected, const char *actu
 
 FlutAssertResult* flut__assert_str_equals_n(const char *expected, const char *actual, size_t n, bool free_mem)
 {
-    struct FlutAssertResult *result = fl_malloc(sizeof(struct FlutAssertResult));
+    struct FlutAssertResult *result = flut_assert_result_new();
 
     result->success = strncmp(expected, actual, n) == 0;
 
@@ -41,7 +41,7 @@ FlutAssertResult* flut__assert_str_equals_n(const char *expected, const char *ac
 
 FlutAssertResult* flut__assert_str_not_equals(const char *expected, const char *actual, bool free_mem)
 {
-    struct FlutAssertResult *result = fl_malloc(sizeof(struct FlutAssertResult));
+    struct FlutAssertResult *result = flut_assert_result_new();
 
     result->success = strcmp(expected, actual) != 0;
 
@@ -57,7 +57,7 @@ FlutAssertResult* flut__assert_str_not_equals(const char *expected, const char *
 
 FlutAssertResult* flut__assert_str_length(size_t expected_length, const char *str, bool free_mem)
 {
-    struct FlutAssertResult *result = fl_malloc(sizeof(struct FlutAssertResult));
+    struct FlutAssertResult *result = flut_assert_result_new();
 
     result->success = str != NULL && strlen(str) == expected_length;
 

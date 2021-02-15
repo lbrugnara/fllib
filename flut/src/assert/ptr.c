@@ -9,7 +9,7 @@
 
 FlutAssertResult* flut__assert_ptr_equals(void *expected, void *actual)
 {
-    struct FlutAssertResult *result = fl_malloc(sizeof(struct FlutAssertResult));
+    struct FlutAssertResult *result = flut_assert_result_new();
 
     result->success = expected == actual;
 
@@ -22,7 +22,7 @@ FlutAssertResult* flut__assert_ptr_equals(void *expected, void *actual)
 
 FlutAssertResult* flut__assert_ptr_not_equals(void *expected, void *actual)
 {
-    struct FlutAssertResult *result = fl_malloc(sizeof(struct FlutAssertResult));
+    struct FlutAssertResult *result = flut_assert_result_new();
 
     result->success = expected != actual;
 

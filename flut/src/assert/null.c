@@ -9,7 +9,7 @@
 
 FlutAssertResult* flut__assert_null(void *obj)
 {
-    struct FlutAssertResult *result = fl_malloc(sizeof(struct FlutAssertResult));
+    struct FlutAssertResult *result = flut_assert_result_new();
 
     result->success = obj == NULL;
 
@@ -22,7 +22,7 @@ FlutAssertResult* flut__assert_null(void *obj)
 
 FlutAssertResult* flut__assert_not_null(void *obj)
 {
-    struct FlutAssertResult *result = fl_malloc(sizeof(struct FlutAssertResult));
+    struct FlutAssertResult *result = flut_assert_result_new();
 
     result->success = obj != NULL;
 

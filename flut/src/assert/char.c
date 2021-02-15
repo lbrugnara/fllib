@@ -8,7 +8,7 @@
 #include "char.h"
 
 FlutAssertResult* flut__assert_char_equals(char expected, char actual) {
-    struct FlutAssertResult *result = fl_malloc(sizeof(struct FlutAssertResult));
+    struct FlutAssertResult *result = flut_assert_result_new();
 
     result->success = expected == actual;
 
@@ -20,7 +20,7 @@ FlutAssertResult* flut__assert_char_equals(char expected, char actual) {
 }
 
 FlutAssertResult* flut__assert_char_not_equals(char expected, char actual) {
-    struct FlutAssertResult *result = fl_malloc(sizeof(struct FlutAssertResult));
+    struct FlutAssertResult *result = flut_assert_result_new();
 
     result->success = expected != actual;
 

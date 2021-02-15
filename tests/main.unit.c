@@ -1,5 +1,4 @@
 #include "text/Test_Unicode.h"
-#include "text/Test_Regex.h"
 
 #include <fllib.h>
 #include <flut/flut.h>
@@ -30,10 +29,7 @@ int main(int argc, char **argv)
             { "fl_unicode_data", &test_fl_unicode_data }
         ),
         flut_register_suite(string),
-        flut_suite("Regex",
-            { "fl_regex_tokenize", &test_fl_regex_tokenize },
-            { "fl_regex_match", &test_fl_regex_match }
-        ),
+        flut_register_suite(regex),
         flut_register_suite(vector),
         flut_register_suite(hashtable),
         flut_register_suite(list),

@@ -7,6 +7,10 @@
 
 #include "result.h"
 
+FlutAssertResult* flut_assert_result_new(void) {
+    return fl_malloc(sizeof(struct FlutAssertResult));
+}
+
 void flut_assert_result_free(FlutAssertResult *result)
 {
     if (result->message)

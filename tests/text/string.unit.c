@@ -17,8 +17,8 @@ flut_define_test(string_length) {
     FlString str = "\x41\x00\x42"; // "A\0B"
     flut_explain(flut_assert_size_t_is_equals(3, fl_string_length(str, str + 3)), "String contains a null byte in the middle: \"\\x41\\x00\\x42\" -> \"A\\0B\"");
 
-    FlString zero = "\0";
-    flut_explain(flut_assert_size_t_is_equals(1, fl_string_length("\0", zero + 1)), "String contains only the '\\0' character");
+    FlString null_char = "\0";
+    flut_explain(flut_assert_size_t_is_equals(1, fl_string_length(null_char, null_char + 1)), "String contains only the '\\0' character");
 
     flut_assert_size_t_is_equals(0, fl_string_length("\0", NULL));
 

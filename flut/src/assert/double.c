@@ -9,7 +9,7 @@
 
 FlutAssertResult* flut__assert_double_equals(double expected, double actual, double epsilon)
 {
-    struct FlutAssertResult *result = fl_malloc(sizeof(struct FlutAssertResult));
+    struct FlutAssertResult *result = flut_assert_result_new();
 
     result->success = fabs(expected - actual) <= epsilon;
 
@@ -22,7 +22,7 @@ FlutAssertResult* flut__assert_double_equals(double expected, double actual, dou
 
 FlutAssertResult* flut__assert_double_not_equals(double expected, double actual, double epsilon)
 {
-    struct FlutAssertResult *result = fl_malloc(sizeof(struct FlutAssertResult));
+    struct FlutAssertResult *result = flut_assert_result_new();
 
     result->success = fabs(expected - actual) > epsilon;
 
@@ -34,7 +34,7 @@ FlutAssertResult* flut__assert_double_not_equals(double expected, double actual,
 }
 
 FlutAssertResult* flut__assert_double_gt(double expected, double actual, double epsilon) {
-    struct FlutAssertResult *result = fl_malloc(sizeof(struct FlutAssertResult));
+    struct FlutAssertResult *result = flut_assert_result_new();
 
     result->success = actual - expected > epsilon;
 
@@ -45,7 +45,7 @@ FlutAssertResult* flut__assert_double_gt(double expected, double actual, double 
     return result;
 }
 FlutAssertResult* flut__assert_double_gte(double expected, double actual, double epsilon) {
-    struct FlutAssertResult *result = fl_malloc(sizeof(struct FlutAssertResult));
+    struct FlutAssertResult *result = flut_assert_result_new();
 
     result->success = actual - expected >= epsilon;
 
@@ -56,7 +56,7 @@ FlutAssertResult* flut__assert_double_gte(double expected, double actual, double
     return result;
 }
 FlutAssertResult* flut__assert_double_lt(double expected, double actual, double epsilon) {
-    struct FlutAssertResult *result = fl_malloc(sizeof(struct FlutAssertResult));
+    struct FlutAssertResult *result = flut_assert_result_new();
 
     result->success = expected - actual > epsilon;
 
@@ -67,7 +67,7 @@ FlutAssertResult* flut__assert_double_lt(double expected, double actual, double 
     return result;
 }
 FlutAssertResult* flut__assert_double_lte(double expected, double actual, double epsilon) {
-    struct FlutAssertResult *result = fl_malloc(sizeof(struct FlutAssertResult));
+    struct FlutAssertResult *result = flut_assert_result_new();
 
     result->success = expected - actual >= epsilon;
 

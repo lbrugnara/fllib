@@ -1,5 +1,4 @@
 #include "text/Test_Unicode.h"
-#include "text/Test_String.h"
 #include "text/Test_Regex.h"
 
 #include <fllib.h>
@@ -30,11 +29,7 @@ int main(int argc, char **argv)
             { "fl_unicode_codepoint_sequence_validate", &test_fl_unicode_codepoint_sequence_validate },
             { "fl_unicode_data", &test_fl_unicode_data }
         ),
-        flut_suite("String", 
-            { "fl_string_length", &test_fl_string_length },
-            { "fl_string_size", &test_fl_string_size },
-            { "fl_string_char_at", &test_fl_string_char_at }
-        ),
+        flut_register_suite(string),
         flut_suite("Regex",
             { "fl_regex_tokenize", &test_fl_regex_tokenize },
             { "fl_regex_match", &test_fl_regex_match }

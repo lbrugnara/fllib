@@ -24,29 +24,38 @@ void fl_string_free(FlString str)
 }
 
 
-size_t fl_string_length(const FlString str, const FlByte* end)
+size_t fl_string_length(const FlString str, const void* end)
 {
     return fl_unicode_codepoint_sequence_length(FL_ENCODING_UTF8, (FlByte*)str, end);
 }
 
-size_t fl_string_size(const FlString str, const FlByte* end)
+size_t fl_string_size(const FlString str, const void* end)
 {
     return fl_unicode_codeunit_sequence_size(FL_ENCODING_UTF8, (const FlByte*)str, end);
 }
-/*
-FlUnicodeChar fl_char(const FlString str)
+
+FlChar fl_char(const FlString str)
 {
-    return fl_unicode_codepoint_to_unichar(FL_ENCODING_UTF8, (const FlByte*)str, 0x00);
+    // TODO: fix all this
+    FlByte char_buffer[4] = { 0 };
+    size_t size = fl_unicode_codepoint_at(FL_ENCODING_UTF8, (const FlByte*) str, 0x00, 0, char_buffer);
+    if (size == FL_UNICODE_INVALID_SIZE)
+    {
+        return FL_UNICODE_INVALID_SIZE;
+    }
+
+    return (FlChar) (char_buffer[3] | char_buffer[2] | char_buffer[1] | char_buffer[0]);
 }
 
-FlUnicodeChar fl_string_char_at(const FlString str, size_t at)
+FlChar fl_string_char_at(const FlString str, size_t at)
 {
-    FlByte dst[4];
-    size_t b = fl_unicode_codepoint_at(FL_ENCODING_UTF8, (const FlByte*)str, 0x00, at, dst);
-    if (b == FL_UNICODE_INVALID_CHAR)
+    // TODO: fix all this
+    FlByte char_buffer[4] = { 0 };
+    size_t size = fl_unicode_codepoint_at(FL_ENCODING_UTF8, (const FlByte*)str, 0x00, at, char_buffer);
+    if (size == FL_UNICODE_INVALID_SIZE)
     {
-        return FL_UNICODE_INVALID_CHAR;
+        return FL_UNICODE_INVALID_SIZE;
     }
-    return fl_unicode_codepoint_to_unichar(FL_ENCODING_UTF8, (const FlByte*)dst, dst+b);
+
+    return (FlChar) (char_buffer[3] | char_buffer[2] | char_buffer[1] | char_buffer[0]);
 }
- */

@@ -72,7 +72,7 @@ bool flut_run(int argc, char **argv, FlutSuite **suites, size_t length) {
 
         ntests += fl_array_length(suites[i]->tests);
         nptests += results[i].passedTests;
-        char *suite_descr = flm_cstring_equals(suites[i]->id, suites[i]->description)
+        char *suite_descr = suites[i]->description == NULL || flm_cstring_equals(suites[i]->id, suites[i]->description)
                               ? fl_cstring_dup(suites[i]->id)
                               : fl_cstring_vdup("%s - %s", suites[i]->id, suites[i]->description);
         printf("| %-55s| %6zu/%-5zu | %-2s%3.2f%%%-1s | %7ld ms |\n",

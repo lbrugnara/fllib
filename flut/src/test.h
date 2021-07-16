@@ -1,12 +1,12 @@
 #ifndef FLUT_TEST_H
 #define FLUT_TEST_H
 
-#include <stdbool.h>
-
 /*
  * About: FlutTestCase
  *  Allow the definition of runnable test cases
  */
+
+#include <stdbool.h>
 
 /*
  * Define: FLUT_TEST_CONTEXT
@@ -14,7 +14,7 @@
  *  can be used to pass the context to another function
  *
  * Notes:
- *  - FLUT_TEST_CONTEXT exists within all the tests defined with <flut_test>
+ *  - <FLUT_TEST_CONTEXT> exists within all the tests defined with <flut_test>
  * 
  * See:
  *  - <FLUT_TEST_CONTEXT_PARAM> for an example
@@ -33,7 +33,7 @@
  *  }
  * 
  *  flut_test(my_test) {
- *      my_helper_func(FLUT_TEST_CONTEXT, calc_n());
+ *      my_helper_func(FLUT_TEST_CONTEXT, 15);
  *  }
  * ---
  */
@@ -44,25 +44,29 @@
  *  Defines a new test
  *
  * Parameters:
- *  test_id - The ID of the test that can be used to run it or to register it in a suite
+ *  test_name - The name of the test that can be used to run it or to register it in a suite
  *
  * Returns:
  *  This macro is not an expression, it doesn't return a value
  *
  * Notes:
- *  - The ID must be a valid C name function
+ *  - The name must be a valid C name function
  * 
  * See:
- *  - <flut_suite_register_test>: to register the test in a suit
+ *  - <flut_suite_register_test>: to register the test in a suite
+ * 
+ * --- Prototype
+ *      flut_test(test_name)
+ * ---
  * 
  * Example:
  * --- C
- *  flut_test(test_id) {
+ *  flut_test(test_name) {
  *      // Make assertions here
  *  }
  * ---
  */
-#define flut_test(test_id)       void flut__test_##test_id(FLUT_TEST_CONTEXT_PARAM)
+#define flut_test(test_name)       void flut__test_##test_name(FLUT_TEST_CONTEXT_PARAM)
 
 /*
  * Macro: flut_describev

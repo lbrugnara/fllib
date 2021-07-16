@@ -31,14 +31,14 @@ struct FlContext test_restore_context_compat = FL_CTX_STATIC_INIT;
  * {return: FlutSuite} Suite pointer
  *
  */
-FlutSuite *flut_suite_new(const char *id)
+FlutSuite *flut_suite_new(const char *name)
 {
     FlutSuite *suite = fl_malloc(sizeof(struct FlutSuite));
 
     if (suite == NULL)
         return NULL;
 
-    suite->id = fl_cstring_dup(id);
+    suite->name = fl_cstring_dup(name);
     suite->tests = fl_array_new(sizeof(FlutTestCase), 0);
 
     return suite;
@@ -56,7 +56,7 @@ FlutSuite *flut_suite_new(const char *id)
  */
 void flut_suite_free(FlutSuite *suite)
 {
-    fl_cstring_free(suite->id);
+    fl_cstring_free(suite->name);
     fl_cstring_free(suite->description);
 
     for (size_t i = 0; i < fl_array_length(suite->tests); i++) {
@@ -121,7 +121,7 @@ void flut_suite_run(FlutSuite *suite, FlutSuiteResult *result)
 #endif
     fl_signal_global_handler_set(test_signal_handler);
 
-    printf("TEST SUITE: %s - %s\n", suite->id, suite->description);
+    printf("TEST SUITE: %s - %s\n", suite->name, suite->description);
     printf(" |\n");
 
     size_t failed_tests = 0;
@@ -191,7 +191,7 @@ void flut_suite_run(FlutSuite *suite, FlutSuiteResult *result)
     printf(" |\n +- PASSED TESTS: %zu/%zu\n", (number_of_tests - failed_tests), number_of_tests);
 
     result->ran = true;
-    result->passedTests = number_of_tests - failed_tests;
+    result->passed_tests = number_of_tests - failed_tests;
 
 #ifdef _WIN32
     fl_winex_global_handler_set(global_handler);

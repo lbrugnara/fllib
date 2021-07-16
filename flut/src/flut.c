@@ -13,7 +13,7 @@ static bool should_run_suite(struct FlutSuite *suite, int argc, char **argv)
     if (argc == 2 && flm_cstring_equals("all", argv[1]))
         return true;
 
-    size_t suite_name_length = strlen(suite->id);
+    size_t suite_name_length = strlen(suite->name);
     for (int j = 1; j < argc; j++) {
         size_t arg_length = strlen(argv[j]);
 
@@ -21,7 +21,7 @@ static bool should_run_suite(struct FlutSuite *suite, int argc, char **argv)
             continue;
 
         for (size_t k = 0; k < suite_name_length; k++) {
-            if (tolower(suite->id[k]) != tolower(argv[j][k]))
+            if (tolower(suite->name[k]) != tolower(argv[j][k]))
                 break;
 
             if (k == suite_name_length - 1)
@@ -71,16 +71,16 @@ bool flut_run(int argc, char **argv, FlutSuite **suites, size_t length) {
             continue;
 
         ntests += fl_array_length(suites[i]->tests);
-        nptests += results[i].passedTests;
-        char *suite_descr = suites[i]->description == NULL || flm_cstring_equals(suites[i]->id, suites[i]->description)
-                              ? fl_cstring_dup(suites[i]->id)
-                              : fl_cstring_vdup("%s - %s", suites[i]->id, suites[i]->description);
+        nptests += results[i].passed_tests;
+        char *suite_descr = suites[i]->description == NULL || flm_cstring_equals(suites[i]->name, suites[i]->description)
+                              ? fl_cstring_dup(suites[i]->name)
+                              : fl_cstring_vdup("%s - %s", suites[i]->name, suites[i]->description);
         printf("| %-55s| %6zu/%-5zu | %-2s%3.2f%%%-1s | %7ld ms |\n",
                suite_descr,
-               results[i].passedTests,
+               results[i].passed_tests,
                fl_array_length(suites[i]->tests),
                "",
-               (results[i].passedTests / (float)fl_array_length(suites[i]->tests)) * 100,
+               (results[i].passed_tests / (float)fl_array_length(suites[i]->tests)) * 100,
                "",
                results[i].elapsed);
         fl_cstring_free(suite_descr);

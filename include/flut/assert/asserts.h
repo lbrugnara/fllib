@@ -21,7 +21,7 @@
 // General
 #define flut_unexpectedv(error_msg_format, ...)                                                                         \
 do {                                                                                                                    \
-    struct FlutAssertResult *result = flut_assert_result_new();                                       \
+    struct FlutAssertResult *result = flut_assert_result_new();                                                         \
     result->success = false;                                                                                            \
     result->message = fl_cstring_vdup(error_msg_format, __VA_ARGS__);                                                   \
     flut_assertion_process_result(flut__internal_ctx, flut_do_assertion(result, result, "%s", "Unexpected scenario"));  \

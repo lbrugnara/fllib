@@ -37,7 +37,26 @@
  *
  * Returns:
  *  This macro is not an expression
- */
+ * 
+ * Example:
+ * 
+ * --- C
+ *  #include <flut/flut.h>
+ *
+ *  int main(int argc, char **argv) 
+ *  {
+ *      bool success;
+ *      flut_run_suites(
+ *          argc,
+ *          argv,
+ *          &success,
+ *          suite1,
+ *          suite2
+ *      );
+ *      return success ? 0 : -1;
+ *  }
+ * ---
+ **/
 #define flut_run_suites(argc, argv, result_ptr, ...)                                                                   \
     do {                                                                                                               \
         FlutSuite **suites = fl_array_new(sizeof(FlutSuite *), 0);                                                     \
@@ -59,8 +78,6 @@
  *
  * Returns:
  *  bool - True if all tests succeed, otherwise it returns false
- *
- * Notes:
  *
  */
 bool flut_run(int argc, char **argv, FlutSuite **suites, size_t length);

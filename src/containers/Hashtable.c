@@ -3,6 +3,7 @@
 #include <stdbool.h>
 
 #include "../Std.h"
+#include "../Error.h"
 #include "../Mem.h"
 #include "../Array.h"
 #include "Container.h"

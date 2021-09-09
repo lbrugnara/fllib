@@ -1,7 +1,8 @@
 #include <stdlib.h>
 #include "Timer.h"
-#include "../Std.h"
+#include "../Error.h"
 #include "../Mem.h"
+#include "../Std.h"
 
 #ifdef _WIN32
     #include <windows.h>

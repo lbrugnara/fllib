@@ -10,9 +10,10 @@
     #include <poll.h>
 #endif
 
-#include "../Types.h"
-#include "../Mem.h"
 #include "../Cstring.h"
+#include "../Error.h"
+#include "../Mem.h"
+#include "../Types.h"
 #include "Process.h"
 
 struct FlPipe {

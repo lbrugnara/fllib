@@ -4,6 +4,7 @@
 #include <math.h>
 #include "../Mem.h"
 #include "../Array.h"
+#include "../Error.h"
 #include "BinaryHeap.h"
 
 #define flm_binheap_capacity(heap) fl_array_length((heap)->nodes)

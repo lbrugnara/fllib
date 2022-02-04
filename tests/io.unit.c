@@ -11,13 +11,14 @@ flut_suite(io) {
 flut_test(io_realpath) {
     flut_describe("realpath should convert all paths to absolute paths and all should be valid.") {
         const char *files[][3] = { 
-            // File     Directory                           Full path
-            { "a.test", NULL,                               NULL        },
-            { "b.test", NULL,                               NULL        },
-            { "c.test", NULL,                               NULL        },
-            { "d.test", "folder",                           NULL        },
-            { "e.test", "folder" FL_IO_DIR_SEPARATOR "1",   NULL        },
-            { NULL,     NULL,                               NULL        },
+            // File     Directory                                                   Full path
+            { "a.test", NULL,                                                       NULL        },
+            { "b.test", NULL,                                                       NULL        },
+            { "c.test", NULL,                                                       NULL        },
+            { "d.test", "folder",                                                   NULL        },
+            { "e.test", "folder" FL_IO_DIR_SEPARATOR "1",                           NULL        },
+            { "f.test", "folder" FL_IO_DIR_SEPARATOR "1" FL_IO_DIR_SEPARATOR "2",   NULL        },
+            { NULL,     NULL,                                                       NULL        },
         };
 
         for (size_t i=0; files[i][0] != NULL; i++) {
@@ -104,6 +105,46 @@ flut_test(io_path) {
         flut_assert_is_false(fl_io_path_is_relative("\\\\.\\pipe\\my-pipe"));
     }
 
+    #else
+    flut_describe("Linux paths should be all relative paths") {
+        flut_assert_is_true(fl_io_path_is_relative("."));
+        flut_assert_is_false(fl_io_path_is_absolute("."));
+
+        flut_assert_is_true(fl_io_path_is_relative(".."));
+        flut_assert_is_false(fl_io_path_is_absolute(".."));
+
+        flut_assert_is_true(fl_io_path_is_relative("./"));
+        flut_assert_is_false(fl_io_path_is_absolute("./"));
+
+        flut_assert_is_true(fl_io_path_is_relative("../"));
+        flut_assert_is_false(fl_io_path_is_absolute("../"));
+
+        flut_assert_is_true(fl_io_path_is_relative("./test"));
+        flut_assert_is_false(fl_io_path_is_absolute("./test"));
+
+        flut_assert_is_true(fl_io_path_is_relative("../test"));
+        flut_assert_is_false(fl_io_path_is_absolute("../test"));
+
+        flut_assert_is_true(fl_io_path_is_relative("./test/2"));
+        flut_assert_is_false(fl_io_path_is_absolute("./test/2"));
+
+        flut_assert_is_true(fl_io_path_is_relative("../test/2"));
+        flut_assert_is_false(fl_io_path_is_absolute("../test/2"));
+
+        flut_assert_is_true(fl_io_path_is_relative("test/2"));
+        flut_assert_is_false(fl_io_path_is_absolute("test/2"));
+    }
+
+    flut_describe("Linux paths should be all absolute paths") {
+        flut_assert_is_true(fl_io_path_is_absolute("/test"));
+        flut_assert_is_false(fl_io_path_is_relative("/test"));
+
+        flut_assert_is_true(fl_io_path_is_absolute("/test/something"));
+        flut_assert_is_false(fl_io_path_is_relative("/test/something"));
+
+        flut_assert_is_true(fl_io_path_is_absolute("/var/something/my-pipe"));
+        flut_assert_is_false(fl_io_path_is_relative("/var/something/my-pipe"));
+    }
     #endif
 }
 

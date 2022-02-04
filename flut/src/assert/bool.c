@@ -7,9 +7,9 @@
 
 #include "result.h"
 
-FlutAssertResult* flut_assert_bool_is_true(bool condition)
+FlutAssertResult* flut__assert_bool_true(bool condition)
 {
-    struct FlutAssertResult *result = fl_malloc(sizeof(struct FlutAssertResult));
+    struct FlutAssertResult *result = flut_assert_result_new();
 
     result->success = condition;
 
@@ -20,9 +20,9 @@ FlutAssertResult* flut_assert_bool_is_true(bool condition)
     return result;
 }
 
-FlutAssertResult* flut_assert_bool_is_false(bool condition)
+FlutAssertResult* flut__assert_bool_false(bool condition)
 {
-    struct FlutAssertResult *result = fl_malloc(sizeof(struct FlutAssertResult));
+    struct FlutAssertResult *result = flut_assert_result_new();
 
     result->success = !condition;
 

@@ -27,6 +27,10 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+typedef enum FlIoErrorType {
+    FL_IO_ERROR_PATH_IS_ABSOLUTE
+} FlIoErrorType;
+
 FILE * fl_io_file_open(const char *filename, const char *mode)
 {
     #if defined(_WIN32) && __STDC_WANT_SECURE_LIB__
@@ -135,6 +139,51 @@ CLEANUP:
     fl_cstring_free(current);
     fl_vector_free(parts);
     fl_cstring_free(path);
+    return status;
+}
+
+bool fl_io_dir_remove(const char *path) {
+    #ifdef _WIN32
+    return _rmdir(path) == 0;
+    #else
+    return rmdir(path) == 0;
+    #endif
+}
+
+bool fl_io_dir_remove_recursive(const char *path) {
+    flm_assert(path, "path cannot be NULL");
+
+    if (fl_io_path_is_absolute(path)) {
+        fl_error_push(FL_IO_ERROR_PATH_IS_ABSOLUTE, "%s", "Cannot recursively remove a directory referenced by its absolute path");
+        return false;
+    }
+
+    if (!fl_io_dir_remove(path)) {
+        return false;
+    }
+
+    bool status = true;
+
+    path = fl_cstring_replace(path, "/", FL_IO_DIR_SEPARATOR);
+    FlVector *parts = fl_cstring_split_by(path, FL_IO_DIR_SEPARATOR);
+    fl_vector_pop(parts, NULL);
+    
+    while (fl_vector_length(parts) > 0) {
+        char *current_path = fl_cstring_join(parts, FL_IO_DIR_SEPARATOR);
+
+        if (!fl_io_dir_remove(current_path)) {
+            fl_cstring_free(current_path);
+            status = false;
+            break;
+        }
+
+        fl_cstring_free(current_path);
+        fl_vector_pop(parts, NULL);
+    }
+
+    fl_vector_free(parts);
+    fl_cstring_free(path);
+
     return status;
 }
 

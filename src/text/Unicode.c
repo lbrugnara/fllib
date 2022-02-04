@@ -2,8 +2,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "../Std.h"
+#include "../Error.h"
 #include "../Mem.h"
+#include "../Std.h"
 #include "Unicode.h"
 #include "UnicodeData.h"
 

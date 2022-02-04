@@ -21,9 +21,9 @@ typedef enum FlBinaryHeapType {
  *  - <FlContainerCompareFn> comparer: Function that compares items of the binary heap.
  *  - <FlContainerCleanupFn> cleaner: Function that, if present, frees the memory used by an item when removed from the binary heap
  *  - <FlContainerWriterFn> writer: Function that, if present, writes an item into the binary heap.
- *  - <size_t> element_size: The size of the elements to store in the heap. It is required if the <FlContainerWriterFn> is provided.
- *  - <size_t> capacity: The initial capacity of the heap. If it is not provided, the default value is 15
- *  - <size_t> max_capacity: If specified, the heap will limit the number of elements that can be stored to this number
+ *  - size_t element_size: The size of the elements to store in the heap. It is required if the <FlContainerWriterFn> is provided.
+ *  - size_t capacity: The initial capacity of the heap. If it is not provided, the default value is 15
+ *  - size_t max_capacity: If specified, the heap will limit the number of elements that can be stored to this number
  *  - <double> growth_factor: Factor to apply in growth of the internal vector
  *  - <FlBinaryHeapType> type: A binary heap can be a max-heap (FL_BINHEAP_MAX) or a min-heap (FL_BINHEAP_MIN). Default is max-heap
  */
@@ -124,11 +124,11 @@ void* fl_binheap_get_root(FlBinaryHeap *heap);
  *
  * Parameters:
  *  <FlBinaryHeap> *heap: The heap object
- *  <bool> clean: If clean is *true* and the <FlContainerCleanupFn> was provided on heap creation, the memory of the root element
+ *  bool clean: If clean is *true* and the <FlContainerCleanupFn> was provided on heap creation, the memory of the root element
  *                is realeased, otherwise the memory must be freed by the caller.
  *
  * Returns:
- *  <bool>: *true* if the root element exists and it is removed, otherwise this function returns *false*.
+ *  bool: *true* if the root element exists and it is removed, otherwise this function returns *false*.
  */
 bool fl_binheap_remove_root(FlBinaryHeap *heap, bool clean);
 
@@ -153,11 +153,11 @@ void* fl_binheap_search(FlBinaryHeap *heap, const void *item);
  * Parameters:
  *  <FlBinaryHeap> *heap: The heap object
  *  <const void> *item: The item to search and remove from the heap
- *  <bool> clean: If clean is *true* and the <FlContainerCleanupFn> was provided on heap creation, the memory of the root element
+ *  bool clean: If clean is *true* and the <FlContainerCleanupFn> was provided on heap creation, the memory of the root element
  *                is realeased, otherwise the memory must be freed by the caller.
  *
  * Returns:
- *  <bool>: *true* if the root element exists and it is removed, otherwise this function returns *false*.
+ *  bool: *true* if the root element exists and it is removed, otherwise this function returns *false*.
  */
 bool fl_binheap_remove(FlBinaryHeap *heap, const void *item, bool clean);
 
@@ -169,7 +169,7 @@ bool fl_binheap_remove(FlBinaryHeap *heap, const void *item, bool clean);
  *  <FlBinaryHeap> *heap: The heap object
  *
  * Returns:
- *  <size_t>: The binary heap length
+ *  size_t: The binary heap length
  */
 size_t fl_binheap_length(FlBinaryHeap *heap);
 
@@ -181,7 +181,7 @@ size_t fl_binheap_length(FlBinaryHeap *heap);
  *  <FlBinaryHeap> *heap: The heap object
  *
  * Returns:
- *  <size_t>: The binary heap height
+ *  size_t: The binary heap height
  */
 size_t fl_binheap_height(FlBinaryHeap *heap);
 
@@ -193,7 +193,7 @@ size_t fl_binheap_height(FlBinaryHeap *heap);
  *  <FlBinaryHeap> *heap: The heap object
  *
  * Returns:
- *  <size_t>: Size of the element type the heap can store
+ *  size_t: Size of the element type the heap can store
  */
 size_t fl_binheap_element_size(FlBinaryHeap *heap);
 

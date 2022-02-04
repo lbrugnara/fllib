@@ -49,6 +49,23 @@
  */
 #define FL_UNICODE_REPLACEMENT_CHARACTER 0xFFFD
 
+/**
+ * Macro: FL_UNICODE_SEQUENCE
+ * 
+ * --- Prototype
+ *      #define FL_UNICODE_SEQUENCE(literal_str)  (const FlByte*) literal_str
+ * ---
+ * 
+ *  Casts a literal char* to a sequence of FlBytes
+ * 
+ * Parameters:
+ *  const char* literal_str - The literal char* sequence
+ * 
+ * Returns:
+ *  const FlByte*
+ */
+#define FL_UNICODE_SEQUENCE(literal_str)  (const FlByte*) literal_str
+
 /*
  * UNICODE CODE POINT AND UNIT FUNCTIONS (FlByte*)
  *

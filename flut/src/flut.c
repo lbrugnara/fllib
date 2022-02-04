@@ -13,7 +13,7 @@ static bool should_run_suite(struct FlutSuite *suite, int argc, char **argv)
     if (argc == 2 && flm_cstring_equals("all", argv[1]))
         return true;
 
-    size_t suite_name_length = strlen(suite->id);
+    size_t suite_name_length = strlen(suite->name);
     for (int j = 1; j < argc; j++) {
         size_t arg_length = strlen(argv[j]);
 
@@ -21,7 +21,7 @@ static bool should_run_suite(struct FlutSuite *suite, int argc, char **argv)
             continue;
 
         for (size_t k = 0; k < suite_name_length; k++) {
-            if (tolower(suite->id[k]) != tolower(argv[j][k]))
+            if (tolower(suite->name[k]) != tolower(argv[j][k]))
                 break;
 
             if (k == suite_name_length - 1)
@@ -32,8 +32,7 @@ static bool should_run_suite(struct FlutSuite *suite, int argc, char **argv)
     return false;
 }
 
-void flut_run(int argc, char **argv, FlutSuite **suites, size_t length)
-{
+bool flut_run(int argc, char **argv, FlutSuite **suites, size_t length) {
     // Compatibility for fl_run macro with a a null-terminator
     if (suites[length - 1] == NULL)
         length--;
@@ -59,35 +58,35 @@ void flut_run(int argc, char **argv, FlutSuite **suites, size_t length)
     if (!should_run) {
         fl_array_free(results);
         printf("No tests have been run.\n");
-        return;
+        return true;
     }
 
     size_t ntests = 0;
     size_t nptests = 0;
-    printf("+------------------------------------+--------------+------------+------------+\n");
-    printf("| %-35s| %-12s | %-10s | %-10s |\n", "Suite", "Passed/Total", "Percentage", "Time (ms)");
-    printf("+------------------------------------+--------------+------------+------------+\n");
+    printf("+--------------------------------------------------------+--------------+------------+------------+\n");
+    printf("| %-55s| %-12s | %-10s | %-10s |\n", "Suite", "Passed/Total", "Percentage", "Time (ms)");
+    printf("+--------------------------------------------------------+--------------+------------+------------+\n");
     for (size_t i = 0; i < length; i++) {
         if (!results[i].ran)
             continue;
 
         ntests += fl_array_length(suites[i]->tests);
-        nptests += results[i].passedTests;
-        char *suite_descr = flm_cstring_equals(suites[i]->id, suites[i]->description)
-                              ? fl_cstring_dup(suites[i]->id)
-                              : fl_cstring_vdup("%s - %s", suites[i]->id, suites[i]->description);
-        printf("| %-35s| %6zu/%-5zu | %-2s%3.2f%%%-1s | %7ld ms |\n",
+        nptests += results[i].passed_tests;
+        char *suite_descr = suites[i]->description == NULL || flm_cstring_equals(suites[i]->name, suites[i]->description)
+                              ? fl_cstring_dup(suites[i]->name)
+                              : fl_cstring_vdup("%s - %s", suites[i]->name, suites[i]->description);
+        printf("| %-55s| %6zu/%-5zu | %-2s%3.2f%%%-1s | %7ld ms |\n",
                suite_descr,
-               results[i].passedTests,
+               results[i].passed_tests,
                fl_array_length(suites[i]->tests),
                "",
-               (results[i].passedTests / (float)fl_array_length(suites[i]->tests)) * 100,
+               (results[i].passed_tests / (float)fl_array_length(suites[i]->tests)) * 100,
                "",
                results[i].elapsed);
         fl_cstring_free(suite_descr);
     }
-    printf("+------------------------------------+--------------+------------+------------+\n");
-    printf("| %-35s| %6zu/%-5zu | %-2s%3.2f%%%-1s | %7llu ms |\n",
+    printf("+--------------------------------------------------------+--------------+------------+------------+\n");
+    printf("| %-55s| %6zu/%-5zu | %-2s%3.2f%%%-1s | %7llu ms |\n",
            "Total",
            nptests,
            ntests,
@@ -95,7 +94,9 @@ void flut_run(int argc, char **argv, FlutSuite **suites, size_t length)
            (nptests / (float)ntests) * 100,
            "",
            total_elapsed_time);
-    printf("+------------------------------------+--------------+------------+------------+\n");
+    printf("+--------------------------------------------------------+--------------+------------+------------+\n");
 
     fl_array_free(results);
+
+    return ntests == nptests;
 }

@@ -2,9 +2,10 @@
 #include <string.h>
 #include <stdbool.h>
 
-#include "Cstring.h"
-#include "Mem.h"
 #include "Array.h"
+#include "Cstring.h"
+#include "Error.h"
+#include "Mem.h"
 #include "containers/Vector.h"
 #include "containers/Hashtable.h"
 

@@ -1,0 +1,10 @@
+action memcheck {
+    if $sbs.os == win and $sbs.shell in [ system, cmd ] {
+        # We ignore the std by now, there is something odd with the free function when it hits the fl_free(FlContext*) line
+        `drmemory.exe  .\\build\\${sbs.os}\\${sbs.arch}\\${sbs.toolchain}\\${sbs.config}\\tests.exe array slice cstring io unicode string regex vector hashtable list binheap`
+    }
+
+    if $sbs.os == linux and $sbs.shell in [ system, bash ] {
+        `valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --suppressions=./tests/valgrind.supp -v ./build/${triplet}/tests`
+    }
+}

@@ -15,7 +15,6 @@
 #include <string.h>
 #include <limits.h>
 #include "Types.h"
-#include "Error.h"
 
 #ifdef _WIN32
     #define FL_OS_WIN

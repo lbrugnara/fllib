@@ -1,4 +1,5 @@
 #include <string.h>
+#include "Error.h"
 #include "Mem.h"
 #include "Std.h"
 

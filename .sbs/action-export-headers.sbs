@@ -4,14 +4,14 @@ action export-headers
         `if not exist .\include (mkdir .\include)`
         `if not exist .\include\fllib (mkdir .\include\fllib)`
         `if not exist .\include\flut (mkdir .\include\flut)`
-        `xcopy /y /d /s .\src\*.h .\include\fllib`
-        `xcopy /y /d /s .\flut\src\*.h .\include\flut`
+        `xcopy /F /y /d /s .\src\*.h .\include\fllib`
+        `xcopy /F /y /d /s .\flut\src\*.h .\include\flut`
     }
 
     if $sbs.os == linux and $sbs.shell in [ system, bash ] {
         `mkdir -p ./include/fllib`
         `mkdir -p ./include/flut`
-        `(cd ./src && find . -type f -name '*.h' | xargs cp --parents -t ../include/fllib)`
-        `(cd ./flut/src && find . -type f -name '*.h' | xargs cp --parents -t ../../include/flut)`
+        `(cd ./src && find . -type f -name '*.h' | xargs cp --verbose -u --parents -t ../include/fllib)`
+        `(cd ./flut/src && find . -type f -name '*.h' | xargs cp --verbose -u --parents -t ../../include/flut)`
     }
 }

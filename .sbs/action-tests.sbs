@@ -1,0 +1,12 @@
+$win_test_executable = ".\\build\\${sbs.os}\\${sbs.arch}\\${sbs.toolchain}\\${sbs.config}\\tests.exe"
+$linux_test_executable = "./build/${sbs.os}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/tests"
+
+action tests {
+    if $sbs.os == win and $sbs.shell in [ system, cmd ] {
+        `${win_test_executable}`
+    }
+
+    if $sbs.os == linux and $sbs.shell in [ system, bash ] {
+        `${linux_test_executable}`
+    }
+}

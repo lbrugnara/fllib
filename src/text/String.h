@@ -11,6 +11,7 @@
 #include "Unicode.h"
 
 #define FlString char*
+#define FlChar size_t
 
 /*
  * Function: fl_string_new
@@ -64,12 +65,12 @@ void fl_string_free(FlString str);
  * reach the provided address.
  *
  * const FlString str - Target string to retrieve the length
- * const FlByte* end - Marker to stop the counting
+ * const void* end - Marker to stop the counting
  *
  * {return: size_t} Number of characters that compose the string
  *
  */
-size_t fl_string_length(const FlString str, const FlByte* end);
+size_t fl_string_length(const FlString str, const void* end);
 
 /*
  * Function: fl_string_size
@@ -81,15 +82,15 @@ size_t fl_string_length(const FlString str, const FlByte* end);
  * reach the provided address.
  *
  * const FlString str - Target string to retrieve the size_t
- * const FlByte* end - Marker to stop the byte counting
+ * const void* end - Marker to stop the byte counting
  *
  * {return: size_t} Number of bytes used to represent the string str
  *
  */
-size_t fl_string_size(const FlString str, const FlByte* end);
-/*
-FlUnicodeChar fl_char(const FlString str);
+size_t fl_string_size(const FlString str, const void* end);
 
-FlUnicodeChar fl_string_char_at(const FlString str, size_t at);
- */
+FlChar fl_char(const FlString str);
+
+FlChar fl_string_char_at(const FlString str, size_t at);
+
 #endif /* FL_STRING_H */
